@@ -4,7 +4,7 @@ import AuthService from '../services/authService';
 
 const PrivateRoute = () => {
   const isAuthenticated = AuthService.getCurrentUser();
-  
+
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
