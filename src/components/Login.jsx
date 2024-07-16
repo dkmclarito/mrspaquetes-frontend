@@ -1,28 +1,38 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AuthService from '../services/authService';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FiLock } from "react-icons/fi";
+import AuthService from "../services/authService";
+import "../styles/LoginForm.css";
 
-const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Login = ({ logo }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const token = await AuthService.login(email, password);
-      console.log('Token:', token); 
-      navigate('/home');
+      console.log("Token:", token);
+      navigate("/home");
     } catch (err) {
-      setError('Invalid credentials');
+      setError("Credenciales invalidas");
     }
   };
 
+  const handleForgotPassword = () => {
+    // Implementa la lógica para el enlace de olvidaste tu contraseña aquí
+    // Por ejemplo, redirigir a una página de recuperación de contraseña
+    navigate("/forgot-password");
+  };
+
   return (
-    <div>
-      <h2>Login</h2>
-      {error && <p>{error}</p>}
+    <div className="login-form">
+      <img src={logo} alt="Logo" className="logo" />
+      <h2>Bienvenido/a!</h2>
+      <p>Inicia Sesión para acceder a Mr. Paquetes</p>
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleLogin}>
         <div>
           <label>Email</label>
@@ -30,17 +40,24 @@ const Login = () => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </div>
         <div>
-          <label>Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <label>Contraseña</label>
+          <div className="password-input">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <span className="forgot-password" onClick={handleForgotPassword}>
+            <FiLock className="password-icon" /> Olvidaste tu contraseña?
+          </span>
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">Iniciar Sesión</button>
       </form>
     </div>
   );

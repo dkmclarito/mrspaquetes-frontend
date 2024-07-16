@@ -5,11 +5,13 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import Logout from './components/Logout';
 import AuthService from './services/authService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
   return (
+    
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
