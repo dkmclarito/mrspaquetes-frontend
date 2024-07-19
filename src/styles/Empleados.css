@@ -1,0 +1,135 @@
+/* empleados.css */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+.form-group-custom {
+    margin-bottom: 1.5rem;
+}
+
+.custom-input {
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+}
+
+.page-title-box {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 500;
+}
+
+.breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+}
+
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.btn-lg {
+    font-size: 1.25rem;
+    padding: 0.75rem 1.25rem;
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.alert {
+    margin-top: 1rem;
+}
+
+.table-centered td, .table-centered th {
+    text-align: center;
+}
+
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem 0.75rem;
+}
+
+.btn-icon i {
+    margin-right: 5px;
+    font-size: 1.2rem; /* Ajusta el tamaño del icono según tus necesidades */
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Ajusta el espacio entre los botones según tus necesidades */
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+.custom-button {
+    margin-top: -20px; /* Ajusta el valor según sea necesario */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Asegura que los bordes se colapsen en uno solo */
+}
+
+.table th, .table td {
+    border: 1px solid #dee2e6; /* Color de borde para las celdas */
+    padding: 0.75rem; /* Espaciado interno */
+    vertical-align: top; /* Alineación vertical superior */
+}
+
+.table th {
+    background-color: #f8f9fa; /* Color de fondo para los encabezados */
+    font-weight: bold; /* Negrita para los encabezados */
+}
+
+.table td {
+    background-color: #ffffff; /* Color de fondo para las celdas de datos */
+}
+
+.table td, .table th {
+    text-align: left; /* Alineación del texto a la izquierda */
+}
+
+/* Estilo para el botón de editar */
+.btn-primary {
+    background-color: #007bff; /* Color original del botón de editar */
+    border: none; /* Sin borde */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Color al pasar el ratón */
+}
+
+.btn-editar {
+  background-color: #4d5f65; /* Azul claro específico */
+  border-color: #9dd5e8; /* Asegura que el borde sea del mismo color */
+}
+
+.btn-editar:hover {
+  background-color: #898d90; /* Color más oscuro para el hover */
+  border-color: #1e90ff; /* Color más oscuro para el borde en hover */
+}

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import Footer from './Footer';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
 import { BiHome, BiLogOut, BiUser, BiPlus, BiSearch, BiGroup, BiHappy, BiPackage, BiDirections, BiCar, BiShoppingBag } from 'react-icons/bi';
 import logoImage from "../../assets/images/logo-dark.png";
 
-const VerticalLayout = ({ children }) => {
+const VerticalLayout = () => {
   const [activeSubMenu, setActiveSubMenu] = useState(null);
 
   const handleSubMenuClick = (subMenuName) => {
@@ -21,7 +21,7 @@ const VerticalLayout = ({ children }) => {
         </div>
         <ul className="nav flex-column">
           <li className="nav-item">
-            <NavLink to="/home" className="nav-link text-white" activeClassName="active">
+            <NavLink to="/home" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiHome className="nav-icon" />
               Home
             </NavLink>
@@ -34,13 +34,13 @@ const VerticalLayout = ({ children }) => {
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'users' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/users/add" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/users/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiPlus className="nav-icon sub-icon" />
                   Agregar
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/users/view" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/users/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiSearch className="nav-icon sub-icon" />
                   Ver
                 </NavLink>
@@ -50,20 +50,14 @@ const VerticalLayout = ({ children }) => {
           <li className="nav-item">
             <div className={`nav-link text-white ${activeSubMenu === 'employees' ? 'active' : ''}`} onClick={() => handleSubMenuClick('employees')}>
               <BiGroup className="nav-icon" />
-              Employees
+              Empleados
               {activeSubMenu === 'employees' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'employees' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/Employees" className="nav-link text-white" activeClassName="active">
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/employees/view" className="nav-link text-white" activeClassName="active">
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
+                <NavLink to="/GestionEmpleados" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <BiGroup className="nav-icon sub-icon" />
+                  Gestión Empleados
                 </NavLink>
               </li>
             </ul>
@@ -76,13 +70,13 @@ const VerticalLayout = ({ children }) => {
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'clients' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/clients/add" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/clients/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiPlus className="nav-icon sub-icon" />
                   Agregar
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/clients/view" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/clients/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiSearch className="nav-icon sub-icon" />
                   Ver
                 </NavLink>
@@ -97,13 +91,13 @@ const VerticalLayout = ({ children }) => {
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'packages' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/packages/add" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/packages/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiPlus className="nav-icon sub-icon" />
                   Agregar
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/packages/view" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/packages/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiSearch className="nav-icon sub-icon" />
                   Ver
                 </NavLink>
@@ -118,13 +112,13 @@ const VerticalLayout = ({ children }) => {
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'routes' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/routes/add" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/routes/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiPlus className="nav-icon sub-icon" />
                   Agregar
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/routes/view" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/routes/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiSearch className="nav-icon sub-icon" />
                   Ver
                 </NavLink>
@@ -139,13 +133,13 @@ const VerticalLayout = ({ children }) => {
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'vehicles' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/vehicles/add" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/vehicles/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiPlus className="nav-icon sub-icon" />
                   Agregar
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/vehicles/view" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/vehicles/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiSearch className="nav-icon sub-icon" />
                   Ver
                 </NavLink>
@@ -160,13 +154,13 @@ const VerticalLayout = ({ children }) => {
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'orders' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/orders/add" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/orders/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiPlus className="nav-icon sub-icon" />
                   Agregar
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/orders/view" className="nav-link text-white" activeClassName="active">
+                <NavLink to="/orders/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                   <BiSearch className="nav-icon sub-icon" />
                   Ver
                 </NavLink>
@@ -174,7 +168,7 @@ const VerticalLayout = ({ children }) => {
             </ul>
           </li>
           <li className="nav-item">
-            <NavLink to="/logout" className="nav-link nav-link-logout text-white" activeclassname="active">
+            <NavLink to="/logout" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiLogOut className="nav-icon" />
               Logout
             </NavLink>
@@ -182,7 +176,7 @@ const VerticalLayout = ({ children }) => {
         </ul>
       </nav>
       <div className="main-content">
-        {children}
+        <Outlet />
         <Footer />
       </div>
     </div>
