@@ -173,9 +173,10 @@ const VerticalLayout = () => {
       </nav>
       <div className="main-content">
         <Outlet />
-        <Footer />
       </div>
+      <Footer />
     </div>
+    
   );
 };
 
