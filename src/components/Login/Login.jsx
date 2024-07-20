@@ -17,7 +17,7 @@ const Login = ({ logo }) => {
       console.log("Token:", token);
       navigate("/home");
     } catch (err) {
-      setError("Credenciales invalidas");
+      setError("Credenciales inválidas");
     }
   };
 

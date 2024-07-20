@@ -47,6 +47,7 @@ const VerticalLayout = () => {
               </li>
             </ul>
           </li>
+
           <li className="nav-item">
             <div className={`nav-link text-white ${activeSubMenu === 'employees' ? 'active' : ''}`} onClick={() => handleSubMenuClick('employees')}>
               <BiGroup className="nav-icon" />
@@ -56,29 +57,24 @@ const VerticalLayout = () => {
             <ul className={`sub-menu ${activeSubMenu === 'employees' ? 'active' : ''}`}>
               <li>
                 <NavLink to="/GestionEmpleados" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiGroup className="nav-icon sub-icon" />
+                  <BiGroup className="nav-icon" />
                   Gestión Empleados
                 </NavLink>
               </li>
             </ul>
           </li>
+
           <li className="nav-item">
             <div className={`nav-link text-white ${activeSubMenu === 'clients' ? 'active' : ''}`} onClick={() => handleSubMenuClick('clients')}>
-              <BiHappy className="nav-icon" />
-              Clients
+              <BiGroup className="nav-icon" />
+              Clientes
               {activeSubMenu === 'clients' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
             </div>
             <ul className={`sub-menu ${activeSubMenu === 'clients' ? 'active' : ''}`}>
               <li>
-                <NavLink to="/clients/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/clients/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
+                <NavLink to="/GestionClientes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <BiGroup className="nav-icon sub-icon" />
+                  Gestión Clientes
                 </NavLink>
               </li>
             </ul>

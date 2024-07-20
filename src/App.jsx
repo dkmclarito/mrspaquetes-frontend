@@ -8,6 +8,8 @@ import AuthService from './services/authService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import GestionEmpleados from './pages/GestionEmpleados';
 import AgregarEmpleado from './pages/AgregarEmpleado';
+import GestionClientes from './pages/GestionClientes';
+import AgregarCliente from './pages/AgregarCliente';
 import VerticalLayout from './components/Layout/VerticalLayout'; 
 
 const App = () => {
@@ -25,6 +27,8 @@ const App = () => {
             <Route path="/home" element={<HomePage />} />
             <Route path="/GestionEmpleados" element={<GestionEmpleados />} />
             <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
+            <Route path="/GestionClientes" element={<GestionClientes />} />
+            <Route path="/AgregarCliente" element={<AgregarCliente />} />
           </Route>
         </Route>
         
