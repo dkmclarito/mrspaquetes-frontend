@@ -8,6 +8,7 @@ import ModalEditarCliente from "../components/Clientes/ModalEditarCliente";
 import ModalConfirmarEliminar from "../components/Clientes/ModalConfirmarEliminar";
 import AuthService from "../services/authService";
 import "../styles/Clientes.css";
+import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,7 +18,7 @@ const TIPO_PERSONA = {
   2: 'Persona Jurídica'
 };
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 const GestionClientes = () => {
   document.title = "Clientes | Mr. Paquetes";
@@ -28,30 +29,32 @@ const GestionClientes = () => {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [clienteAEliminar, setClienteAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = AuthService.getCurrentUser();
-        const { data: clientesData } = await axios.get(`${API_URL}/clientes`, {
+        const response = await axios.get(`${API_URL}/clientes`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
-
-        if (clientesData && Array.isArray(clientesData.data)) {
-          setClientes(clientesData.data);
+  
+        if (response.data && Array.isArray(response.data)) {
+          setClientes(response.data);
+        } else if (response.data && Array.isArray(response.data.data)) {
+          setClientes(response.data.data);
         } else {
-          console.error("Respuesta no válida para clientes:", clientesData);
+          console.error("Respuesta no válida para clientes:", response.data);
         }
       } catch (error) {
         console.error("Error al obtener datos:", error);
       }
     };
-
+  
     fetchData();
-  }, []);
+  }, []);
 
   const eliminarCliente = (idCliente) => {
     setConfirmarEliminar(true);
@@ -119,8 +122,8 @@ const GestionClientes = () => {
   // Obtener los clientes filtrados y paginados
   const clientesFiltrados = filtrarClientes(clientes);
   const paginatedClientes = clientesFiltrados.slice(
-    currentPage * ITEMS_PER_PAGE,
-    (currentPage + 1) * ITEMS_PER_PAGE
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
   );
 
   const totalPages = Math.ceil(clientesFiltrados.length / ITEMS_PER_PAGE);
@@ -166,29 +169,16 @@ const GestionClientes = () => {
         </Row>
         <Row>
           <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
-            <div>
-              <Button
-                disabled={currentPage === 0}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Anterior
-              </Button>
-              {Array.from({ length: totalPages }, (_, index) => (
-                <Button
-                  key={index}
-                  onClick={() => handlePageChange(index)}
-                  style={{ margin: "0 5px", backgroundColor: currentPage === index ? '#007bff' : '#fff', color: currentPage === index ? '#fff' : '#007bff' }}
-                >
-                  {index + 1}
-                </Button>
-              ))}
-              <Button
-                disabled={currentPage >= totalPages - 1}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Siguiente
-              </Button>
-            </div>
+            <Pagination
+              activePage={currentPage}
+              itemsCountPerPage={ITEMS_PER_PAGE}
+              totalItemsCount={clientesFiltrados.length}
+              pageRangeDisplayed={5}
+              onChange={handlePageChange}
+              itemClass="page-item"
+              linkClass="page-link"
+              innerClass="pagination"
+            />
           </Col>
         </Row>
       </Container>

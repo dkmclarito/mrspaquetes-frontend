@@ -20,11 +20,11 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
             <th>ID</th>
             <th>Nombre</th>
             <th>Apellido</th>
+            <th>Tipo de Persona</th>
             <th>Email</th>
             <th>DUI</th>
             <th>Teléfono</th>
             <th>Fecha de Registro</th>
-            <th>Tipo de Persona</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -35,11 +35,11 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
                 <td>{cliente.id}</td>
                 <td>{cliente.nombre}</td>
                 <td>{cliente.apellido}</td>
+                <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
                 <td>{cliente.email}</td>
                 <td>{cliente.dui}</td>
                 <td>{cliente.telefono}</td>
                 <td>{cliente.fecha_registro}</td>
-                <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
                 <td>
                   <div className="button-container">
                     <Button
