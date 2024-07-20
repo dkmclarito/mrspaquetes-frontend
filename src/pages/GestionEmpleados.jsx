@@ -135,13 +135,17 @@ const GestionEmpleados = () => {
 
   const obtenerNombreCargo = (id) => {
     const cargo = cargos.find(cargo => cargo.id === id);
-    return cargo ? cargo.nombre : 'Desconocido';
+    return cargo ? cargo.nombre : '';
   };
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Empleados" breadcrumbItem="Listado" />
+      <Breadcrumbs 
+          title="Listado de Empleados"
+          mainMenu="Empleados"
+          breadcrumbItem="Gestión de Empleados"
+        />
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
@@ -152,7 +156,7 @@ const GestionEmpleados = () => {
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar por nombre, apellido o cargo"
-                style={{ width: "300px" }} // Ajusta el ancho del input aquí
+                style={{ width: "300px" }} 
               />
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarEmpleado" className="btn btn-primary custom-button">

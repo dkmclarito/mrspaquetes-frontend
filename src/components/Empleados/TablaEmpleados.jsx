@@ -8,7 +8,7 @@ import "/src/styles/Empleados.css";
 const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar }) => {
   const obtenerNombreCargo = (id) => {
     const cargo = cargos.find(cargo => cargo.id === id);
-    return cargo ? cargo.nombre : 'Desconocido';
+    return cargo ? cargo.nombre : '';
   };
 
   return (
@@ -62,7 +62,7 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
 
 TablaEmpleados.propTypes = {
   empleados: PropTypes.array.isRequired,
-  cargos: PropTypes.array.isRequired, // Agregar validación para cargos
+  cargos: PropTypes.array.isRequired, 
   eliminarEmpleado: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
 };

@@ -9,6 +9,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import GestionEmpleados from './pages/GestionEmpleados';
 import AgregarEmpleado from './pages/AgregarEmpleado';
 import VerticalLayout from './components/Layout/VerticalLayout'; 
+import 'react-toastify/dist/ReactToastify.css'; 
+import { ToastContainer } from 'react-toastify';  
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
