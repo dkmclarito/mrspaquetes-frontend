@@ -1,24 +1,44 @@
-/* General Styles */
+/* VerticalLayout.css */
+
+/* Estilos generales */
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  background-color: #f8f9fa; /* Fondo general más claro */
+  background-color: #f8f9fa;
 }
 
-.logo-img {
-  width: 150px;
-  height: auto;
-  margin: 20px auto; /* Centra el logo */
-  display: block;
-}
-
-/* Vertical Layout */
+/* Diseño Vertical */
 .vertical-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh; /* Altura de la ventana del navegador */
+  transition: margin-left 0.3s ease;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #121621; /* Color de fondo del header */
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 220px; /* Alinea el header con el menú */
+  width: calc(100% - 220px); /* Ajusta el ancho del header según el menú */
+  z-index: 1000; /* Asegura que el header esté por encima de otros contenidos */
+  transition: width 0.3s ease, left 0.3s ease; /* Transiciones suaves */
+}
+
+/* Ajustes cuando el menú está oculto */
+.vertical-layout.menu-hidden .header {
+  width: 100%;
+  left: 0;
 }
 
 .vertical-nav {
@@ -28,28 +48,54 @@ body {
   top: 0;
   left: 0;
   overflow-y: auto;
-  background-color: #2c3e50; /* Color de fondo más oscuro y elegante */
+  background-color: #121621;
   color: white;
-  padding-top: 20px; /* Añade espacio en la parte superior */
+  padding-top: 20px;
+  border-right: 1px solid #212636;
+  transition: transform 0.3s ease;
+}
+
+.vertical-nav.menu-hidden {
+  transform: translateX(-100%);
+}
+
+.logo-img {
+  width: 150px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 .vertical-nav .nav-link {
+  position: relative;
   padding: 12px 20px;
-  color: #ecf0f1; /* Texto más claro */
+  color: #b3b9c6;
   text-decoration: none;
-  font-size: 0.9em; /* Tamaño de fuente más pequeño */
-  transition: background-color 0.3s, color 0.3s; /* Transiciones suaves */
+  font-size: 0.9em;
+  transition: background-color 0.3s, color 0.3s;
+  border-radius: 4px;
+  margin: 5px 10px;
 }
 
 .vertical-nav .nav-link.active {
-  background-color: #365063;
+  background-color: #212636;
   font-weight: bold;
   color: white;
 }
 
+.vertical-nav .nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #04aad6;
+}
+
 .vertical-nav .nav-link:hover {
-  background-color: #34495e;  
-  color: #ecf0f1;
+  background-color: #212636;
+  color: white;
 }
 
 .nav-icon {
@@ -65,7 +111,7 @@ body {
 
 .sub-menu.active {
   display: block;
-  margin-left: 20px; /* Ajusta el margen izquierdo para alinear con el elemento padre */
+  margin-left: 20px;
 }
 
 .sub-menu li {
@@ -74,82 +120,49 @@ body {
 
 .sub-menu .nav-link {
   padding: 8px 20px;
-  font-size: 0.85em; /* Tamaño de fuente más pequeño */
-  text-indent: -10px; /* Ajusta el indentado para mover las letras a la izquierda */
-  display: inline-block; /* Asegura que todo el contenido esté en una sola línea */
+  font-size: 0.85em;
+  text-indent: -10px;
+  display: inline-block;
 }
 
 .sub-menu .nav-link:hover {
-  background-color: #34495e;
-  color: #ecf0f1;
+  background-color: #212636;
+  color: white;
 }
 
-.sub-icon {
-  margin-left: auto; /* Alinea el ícono a la derecha */
-}
-
-/* Main Content */
+/* Contenido Principal */
 .main-content {
-  margin-left: 220px; /* Margen igual al ancho de la barra lateral */
+  margin-left: 220px;
   padding: 20px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  margin-top: 45px;
   background-color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera para separar el contenido */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: margin-left 0.3s ease;
 }
 
+
+
+/* Ajuste del contenido cuando el menú está oculto */
+.vertical-layout.menu-hidden .main-content {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Pie de página */
 .footer {
-  background-color: #2c3e50;
+  background-color: #121621;
   color: white;
   padding: 15px 20px;
   text-align: center;
-  margin-top: auto; /* Empuja el footer al final */
-  width: calc(100% - 220px); /* Ocupa todo el ancho menos la barra lateral */
-  margin-left: 220px; /* Alinea con la barra lateral */
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Sombra ligera para separación */
+  margin-top: auto;
+  width: calc(100% - 220px);
+  margin-left: 220px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Additional Styles for Elegance */
-.vertical-nav {
-  border-right: 1px solid #34495e; /* Añade una línea de separación */
-}
-
-.vertical-nav .nav-link {
-  border-radius: 4px; /* Bordes redondeados */
-  margin: 5px 10px; /* Espaciado entre enlaces */
-}
-
-.vertical-nav .nav-link.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
- 
-}
-
-.vertical-nav .nav-link.active:hover {
-  background-color: #6a9cbd;
-}
-
-/* VerticalLayout.css */
+/* Estilos adicionales para elegancia */
 html, body {
   height: 100%;
   margin: 0;
-}
-
-.vertical-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh; /* Altura de la ventana del navegador */
-}
-
-.main-content {
-  flex: 1; /* Permite que este div ocupe el espacio restante */
-}
-
-.footer {
-  margin-top: auto; /* Empuja el footer al final del contenedor */
 }
