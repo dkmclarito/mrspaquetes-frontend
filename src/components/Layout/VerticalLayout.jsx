@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Footer from './Footer';
-import Header from './Header'; // Importa el Header
+import Header from './Header';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';

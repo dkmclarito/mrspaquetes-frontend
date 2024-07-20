@@ -1,17 +1,15 @@
-/* Header.css */
-
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
-  background-color: #121621; /* Color de fondo del header */
+  background-color: #121621;
   color: white;
   position: fixed;
   top: 0;
-  left: 220px; /* Ajusta según el ancho del menú lateral */
-  width: calc(100% - 220px); /* Ajusta el ancho */
-  z-index: 1000; /* Asegura que el header esté por encima de otros contenidos */
+  left: 220px; 
+  width: calc(100% - 220px);
+  z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: width 0.3s ease, left 0.3s ease;
 }
