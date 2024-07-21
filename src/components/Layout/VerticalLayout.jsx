@@ -1,184 +1,83 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Footer from './Footer';
+import Header from './Header';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
-import { BiHome, BiLogOut, BiUser, BiPlus, BiSearch, BiGroup, BiHappy, BiPackage, BiDirections, BiCar, BiShoppingBag } from 'react-icons/bi';
+import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag } from 'react-icons/bi';
 import logoImage from "../../assets/images/logo-dark.png";
 
 const VerticalLayout = () => {
-  const [activeSubMenu, setActiveSubMenu] = useState(null);
-
-  const handleSubMenuClick = (subMenuName) => {
-    setActiveSubMenu(activeSubMenu === subMenuName ? null : subMenuName);
-  };
-
   return (
     <div className="d-flex vertical-layout">
-      <nav className="vertical-nav bg-dark text-white">
-        <div className="header p-3">
+      <Header />
+      <nav className="vertical-nav fondo text-white">
+      
+        <div className=" p-3">
           <img src={logoImage} alt="Logo" className="logo-img" />
         </div>
         <ul className="nav flex-column">
           <li className="nav-item">
             <NavLink to="/home" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiHome className="nav-icon" />
-              Home
+              Inicio
             </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'users' ? 'active' : ''}`} onClick={() => handleSubMenuClick('users')}>
+            <NavLink to="/GestionUsuarios" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiUser className="nav-icon" />
-              Users
-              {activeSubMenu === 'users' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'users' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/users/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/users/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
-                </NavLink>
-              </li>
-            </ul>
+              Usuarios
+            </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'employees' ? 'active' : ''}`} onClick={() => handleSubMenuClick('employees')}>
+            <NavLink to="/GestionEmpleados" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiGroup className="nav-icon" />
               Empleados
-              {activeSubMenu === 'employees' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'employees' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/GestionEmpleados" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiGroup className="nav-icon sub-icon" />
-                  Gestión Empleados
-                </NavLink>
-              </li>
-            </ul>
+            </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'clients' ? 'active' : ''}`} onClick={() => handleSubMenuClick('clients')}>
-              <BiHappy className="nav-icon" />
-              Clients
-              {activeSubMenu === 'clients' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'clients' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/clients/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/clients/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
-                </NavLink>
-              </li>
-            </ul>
+            <NavLink to="/GestionClientes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+              <BiGroup className="nav-icon" />
+              Clientes
+            </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'packages' ? 'active' : ''}`} onClick={() => handleSubMenuClick('packages')}>
+            <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiPackage className="nav-icon" />
-              Packages
-              {activeSubMenu === 'packages' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'packages' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/packages/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/packages/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
-                </NavLink>
-              </li>
-            </ul>
+              Paquetes
+            </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'routes' ? 'active' : ''}`} onClick={() => handleSubMenuClick('routes')}>
+            <NavLink to="/rutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiDirections className="nav-icon" />
-              Routes
-              {activeSubMenu === 'routes' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'routes' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/routes/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/routes/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
-                </NavLink>
-              </li>
-            </ul>
+              Rutas
+            </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'vehicles' ? 'active' : ''}`} onClick={() => handleSubMenuClick('vehicles')}>
+            <NavLink to="/vehiculos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiCar className="nav-icon" />
-              Vehicles
-              {activeSubMenu === 'vehicles' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'vehicles' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/vehicles/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/vehicles/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
-                </NavLink>
-              </li>
-            </ul>
+              Vehículos
+            </NavLink>
           </li>
           <li className="nav-item">
-            <div className={`nav-link text-white ${activeSubMenu === 'orders' ? 'active' : ''}`} onClick={() => handleSubMenuClick('orders')}>
+            <NavLink to="/historial" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               <BiShoppingBag className="nav-icon" />
-              Orders              
-              {activeSubMenu === 'orders' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
-            </div>
-            <ul className={`sub-menu ${activeSubMenu === 'orders' ? 'active' : ''}`}>
-              <li>
-                <NavLink to="/orders/add" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiPlus className="nav-icon sub-icon" />
-                  Agregar
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/orders/view" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                  <BiSearch className="nav-icon sub-icon" />
-                  Ver
-                </NavLink>
-              </li>
-            </ul>
+              Historial
+            </NavLink>
           </li>
-          <li className="nav-item">
-            <NavLink to="/logout" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+          <li className="nav-item mt-auto">
+            <NavLink to="/logout" className="nav-link">
               <BiLogOut className="nav-icon" />
               Logout
             </NavLink>
           </li>
         </ul>
       </nav>
-      <div className="main-content">
+      <div className="main-content p-4">
         <Outlet />
-        <Footer />
       </div>
+      <Footer />
     </div>
   );
 };

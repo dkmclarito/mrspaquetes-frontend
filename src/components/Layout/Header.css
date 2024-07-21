@@ -1,0 +1,33 @@
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #121621;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 220px; 
+  width: calc(100% - 220px);
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: width 0.3s ease, left 0.3s ease;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.header-icon {
+  margin-left: 20px;
+  font-size: 20px;
+}
