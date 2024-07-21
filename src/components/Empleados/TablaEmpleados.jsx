@@ -27,8 +27,8 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
           </tr>
         </thead>
         <tbody>
-          {empleados.map(empleado => (
-            <tr key={empleado.id}>
+          {empleados.map((empleado,index) => (
+            <tr key={index}>
               <td>{empleado.id}</td>
               <td>{empleado.nombres}</td>
               <td>{empleado.apellidos}</td>

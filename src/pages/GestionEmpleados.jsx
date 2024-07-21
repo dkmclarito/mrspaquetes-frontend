@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
+import axios from "axios";
+import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
 import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaEmpleados from "../components/Empleados/TablaEmpleados";
@@ -7,6 +8,10 @@ import ModalEditarEmpleado from "../components/Empleados/ModalEditarEmpleado";
 import ModalConfirmarEliminar from "../components/Empleados/ModalConfirmarEliminar";
 import AuthService from "../services/authService";
 import "../styles/Empleados.css";
+import Pagination from 'react-js-pagination';
+
+const API_URL = import.meta.env.VITE_API_URL;
+const ITEMS_PER_PAGE = 8;
 
 const GestionEmpleados = () => {
   document.title = "Empleados | Mr. Paquetes";
@@ -18,74 +23,83 @@ const GestionEmpleados = () => {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [empleadoAEliminar, setEmpleadoAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Define fetchData aquí
+  const fetchData = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const empleadosResponse = await axios.get(`${API_URL}/empleados`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (empleadosResponse.data && Array.isArray(empleadosResponse.data.empleados)) {
+        setEmpleados(empleadosResponse.data.empleados);
+      } else {
+        console.error("Respuesta no válida para empleados:", empleadosResponse.data);
+      }
+
+      const cargosResponse = await axios.get(`${API_URL}/dropdown/get_cargos`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (cargosResponse.data && Array.isArray(cargosResponse.data.cargos)) {
+        setCargos(cargosResponse.data.cargos);
+      } else {
+        console.error("Respuesta no válida para cargos:", cargosResponse.data);
+      }
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
-
-        // Fetch empleados
-        const empleadosResponse = await fetch("http://127.0.0.1:8000/api/empleados", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const empleadosData = await empleadosResponse.json();
-        if (empleadosData.hasOwnProperty('empleados') && Array.isArray(empleadosData.empleados)) {
-          setEmpleados(empleadosData.empleados);
-        } else {
-          console.error("Respuesta no válida para empleados:", empleadosData);
-        }
-
-        // Fetch cargos
-        const cargosResponse = await fetch("http://127.0.0.1:8000/api/dropdown/get_cargos", {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const cargosData = await cargosResponse.json();
-        if (cargosData.hasOwnProperty('cargos') && Array.isArray(cargosData.cargos)) {
-          setCargos(cargosData.cargos);
-        } else {
-          console.error("Respuesta no válida para cargos:", cargosData);
-        }
-      } catch (error) {
-        console.error("Error al obtener datos:", error);
-      }
-    };
-
     fetchData();
   }, []);
 
-  const eliminarEmpleado = async (idEmpleado) => {
+  const guardarCambiosEmpleado = async () => {
     try {
-      setConfirmarEliminar(true);
-      setEmpleadoAEliminar(idEmpleado);
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${API_URL}/empleados/${empleadoEditado.id}`,
+        empleadoEditado,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      console.log('Empleado actualizado:', response.data);
+      fetchData(); // Actualiza los datos después de guardar los cambios
+      setModalEditar(false); // Cierra el modal
     } catch (error) {
-      console.error("Error al eliminar empleado:", error);
+      console.error('Error al actualizar empleado:', error);
     }
+  };
+
+  const eliminarEmpleado = (idEmpleado) => {
+    setConfirmarEliminar(true);
+    setEmpleadoAEliminar(idEmpleado);
   };
 
   const confirmarEliminarEmpleado = async () => {
     try {
       const token = AuthService.getCurrentUser();
-      const response = await fetch(`http://127.0.0.1:8000/api/empleados/${empleadoAEliminar}`, {
-        method: "DELETE",
+      await axios.delete(`${API_URL}/empleados/${empleadoAEliminar}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-      if (response.ok) {
-        const nuevosEmpleados = empleados.filter(empleado => empleado.id !== empleadoAEliminar);
-        setEmpleados(nuevosEmpleados);
-      } else {
-        console.error("Error al eliminar empleado:", response.statusText);
-      }
+
+      const nuevosEmpleados = empleados.filter(empleado => empleado.id !== empleadoAEliminar);
+      setEmpleados(nuevosEmpleados);
     } catch (error) {
       console.error("Error al eliminar empleado:", error);
     } finally {
       setConfirmarEliminar(false);
-      setEmpleadoAEliminar(null);
     }
   };
 
@@ -94,40 +108,11 @@ const GestionEmpleados = () => {
     setModalEditar(!modalEditar);
   };
 
-  const guardarCambiosEmpleado = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      const response = await fetch(`http://127.0.0.1:8000/api/empleados/${empleadoEditado.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(empleadoEditado)
-      });
-      if (response.ok) {
-        const nuevosEmpleados = empleados.map(empleado => {
-          if (empleado.id === empleadoEditado.id) {
-            return empleadoEditado;
-          }
-          return empleado;
-        });
-        setEmpleados(nuevosEmpleados);
-        setModalEditar(false);
-        setEmpleadoEditado(null);
-      } else {
-        console.error("Error al actualizar empleado:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Error al actualizar empleado:", error);
-    }
-  };
-
   const filtrarEmpleados = (empleados) => {
     if (!busqueda) return empleados;
 
     const busquedaLower = busqueda.toLowerCase();
-    return empleados.filter(empleado => 
+    return empleados.filter(empleado =>
       `${empleado.nombres} ${empleado.apellidos}`.toLowerCase().includes(busquedaLower) ||
       obtenerNombreCargo(empleado.id_cargo).toLowerCase().includes(busquedaLower)
     );
@@ -138,14 +123,20 @@ const GestionEmpleados = () => {
     return cargo ? cargo.nombre : '';
   };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const empleadosFiltrados = filtrarEmpleados(empleados);
+  const paginatedEmpleados = empleadosFiltrados.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="page-content">
       <Container fluid>
-      <Breadcrumbs 
-          title="Listado de Empleados"
-          mainMenu="Empleados"
-          breadcrumbItem="Gestión de Empleados"
-        />
+        <Breadcrumbs title="Gestión de Empleados" breadcrumbItem="Listado de Empleados" />
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
@@ -156,7 +147,7 @@ const GestionEmpleados = () => {
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
                 placeholder="Buscar por nombre, apellido o cargo"
-                style={{ width: "300px" }} 
+                style={{ width: "300px" }}
               />
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarEmpleado" className="btn btn-primary custom-button">
@@ -172,7 +163,7 @@ const GestionEmpleados = () => {
             <Card>
               <CardBody>
                 <TablaEmpleados
-                  empleados={filtrarEmpleados(empleados)}
+                  empleados={paginatedEmpleados}
                   cargos={cargos}
                   eliminarEmpleado={eliminarEmpleado}
                   toggleModalEditar={toggleModalEditar}
@@ -181,14 +172,31 @@ const GestionEmpleados = () => {
             </Card>
           </Col>
         </Row>
+        <Row>
+          <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
+            <Pagination
+              activePage={currentPage}
+              itemsCountPerPage={ITEMS_PER_PAGE}
+              totalItemsCount={empleadosFiltrados.length}
+              pageRangeDisplayed={5}
+              onChange={handlePageChange}
+              itemClass="page-item"
+              linkClass="page-link"
+              innerClass="pagination"
+            />
+          </Col>
+        </Row>
       </Container>
+      
       <ModalEditarEmpleado
         modalEditar={modalEditar}
         empleadoEditado={empleadoEditado}
         setEmpleadoEditado={setEmpleadoEditado}
         guardarCambiosEmpleado={guardarCambiosEmpleado}
         setModalEditar={setModalEditar}
+        cargos={cargos}
       />
+      
       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarEmpleado={confirmarEliminarEmpleado}

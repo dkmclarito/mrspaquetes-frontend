@@ -198,7 +198,7 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-      return; // Salir de la función si el teléfono no es válido
+      return; 
     }
   
     // Validar el DUI
@@ -211,7 +211,7 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-      return; // Salir de la función si el DUI no es válido
+      return; 
     }
   
     try {
@@ -242,9 +242,8 @@ const AgregarEmpleado = () => {
       });
   
       setTimeout(() => {
-        navigate("/GestionEmpleados"); // Redirige a la página de gestión de empleados
-      }, 2000); // Espera 2 segundos antes de redirigir
-  
+        navigate("/GestionEmpleados"); 
+      }, 2000);  
       // Resetear el formulario
       setNombres("");
       setApellidos("");
@@ -291,7 +290,7 @@ const AgregarEmpleado = () => {
   
   return (
     <Container fluid>
-      <Breadcrumbs title="Agregar Empleado" breadcrumbItem="Agregar" />
+      <Breadcrumbs title="Formulario de Registro de Empleados" breadcrumbItem="Ingrese la información" />
       <Row>
         <Col>
           <Card>

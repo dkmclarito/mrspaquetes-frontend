@@ -1,28 +1,25 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
+import React from 'react';
+import { Modal, Button } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css'; 
+import "/src/styles/Empleados.css";
 
 const ModalConfirmarEliminar = ({
   confirmarEliminar,
   confirmarEliminarEmpleado,
   setConfirmarEliminar
 }) => (
-  <Modal isOpen={confirmarEliminar} toggle={() => setConfirmarEliminar(false)}>
-    <ModalHeader toggle={() => setConfirmarEliminar(false)}>Confirmar Eliminación</ModalHeader>
-    <ModalBody>
+  <Modal show={confirmarEliminar} onHide={() => setConfirmarEliminar(false)} className="modal-confirmar-eliminar">
+    <Modal.Header closeButton>
+      <Modal.Title>Confirmar Eliminación</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
       ¿Estás seguro de que deseas eliminar este empleado?
-    </ModalBody>
-    <ModalFooter>
-      <Button color="danger" onClick={confirmarEliminarEmpleado}>Eliminar</Button>
-      <Button color="secondary" onClick={() => setConfirmarEliminar(false)}>Cancelar</Button>
-    </ModalFooter>
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="danger" onClick={confirmarEliminarEmpleado} className="btn-eliminar">Eliminar</Button>
+      <Button variant="secondary" onClick={() => setConfirmarEliminar(false)} className="btn-cancelar">Cancelar</Button>
+    </Modal.Footer>
   </Modal>
 );
-
-ModalConfirmarEliminar.propTypes = {
-  confirmarEliminar: PropTypes.bool.isRequired,
-  confirmarEliminarEmpleado: PropTypes.func.isRequired,
-  setConfirmarEliminar: PropTypes.func.isRequired,
-};
 
 export default ModalConfirmarEliminar;
