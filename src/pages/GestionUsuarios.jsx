@@ -80,26 +80,31 @@ const GestionUsuarios = () => {
     setModalEditar(!modalEditar);
   };
 
-  const guardarCambiosUsuario = async () => {
+  const guardarCambiosUsuario = async (usuarioActualizado) => {
     try {
       const token = AuthService.getCurrentUser();
-      await axios.put(`${API_URL}/auth/update/${usuarioEditado.id}`, usuarioEditado, {
+      const response = await axios.put(`${API_URL}/auth/update/${usuarioActualizado.id}`, usuarioActualizado, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         }
       });
-
-      const nuevosUsuarios = usuarios.map(usuario =>
-        usuario.id === usuarioEditado.id ? usuarioEditado : usuario
-      );
-      setUsuarios(nuevosUsuarios);
-      setModalEditar(false);
-      setUsuarioEditado(null);
+  
+      if (response.status === 200) {
+        setUsuarios((prevUsuarios) => prevUsuarios.map(usuario =>
+          usuario.id === usuarioActualizado.id ? usuarioActualizado : usuario
+        ));
+        setModalEditar(false);
+        setUsuarioEditado(null);
+      } else {
+        console.error("Error al actualizar usuario:", response.statusText);
+      }
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
     }
   };
+  
+  
 
   const filtrarUsuarios = (usuarios) => {
     if (!busqueda) return usuarios;
