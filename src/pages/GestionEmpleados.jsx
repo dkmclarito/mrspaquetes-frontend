@@ -136,7 +136,7 @@ const GestionEmpleados = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Empleados" breadcrumbItem="Listado de Empleados" />
+        <Breadcrumbs title="Gestión de Empleados " breadcrumbItem="Listado de Empleados" />
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
