@@ -5,11 +5,12 @@ import { Link } from 'react-router-dom';
 import "../styles/usuarios.css";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const AgregarUsuario = () => {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState(1); // Default to 'active'
   const [alertaExito, setAlertaExito] = useState(false);
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
@@ -23,20 +24,19 @@ const AgregarUsuario = () => {
       name: nombre,
       email: email,
       password: password,
-      status: status,
     };
 
-    fetch("http://127.0.0.1:8000/api/register", {
+    fetch(`${API_URL}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Uso de backticks para template literal
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(usuarioData),
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`Error HTTP ${response.status} - ${response.statusText}`); // Uso de backticks para template literal
+          throw new Error(`Error HTTP ${response.status} - ${response.statusText}`); 
         }
         return response.json();
       })
@@ -45,7 +45,6 @@ const AgregarUsuario = () => {
         setNombre("");
         setEmail("");
         setPassword("");
-        setStatus(1); // Reset to default 'active'
         setAlertaError(false);
       })
       .catch((error) => {
@@ -100,21 +99,6 @@ const AgregarUsuario = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-                  </FormGroup>
-                </Col>
-                <Col md="6">
-                  <FormGroup>
-                    <Label for="status">Estado</Label>
-                    <Input
-                      type="select"
-                      id="status"
-                      value={status}
-                      onChange={(e) => setStatus(Number(e.target.value))}
-                      required
-                    >
-                      <option value={1}>Activo</option>
-                      <option value={0}>Inactivo</option>
-                    </Input>
                   </FormGroup>
                 </Col>
                 <Col md="12">
