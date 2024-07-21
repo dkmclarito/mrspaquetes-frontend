@@ -10,6 +10,8 @@ import GestionEmpleados from './pages/GestionEmpleados';
 import AgregarEmpleado from './pages/AgregarEmpleado';
 import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
+import GestionUsuarios from './pages/GestionUsuarios';
+import AgregarUsuario from './pages/AgregarUsuario';
 import VerticalLayout from './components/Layout/VerticalLayout'; 
 import 'react-toastify/dist/ReactToastify.css'; 
 import { ToastContainer } from 'react-toastify';  
@@ -31,6 +33,9 @@ const App = () => {
             <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
             <Route path="/GestionClientes" element={<GestionClientes />} />
             <Route path="/AgregarCliente" element={<AgregarCliente />} />
+
+            <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
+            <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
           </Route>
         </Route>
         
