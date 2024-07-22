@@ -31,3 +31,8 @@
   margin-left: 20px;
   font-size: 20px;
 }
+
+/* Espacio entre BiLogOut y DarkModeSwitch */
+.header-icon:last-of-type {
+  margin-right: 20px; 
+}
