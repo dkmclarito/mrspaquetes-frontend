@@ -1,20 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Footer from './Footer';
 import Header from './Header';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
 import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag } from 'react-icons/bi';
 import logoImage from "../../assets/images/logo-dark.png";
 
 const VerticalLayout = () => {
+  const [darkMode, setDarkMode] = useState(false);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
   return (
-    <div className="d-flex vertical-layout">
-      <Header />
+    <div className={`d-flex vertical-layout ${darkMode ? 'dark-mode' : ''}`}>
+      <Header toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
       <nav className="vertical-nav fondo text-white">
-      
-        <div className=" p-3">
+        <div className="p-3">
           <img src={logoImage} alt="Logo" className="logo-img" />
         </div>
         <ul className="nav flex-column">

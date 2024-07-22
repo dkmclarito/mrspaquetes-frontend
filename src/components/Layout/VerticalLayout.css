@@ -123,7 +123,6 @@ body {
 }
 
 
-
 /* Ajuste del contenido cuando el menú está oculto */
 .vertical-layout.menu-hidden .main-content {
   margin-left: 0;
@@ -144,4 +143,196 @@ body {
 html, body {
   height: 100%;
   margin: 0;
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.dark-mode .vertical-nav {
+  background-color: #333;
+}
+
+.dark-mode .nav-link {
+  color: #ffffff;
+}
+
+.dark-mode .nav-link.active {
+  color: #bb86fc;
+}
+
+.dark-mode .header-container {
+  background-color: #333;
+}
+
+.dark-mode .theme-toggle-button {
+  color: #bb86fc;
+}
+
+.dark-mode .main-content {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.dark-mode .footer {
+  background-color: #333;
+  color: #e0e0e0;
+}
+
+/* Estilos para las Tablas */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1em;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+/* Estilos del Modo Oscuro para las Tablas */
+.dark-mode .table {
+  background-color: #333;
+  color: #ffffff;
+  border-color: #555;
+}
+
+.dark-mode .table th {
+  background-color: #444;
+}
+
+.dark-mode .table td {
+  background-color: #555;
+}
+
+/* Estilos del Modo Oscuro para .card */
+.dark-mode .card {
+  background-color: #2b2b2b;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+.dark-mode .card-header {
+  background-color: #333;
+  border-bottom: 1px solid #444;
+}
+
+.dark-mode .card-body {
+  background-color: #2b2b2b;
+}
+
+.dark-mode .card-footer {
+  background-color: #333;
+  border-top: 1px solid #444;
+}
+
+/* Estilos opcionales para mejorar la apariencia de las tarjetas en modo oscuro */
+.dark-mode .card-title {
+  color: #ffffff;
+}
+
+.dark-mode .card-text {
+  color: #b3b9c6;
+}
+
+/* Estilos predeterminados para el PageTitleBox */
+.page-title-box {
+  background-color: #ffffff; /* Color de fondo claro por defecto */
+  color: #333333; /* Color de texto claro por defecto */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 2em;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1.2em;
+  color: #666666;
+}
+
+/* Estilos del Modo Oscuro para PageTitleBox */
+.dark-mode .page-title-box {
+  background-color: #1e1e1e; /* Color de fondo oscuro */
+  color: #f1f1f1; /* Color de texto claro */
+}
+
+.dark-mode .page-title {
+  color: #ffffff; /* Color del título en modo oscuro */
+}
+
+.dark-mode .page-subtitle {
+  color: #bbbbbb; /* Color del subtítulo en modo oscuro */
+}
+
+
+/* PAGINADOR */
+.dark-mode .pagination {
+  background-color: #1e1e1e; /* Fondo oscuro para la paginación */
+  color: #fff; /* Color de texto claro */
+}
+
+.dark-mode .page-item {
+  background-color: #444; /* Fondo oscuro para los ítems de la página */
+}
+
+.dark-mode .page-link {
+  color: #000000; /* Color de enlace claro */
+}
+
+.dark-mode .page-link:hover {
+  background-color: #555; /* Fondo de enlace al pasar el ratón */
+}
+
+.dark-mode .page-item.active .page-link {
+  background-color: #555; /* Fondo activo de la página */
+  border-color: #555; /* Borde del ítem activo */
+}
+
+
+/* BUSACDOR */
+.dark-mode .input-dark {
+  background-color: #444; /* Fondo oscuro para el input */
+  color: #444444; /* Color del texto claro */
+  border: 1px solid #555; /* Borde del input en modo oscuro */
+}
+
+.dark-mode .input-dark::placeholder {
+  color: #888; /* Color del placeholder en modo oscuro */
+}
+
+
+.modal-content {
+  background-color: #777777;
+  color: #fff;
+}
+
+.modal .btn-secondary {
+  background-color: #1645a9;
+  border-color: #555;
+}
+
+.modal .btn-secondary:hover {
+  background-color: #3c6bd2;
+  border-color: #666;
+}
+
+.modal .btn-primary {
+  background-color: #0da83e;
+  border-color: #555;
+}
+
+.modal .btn-primary:hover {
+  background-color: #1e8043;
+  border-color: #666;
 }

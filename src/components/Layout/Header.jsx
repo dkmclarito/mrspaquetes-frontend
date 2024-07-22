@@ -1,8 +1,9 @@
 import React from 'react';
 import { BiMenu, BiUser, BiLogOut } from 'react-icons/bi';
+import DarkModeSwitch from './DarkModeSwitch';
 import './Header.css';
 
-const Header = ({ onToggleMenu, menuVisible }) => {
+const Header = ({ onToggleMenu, menuVisible, toggleDarkMode, darkMode }) => {
   const handleMenuToggle = () => {
     if (onToggleMenu) {
       onToggleMenu(!menuVisible);
@@ -15,8 +16,10 @@ const Header = ({ onToggleMenu, menuVisible }) => {
         <BiMenu />
       </button>
       <div className="header-right">
+      
         <BiUser className="header-icon" />
         <BiLogOut className="header-icon" />
+        <DarkModeSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       </div>
     </header>
   );
