@@ -36,3 +36,7 @@
 .header-icon:last-of-type {
   margin-right: 20px; 
 }
+
+.oculto{
+  border: 0px;
+}

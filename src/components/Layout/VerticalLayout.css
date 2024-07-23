@@ -7,6 +7,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #f8f9fa;
+  overflow-y: auto !important;
 }
 
 .vertical-layout {
@@ -14,31 +15,43 @@ body {
   flex-direction: column;
   height: 100vh; 
   transition: margin-left 0.3s ease;
+  position: relative;
 }
 
-
+/*
 .vertical-layout.menu-hidden .header {
   width: 100%;
   left: 0;
 }
+  */
 
-.vertical-nav {
-  width: 220px;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  overflow-y: auto;
-  background-color: #121621;
-  color: white;
-  padding-top: 20px;
-  border-right: 1px solid #212636;
-  transition: transform 0.3s ease;
-}
+  .vertical-nav {
+    width: 220px;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    background-color: #121621;
+    color: white;
+    padding-top: 20px;
+    border-right: 1px solid #212636;
+    transition: transform 0.3s ease;
+    scrollbar-width: none; 
+    padding-right: 0px; 
+  }
+  
+  /* Oculta la barra de desplazamiento en WebKit/Blink navegadores */
+  .vertical-nav::-webkit-scrollbar {
+    width: 0; 
+    background: transparent; 
+  }
 
+/*
 .vertical-nav.menu-hidden {
   transform: translateX(-100%);
 }
+  */
 
 .logo-img {
   width: 150px;
@@ -83,6 +96,7 @@ body {
   margin-right: 10px;
 }
 
+/*
 .sub-menu {
   display: none;
   list-style-type: none;
@@ -151,9 +165,15 @@ html, body {
   color: #ffffff;
 }
 
+.dark-mode p {
+  color: #bfbdbd;
+}
+
+/*
 .dark-mode .vertical-nav {
   background-color: #333;
 }
+*/
 
 .dark-mode .nav-link {
   color: #ffffff;
@@ -163,9 +183,11 @@ html, body {
   color: #bb86fc;
 }
 
+/*
 .dark-mode .header-container {
   background-color: #333;
 }
+*/
 
 .dark-mode .theme-toggle-button {
   color: #bb86fc;
@@ -176,10 +198,12 @@ html, body {
   color: #e0e0e0;
 }
 
+/*
 .dark-mode .footer {
   background-color: #333;
   color: #e0e0e0;
 }
+*/
 
 /* Estilos para las Tablas */
 .table {
@@ -205,10 +229,12 @@ html, body {
 
 .dark-mode .table th {
   background-color: #444;
+  
 }
 
 .dark-mode .table td {
   background-color: #555;
+  color:  #ffffff;
 }
 
 /* Estilos del Modo Oscuro para .card */
@@ -232,6 +258,26 @@ html, body {
   border-top: 1px solid #444;
 }
 
+.dark-mode .card-body input{
+  background-color: #444;
+  color: white;
+}
+
+.dark-mode .card-body select{
+  background-color: #444;
+  color: white;
+}
+
+.dark-mode .card-body select option {
+  background-color: #444;
+  color: white;
+}
+
+.dark-mode .card-body span{
+  background-color: #444;
+  color: white;
+}
+
 /* Estilos opcionales para mejorar la apariencia de las tarjetas en modo oscuro */
 .dark-mode .card-title {
   color: #ffffff;
@@ -243,8 +289,8 @@ html, body {
 
 /* Estilos predeterminados para el PageTitleBox */
 .page-title-box {
-  background-color: #ffffff; /* Color de fondo claro por defecto */
-  color: #333333; /* Color de texto claro por defecto */
+  background-color: #ffffff; 
+  color: #333333; 
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -263,59 +309,75 @@ html, body {
 
 /* Estilos del Modo Oscuro para PageTitleBox */
 .dark-mode .page-title-box {
-  background-color: #1e1e1e; /* Color de fondo oscuro */
-  color: #f1f1f1; /* Color de texto claro */
+  background-color: #1e1e1e; 
+  color: #f1f1f1; 
 }
 
 .dark-mode .page-title {
-  color: #ffffff; /* Color del título en modo oscuro */
+  color: #ffffff; 
 }
 
 .dark-mode .page-subtitle {
-  color: #bbbbbb; /* Color del subtítulo en modo oscuro */
+  color: #bbbbbb; 
 }
 
 
 /* PAGINADOR */
 .dark-mode .pagination {
-  background-color: #1e1e1e; /* Fondo oscuro para la paginación */
-  color: #fff; /* Color de texto claro */
+  background-color: #1e1e1e; 
+  color: #fff; 
 }
 
 .dark-mode .page-item {
-  background-color: #444; /* Fondo oscuro para los ítems de la página */
+  background-color: #444; 
 }
 
 .dark-mode .page-link {
-  color: #000000; /* Color de enlace claro */
+  color: #000000; 
 }
 
 .dark-mode .page-link:hover {
-  background-color: #555; /* Fondo de enlace al pasar el ratón */
+  background-color: #555; 
 }
 
 .dark-mode .page-item.active .page-link {
-  background-color: #555; /* Fondo activo de la página */
-  border-color: #555; /* Borde del ítem activo */
+  background-color: #555; 
+  border-color: #555; 
 }
 
 
 /* BUSACDOR */
-.dark-mode .input-dark {
-  background-color: #444; /* Fondo oscuro para el input */
-  color: #444444; /* Color del texto claro */
-  border: 1px solid #555; /* Borde del input en modo oscuro */
+.dark-mode #busqueda {
+  background-color: #444; 
+  color: white; 
+  border: 1px solid #555; 
 }
 
-.dark-mode .input-dark::placeholder {
-  color: #888; /* Color del placeholder en modo oscuro */
+.dark-mode #busqueda::placeholder {
+  background-color: #444; 
+  color: rgb(136, 136, 136); 
+  border: 1px solid #555; 
 }
 
-
+/* MODALES */
 .modal-content {
   background-color: #777777;
-  color: #fff;
+  color:#000000;
+  /*border:white 2px dashed;*/
 }
+
+.modal .form-control {
+  background-color: #5e5e5e; 
+  color: #fff; 
+  border: 1px solid #fff;
+}
+
+/* Estilo para el placeholder */
+/*
+.modal .form-control::placeholder {
+  color: #888;
+}
+*/
 
 .modal .btn-secondary {
   background-color: #1645a9;
