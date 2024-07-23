@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import Footer from './Footer';
 import Header from './Header';
@@ -8,8 +8,18 @@ import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiSh
 import logoImage from "../../assets/images/logo-dark.png";
 
 const VerticalLayout = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [menuCollapsed, setMenuCollapsed] = useState(false); // Estado para el colapso del menú
+  // Recuperar el estado del modo oscuro y el menú colapsado desde localStorage
+  const [darkMode, setDarkMode] = useState(() => JSON.parse(localStorage.getItem('darkMode')) || false);
+  const [menuCollapsed, setMenuCollapsed] = useState(() => JSON.parse(localStorage.getItem('menuCollapsed')) || false);
+
+  // Guardar el estado en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('menuCollapsed', JSON.stringify(menuCollapsed));
+  }, [menuCollapsed]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -21,7 +31,7 @@ const VerticalLayout = () => {
 
   return (
     <div className={`vertical-layout ${darkMode ? 'dark-mode' : ''}`}>
-      <Header toggleDarkMode={toggleDarkMode} darkMode={darkMode} menuCollapsed={menuCollapsed} />
+      <Header toggleDarkMode={toggleDarkMode} darkMode={darkMode} menuCollapsed={menuCollapsed} handleMenuToggle={handleMenuToggle} />
       <div className="menu-container">
         <nav className={`vertical-nav fondo text-white ${menuCollapsed ? 'menu-collapsed' : 'menu-expanded'}`}>
           <div className="p-3">
@@ -29,7 +39,7 @@ const VerticalLayout = () => {
               src={logoImage}
               alt="Logo"
               className={`logo-img ${menuCollapsed ? 'logo-collapsed' : 'logo-expanded'}`}
-              onClick={handleMenuToggle} // Asigna la función de alternar menú
+              onClick={handleMenuToggle}
             />
           </div>
           <ul className={`nav flex-column ${menuCollapsed ? 'icons-only' : ''}`}>

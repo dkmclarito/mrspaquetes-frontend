@@ -62,11 +62,11 @@ body {
 .logo-img {
   width: 150px;
   height: auto;
-  cursor: pointer;
+  /*cursor: pointer;*/
   display: block;
   margin: 0 auto;
-  -webkit-transition: 0.1s linear;
-  transition: 0.1s linear;
+  /*-webkit-transition: 0.1s linear;
+  transition: 0.1s linear;*/
 }
 
 .logo-collapsed {
