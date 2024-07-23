@@ -70,10 +70,19 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
 };
 
 TablaClientes.propTypes = {
-  clientes: PropTypes.array.isRequired,
+  clientes: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    nombre: PropTypes.string.isRequired,
+    apellido: PropTypes.string.isRequired,
+    id_tipo_persona: PropTypes.number.isRequired,
+    email: PropTypes.string.isRequired,
+    dui: PropTypes.string.isRequired,
+    telefono: PropTypes.string.isRequired,
+    fecha_registro: PropTypes.string.isRequired
+  })).isRequired,
   eliminarCliente: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
-  tipoPersona: PropTypes.object.isRequired,
+  tipoPersona: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 
 export default TablaClientes;

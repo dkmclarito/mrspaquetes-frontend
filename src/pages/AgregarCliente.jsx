@@ -135,17 +135,26 @@ const AgregarCliente = () => {
 
 
     const handleDuiChange = (e) => {
-        let duiValue = e.target.value.replace(/[^\d]/g, "");
-        if (duiValue.length > 9) {
-            duiValue = duiValue.slice(0, 9);
+        const value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
+    
+        if (tipoPersona !== "2") {
+            // Formatear el DUI solo si el tipo de persona no es "2"
+            let formattedDui = value;
+    
+            if (formattedDui.length > 8) {
+                formattedDui = formattedDui.slice(0, 8) + "-" + formattedDui.slice(8, 9);
+            }
+    
+            // Validar el DUI con el formato correcto
+            const isValid = formattedDui.length === 10 && formattedDui.match(/^\d{8}-\d{1}$/);
+    
+            setDui(formattedDui);
+            setIsDuiValid(isValid);
+        } else {
+            // Limpiar y marcar el DUI como válido si el tipo de persona es "2"
+            setDui("");
+            setIsDuiValid(true);
         }
-        if (duiValue.length > 8) {
-            duiValue = duiValue.slice(0, 8) + "-" + duiValue.slice(8);
-        }
-        setDui(duiValue);
-        // DUI validation logic
-        const isValid = duiValue.length === 10 && duiValue.match(/^\d{8}-\d{1}$/);
-        setIsDuiValid(isValid);
     };
 
     const handleTelefonoChange = (e) => {
@@ -255,7 +264,7 @@ const AgregarCliente = () => {
             apellido: apellidos,
             id_tipo_persona: tipoPersona,
             id_genero: genero,
-            dui,
+            dui: tipoPersona === "2" ? "" : dui,
             telefono,
             email: correo,
             direccion,
@@ -273,7 +282,6 @@ const AgregarCliente = () => {
     
         try {
             const response = await axios.post(`${API_URL}/clientes`, clienteData, {
-                method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
@@ -310,7 +318,7 @@ const AgregarCliente = () => {
     
             if (error.response && error.response.data) {
                 const errorData = error.response.data.error;
-                let errorMessage = "Error al agregar el empleado.";
+                let errorMessage = "Error al agregar el cliente.";
     
                 // Manejo de errores específicos
                 const errorMessages = [];
@@ -320,7 +328,16 @@ const AgregarCliente = () => {
                 if (errorData.dui) {
                     errorMessages.push("El DUI ya está registrado.");
                 }
-                
+                if (errorData.telefono) {
+                    errorMessages.push("El teléfono ya está registrado.");
+                }
+                if (errorData.nit) {
+                    errorMessages.push("El NIT ya está registrado.");
+                }
+                if (errorData.nrc) {
+                    errorMessages.push("El NRC ya está registrado.");
+                }
+    
                 if (errorMessages.length > 0) {
                     errorMessage = errorMessages.join(" ");
                 } else {
@@ -336,10 +353,10 @@ const AgregarCliente = () => {
                 setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
             }
         }
-    };    
+    };
     
-    
-        const handleDepartamentoChange = (e) => {
+
+    const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
         setDepartamento(selectedDepartamento);
         setMunicipio("");
@@ -358,11 +375,17 @@ const AgregarCliente = () => {
         }
     };
 
+    const isJuridicalPerson = tipoPersona === "2";
+
     const toggleAlertas = () => {
         setAlertaExito(false);
         setAlertaError(false);
         setErrorMensaje("");
     };
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const minDate = `${currentYear}-${currentMonth}-01`;
+    const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
 
     return (
         <React.Fragment>
@@ -464,6 +487,7 @@ const AgregarCliente = () => {
                                                         required
                                                         maxLength="10"
                                                         invalid={!isDuiValid}
+                                                        disabled={isJuridicalPerson}
                                                     />
                                                     {!isDuiValid && <FormFeedback className="text-danger">El DUI ingresado no es válido. Debe tener el formato 12345678-9.</FormFeedback>}
                                                 </FormGroup>
@@ -509,6 +533,8 @@ const AgregarCliente = () => {
                                                         value={fechaRegistro}
                                                         onChange={(e) => setFechaRegistro(e.target.value)}
                                                         required
+                                                        min={minDate} // Set min date
+                                                        max={maxDate}
                                                     />
                                                 </FormGroup>
                                             </Col>
