@@ -13,6 +13,8 @@ import AgregarCliente from './pages/AgregarCliente';
 import GestionUsuarios from './pages/GestionUsuarios';
 import AgregarUsuario from './pages/AgregarUsuario';
 import VerticalLayout from './components/Layout/VerticalLayout'; 
+import 'react-toastify/dist/ReactToastify.css'; 
+import { ToastContainer } from 'react-toastify';  
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();

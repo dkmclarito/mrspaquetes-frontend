@@ -133,3 +133,59 @@
   background-color: #898d90; /* Color más oscuro para el hover */
   border-color: #1e90ff; /* Color más oscuro para el borde en hover */
 }
+
+.modal-editar-empleado .modal-header {
+    background-color: #f8f9fa;
+  }
+  
+  .modal-editar-empleado .modal-title {
+    color: #007bff;
+  }
+  
+  .modal-editar-empleado .modal-footer {
+    justify-content: flex-start;
+  }
+
+  /* Empleados.css */
+
+/* Personalización del encabezado del modal */
+.modal-header-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  /* Personalización del cuerpo del modal */
+  .modal-body-custom {
+    font-size: 1.2em;
+  }
+  
+  /* Botón de eliminar */
+  .modal-footer .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+  }
+  
+  /* Botón de cancelar */
+  .modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+  }
+  /* src/styles/Empleados.css */
+.fade-enter {
+    opacity: 0;
+  }
+  
+  .fade-enter-active {
+    opacity: 1;
+    transition: opacity 300ms;
+  }
+  
+  .fade-exit {
+    opacity: 1;
+  }
+  
+  .fade-exit-active {
+    opacity: 0;
+    transition: opacity 300ms;
+  }
+  
