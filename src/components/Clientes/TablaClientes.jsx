@@ -21,7 +21,6 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Tipo de Persona</th>
-            <th>Email</th>
             <th>DUI</th>
             <th>Teléfono</th>
             <th>Fecha de Registro</th>
@@ -36,7 +35,6 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
                 <td>{cliente.nombre}</td>
                 <td>{cliente.apellido}</td>
                 <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
-                <td>{cliente.email}</td>
                 <td>{cliente.dui}</td>
                 <td>{cliente.telefono}</td>
                 <td>{cliente.fecha_registro}</td>
@@ -75,7 +73,6 @@ TablaClientes.propTypes = {
     nombre: PropTypes.string.isRequired,
     apellido: PropTypes.string.isRequired,
     id_tipo_persona: PropTypes.number.isRequired,
-    email: PropTypes.string.isRequired,
     dui: PropTypes.string.isRequired,
     telefono: PropTypes.string.isRequired,
     fecha_registro: PropTypes.string.isRequired
