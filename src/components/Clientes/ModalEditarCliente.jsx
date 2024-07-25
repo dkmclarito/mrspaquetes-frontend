@@ -328,7 +328,20 @@ const ModalEditarCliente = ({
 
 ModalEditarCliente.propTypes = {
   modalEditar: PropTypes.bool.isRequired,
-  clienteEditado: PropTypes.object.isRequired,
+  clienteEditado: PropTypes.shape({
+    id_tipo_persona: PropTypes.number,
+    dui: PropTypes.string,
+    telefono: PropTypes.string,
+    nit: PropTypes.string,
+    nrc: PropTypes.string,
+    nombre_empresa: PropTypes.string,
+    nombre_comercial: PropTypes.string,
+    giro: PropTypes.string,
+    direccion: PropTypes.string,
+    fecha_registro: PropTypes.string,
+    nombre: PropTypes.string,
+    apellido: PropTypes.string
+  }),
   setClienteEditado: PropTypes.func.isRequired,
   guardarCambiosCliente: PropTypes.func.isRequired,
   setModalEditar: PropTypes.func.isRequired
