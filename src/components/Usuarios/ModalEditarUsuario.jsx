@@ -41,6 +41,21 @@ const ModalEditarUsuario = ({
       return;
     }
 
+    if (usuarioEditado.type === "") {
+      setError(<span><br />Debe seleccionar un tipo de usuario</span>);
+      return;
+    }
+
+    if (usuarioEditado.type === "1" && !usuarioEditado.id_cliente) {
+      setError(<span><br />Debe seleccionar un cliente</span>);
+      return;
+    }
+
+    if (usuarioEditado.type === "0" && !usuarioEditado.id_empleado) {
+      setError(<span><br />Debe seleccionar un empleado</span>);
+      return;
+    }
+
     if (mostrarCamposContrasena && (password || confirmPassword)) {
       if (password !== confirmPassword) {
         setError(<span><br />Las contraseñas no coinciden</span>);
@@ -236,7 +251,3 @@ ModalEditarUsuario.propTypes = {
 };
 
 export default ModalEditarUsuario;
-
-
-
-
