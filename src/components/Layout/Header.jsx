@@ -16,20 +16,12 @@ const Header = ({ onToggleMenu, menuVisible, toggleDarkMode, darkMode }) => {
 
 
   return (
-    <header className="header-container">
+    <header className={`header-container ${menuCollapsed ? 'collapsed' : ''}`}>
       <button className="menu-toggle" onClick={handleMenuToggle}>
         <BiMenu />
       </button>
       <div className="header-right">
-        {user && (
-          <div className="user-info">
-            <div className="user-details">
-              <span className="user-name">{user.name}</span>
-              <span className="user-email">{user.email}</span>
-            </div>
-           {/* <span className="user-type">{userType}</span> */}
-          </div>
-        )}
+      
         <BiUser className="header-icon" />
         <BiLogOut className="header-icon" />
         <DarkModeSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />

@@ -11,7 +11,12 @@
   width: calc(100% - 220px);
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: width 0.3s ease, left 0.3s ease;
+  /*transition: width 0.3s ease, left 0.3s ease;*/
+}
+
+.header-container.collapsed {
+  left: 70px; 
+  width: calc(100% - 70px); 
 }
 
 .header-right {
@@ -68,4 +73,9 @@
 
 .header-icon {
   margin-left: 10px;
+}
+
+
+.oculto{
+  border: 0px;
 }

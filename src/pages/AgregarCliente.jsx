@@ -9,9 +9,10 @@ import "../styles/Clientes.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AgregarCliente = () => {
+    const [nitErrorMessage, setNitErrorMessage] = useState(""); // Estado para el mensaje de error del NIT
+    const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
     const [isTelefonoValid, setIsTelefonoValid] = useState(true);
-    const [isCorreoValid, setIsCorreoValid] = useState(true);
     const [isNitValid, setIsNitValid] = useState(true);
     const [isNrcValid, setIsNrcValid] = useState(true);
     const [isGiroValid, setIsGiroValid] = useState(true);
@@ -26,7 +27,6 @@ const AgregarCliente = () => {
     const [genero, setGenero] = useState("");
     const [dui, setDui] = useState("");
     const [telefono, setTelefono] = useState("");
-    const [correo, setCorreo] = useState("");
     const [direccion, setDireccion] = useState("");
     const [departamento, setDepartamento] = useState("");
     const [municipio, setMunicipio] = useState("");
@@ -135,18 +135,23 @@ const AgregarCliente = () => {
 
 
     const handleDuiChange = (e) => {
-        let duiValue = e.target.value.replace(/[^\d]/g, "");
-        if (duiValue.length > 9) {
-            duiValue = duiValue.slice(0, 9);
+        let value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
+
+        if (value.length > 0 && value[0] !== "0") {
+            value = "0" + value;
         }
-        if (duiValue.length > 8) {
-            duiValue = duiValue.slice(0, 8) + "-" + duiValue.slice(8);
+
+        let formattedDui = value;
+        if (formattedDui.length > 8) {
+            formattedDui = formattedDui.slice(0, 8) + "-" + formattedDui.slice(8, 9);
         }
-        setDui(duiValue);
-        // DUI validation logic
-        const isValid = duiValue.length === 10 && duiValue.match(/^\d{8}-\d{1}$/);
+
+        // Validar el DUI con el formato correcto (debe tener 10 caracteres y seguir el patrón)
+        const isValid = formattedDui.length === 10 && formattedDui.match(/^0\d{7}-\d{1}$/);
+        setDui(formattedDui);
         setIsDuiValid(isValid);
     };
+
 
     const handleTelefonoChange = (e) => {
         let telefonoValue = e.target.value.replace(/[^\d]/g, "");
@@ -157,98 +162,106 @@ const AgregarCliente = () => {
             telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
         }
         setTelefono(telefonoValue);
-        // Telefono validation logic
         const isValid = telefonoValue.length === 9 && telefonoValue.match(/^\d{4}-\d{4}$/);
         setIsTelefonoValid(isValid);
     };
 
     const generateErrorMessage = (errorData) => {
         let errorMessage = "Error al agregar el empleado.";
+    
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
-            if (errorKeys.includes("dui")) {
-                errorMessage = "El DUI ya está registrado.";
-            } else if (errorKeys.includes("email")) {
-                errorMessage = "El correo electrónico ya está registrado.";
-            } else if (errorData.errors.dui && errorData.errors.email) {
+    
+            if (errorKeys.includes("dui") && errorKeys.includes("email")) {
                 errorMessage = "El DUI y el correo electrónico ya están registrados.";
+            } else if (errorKeys.includes("dui")) {
+                errorMessage = "El DUI ya está registrado.";
+            } else if (errorKeys.includes("nit")) {
+                errorMessage = "El NIT ya está registrado.";
             } else {
                 errorMessage = errorData.message || "Error al agregar el empleado.";
             }
         }
+    
         return errorMessage;
     };
+    
 
-    const handleNitChange = (e) => {
-        let nitValue = e.target.value.replace(/[^\d]/g, "");
-        if (nitValue.length > 14) {
-            nitValue = nitValue.slice(0, 14);
+    const handleNitChange = (event) => {
+        const nit = event.target.value;
+    
+        // Eliminar caracteres no numéricos
+        let nitSanitized = nit.replace(/[^\d]/g, "");
+    
+        // Limitar la longitud máxima a 14 caracteres
+        if (nitSanitized.length > 14) {
+            nitSanitized = nitSanitized.slice(0, 14);
         }
-        setNit(nitValue);
-        // NIT validation logic
-        const isValid = nitValue.length > 0;
-        setIsNitValid(isValid);
+    
+        let errorMessage = "";
+    
+        if (nitSanitized.length !== 14) {
+            errorMessage = "El NIT debe tener 14 dígitos.";
+        } else {
+            // Validar el formato del NIT
+            const codigoMunicipio = parseInt(nitSanitized.substring(0, 4), 10);
+            const dia = parseInt(nitSanitized.substring(4, 6), 10);
+            const mes = parseInt(nitSanitized.substring(6, 8), 10);
+    
+            // Validar día y mes
+            if (dia < 1 || dia > 31 || mes < 1 || mes > 12) {
+                errorMessage = "La fecha en el NIT no es válida.";
+            } else if (codigoMunicipio < 101 || codigoMunicipio > 9999) {
+                errorMessage = "El código de municipio no es válido.";
+            }
+        }
+    
+        // Formatear el NIT con guiones
+        let nitFormatted = nitSanitized;
+        if (nitSanitized.length > 4) {
+            nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4)}`;
+        }
+        if (nitSanitized.length > 10) {
+            nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10)}`;
+        }
+        if (nitSanitized.length === 14) {
+            nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
+        }
+    
+        setIsNitValid(errorMessage === "");
+        setFormData(prevData => ({ ...prevData, nit: nitFormatted }));
+        setNitErrorMessage(errorMessage); // Actualizar el mensaje de error del NIT
     };
+    
 
     const handleNrcChange = (e) => {
-        let nrcValue = e.target.value.replace(/[^\d]/g, "");
-        if (nrcValue.length > 8) {
-            nrcValue = nrcValue.slice(0, 8);
+        let nrcValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
+        if (nrcValue.length > 7) {
+            nrcValue = nrcValue.slice(0, 7);
         }
-        setNrc(nrcValue);
-        // NRC validation logic
-        const isValid = nrcValue.length > 0;
-        setIsNrcValid(isValid);
-    };
 
-    const handleCorreoChange = (e) => {
-        const correoValue = e.target.value;
-        setCorreo(correoValue);
-        // Email validation logic
-        const isValid = correoValue.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
-        setIsCorreoValid(isValid);
+        // Formatear NRC según el patrón ######-#
+        if (nrcValue.length > 6) {
+            nrcValue = nrcValue.slice(0, 6) + "-" + nrcValue.slice(6);
+        }
+
+        setNrc(nrcValue);
+
+        // Validación del NRC
+        const isValid = nrcValue.length === 8 && /^\d{6}-\d{1}$/.test(nrcValue);
+        setIsNrcValid(isValid);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         // Validaciones de campos
-        if (!isDuiValid) {
+        if (!isDuiValid || !isTelefonoValid || tipoPersona === "" || genero === "") {
             setAlertaError(true);
-            setErrorMensaje("El DUI ingresado no es válido. Por favor, revisa el formato.");
+            setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
         }
-    
-        if (!isTelefonoValid) {
-            setAlertaError(true);
-            setErrorMensaje("El teléfono ingresado no es válido. Por favor, revisa el formato.");
-            return;
-        }
-    
-        if (!isCorreoValid) {
-            setAlertaError(true);
-            setErrorMensaje("El correo electrónico ingresado no es válido.");
-            return;
-        }
-    
-        if (!isNitValid) {
-            setAlertaError(true);
-            setErrorMensaje("El NIT ingresado no es válido.");
-            return;
-        }
-    
-        if (!isNrcValid) {
-            setAlertaError(true);
-            setErrorMensaje("El NRC ingresado no es válido.");
-            return;
-        }
-    
-        if (!isGiroValid) {
-            setAlertaError(true);
-            setErrorMensaje("El giro no puede estar vacío.");
-            return;
-        }
-    
+
         // Datos del cliente
         const clienteData = {
             nombre: nombres,
@@ -257,89 +270,88 @@ const AgregarCliente = () => {
             id_genero: genero,
             dui,
             telefono,
-            email: correo,
             direccion,
             id_departamento: departamento,
             id_municipio: municipio,
             es_contribuyente: esContribuyente ? 1 : 0,
-            nombre_comercial: nombreComercial,
-            nombre_empresa: nombreEmpresa,
-            nit,
-            nrc,
-            giro,
+            nombre_comercial: tipoPersona === "1" ? null : nombreComercial,
+            nombre_empresa: tipoPersona === "1" ? null : nombreEmpresa,
+            nit: tipoPersona === "1" ? null : nit,
+            nrc: tipoPersona === "1" ? null : nrc,
+            giro: tipoPersona === "1" ? null : giro,
             fecha_registro: fechaRegistro.replace(/-/g, "/"),
             id_estado: 1
         };
-    
+
+        console.log("Datos a enviar:", clienteData); // Agrega esta línea para depuración
+
         try {
             const response = await axios.post(`${API_URL}/clientes`, clienteData, {
-                method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 }
             });
-    
+
             console.log("Cliente registrado:", response.data);
             setAlertaExito(true);
-    
-            // Redirige a la página de GestionClientes
-            setTimeout(() => navigate('/GestionClientes'), 2000); // Redirige después de 2 segundos
-    
-            // Reinicia los campos del formulario
-            setNombres("");
-            setApellidos("");
-            setTipoPersona("");
-            setGenero("");
-            setDui("");
-            setTelefono("");
-            setFechaRegistro("");
-            setCorreo("");
-            setDireccion("");
-            setDepartamento("");
-            setMunicipio("");
-            setEsContribuyente(false);
-            setNombreComercial("");
-            setNit("");
-            setNrc("");
-            setGiro("");
-            setNombreEmpresa("");
+            setTimeout(() => navigate('/GestionClientes'), 2000);
+            resetForm();
             setAlertaError(false);
         } catch (error) {
             console.error("Error de solicitud:", error.response);
-    
-            if (error.response && error.response.data) {
-                const errorData = error.response.data.error;
-                let errorMessage = "Error al agregar el empleado.";
-    
-                // Manejo de errores específicos
-                const errorMessages = [];
-                if (errorData.email) {
-                    errorMessages.push("El correo electrónico ya está registrado.");
-                }
-                if (errorData.dui) {
-                    errorMessages.push("El DUI ya está registrado.");
-                }
-                
-                if (errorMessages.length > 0) {
-                    errorMessage = errorMessages.join(" ");
-                } else {
-                    errorMessage = errorData.message || errorMessage;
-                }
-    
-                setAlertaExito(false);
-                setAlertaError(true);
-                setErrorMensaje(errorMessage);
-            } else {
-                setAlertaExito(false);
-                setAlertaError(true);
-                setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
-            }
+            handleError(error);
         }
-    };    
-    
-    
-        const handleDepartamentoChange = (e) => {
+    };
+
+    const resetForm = () => {
+        setNombres("");
+        setApellidos("");
+        setTipoPersona("");
+        setGenero("");
+        setDui("");
+        setTelefono("");
+        setFechaRegistro("");
+        setDireccion("");
+        setDepartamento("");
+        setMunicipio("");
+        setEsContribuyente(false);
+        setNombreComercial("");
+        setNit("");
+        setNrc("");
+        setGiro("");
+        setNombreEmpresa("");
+    };
+
+    const handleError = (error) => {
+        if (error.response && error.response.data) {
+            const errorData = error.response.data.error;
+            let errorMessage = "Error al agregar el cliente.";
+
+            if (errorData.dui) {
+                errorMessage = "El DUI ya está registrado.";
+            } else if (errorData.telefono) {
+                errorMessage = "El teléfono ya está registrado.";
+            } else if (errorData.nit) {
+                errorMessage = "El NIT ya está registrado.";
+            } else if (errorData.nrc) {
+                errorMessage = "El NRC ya está registrado.";
+            } else {
+                errorMessage = errorData.message || errorMessage;
+            }
+
+            setAlertaExito(false);
+            setAlertaError(true);
+            setErrorMensaje(errorMessage);
+        } else {
+            setAlertaExito(false);
+            setAlertaError(true);
+            setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
+        }
+    };
+
+
+    const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
         setDepartamento(selectedDepartamento);
         setMunicipio("");
@@ -358,11 +370,17 @@ const AgregarCliente = () => {
         }
     };
 
+    const isJuridicalPerson = tipoPersona === "2";
+
     const toggleAlertas = () => {
         setAlertaExito(false);
         setAlertaError(false);
         setErrorMensaje("");
     };
+    const currentYear = new Date().getFullYear();
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const minDate = `${currentYear}-${currentMonth}-01`;
+    const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
 
     return (
         <React.Fragment>
@@ -464,8 +482,13 @@ const AgregarCliente = () => {
                                                         required
                                                         maxLength="10"
                                                         invalid={!isDuiValid}
+                                                        disabled={isJuridicalPerson}
                                                     />
-                                                    {!isDuiValid && <FormFeedback className="text-danger">El DUI ingresado no es válido. Debe tener el formato 12345678-9.</FormFeedback>}
+                                                    {!isDuiValid && (
+                                                        <FormFeedback className="text-danger">
+                                                            El DUI ingresado no es válido. Debe tener el formato 02345678-9.
+                                                        </FormFeedback>
+                                                    )}
                                                 </FormGroup>
                                             </Col>
                                             <Col md={6}>
@@ -479,27 +502,16 @@ const AgregarCliente = () => {
                                                         required
                                                         maxLength="9"
                                                         invalid={!isTelefonoValid}
-
                                                     />
-                                                    {!isTelefonoValid && <FormFeedback className="text-danger">El teléfono ingresado no es válido. Debe tener el formato 1234-5678.</FormFeedback>}
+                                                    {!isTelefonoValid && (
+                                                        <FormFeedback className="text-danger">
+                                                            El teléfono ingresado no es válido. Debe tener el formato 1234-5678.
+                                                        </FormFeedback>
+                                                    )}
                                                 </FormGroup>
                                             </Col>
                                         </Row>
                                         <Row form>
-                                            <Col md={6}>
-                                                <FormGroup className="form-group-custom">
-                                                    <Label for="correo">Correo Electrónico</Label>
-                                                    <Input
-                                                        type="email"
-                                                        id="correo"
-                                                        value={correo}
-                                                        onChange={handleCorreoChange}
-                                                        required
-                                                        invalid={!isCorreoValid}
-                                                    />
-                                                    {!isCorreoValid && <FormFeedback className="text-danger">El correo ingresado no es válido. Debe tener el formato @sucorreo.com</FormFeedback>}
-                                                </FormGroup>
-                                            </Col>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="fechaRegistro">Fecha de Registro</Label>
@@ -509,12 +521,12 @@ const AgregarCliente = () => {
                                                         value={fechaRegistro}
                                                         onChange={(e) => setFechaRegistro(e.target.value)}
                                                         required
+                                                        min={minDate} // Set min date
+                                                        max={maxDate}
                                                     />
                                                 </FormGroup>
                                             </Col>
-                                        </Row>
-                                        <Row form>
-                                            <Col md={12}>
+                                            <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="direccion">Dirección</Label>
                                                     <Input
@@ -567,7 +579,7 @@ const AgregarCliente = () => {
                                                 </FormGroup>
                                             </Col>
                                         </Row>
-                                        {tipoPersona === "2" && ( // If juridical person
+                                        {tipoPersona === "2" && ( // Si es persona jurídica
                                             <>
                                                 <Row>
                                                     <Col md={6}>
@@ -600,13 +612,18 @@ const AgregarCliente = () => {
                                                             <Input
                                                                 type="text"
                                                                 id="nit"
-                                                                value={nit}
+                                                                value={formData.nit}
                                                                 onChange={handleNitChange}
                                                                 invalid={!isNitValid}
                                                             />
-                                                            {!isNitValid && <FormFeedback className="text-danger">El NIT ingresado no es válido. Debe tener 14cdígitos.</FormFeedback>}
+                                                            {!isNitValid && nitErrorMessage && (
+                                                                <FormFeedback className="text-danger">
+                                                                    {nitErrorMessage}
+                                                                </FormFeedback>
+                                                            )}
                                                         </FormGroup>
                                                     </Col>
+
                                                 </Row>
                                                 <Row>
                                                     <Col md={6}>
@@ -619,7 +636,11 @@ const AgregarCliente = () => {
                                                                 onChange={handleNrcChange}
                                                                 invalid={!isNrcValid}
                                                             />
-                                                            {!isNrcValid && <FormFeedback className="text-danger">El NRC ingresado no es válido.</FormFeedback>}
+                                                            {!isNrcValid && (
+                                                                <FormFeedback className="text-danger">
+                                                                    El NRC ingresado no es válido.
+                                                                </FormFeedback>
+                                                            )}
                                                         </FormGroup>
                                                     </Col>
                                                     <Col md={6}>
@@ -649,10 +670,12 @@ const AgregarCliente = () => {
                                                 </Row>
                                             </>
                                         )}
-                                        <Button type="submit" color="primary" className="me-2">Registrar Cliente</Button>
-                                        <Link to="/GestionClientes">
-                                            <Button type="button" color="secondary">Cancelar</Button>
-                                        </Link>
+                                        <Row>
+                                            <Col md={12}>
+                                                <Button type="submit" color="primary">Guardar</Button>
+                                                <Button href="/GestionClientes" color="danger">Cancelar</Button>
+                                            </Col>
+                                        </Row>
                                     </Form>
                                 </CardBody>
                             </Card>
@@ -665,4 +688,3 @@ const AgregarCliente = () => {
 };
 
 export default AgregarCliente;
-
