@@ -40,7 +40,7 @@ const GestionClientes = () => {
             Authorization: `Bearer ${token}`
           }
         });
-  
+
         if (response.data && Array.isArray(response.data)) {
           setClientes(response.data);
         } else if (response.data && Array.isArray(response.data.data)) {
@@ -52,9 +52,9 @@ const GestionClientes = () => {
         console.error("Error al obtener datos:", error);
       }
     };
-  
+
     fetchData();
-  }, []);
+  }, []);
 
   const eliminarCliente = (idCliente) => {
     setConfirmarEliminar(true);

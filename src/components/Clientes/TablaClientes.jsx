@@ -12,6 +12,23 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
     return tipoPersona[idTipoPersona] || 'Desconocido';
   };
 
+  // Función para obtener el DUI o el NIT según el tipo de persona
+  const obtenerDocumento = (idTipoPersona, dui, nit) => {
+    if (idTipoPersona === 1) { // Persona Natural
+      return dui || 'N/A';
+    } else if (idTipoPersona === 2) { // Persona Jurídica
+      return nit || 'N/A';
+    }
+    return 'N/A';
+  };
+
+  // Función para formatear la fecha sin la hora
+  const formatearFecha = (fecha) => {
+    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', opciones);
+    return fechaFormateada;
+  };
+
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <table className="table table-centered table-nowrap mb-0">
@@ -21,7 +38,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
             <th>Nombre</th>
             <th>Apellido</th>
             <th>Tipo de Persona</th>
-            <th>DUI</th>
+            <th>DUI/NIT</th>
             <th>Teléfono</th>
             <th>Fecha de Registro</th>
             <th>Acciones</th>
@@ -35,20 +52,22 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
                 <td>{cliente.nombre}</td>
                 <td>{cliente.apellido}</td>
                 <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
-                <td>{cliente.dui}</td>
-                <td>{cliente.telefono}</td>
-                <td>{cliente.fecha_registro}</td>
+                <td>{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
+                <td>{cliente.telefono || 'N/A'}</td>
+                <td>{formatearFecha(cliente.fecha_registro)}</td>
                 <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
                       onClick={() => eliminarCliente(cliente.id)}
+                      aria-label="Eliminar cliente"
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </Button>
                     <Button
                       className="btn-icon btn-editar"
                       onClick={() => toggleModalEditar(cliente)}
+                      aria-label="Editar cliente"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
@@ -58,7 +77,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
             ))
           ) : (
             <tr>
-              <td colSpan="9" className="text-center">No hay datos disponibles</td>
+              <td colSpan="8" className="text-center">No hay datos disponibles</td>
             </tr>
           )}
         </tbody>
@@ -68,15 +87,6 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
 };
 
 TablaClientes.propTypes = {
-  clientes: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    nombre: PropTypes.string.isRequired,
-    apellido: PropTypes.string.isRequired,
-    id_tipo_persona: PropTypes.number.isRequired,
-    dui: PropTypes.string.isRequired,
-    telefono: PropTypes.string.isRequired,
-    fecha_registro: PropTypes.string.isRequired
-  })).isRequired,
   eliminarCliente: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
   tipoPersona: PropTypes.objectOf(PropTypes.string).isRequired,
