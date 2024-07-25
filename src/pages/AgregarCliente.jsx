@@ -9,6 +9,7 @@ import "../styles/Clientes.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AgregarCliente = () => {
+    const [nitErrorMessage, setNitErrorMessage] = useState(""); // Estado para el mensaje de error del NIT
     const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
     const [isTelefonoValid, setIsTelefonoValid] = useState(true);
@@ -167,18 +168,24 @@ const AgregarCliente = () => {
 
     const generateErrorMessage = (errorData) => {
         let errorMessage = "Error al agregar el empleado.";
+    
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
-            if (errorKeys.includes("dui")) {
-                errorMessage = "El DUI ya está registrado.";
-            } else if (errorData.errors.dui && errorData.errors.email) {
+    
+            if (errorKeys.includes("dui") && errorKeys.includes("email")) {
                 errorMessage = "El DUI y el correo electrónico ya están registrados.";
+            } else if (errorKeys.includes("dui")) {
+                errorMessage = "El DUI ya está registrado.";
+            } else if (errorKeys.includes("nit")) {
+                errorMessage = "El NIT ya está registrado.";
             } else {
                 errorMessage = errorData.message || "Error al agregar el empleado.";
             }
         }
+    
         return errorMessage;
     };
+    
 
     const handleNitChange = (event) => {
         const nit = event.target.value;
@@ -191,37 +198,41 @@ const AgregarCliente = () => {
             nitSanitized = nitSanitized.slice(0, 14);
         }
     
-        let isValid = false;
-        let nitFormateado = nitSanitized;
+        let errorMessage = "";
     
-        if (nitSanitized.length === 14) {
-            // Validar el formato y la longitud del NIT
+        if (nitSanitized.length !== 14) {
+            errorMessage = "El NIT debe tener 14 dígitos.";
+        } else {
+            // Validar el formato del NIT
             const codigoMunicipio = parseInt(nitSanitized.substring(0, 4), 10);
             const dia = parseInt(nitSanitized.substring(4, 6), 10);
             const mes = parseInt(nitSanitized.substring(6, 8), 10);
-            const anio = parseInt(nitSanitized.substring(8, 10), 10);
-            const correlativo = parseInt(nitSanitized.substring(10, 13), 10);
-            const digitoVerificador = nitSanitized.charAt(13);
     
-            const isValidMunicipio = codigoMunicipio >= 101 && codigoMunicipio <= 9999;
-            const diasEnMes = new Date(2000 + anio, mes, 0).getDate();
-            const isValidDiaMes = dia >= 1 && dia <= diasEnMes && mes >= 1 && mes <= 12;
-            const isValidCorrelativo = correlativo >= 0 && correlativo <= 999;
-            const isValidDigitoVerificador = /^[0-9]$/.test(digitoVerificador);
-    
-            isValid = isValidMunicipio && isValidDiaMes && isValidCorrelativo && isValidDigitoVerificador;
-    
-            if (isValid) {
-                nitFormateado = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
+            // Validar día y mes
+            if (dia < 1 || dia > 31 || mes < 1 || mes > 12) {
+                errorMessage = "La fecha en el NIT no es válida.";
+            } else if (codigoMunicipio < 101 || codigoMunicipio > 9999) {
+                errorMessage = "El código de municipio no es válido.";
             }
         }
     
-        setIsNitValid(isValid);
-        setNit(nitSanitized);
-        setFormData(prevData => ({ ...prevData, nit: isValid ? nitFormateado : nitSanitized }));
+        // Formatear el NIT con guiones
+        let nitFormatted = nitSanitized;
+        if (nitSanitized.length > 4) {
+            nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4)}`;
+        }
+        if (nitSanitized.length > 10) {
+            nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10)}`;
+        }
+        if (nitSanitized.length === 14) {
+            nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
+        }
+    
+        setIsNitValid(errorMessage === "");
+        setFormData(prevData => ({ ...prevData, nit: nitFormatted }));
+        setNitErrorMessage(errorMessage); // Actualizar el mensaje de error del NIT
     };
     
-
 
     const handleNrcChange = (e) => {
         let nrcValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
@@ -605,13 +616,14 @@ const AgregarCliente = () => {
                                                                 onChange={handleNitChange}
                                                                 invalid={!isNitValid}
                                                             />
-                                                            {!isNitValid && (
+                                                            {!isNitValid && nitErrorMessage && (
                                                                 <FormFeedback className="text-danger">
-                                                                    El NIT ingresado no es válido. Debe tener 14 dígitos.
+                                                                    {nitErrorMessage}
                                                                 </FormFeedback>
                                                             )}
                                                         </FormGroup>
                                                     </Col>
+
                                                 </Row>
                                                 <Row>
                                                     <Col md={6}>
