@@ -36,3 +36,36 @@
 .header-icon:last-of-type {
   margin-right: 20px; 
 }
+
+
+
+
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+.user-name {
+  font-weight: bold;
+}
+
+.user-email {
+  color: #6c757d;
+}
+
+.user-type {
+  margin-left: 10px;
+  font-style: italic;
+}
+
+.header-icon {
+  margin-left: 10px;
+}

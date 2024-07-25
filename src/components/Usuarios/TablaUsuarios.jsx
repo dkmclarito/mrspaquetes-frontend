@@ -15,6 +15,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
+            <th>Tipo de usuario</th>
             <th>Fecha de creación</th>
             <th>Acciones</th>
           </tr>
@@ -26,6 +27,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                 <td>{usuario.id}</td>
                 <td>{usuario.name}</td>
                 <td>{usuario.email}</td>
+                <td>{usuario.type === 0 ? 'Empleado' : 'Cliente'}</td>
                 <td>{usuario.created_at ? usuario.created_at.split('T')[0] : '2024-06-20'}</td> 
                 <td>
                   <div className="button-container">
@@ -47,7 +49,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="5" className="text-center">No hay datos disponibles</td>
+              <td colSpan="5" className="text-center">Sin usuarios.</td>
             </tr>
           )}
         </tbody>
