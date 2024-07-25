@@ -10,7 +10,7 @@ const Header = ({ onToggleMenu, menuVisible, toggleDarkMode, darkMode }) => {
     }
   };
 
-  const user = JSON.parse(localStorage.getItem("user")); // Obtén los datos del usuario desde localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const userType = user ? (user.type === "0" ? "Empleado" : "Cliente") : "";
 
@@ -22,12 +22,11 @@ const Header = ({ onToggleMenu, menuVisible, toggleDarkMode, darkMode }) => {
       <div className="header-right">
         {user && (
           <div className="user-info">
-            <span>{user.name}</span>
-            <span>{user.email}</span>
-            <span>{userType}</span>
+            {/*  <span>{user.email}</span> */}
+           {/* <span className="user-type">{userType}</span> */}
           </div>
         )}
-        <BiUser className="header-icon" />
+        <BiUser className="header-icon" /><span >{user.name}</span> 
         <BiLogOut className="header-icon" />
         <DarkModeSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       </div>
@@ -36,4 +35,3 @@ const Header = ({ onToggleMenu, menuVisible, toggleDarkMode, darkMode }) => {
 };
 
 export default Header;
-
