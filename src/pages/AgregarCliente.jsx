@@ -9,7 +9,7 @@ import "../styles/Clientes.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AgregarCliente = () => {
-    const [formData, setFormData] = useState({nit: '', });
+    const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
     const [isTelefonoValid, setIsTelefonoValid] = useState(true);
     const [isNitValid, setIsNitValid] = useState(true);
@@ -182,18 +182,18 @@ const AgregarCliente = () => {
 
     const handleNitChange = (event) => {
         const nit = event.target.value;
-        
-        // Remover caracteres no numéricos
+    
+        // Eliminar caracteres no numéricos
         let nitSanitized = nit.replace(/[^\d]/g, "");
-        
+    
         // Limitar la longitud máxima a 14 caracteres
         if (nitSanitized.length > 14) {
             nitSanitized = nitSanitized.slice(0, 14);
         }
-        
+    
         let isValid = false;
         let nitFormateado = nitSanitized;
-        
+    
         if (nitSanitized.length === 14) {
             // Validar el formato y la longitud del NIT
             const codigoMunicipio = parseInt(nitSanitized.substring(0, 4), 10);
@@ -202,25 +202,26 @@ const AgregarCliente = () => {
             const anio = parseInt(nitSanitized.substring(8, 10), 10);
             const correlativo = parseInt(nitSanitized.substring(10, 13), 10);
             const digitoVerificador = nitSanitized.charAt(13);
-        
+    
             const isValidMunicipio = codigoMunicipio >= 101 && codigoMunicipio <= 9999;
             const diasEnMes = new Date(2000 + anio, mes, 0).getDate();
             const isValidDiaMes = dia >= 1 && dia <= diasEnMes && mes >= 1 && mes <= 12;
             const isValidCorrelativo = correlativo >= 0 && correlativo <= 999;
             const isValidDigitoVerificador = /^[0-9]$/.test(digitoVerificador);
-        
+    
             isValid = isValidMunicipio && isValidDiaMes && isValidCorrelativo && isValidDigitoVerificador;
-        
+    
             if (isValid) {
                 nitFormateado = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
             }
         }
-        
+    
         setIsNitValid(isValid);
-        setNit(isValid ? nitSanitized : null);  // Establece null si no es válido
-        setFormData(prevData => ({ ...prevData, nit: isValid ? nitFormateado : null }));
+        setNit(nitSanitized);
+        setFormData(prevData => ({ ...prevData, nit: isValid ? nitFormateado : nitSanitized }));
     };
     
+
 
     const handleNrcChange = (e) => {
         let nrcValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
@@ -242,14 +243,14 @@ const AgregarCliente = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         // Validaciones de campos
         if (!isDuiValid || !isTelefonoValid || tipoPersona === "" || genero === "") {
             setAlertaError(true);
             setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
         }
-    
+
         // Datos del cliente
         const clienteData = {
             nombre: nombres,
@@ -270,9 +271,9 @@ const AgregarCliente = () => {
             fecha_registro: fechaRegistro.replace(/-/g, "/"),
             id_estado: 1
         };
-    
+
         console.log("Datos a enviar:", clienteData); // Agrega esta línea para depuración
-    
+
         try {
             const response = await axios.post(`${API_URL}/clientes`, clienteData, {
                 headers: {
@@ -280,7 +281,7 @@ const AgregarCliente = () => {
                     Authorization: `Bearer ${token}`,
                 }
             });
-    
+
             console.log("Cliente registrado:", response.data);
             setAlertaExito(true);
             setTimeout(() => navigate('/GestionClientes'), 2000);
@@ -291,7 +292,7 @@ const AgregarCliente = () => {
             handleError(error);
         }
     };
-    
+
     const resetForm = () => {
         setNombres("");
         setApellidos("");
@@ -310,12 +311,12 @@ const AgregarCliente = () => {
         setGiro("");
         setNombreEmpresa("");
     };
-    
+
     const handleError = (error) => {
         if (error.response && error.response.data) {
             const errorData = error.response.data.error;
             let errorMessage = "Error al agregar el cliente.";
-    
+
             if (errorData.dui) {
                 errorMessage = "El DUI ya está registrado.";
             } else if (errorData.telefono) {
@@ -327,7 +328,7 @@ const AgregarCliente = () => {
             } else {
                 errorMessage = errorData.message || errorMessage;
             }
-    
+
             setAlertaExito(false);
             setAlertaError(true);
             setErrorMensaje(errorMessage);
@@ -337,7 +338,7 @@ const AgregarCliente = () => {
             setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
         }
     };
-    
+
 
     const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
