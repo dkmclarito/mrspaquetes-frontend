@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import "../styles/usuarios.css";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import axios from "axios";
+import Select from 'react-select';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -12,10 +13,10 @@ const AgregarUsuario = () => {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState(""); 
-  const [tipoUsuario, setTipoUsuario] = useState(""); 
-  const [clienteId, setClienteId] = useState(""); 
-  const [empleadoId, setEmpleadoId] = useState(""); 
+  const [rol, setRol] = useState("");
+  const [tipoUsuario, setTipoUsuario] = useState("");
+  const [clienteId, setClienteId] = useState("");
+  const [empleadoId, setEmpleadoId] = useState("");
   const [clientesDropdown, setClientesDropdown] = useState([]);
   const [empleadosDropdown, setEmpleadosDropdown] = useState([]);
   const [alertaExito, setAlertaExito] = useState(false);
@@ -84,7 +85,7 @@ const AgregarUsuario = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const tipoUsuarioInt = tipoUsuario === "cliente" ? 1 : tipoUsuario === "empleado" ? 0 : null;
 
     if (!nombre || !validateNombre(nombre)) {
@@ -159,14 +160,14 @@ const AgregarUsuario = () => {
 
       await response.json();
       setAlertaExito(true);
-      
+
       setNombre("");
       setEmail("");
       setPassword("");
-      setRol(""); 
-      setClienteId(""); 
-      setEmpleadoId(""); 
-      setTipoUsuario(""); 
+      setRol("");
+      setClienteId("");
+      setEmpleadoId("");
+      setTipoUsuario("");
 
       setAlertaError(false);
     } catch (error) {
@@ -177,7 +178,7 @@ const AgregarUsuario = () => {
       if (error.message.includes('correo electrónico ya está registrado')) {
         setErrorMensaje("El correo electrónico ya está registrado.");
       } else {
-       // setErrorMensaje("No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
+        // setErrorMensaje("No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
         setErrorMensaje("El correo electrónico ya está registrado.");
       }
     }
@@ -186,7 +187,7 @@ const AgregarUsuario = () => {
   return (
     <div>
       <Container fluid>
-         <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Agregar Usuario" />
+        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Agregar Usuario" />
         <Card>
           <CardBody>
             <h5 className="mb-4">Agregar Usuario</h5>
@@ -242,7 +243,7 @@ const AgregarUsuario = () => {
                     >
                       <option value="">Selecciona un tipo</option>
                       <option value="empleado">Empleado</option>
-                      <option value="cliente">Cliente</option> 
+                      <option value="cliente">Cliente</option>
                     </Input>
                   </FormGroup>
                 </Col>
@@ -258,9 +259,8 @@ const AgregarUsuario = () => {
                       disabled={!tipoUsuario}
                     >
                       <option value="">Selecciona un rol</option>
-                      {tipoUsuario === "cliente" ? (
-                        <option value="2">Cliente</option>
-                      ) : (
+                      {tipoUsuario === "cliente" && <option value="2">Cliente</option>}
+                      {tipoUsuario === "empleado" && (
                         <>
                           <option value="1">Administrador</option>
                           <option value="3">Conductor</option>
@@ -270,55 +270,42 @@ const AgregarUsuario = () => {
                     </Input>
                   </FormGroup>
                 </Col>
-                {tipoUsuario === "empleado" ? (
+                {tipoUsuario === "cliente" && (
                   <Col md="6">
                     <FormGroup>
-                      <Label for="empleado">Empleado</Label>
-                      <Input
-                        type="select"
-                        id="empleado"
-                        value={empleadoId}
-                        onChange={(e) => setEmpleadoId(e.target.value)}
-                        required
-                      >
-                        <option value="">Selecciona un empleado</option>
-                        {empleadosDropdown.map((empleado) => (
-                          <option key={empleado.id} value={empleado.id}>
-                            {empleado.nombres} {empleado.apellidos}
-                          </option>
-                        ))}
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                ) : (
-                  <Col md="6">
-                    <FormGroup>
-                      <Label for="cliente">Cliente</Label>
-                      <Input
-                        type="select"
-                        id="cliente"
-                        value={clienteId}
-                        onChange={(e) => setClienteId(e.target.value)}
-                        required
-                      >
-                        <option value="">Selecciona un cliente</option>
-                        {clientesDropdown.map((cliente) => (
-                          <option key={cliente.id} value={cliente.id}>
-                            {cliente.nombre} {cliente.apellido}
-                          </option>
-                        ))}
-                      </Input>
+                      <Label for="clienteId">Cliente</Label>
+                      <Select
+                        id="clienteId"
+                        options={clientesDropdown.map(cliente => ({ value: cliente.id, label: `${empleado.nombre} ${empleado.apellido}` }))}
+                        onChange={selectedOption => setClienteId(selectedOption ? selectedOption.value : "")}
+                        isSearchable
+                        placeholder="Seleccione un cliente..."
+                      />
                     </FormGroup>
                   </Col>
                 )}
-                <Col md="12">
-                  <Button type="submit" color="primary" className="me-2">Registrar</Button>
-                  <Link to="/GestionUsuarios">
-                    <Button color="secondary">Ver Usuarios</Button>
-                  </Link>
-                </Col>
+                {tipoUsuario === "empleado" && (
+                  <Col md="6">
+                    <FormGroup>
+                      <Label for="empleadoId">Empleado</Label>
+                      <Select
+                        id="empleadoId"
+                        options={empleadosDropdown.map(empleado => ({ value: empleado.id, label: `${empleado.nombres} ${empleado.apellidos}` }))}
+                        onChange={selectedOption => setEmpleadoId(selectedOption ? selectedOption.value : "")}
+                        isSearchable
+                        placeholder="Seleccione un empleado..."
+                      />
+                    </FormGroup>
+                  </Col>
+                )}
               </Row>
+              <Button type="submit" color="primary">Agregar Usuario</Button>
+              <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionUsuarios'}>
+                Salir
+              </Button>
+
             </Form>
+
           </CardBody>
         </Card>
       </Container>
