@@ -26,7 +26,10 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
       <BiUser className="header-icon" />
     </div>
     <div className="header-right"> {/* Contenedor para logout y dark mode switch */}
-      <BiLogOut className="header-icon" onClick={handleLogout} />
+    <button className="logout-button" onClick={handleLogout}>
+          <BiLogOut className="header-icon" />
+          Logout
+        </button>
       <DarkModeSwitch darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
     </div>
   </header>  
