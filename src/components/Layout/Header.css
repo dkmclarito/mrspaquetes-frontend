@@ -70,3 +70,14 @@
 span{
   margin-left: 10px;
 }
+
+
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  margin-left: 10px; /* Espacio entre iconos y/o texto */
+}
