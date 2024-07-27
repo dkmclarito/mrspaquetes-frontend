@@ -14,7 +14,7 @@ body {
 .vertical-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh; 
+  height: 100vh;
   transition: margin-left 0.3s ease;
   position: relative;
 }
@@ -29,53 +29,50 @@ body {
   z-index: 100;
 }
 
-  .vertical-nav {
-    width: 220px;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    overflow-y: auto;
-    background-color: #121621;
-    color: white;
-    padding-top: 20px;
-    border-right: 1px solid #212636;
-    transition: transform 0.3s ease;
-    scrollbar-width: none; 
-    padding-right: 0px; 
-  }
+.vertical-nav {
+  width: 220px;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  background-color: #121621;
+  color: white;
+  padding-top: 5px;
+  border-right: 1px solid #212636;
+  transition: transform 0.3s ease;
+  scrollbar-width: none;
+  padding-right: 0px;
+}
 
-  .vertical-nav.menu-expanded {
-    width: 220px; 
-  }
-  
-  .vertical-nav.menu-collapsed {
-    width: 70px; 
-  }
-  
-  /* Oculta la barra de desplazamiento en WebKit/Blink navegadores */
-  .vertical-nav::-webkit-scrollbar {
-    width: 0; 
-    background: transparent; 
-  }
+.vertical-nav.menu-expanded {
+  width: 220px;
+}
+
+.vertical-nav.menu-collapsed {
+  width: 70px;
+}
+
+/* Oculta la barra de desplazamiento en WebKit/Blink navegadores */
+.vertical-nav::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
 
 .logo-img {
-  width: 150px;
+  width: 90px;
   height: auto;
-  /*cursor: pointer;*/
   display: block;
   margin: 0 auto;
-  /*-webkit-transition: 0.1s linear;
-  transition: 0.1s linear;*/
 }
 
 .logo-collapsed {
-  width: 50px; 
+  width: 50px;
   padding-right: 5px;
 }
 
 .logo-expanded {
-  width: 150px; 
+  width: 90px;
 }
 
 .vertical-nav .nav-link {
@@ -120,7 +117,7 @@ body {
 }
 
 .icons-only .nav-link span {
-  display: none; 
+  display: none;
 }
 
 .nav-link .nav-icon {
@@ -128,6 +125,16 @@ body {
   font-size: 20px;
 }
 
+.menu-toggle {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  margin-top: 0;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
 
 .nav-link.active {
   background-color: #212636;
@@ -143,14 +150,21 @@ body {
   margin-top: 45px;
   background-color: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  
+
+}
+
+.margen {
+  padding: 20px;
+  flex: 1;
+  margin-top: 15px;
+  background-color: white;
 }
 
 .main-content.collapsed {
-  margin-left: 70px; 
+  margin-left: 70px;
 }
 
-.footer-content.collapsed{
+.footer-content.collapsed {
   margin-left: 70px;
 }
 
@@ -159,19 +173,23 @@ body {
   color: white;
   padding: 15px 20px;
   text-align: center;
-  position: fixed;
+  position: relative;
   bottom: 0;
-  left: 220px; 
-  width: calc(100% - 220px); 
+  left: 220px;
+  width: calc(100% - 220px);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   /*transition: width 0.3s ease, left 0.3s ease;*/
 }
+
 .footer.collapsed {
-  left: 70px; 
+  left: 70px;
   width: calc(100% - 70px);
 }
 
-html, body {
+
+
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -246,12 +264,12 @@ html, body {
 
 .dark-mode .table th {
   background-color: #444;
-  
+
 }
 
 .dark-mode .table td {
   background-color: #555;
-  color:  #ffffff;
+  color: #ffffff;
 }
 
 /* Estilos del Modo Oscuro para .card */
@@ -275,12 +293,12 @@ html, body {
   border-top: 1px solid #444;
 }
 
-.dark-mode .card-body input{
+.dark-mode .card-body input {
   background-color: #444;
   color: white;
 }
 
-.dark-mode .card-body select{
+.dark-mode .card-body select {
   background-color: #444;
   color: white;
 }
@@ -290,7 +308,7 @@ html, body {
   color: white;
 }
 
-.dark-mode .card-body span{
+.dark-mode .card-body span {
   background-color: #444;
   color: white;
 }
@@ -306,8 +324,8 @@ html, body {
 
 /* Estilos predeterminados para el PageTitleBox */
 .page-title-box {
-  background-color: #ffffff; 
-  color: #333333; 
+  background-color: #ffffff;
+  color: #333333;
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -326,66 +344,66 @@ html, body {
 
 /* Estilos del Modo Oscuro para PageTitleBox */
 .dark-mode .page-title-box {
-  background-color: #1e1e1e; 
-  color: #f1f1f1; 
+  background-color: #1e1e1e;
+  color: #f1f1f1;
 }
 
 .dark-mode .page-title {
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 .dark-mode .page-subtitle {
-  color: #bbbbbb; 
+  color: #bbbbbb;
 }
 
 
 /* PAGINADOR */
 .dark-mode .pagination {
-  background-color: #1e1e1e; 
-  color: #fff; 
+  background-color: #1e1e1e;
+  color: #fff;
 }
 
 .dark-mode .page-item {
-  background-color: #444; 
+  background-color: #444;
 }
 
 .dark-mode .page-link {
-  color: #000000; 
+  color: #000000;
 }
 
 .dark-mode .page-link:hover {
-  background-color: #555; 
+  background-color: #555;
 }
 
 .dark-mode .page-item.active .page-link {
-  background-color: #555; 
-  border-color: #555; 
+  background-color: #555;
+  border-color: #555;
 }
 
 
 /* BUSACDOR */
 .dark-mode #busqueda {
-  background-color: #444; 
-  color: white; 
-  border: 1px solid #555; 
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
 }
 
 .dark-mode #busqueda::placeholder {
-  background-color: #444; 
-  color: rgb(136, 136, 136); 
-  border: 1px solid #555; 
+  background-color: #444;
+  color: rgb(136, 136, 136);
+  border: 1px solid #555;
 }
 
 /* MODALES */
 .modal-content {
   background-color: #777777;
-  color:#000000;
+  color: #000000;
   /*border:white 2px dashed;*/
 }
 
 .modal .form-control {
-  background-color: #5e5e5e; 
-  color: #fff; 
+  background-color: #5e5e5e;
+  color: #fff;
   border: 1px solid #fff;
 }
 

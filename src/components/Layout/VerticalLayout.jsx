@@ -4,7 +4,7 @@ import Footer from './Footer';
 import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
-import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag, BiShield } from 'react-icons/bi';
+import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag } from 'react-icons/bi';
 import logoImage from "../../assets/images/logo-dark.png";
 
 const VerticalLayout = () => {
@@ -35,11 +35,14 @@ const VerticalLayout = () => {
       <div className="menu-container">
         <nav className={`vertical-nav fondo text-white ${menuCollapsed ? 'menu-collapsed' : 'menu-expanded'}`}>
           <div className="p-3">
+          <button className="menu-toggle" onClick={handleMenuToggle}>
+        <BiMenu />
+      </button>
             <img
               src={logoImage}
               alt="Logo"
               className={`logo-img ${menuCollapsed ? 'logo-collapsed' : 'logo-expanded'}`}
-              onClick={handleMenuToggle}
+              
             />
           </div>
           <ul className={`nav flex-column ${menuCollapsed ? 'icons-only' : ''}`}>

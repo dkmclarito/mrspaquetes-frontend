@@ -11,32 +11,49 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
     return cargo ? cargo.nombre : '';
   };
 
+  const obtenerNombreRol = (empleado) => {
+    const roles = empleado.user?.roles || [];
+    return roles.length > 0 ? roles.map(role => role.name).join(', ') : 'Sin Rol';
+  };
+
+  const formatearFecha = (fecha) => {
+    const fechaObj = new Date(fecha);
+    const dia = String(fechaObj.getDate()).padStart(2, '0');
+    const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+    const año = fechaObj.getFullYear();
+    return `${dia}-${mes}-${año}`;
+  };
+
+  const formatearTelefono = (telefono) => {
+    return telefono.replace(/(\d{4})(\d+)/, '$1-$2');
+  };
+
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <table className="table table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
-            <th>ID</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
-            <th>Email</th>
-            <th>Cargo</th>
-            <th>Teléfono</th>
-            <th>Fecha de Contratación</th>
-            <th>Acciones</th>
+            <th className="text-center">ID</th>
+            <th className="text-center">Nombres</th>
+            <th className="text-center">Apellidos</th>
+            <th className="text-center">Cargo</th>
+            <th className="text-center">Rol</th>
+            <th className="text-center">Teléfono</th>
+            <th className="text-center">Fecha de Contratación</th>
+            <th className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {empleados.map((empleado,index) => (
+          {empleados.map((empleado, index) => (
             <tr key={index}>
-              <td>{empleado.id}</td>
-              <td>{empleado.nombres}</td>
-              <td>{empleado.apellidos}</td>
-              <td>{empleado.email}</td>
-              <td>{obtenerNombreCargo(empleado.id_cargo)}</td>
-              <td>{empleado.telefono}</td>
-              <td>{empleado.fecha_contratacion}</td>
-              <td>
+              <td className="text-center">{empleado.id}</td>
+              <td className="text-center">{empleado.nombres}</td>
+              <td className="text-center">{empleado.apellidos}</td>
+              <td className="text-center">{obtenerNombreCargo(empleado.id_cargo)}</td>
+              <td className="text-center">{obtenerNombreRol(empleado)}</td>
+              <td className="text-center">{formatearTelefono(empleado.telefono)}</td>
+              <td className="text-center">{formatearFecha(empleado.fecha_contratacion)}</td>
+              <td className="text-center">
                 <div className="button-container">
                   <Button
                     className="me-2 btn-icon btn-danger"
@@ -45,7 +62,7 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
                     <FontAwesomeIcon icon={faTimes} />
                   </Button>
                   <Button
-                   className="btn-icon btn-editar"
+                    className="btn-icon btn-editar"
                     onClick={() => toggleModalEditar(empleado)}
                   >
                     <FontAwesomeIcon icon={faPencilAlt} />
@@ -62,9 +79,11 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
 
 TablaEmpleados.propTypes = {
   empleados: PropTypes.array.isRequired,
-  cargos: PropTypes.array.isRequired, 
+  cargos: PropTypes.array.isRequired,
   eliminarEmpleado: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
 };
 
 export default TablaEmpleados;
+
+

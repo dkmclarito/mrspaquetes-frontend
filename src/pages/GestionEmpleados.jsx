@@ -25,7 +25,6 @@ const GestionEmpleados = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Define fetchData aquí
   const fetchData = async () => {
     try {
       const token = AuthService.getCurrentUser();
@@ -61,10 +60,16 @@ const GestionEmpleados = () => {
 
   const guardarCambiosEmpleado = async () => {
     try {
+      // Quitar el guion del teléfono antes de enviar
+      const empleadoParaGuardar = {
+        ...empleadoEditado,
+        telefono: empleadoEditado.telefono.replace("-", "")
+      };
+
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `${API_URL}/empleados/${empleadoEditado.id}`,
-        empleadoEditado,
+        `${API_URL}/empleados/${empleadoParaGuardar.id}`,
+        empleadoParaGuardar,
         {
           headers: {
             'Content-Type': 'application/json',
