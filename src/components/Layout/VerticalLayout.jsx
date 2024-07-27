@@ -4,7 +4,7 @@ import Footer from './Footer';
 import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
-import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag, BiShield, BiMenu} from 'react-icons/bi';
+import { BiHome, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag, BiShield, BiMenu} from 'react-icons/bi';
 import logoImage from "../../assets/images/logo-dark.png";
 
 const VerticalLayout = () => {
@@ -98,12 +98,6 @@ const VerticalLayout = () => {
               <NavLink to="/historial" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                 <BiShoppingBag className="nav-icon" />
                 {!menuCollapsed && 'Historial'}
-              </NavLink>
-            </li>
-            <li className="nav-item mt-auto">
-              <NavLink to="/logout" className="nav-link">
-                <BiLogOut className="nav-icon" />
-                {!menuCollapsed && 'Logout'}
               </NavLink>
             </li>
           </ul>
