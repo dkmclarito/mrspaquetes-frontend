@@ -275,7 +275,10 @@ const GestionUsuarios = () => {
         confirmarEliminarUsuario={confirmarEliminarUsuario}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+
+<br /><br /><br /><br />
     </div>
+    
   );
 };
 

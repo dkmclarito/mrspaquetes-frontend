@@ -4,7 +4,7 @@ import Footer from './Footer';
 import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
-import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag } from 'react-icons/bi';
+import { BiHome, BiLogOut, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag, BiShield } from 'react-icons/bi';
 import logoImage from "../../assets/images/logo-dark.png";
 
 const VerticalLayout = () => {
@@ -83,6 +83,12 @@ const VerticalLayout = () => {
               <NavLink to="/vehiculos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                 <BiCar className="nav-icon" />
                 {!menuCollapsed && 'Vehículos'}
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/AgregarRutasPermisos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                <BiShield className="nav-icon" />
+                {!menuCollapsed && 'Roles y permisos'}
               </NavLink>
             </li>
             <li className="nav-item">
