@@ -95,10 +95,10 @@ const AgregarVehiculo = () => {
         console.error("Error al obtener los estados:", error);
       }
     };
-  
+
     fetchEstados();
   }, [token]);
-  
+
 
   const handleMarcaChange = (e) => {
     setMarcaSeleccionada(e.target.value);
@@ -115,7 +115,6 @@ const AgregarVehiculo = () => {
       capacidad_carga: capacidadCarga,
       id_estado: idEstado,
       year_fabricacion: anio,
-      color,
       id_empleado_conductor: empleadoConductor,
       id_empleado_apoyo: empleadoApoyo
     };
@@ -148,7 +147,6 @@ const AgregarVehiculo = () => {
     setCapacidadCarga("");
     setIdEstado("");
     setAnio("");
-    setColor("");
   };
 
   const handleError = (error) => {
@@ -277,12 +275,6 @@ const AgregarVehiculo = () => {
                 <Row form>
                   <Col md={6}>
                     <FormGroup>
-                      <Label for="color">Color</Label>
-                      <Input type="text" name="color" id="color" value={color} onChange={(e) => setColor(e.target.value)} required />
-                    </FormGroup>
-                  </Col>
-                  <Col md={6}>
-                    <FormGroup>
                       <Label for="estado">Estado</Label>
                       <Input type="select" name="estado" id="estado" value={idEstado} onChange={(e) => setIdEstado(e.target.value)} required>
                         <option value="">Seleccione Estado</option>
@@ -292,19 +284,19 @@ const AgregarVehiculo = () => {
                           </option>
                         ))}
                       </Input>
-
                     </FormGroup>
                   </Col>
-                </Row>
-                <Row form>
-                  <Col md={12}>
-                    <FormGroup>
-                      <Label for="capacidadCarga">Capacidad de Carga</Label>
-                      <Input type="number" name="capacidadCarga" id="capacidadCarga" value={capacidadCarga} onChange={(e) => setCapacidadCarga(e.target.value)} required />
-                    </FormGroup>
-                  </Col>
+                  <Col md={6}>
+                        <FormGroup>
+                          <Label for="capacidadCarga">Capacidad de Carga</Label>
+                          <Input type="number" name="capacidadCarga" id="capacidadCarga" value={capacidadCarga} onChange={(e) => setCapacidadCarga(e.target.value)} required />
+                        </FormGroup>
+                      </Col>
                 </Row>
                 <Button type="submit" color="primary">Agregar Vehículo</Button>
+                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionVehiculos'}>
+                  Salir
+                </Button>
               </Form>
               {alertaExito && (
                 <Alert color="success" isOpen={alertaExito} toggle={toggleAlertas}>
