@@ -61,7 +61,7 @@ const AgregarEmpleado = () => {
   const currentYear = today.getFullYear();
   const minYear = 1900;
  const [maxDate, setMaxDate] = useState('');
-
+ const [telefonoError, setTelefonoError] = useState("");
  useEffect(() => {
     const fetchCargos = async () => {
       try {
@@ -273,12 +273,39 @@ const AgregarEmpleado = () => {
   };
 
   const handleTelefonoChange = (e) => {
-    const value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
-    const telefonoValue = value.slice(0, 8); // Limitar a 8 dígitos
-    const formattedTelefono = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
-    setTelefono(formattedTelefono);
-    setIsTelefonoValid(telefonoValue.length === 8 && formattedTelefono.match(/^\d{4}-\d{4}$/));
-  };
+    let telefonoValue = e.target.value.replace(/[^\d]/g, "");
+
+    // Verificar si el primer dígito es 6, 7 o 2
+    if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
+        setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
+        setIsTelefonoValid(false);
+        // Prevent further input by not updating state by default
+        return;
+    } else {
+        setTelefonoError("");
+    }
+
+    // Limit to 8 digits
+    if (telefonoValue.length > 8) {
+        telefonoValue = telefonoValue.slice(0, 8);
+    }
+
+    if (telefonoValue.length > 4) {
+        telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
+    }
+
+    setTelefono(telefonoValue);
+
+    // Validar el formato 1234-5678
+    const isValidFormat = /^\d{4}-\d{4}$/.test(telefonoValue);
+    if (!isValidFormat) {
+        setTelefonoError("El número de teléfono debe tener el formato 1234-5678");
+        setIsTelefonoValid(false);
+    } else {
+        setTelefonoError("");
+        setIsTelefonoValid(true);
+    }
+};
 
   const validarFechas = () => {
     const fechaNacimientoDate = new Date(fechaNacimiento);
@@ -505,19 +532,17 @@ const AgregarEmpleado = () => {
                             <FormGroup className="form-group-custom">
                             <Label for="telefono">Teléfono</Label>
                             <Input
-                            
-                            type="text"
-                            id="telefono"
-                            value={telefono}
-                            onChange={handleTelefonoChange}
-                            required
-                            maxLength="9"
-                            invalid={!isTelefonoValid}
-                              />
-                              {!isTelefonoValid && (
-                                  <FormFeedback className="text-danger">
-                                      El teléfono ingresado no es válido. Debe tener el formato 1234-5678.
-                                  </FormFeedback>
+                                                        type="text"
+                                                        id="telefono"
+                                                        value={telefono}
+                                                        onChange={handleTelefonoChange}
+                                                        required
+                                                        maxLength="9"
+                                                        invalid={!isTelefonoValid}
+                                                    />
+                                                    {telefonoError && (
+                                                        <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
+                                                        
                                   )}
                               </FormGroup>
                           </Col>
@@ -526,7 +551,7 @@ const AgregarEmpleado = () => {
                       <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
                       <Input
                     type="date"
-                    id="fecha_nacimiento"
+                    id="fechaNacimiento"
                     value={fechaNacimiento}
                     onChange={handleFechaNacimientoChange}
                     max={getFechaActual()}
