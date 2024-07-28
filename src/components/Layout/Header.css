@@ -57,6 +57,28 @@
 .user-email {
   color: #6c757d;
 }
+.logout-button {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px 5px;
+  background-color: #212636;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.logout-button:hover {
+  background-color: #939eb6;
+}
+
+.logout-button .header-icon {
+  margin-right: 5px;
+  margin-left: 5px;
+}
 
 .user-type {
   margin-left: 10px;
@@ -69,4 +91,15 @@
 
 span{
   margin-left: 10px;
+}
+
+
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  margin-left: 10px; /* Espacio entre iconos y/o texto */
 }

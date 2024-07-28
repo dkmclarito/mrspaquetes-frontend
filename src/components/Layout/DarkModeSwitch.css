@@ -89,7 +89,7 @@ input:checked + .slider:before {
 
 /* Posicionar BiMoon a la izquierda */
 .slider .icon.left {
-  left: 10px;
+  left: 0px;
 }
 
 /* Posicionar BiSun a la derecha */

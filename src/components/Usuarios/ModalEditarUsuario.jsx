@@ -31,53 +31,68 @@ const ModalEditarUsuario = ({
   };
 
   const handleGuardarCambios = () => {
+    // Restablecer el mensaje de error en cada intento de guardado
+    setError(null);
+  
     if (!usuarioEditado.name) {
       setError(<span><br />El nombre no puede estar vacío</span>);
       return;
     }
-
+  
     if (!validateEmail(usuarioEditado.email)) {
       setError(<span><br />El correo electrónico es inválido</span>);
       return;
     }
-
+  
     if (usuarioEditado.type === "") {
       setError(<span><br />Debe seleccionar un tipo de usuario</span>);
       return;
     }
-
+  
     if (usuarioEditado.type === "1" && !usuarioEditado.id_cliente) {
       setError(<span><br />Debe seleccionar un cliente</span>);
       return;
     }
-
+  
     if (usuarioEditado.type === "0" && !usuarioEditado.id_empleado) {
       setError(<span><br />Debe seleccionar un empleado</span>);
       return;
     }
-
-    if (mostrarCamposContrasena && (password || confirmPassword)) {
+  
+    // Verifica si los campos de contraseña deben evaluarse
+    if (mostrarCamposContrasena) {
+      // Si los campos de contraseña están vacíos
+      if (!password || !confirmPassword) {
+        setError(<span><br />Ambos campos de contraseña son requeridos</span>);
+        return;
+      }
+  
+      // Verificar si las contraseñas coinciden
       if (password !== confirmPassword) {
         setError(<span><br />Las contraseñas no coinciden</span>);
         return;
       }
+  
+      // Verifica la fuerza de la contraseña
       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{5,}$/.test(password)) {
         setError(<span><br />La contraseña debe contener al menos una letra minúscula, una letra mayúscula, un número y tener al menos 5 caracteres.</span>);
         return;
       }
     }
-
+  
+    // Preparar datos del usuario para guardarlos
     const usuarioActualizado = {
       ...usuarioEditado,
-      password: password || undefined,
-      password_confirmation: confirmPassword || undefined,
+      password: mostrarCamposContrasena ? password : undefined,
+      password_confirmation: mostrarCamposContrasena ? confirmPassword : undefined,
       id_empleado: usuarioEditado.type === "0" ? usuarioEditado.id_empleado : null,
       id_cliente: usuarioEditado.type === "1" ? usuarioEditado.id_cliente : null
     };
-
+  
     guardarCambiosUsuario(usuarioActualizado);
-    setError(null);
   };
+  
+  
 
   const handleTipoUsuarioChange = (e) => {
     const nuevoTipo = e.target.value;

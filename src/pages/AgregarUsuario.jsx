@@ -90,12 +90,12 @@ const AgregarUsuario = () => {
 
     if (!nombre || !validateNombre(nombre)) {
       setAlertaError(true);
-      setErrorMensaje("El campo 'Nombre' es obligatorio y debe ser un nombre válido. Evite nombres como 'XXX' o 'PPP'.");
+      setErrorMensaje("El campo 'Nombre' es obligatorio y debe ser un nombre válido.");
       return;
     }
     if (!email || !validateEmail(email)) {
       setAlertaError(true);
-      setErrorMensaje("El campo 'Correo Electrónico' es obligatorio y debe tener un formato válido (ejemplo: usuario@dominio.com).");
+      setErrorMensaje("El campo 'Correo Electrónico' es obligatorio y debe tener un formato válido.");
       return;
     }
     if (await checkEmailExists(email)) {
@@ -139,48 +139,32 @@ const AgregarUsuario = () => {
       id_cliente: tipoUsuarioInt === 1 ? parseInt(clienteId, 10) : null,
     };
 
-    console.log("Datos del usuario que se enviarán:", usuarioData);
-
     try {
-      const response = await fetch(`${API_URL}/auth/store`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/auth/store`, usuarioData, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(usuarioData),
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Error HTTP ${response.status} - ${response.statusText}: ${JSON.stringify(errorData)}`);
-        setErrorMensaje(`Error al agregar el usuario: ${errorData.error || response.statusText}`);
-        throw new Error(`Error HTTP ${response.status} - ${response.statusText}: ${JSON.stringify(errorData)}`);
+      if (response.status === 200) {
+        setAlertaExito(true);
+        // Reset form after successful submission
+        setNombre("");
+        setEmail("");
+        setPassword("");
+        setRol("");
+        setClienteId("");
+        setEmpleadoId("");
+        setTipoUsuario("");
+        setAlertaError(false);
+      } else {
+        throw new Error(`Error HTTP ${response.status} - ${response.statusText}`);
       }
-
-      await response.json();
-      setAlertaExito(true);
-
-      setNombre("");
-      setEmail("");
-      setPassword("");
-      setRol("");
-      setClienteId("");
-      setEmpleadoId("");
-      setTipoUsuario("");
-
-      setAlertaError(false);
     } catch (error) {
       console.error("Error al agregar usuario:", error);
       setAlertaError(true);
-
-      // Verifica si el error está relacionado con el correo electrónico ya registrado
-      if (error.message.includes('correo electrónico ya está registrado')) {
-        setErrorMensaje("El correo electrónico ya está registrado.");
-      } else {
-        // setErrorMensaje("No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
-        setErrorMensaje("El correo electrónico ya está registrado.");
-      }
+      setErrorMensaje("No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
     }
   };
 
@@ -231,6 +215,7 @@ const AgregarUsuario = () => {
                     />
                   </FormGroup>
                 </Col>
+
                 <Col md="6">
                   <FormGroup>
                     <Label for="tipoUsuario">Tipo de Usuario</Label>
@@ -276,7 +261,7 @@ const AgregarUsuario = () => {
                       <Label for="clienteId">Cliente</Label>
                       <Select
                         id="clienteId"
-                        options={clientesDropdown.map(cliente => ({ value: cliente.id, label: `${empleado.nombre} ${empleado.apellido}` }))}
+                        options={clientesDropdown.map(cliente => ({ value: cliente.id, label: `${cliente.nombre} ${cliente.apellido}` }))}
                         onChange={selectedOption => setClienteId(selectedOption ? selectedOption.value : "")}
                         isSearchable
                         placeholder="Seleccione un cliente..."
@@ -309,6 +294,7 @@ const AgregarUsuario = () => {
           </CardBody>
         </Card>
       </Container>
+      <br /><br /><br /><br />
     </div>
   );
 };
