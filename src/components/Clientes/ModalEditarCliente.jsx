@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, FormFeedback, Row, Col } from "reactstrap";
+import "/src/styles/Clientes.css";
+import { toast } from 'react-toastify';
 
 // Función para convertir la fecha de YYYY-MM-DD HH:MM:SS a YYYY-MM-DD
 const formatDate = (date) => {

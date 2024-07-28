@@ -34,28 +34,28 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
       <table className="table table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Tipo de Persona</th>
-            <th>DUI/NIT</th>
-            <th>Teléfono</th>
-            <th>Fecha de Registro</th>
-            <th>Acciones</th>
+            <th className="text-center">ID</th>
+            <th className="text-center">Nombre</th>
+            <th className="text-center">Apellido</th>
+            <th className="text-center">Tipo de Persona</th>
+            <th className="text-center">DUI/NIT</th>
+            <th className="text-center">Teléfono</th>
+            <th className="text-center">Fecha de Registro</th>
+            <th className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {clientes.length > 0 ? (
             clientes.map(cliente => (
               <tr key={cliente.id}>
-                <td>{cliente.id}</td>
-                <td>{cliente.nombre}</td>
-                <td>{cliente.apellido}</td>
-                <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
-                <td>{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
-                <td>{cliente.telefono || 'N/A'}</td>
-                <td>{formatearFecha(cliente.fecha_registro)}</td>
-                <td>
+                <td className="text-center">{cliente.id}</td>
+                <td className="text-center">{cliente.nombre}</td>
+                <td className="text-center">{cliente.apellido}</td>
+                <td className="text-center">{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
+                <td className="text-center">{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
+                <td className="text-center">{cliente.telefono || 'N/A'}</td>
+                <td className="text-center">{formatearFecha(cliente.fecha_registro)}</td>
+                <td className="text-center">
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
