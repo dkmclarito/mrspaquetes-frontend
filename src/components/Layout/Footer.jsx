@@ -1,9 +1,8 @@
 import React from 'react';
 
-
-const Footer = () => {
+const Footer = ({ menuCollapsed }) => {
   return (
-    <footer className="footer">
+    <footer className={`footer ${menuCollapsed ? 'collapsed' : ''}`}>
       Mr. Paquetes © 2024 | Todos los derechos reservados
     </footer>
   );

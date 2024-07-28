@@ -14,16 +14,17 @@ const Login = ({ logo }) => {
     e.preventDefault();
     try {
       const token = await AuthService.login(email, password);
-      console.log("Token:", token);
-      navigate("/home");
+      if (token) {
+        navigate("/home");
+      } else {
+        setError("Credenciales inválidas");
+      }
     } catch (err) {
-      setError("Credenciales invalidas");
+      setError("Credenciales inválidas");
     }
   };
 
   const handleForgotPassword = () => {
-    // Implementa la lógica para el enlace de olvidaste tu contraseña aquí
-    // Por ejemplo, redirigir a una página de recuperación de contraseña
     navigate("/forgot-password");
   };
 
