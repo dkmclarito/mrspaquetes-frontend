@@ -14,6 +14,7 @@ const AgregarCliente = () => {
     const [isDuiValid, setIsDuiValid] = useState(true);
     const [isTelefonoValid, setIsTelefonoValid] = useState(true);
     const [isNitValid, setIsNitValid] = useState(true);
+    const [telefonoError, setTelefonoError] = useState("");
     const [isNrcValid, setIsNrcValid] = useState(true);
     const [isGiroValid, setIsGiroValid] = useState(true);
     const [tiposPersonas, setTiposPersonas] = useState([]);
@@ -152,20 +153,33 @@ const AgregarCliente = () => {
         setIsDuiValid(isValid);
     };
 
-
     const handleTelefonoChange = (e) => {
         let telefonoValue = e.target.value.replace(/[^\d]/g, "");
+    
+        // Verificar si el primer dígito es 6 o 7
+        if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
+            setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
+            setIsTelefonoValid(false);
+            // Prevent further input by not updating state by default
+            return;
+        } else {
+            setTelefonoError("");
+        }
+    
+        // Limit to 8 digits
         if (telefonoValue.length > 8) {
             telefonoValue = telefonoValue.slice(0, 8);
         }
+    
         if (telefonoValue.length > 4) {
             telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
         }
+    
         setTelefono(telefonoValue);
-        const isValid = telefonoValue.length === 9 && telefonoValue.match(/^\d{4}-\d{4}$/);
+    
+        const isValid = telefonoValue.length === 9;
         setIsTelefonoValid(isValid);
     };
-
     const generateErrorMessage = (errorData) => {
         let errorMessage = "Error al agregar el empleado.";
 
@@ -185,7 +199,6 @@ const AgregarCliente = () => {
 
         return errorMessage;
     };
-
 
     const handleNitChange = (event) => {
         const nit = event.target.value;
@@ -503,13 +516,12 @@ const AgregarCliente = () => {
                                                         maxLength="9"
                                                         invalid={!isTelefonoValid}
                                                     />
-                                                    {!isTelefonoValid && (
-                                                        <FormFeedback className="text-danger">
-                                                            El teléfono ingresado no es válido. Debe tener el formato 1234-5678.
-                                                        </FormFeedback>
+                                                    {telefonoError && (
+                                                        <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
                                                     )}
                                                 </FormGroup>
                                             </Col>
+
                                         </Row>
                                         <Row form>
                                             <Col md={6}>
