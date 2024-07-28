@@ -16,6 +16,23 @@ function getFechaContratacionPorDefecto() {
     return `${anioActual}-${mes}-${dia}`;
 }
 
+function getFechaMinimaNacimiento() {
+  const fechaActual = new Date();
+  fechaActual.setFullYear(fechaActual.getFullYear() - 18);
+  const anio = fechaActual.getFullYear();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
+function getFechaActual() {
+  const fechaActual = new Date();
+  const anio = fechaActual.getFullYear();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
 const AgregarEmpleado = () => {
   const [cargos, setCargos] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
@@ -43,8 +60,7 @@ const AgregarEmpleado = () => {
   const today = new Date();
   const currentYear = today.getFullYear();
   const minYear = 1900;
-  const maxDate = `${currentYear}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
+ const [maxDate, setMaxDate] = useState('');
 
  useEffect(() => {
     const fetchCargos = async () => {
@@ -175,14 +191,26 @@ const AgregarEmpleado = () => {
   };
   
   const handleFechaNacimientoChange = (e) => {
-    const rawValue = e.target.value;
-    const isValid = validateDate(rawValue);
-    setIsFechaNacimientoValida(isValid);
-    setFechaNacimiento(rawValue);
-  };
+    const { value } = e.target;
+    const fechaSeleccionada = new Date(value);
+    const fechaActual = new Date();
+    const fechaMinima = new Date(getFechaMinimaNacimiento());
 
-   const validateDate = (dateString) => {
-    
+    if (fechaSeleccionada > fechaActual || fechaSeleccionada > fechaMinima) {
+      setIsFechaNacimientoValida(false);
+    } else {
+      setIsFechaNacimientoValida(true);
+      setFechaNacimiento(value);
+    }
+  };
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    setMaxDate(formattedDate);
+  }, []);
+
+  // Función de validación de fecha
+  const validateDate = (dateString) => {
     const regex = /^\d{4}-\d{2}-\d{2}$/;
     if (!regex.test(dateString)) return false;
 
@@ -190,13 +218,19 @@ const AgregarEmpleado = () => {
     const today = new Date();
     const inputDate = new Date(year, month - 1, day);
 
+    const minYear = 1900; // Ajusta esto según sea necesario
+
+    // Validación del año
     if (year < minYear || year > today.getFullYear()) return false;
 
+    // Validación del mes
     if (month < 1 || month > 12) return false;
 
+    // Validación del día
     const daysInMonth = new Date(year, month, 0).getDate();
     if (day < 1 || day > daysInMonth) return false;
 
+    // Validación de fechas futuras
     if (inputDate > today) return false;
 
     return true;
@@ -491,17 +525,15 @@ const AgregarEmpleado = () => {
                           <FormGroup>
                       <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
                       <Input
-                      
-                        type="date"
-                        id="fechaNacimiento"
-                        value={fechaNacimiento}
-                        onChange={handleFechaNacimientoChange}
-                        max={maxDate}
-                        required
-                        invalid={!isFechaNacimientoValida}
-                      />
+                    type="date"
+                    id="fecha_nacimiento"
+                    value={fechaNacimiento}
+                    onChange={handleFechaNacimientoChange}
+                    max={getFechaActual()}
+                    invalid={!isFechaNacimientoValida}
+                  />
                       <FormFeedback>
-                        La fecha de nacimiento debe ser válida y no puede ser en el futuro.
+                        La fecha de nacimiento debe ser válida de una persona mayor de edad y no puede ser en el futuro.
                       </FormFeedback>
                     </FormGroup>
                         </Col>
