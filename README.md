@@ -12,13 +12,18 @@ git clone "https://github.com/dkmclarito/mrspaquetes-frontend.git"
 ```bash
  cd mrspaquetes-frontend
 ```
+3. Crea un archivo .env y añade la siguiente variable de entorno con su respectivo valor:
 
-2. Ejecuta el siguiente comando para instalar las dependencias del cliente:
+```
+VITE_API_URL='url_correspondiente_a_la_api'
+```
+
+4. Ejecuta el siguiente comando para instalar las dependencias del cliente:
 
 ```bash
 npm install
 ```
-3. Una vez completada la instalación, puedes iniciar el cliente con el siguiente comando:
+5. Una vez completada la instalación, puedes iniciar el cliente con el siguiente comando:
 
 ```bash
 npm run dev
