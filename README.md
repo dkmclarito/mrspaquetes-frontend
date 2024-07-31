@@ -1,8 +1,30 @@
-# React + Vite
+# Proyecto Mr Paquetes frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Proceso de instalación
 
-Currently, two official plugins are available:
+1. Clonar el proyecto
+```bash
+git clone "https://github.com/dkmclarito/mrspaquetes-frontend.git"
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+2. Navega al directorio `mrspaquetes-frontend` utilizando la terminal.
+
+```bash
+ cd mrspaquetes-frontend
+```
+3. Crea un archivo .env y añade la siguiente variable de entorno con su respectivo valor:
+
+```
+VITE_API_URL='url_correspondiente_a_la_api'
+```
+
+4. Ejecuta el siguiente comando para instalar las dependencias del cliente:
+
+```bash
+npm install
+```
+5. Una vez completada la instalación, puedes iniciar el cliente con el siguiente comando:
+
+```bash
+npm run dev
+```
