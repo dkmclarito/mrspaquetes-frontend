@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, FormFeedback, Row, Col } from "reactstrap";
+import "/src/styles/Clientes.css";
+import { toast } from 'react-toastify';
 
 // Función para convertir la fecha de YYYY-MM-DD HH:MM:SS a YYYY-MM-DD
 const formatDate = (date) => {
@@ -30,6 +32,7 @@ const ModalEditarCliente = ({
   guardarCambiosCliente,
   setModalEditar
 }) => {
+  const [telefonoError, setTelefonoError] = useState("");
   const [error, setError] = useState("");
   const [isDuiValid, setIsDuiValid] = useState(true);
   const [isTelefonoValid, setIsTelefonoValid] = useState(true);
@@ -93,22 +96,33 @@ const ModalEditarCliente = ({
 
   const handleTelefonoChange = (e) => {
     let telefonoValue = e.target.value.replace(/[^\d]/g, "");
-    if (telefonoValue.length > 8) {
-      telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4, 8);
-    }
-    setClienteEditado(prev => ({ ...prev, telefono: telefonoValue }));
 
-    const isValid = isValidTelefono(telefonoValue);
-    setIsTelefonoValid(isValid);
+    if (telefonoValue.length > 0 && !["6", "7"].includes(telefonoValue[0])) {
+      setTelefonoError("El número de teléfono debe comenzar con 6 o 7");
+      setIsTelefonoValid(false);
+    } else {
+      setTelefonoError("");
+      setIsTelefonoValid(true);
+
+      if (telefonoValue.length > 4) {
+        telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
+      }
+
+      setClienteEditado(prev => ({ ...prev, telefono: telefonoValue }));
+    }
   };
 
   const handleNrcChange = (e) => {
     let nrcValue = e.target.value.replace(/[^\d]/g, "");
-    if (nrcValue.length > 8) {
-      nrcValue = nrcValue.slice(0, 8);
+    if (nrcValue.length > 7) {
+        nrcValue = nrcValue.slice(0, 7);
     }
+    if (nrcValue.length > 6) {
+        nrcValue = nrcValue.slice(0, 6) + "-" + nrcValue.slice(6);
+    }
+
     setClienteEditado(prev => ({ ...prev, nrc: nrcValue }));
-  };
+};
 
   const handleNombreEmpresaChange = (e) => {
     setClienteEditado(prev => ({ ...prev, nombre_empresa: e.target.value }));
@@ -240,7 +254,7 @@ const ModalEditarCliente = ({
                   onChange={handleTelefonoChange}
                   invalid={!isTelefonoValid}
                 />
-                <FormFeedback>{error}</FormFeedback>
+                <FormFeedback>{telefonoError}</FormFeedback>
               </FormGroup>
             </Col>
             {esPersonaJuridica && (

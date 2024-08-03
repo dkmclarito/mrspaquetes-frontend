@@ -16,6 +16,23 @@ function getFechaContratacionPorDefecto() {
     return `${anioActual}-${mes}-${dia}`;
 }
 
+function getFechaMinimaNacimiento() {
+  const fechaActual = new Date();
+  fechaActual.setFullYear(fechaActual.getFullYear() - 18);
+  const anio = fechaActual.getFullYear();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
+function getFechaActual() {
+  const fechaActual = new Date();
+  const anio = fechaActual.getFullYear();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  return `${anio}-${mes}-${dia}`;
+}
+
 const AgregarEmpleado = () => {
   const [cargos, setCargos] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
@@ -43,9 +60,8 @@ const AgregarEmpleado = () => {
   const today = new Date();
   const currentYear = today.getFullYear();
   const minYear = 1900;
-  const maxDate = `${currentYear}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
-
+ const [maxDate, setMaxDate] = useState('');
+ const [telefonoError, setTelefonoError] = useState("");
  useEffect(() => {
     const fetchCargos = async () => {
       try {
@@ -175,14 +191,26 @@ const AgregarEmpleado = () => {
   };
   
   const handleFechaNacimientoChange = (e) => {
-    const rawValue = e.target.value;
-    const isValid = validateDate(rawValue);
-    setIsFechaNacimientoValida(isValid);
-    setFechaNacimiento(rawValue);
-  };
+    const { value } = e.target;
+    const fechaSeleccionada = new Date(value);
+    const fechaActual = new Date();
+    const fechaMinima = new Date(getFechaMinimaNacimiento());
 
-   const validateDate = (dateString) => {
-    
+    if (fechaSeleccionada > fechaActual || fechaSeleccionada > fechaMinima) {
+      setIsFechaNacimientoValida(false);
+    } else {
+      setIsFechaNacimientoValida(true);
+      setFechaNacimiento(value);
+    }
+  };
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    setMaxDate(formattedDate);
+  }, []);
+
+  // Función de validación de fecha
+  const validateDate = (dateString) => {
     const regex = /^\d{4}-\d{2}-\d{2}$/;
     if (!regex.test(dateString)) return false;
 
@@ -190,13 +218,19 @@ const AgregarEmpleado = () => {
     const today = new Date();
     const inputDate = new Date(year, month - 1, day);
 
+    const minYear = 1900; // Ajusta esto según sea necesario
+
+    // Validación del año
     if (year < minYear || year > today.getFullYear()) return false;
 
+    // Validación del mes
     if (month < 1 || month > 12) return false;
 
+    // Validación del día
     const daysInMonth = new Date(year, month, 0).getDate();
     if (day < 1 || day > daysInMonth) return false;
 
+    // Validación de fechas futuras
     if (inputDate > today) return false;
 
     return true;
@@ -239,12 +273,39 @@ const AgregarEmpleado = () => {
   };
 
   const handleTelefonoChange = (e) => {
-    const value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
-    const telefonoValue = value.slice(0, 8); // Limitar a 8 dígitos
-    const formattedTelefono = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
-    setTelefono(formattedTelefono);
-    setIsTelefonoValid(telefonoValue.length === 8 && formattedTelefono.match(/^\d{4}-\d{4}$/));
-  };
+    let telefonoValue = e.target.value.replace(/[^\d]/g, "");
+
+    // Verificar si el primer dígito es 6, 7 o 2
+    if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
+        setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
+        setIsTelefonoValid(false);
+        // Prevent further input by not updating state by default
+        return;
+    } else {
+        setTelefonoError("");
+    }
+
+    // Limit to 8 digits
+    if (telefonoValue.length > 8) {
+        telefonoValue = telefonoValue.slice(0, 8);
+    }
+
+    if (telefonoValue.length > 4) {
+        telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
+    }
+
+    setTelefono(telefonoValue);
+
+    // Validar el formato 1234-5678
+    const isValidFormat = /^\d{4}-\d{4}$/.test(telefonoValue);
+    if (!isValidFormat) {
+        setTelefonoError("El número de teléfono debe tener el formato 1234-5678");
+        setIsTelefonoValid(false);
+    } else {
+        setTelefonoError("");
+        setIsTelefonoValid(true);
+    }
+};
 
   const validarFechas = () => {
     const fechaNacimientoDate = new Date(fechaNacimiento);
@@ -471,19 +532,17 @@ const AgregarEmpleado = () => {
                             <FormGroup className="form-group-custom">
                             <Label for="telefono">Teléfono</Label>
                             <Input
-                            
-                            type="text"
-                            id="telefono"
-                            value={telefono}
-                            onChange={handleTelefonoChange}
-                            required
-                            maxLength="9"
-                            invalid={!isTelefonoValid}
-                              />
-                              {!isTelefonoValid && (
-                                  <FormFeedback className="text-danger">
-                                      El teléfono ingresado no es válido. Debe tener el formato 1234-5678.
-                                  </FormFeedback>
+                                                        type="text"
+                                                        id="telefono"
+                                                        value={telefono}
+                                                        onChange={handleTelefonoChange}
+                                                        required
+                                                        maxLength="9"
+                                                        invalid={!isTelefonoValid}
+                                                    />
+                                                    {telefonoError && (
+                                                        <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
+                                                        
                                   )}
                               </FormGroup>
                           </Col>
@@ -491,17 +550,15 @@ const AgregarEmpleado = () => {
                           <FormGroup>
                       <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
                       <Input
-                      
-                        type="date"
-                        id="fechaNacimiento"
-                        value={fechaNacimiento}
-                        onChange={handleFechaNacimientoChange}
-                        max={maxDate}
-                        required
-                        invalid={!isFechaNacimientoValida}
-                      />
+                    type="date"
+                    id="fechaNacimiento"
+                    value={fechaNacimiento}
+                    onChange={handleFechaNacimientoChange}
+                    max={getFechaActual()}
+                    invalid={!isFechaNacimientoValida}
+                  />
                       <FormFeedback>
-                        La fecha de nacimiento debe ser válida y no puede ser en el futuro.
+                        La fecha de nacimiento debe ser válida de una persona mayor de edad y no puede ser en el futuro.
                       </FormFeedback>
                     </FormGroup>
                         </Col>

@@ -12,12 +12,25 @@ import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
 import GestionUsuarios from './pages/GestionUsuarios';
 import AgregarUsuario from './pages/AgregarUsuario';
+<<<<<<< HEAD
 
 import GestionRolesPermisos from './pages/GestionRolesPermisos';
 import AgregarRolesPermisos from './pages/AgregarRolesPermisos';  // Asegúrate de tener este componente
 import VerticalLayout from './components/Layout/VerticalLayout';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+=======
+import AgregarRutasPermisos from './pages/AgregarRutasPermisos';
+import VerticalLayout from './components/Layout/VerticalLayout'; 
+import GestionVehiculos from './pages/GestionVehiculos';  // Nuevo
+import AgregarVehiculo from './pages/AgregarVehiculo';    // Nuevo
+import GestionMarcas from './pages/GestionMarcas';        // Nuevo
+import AgregarMarca from './pages/AgregarMarca';          // Nuevo
+import GestionModelos from './pages/GestionModelos';      // Nuevo
+import AgregarModelo from './pages/AgregarModelo';        // Nuevo
+import 'react-toastify/dist/ReactToastify.css'; 
+import { ToastContainer } from 'react-toastify';  
+>>>>>>> dddea6093ef367dce58221c02a3b0305da38aaba
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -38,9 +51,21 @@ const App = () => {
             <Route path="/AgregarCliente" element={<AgregarCliente />} />
             <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
             <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
+<<<<<<< HEAD
            
             <Route path="/GestionRolesPermisos" element={<GestionRolesPermisos />} />
             <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />  
+=======
+            <Route path="/AgregarRutasPermisos" element={<AgregarRutasPermisos />} />
+            
+            {/* Rutas para el módulo de vehículos */}
+            <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
+            <Route path="/AgregarVehiculo" element={<AgregarVehiculo />} />
+            <Route path="/GestionMarcas" element={<GestionMarcas />} />
+            <Route path="/AgregarMarca" element={<AgregarMarca />} />
+            <Route path="/GestionModelos" element={<GestionModelos />} />
+            <Route path="/AgregarModelo" element={<AgregarModelo />} />
+>>>>>>> dddea6093ef367dce58221c02a3b0305da38aaba
           </Route>
         </Route>
         

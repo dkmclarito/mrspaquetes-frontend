@@ -179,4 +179,100 @@
   .pagination-container .btn {
     margin: 0 5px;
   }
+  /* Estilos para el Modal */
+.modal-custom .modal-dialog {
+    max-width: 80%; /* Ajusta el ancho del modal según sea necesario */
+  }
+  
+  .modal-custom .modal-content {
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  }
+  
+  .modal-custom .modal-header {
+    background-color: #f8f9fa; /* Color de fondo para el encabezado */
+    border-bottom: 1px solid #dee2e6; /* Línea inferior del encabezado */
+  }
+  
+  .modal-custom .modal-title {
+    font-size: 1.5rem; /* Tamaño de fuente del título */
+    font-weight: 500; /* Peso de la fuente */
+  }
+  
+  .modal-custom .modal-body {
+    padding: 2rem; /* Espaciado en el cuerpo del modal */
+  }
+  
+  .modal-custom .form-group {
+    margin-bottom: 1.5rem; /* Espaciado entre los campos del formulario */
+  }
+  
+  .modal-custom .form-control {
+    border-radius: 4px; /* Bordes redondeados para los campos de formulario */
+    border: 1px solid #ced4da; /* Borde del campo de formulario */
+  }
+  
+  .modal-custom .form-control:focus {
+    border-color: #80bdff; /* Color del borde en estado de enfoque */
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Sombra del campo en estado de enfoque */
+  }
+  
+  .modal-custom .form-feedback {
+    color: #dc3545; /* Color del texto de error */
+    font-size: 0.875rem; /* Tamaño de fuente del mensaje de error */
+  }
+  
+  .modal-custom .modal-footer {
+    border-top: 1px solid #dee2e6; /* Línea superior del pie del modal */
+    padding: 1rem; /* Espaciado en el pie del modal */
+  }
+  
+  .modal-custom .btn-primary {
+    background-color: #007bff; /* Color de fondo del botón de guardar cambios */
+    border-color: #007bff; /* Color del borde del botón de guardar cambios */
+  }
+  
+  .modal-custom .btn-primary:hover {
+    background-color: #0056b3; /* Color de fondo del botón de guardar cambios al pasar el cursor */
+    border-color: #004085; /* Color del borde del botón de guardar cambios al pasar el cursor */
+  }
+  
+  .modal-custom .btn-secondary {
+    background-color: #6c757d; /* Color de fondo del botón de cancelar */
+    border-color: #6c757d; /* Color del borde del botón de cancelar */
+  }
+  
+  .modal-custom .btn-secondary:hover {
+    background-color: #5a6268; /* Color de fondo del botón de cancelar al pasar el cursor */
+    border-color: #4e555b; /* Color del borde del botón de cancelar al pasar el cursor */
+  }
+  /* General table styling */
+.table-centered {
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  /* Center table headers and cells */
+  .table-centered th, .table-centered td {
+    text-align: center;
+  }
+  
+  /* Style for table actions */
+  .button-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px; /* Adjust gap between buttons */
+  }
+  
+  /* Optional: Add a little padding to buttons for better appearance */
+  .btn-icon {
+    padding: 6px 12px; /* Adjust padding as needed */
+  }
+  
+  /* Optional: Style for table light header */
+  .thead-light th {
+    background-color: #f8f9fa;
+    text-align: center;
+  }
+  
   

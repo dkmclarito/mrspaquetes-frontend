@@ -1,12 +1,8 @@
 import React, { useCallback } from "react";
+import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 
-const ModalConfirmarEliminar = ({
-  confirmarEliminar,
-  confirmarEliminarCliente,
-  setConfirmarEliminar
-}) => {
-  // Use callback to avoid unnecessary re-renders
+const ModalConfirmarEliminarModelo = ({ confirmarEliminar, confirmarEliminarModelo, setConfirmarEliminar }) => {
   const handleToggle = useCallback(() => {
     setConfirmarEliminar(false);
   }, [setConfirmarEliminar]);
@@ -15,14 +11,20 @@ const ModalConfirmarEliminar = ({
     <Modal isOpen={confirmarEliminar} toggle={handleToggle}>
       <ModalHeader toggle={handleToggle}>Confirmar Eliminación</ModalHeader>
       <ModalBody>
-        ¿Estás seguro de que deseas eliminar este cliente?
+        ¿Estás seguro de que deseas eliminar este modelo?
       </ModalBody>
       <ModalFooter>
-        <Button color="danger" onClick={confirmarEliminarCliente} aria-label="Eliminar cliente">Eliminar</Button>
+        <Button color="danger" onClick={confirmarEliminarModelo} aria-label="Eliminar modelo">Eliminar</Button>
         <Button color="secondary" onClick={handleToggle} aria-label="Cancelar">Cancelar</Button>
       </ModalFooter>
     </Modal>
   );
 };
 
-export default ModalConfirmarEliminar;
+ModalConfirmarEliminarModelo.propTypes = {
+  confirmarEliminar: PropTypes.bool.isRequired,
+  confirmarEliminarModelo: PropTypes.func.isRequired,
+  setConfirmarEliminar: PropTypes.func.isRequired,
+};
+
+export default ModalConfirmarEliminarModelo;

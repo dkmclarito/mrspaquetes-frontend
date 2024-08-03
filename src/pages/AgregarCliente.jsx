@@ -14,6 +14,7 @@ const AgregarCliente = () => {
     const [isDuiValid, setIsDuiValid] = useState(true);
     const [isTelefonoValid, setIsTelefonoValid] = useState(true);
     const [isNitValid, setIsNitValid] = useState(true);
+    const [telefonoError, setTelefonoError] = useState("");
     const [isNrcValid, setIsNrcValid] = useState(true);
     const [isGiroValid, setIsGiroValid] = useState(true);
     const [tiposPersonas, setTiposPersonas] = useState([]);
@@ -152,26 +153,39 @@ const AgregarCliente = () => {
         setIsDuiValid(isValid);
     };
 
-
     const handleTelefonoChange = (e) => {
         let telefonoValue = e.target.value.replace(/[^\d]/g, "");
+    
+        // Verificar si el primer dígito es 6 o 7
+        if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
+            setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
+            setIsTelefonoValid(false);
+            // Prevent further input by not updating state by default
+            return;
+        } else {
+            setTelefonoError("");
+        }
+    
+        // Limit to 8 digits
         if (telefonoValue.length > 8) {
             telefonoValue = telefonoValue.slice(0, 8);
         }
+    
         if (telefonoValue.length > 4) {
             telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
         }
+    
         setTelefono(telefonoValue);
-        const isValid = telefonoValue.length === 9 && telefonoValue.match(/^\d{4}-\d{4}$/);
+    
+        const isValid = telefonoValue.length === 9;
         setIsTelefonoValid(isValid);
     };
-
     const generateErrorMessage = (errorData) => {
         let errorMessage = "Error al agregar el empleado.";
-    
+
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
-    
+
             if (errorKeys.includes("dui") && errorKeys.includes("email")) {
                 errorMessage = "El DUI y el correo electrónico ya están registrados.";
             } else if (errorKeys.includes("dui")) {
@@ -182,24 +196,23 @@ const AgregarCliente = () => {
                 errorMessage = errorData.message || "Error al agregar el empleado.";
             }
         }
-    
+
         return errorMessage;
     };
-    
 
     const handleNitChange = (event) => {
         const nit = event.target.value;
-    
+
         // Eliminar caracteres no numéricos
         let nitSanitized = nit.replace(/[^\d]/g, "");
-    
+
         // Limitar la longitud máxima a 14 caracteres
         if (nitSanitized.length > 14) {
             nitSanitized = nitSanitized.slice(0, 14);
         }
-    
+
         let errorMessage = "";
-    
+
         if (nitSanitized.length !== 14) {
             errorMessage = "El NIT debe tener 14 dígitos.";
         } else {
@@ -207,7 +220,7 @@ const AgregarCliente = () => {
             const codigoMunicipio = parseInt(nitSanitized.substring(0, 4), 10);
             const dia = parseInt(nitSanitized.substring(4, 6), 10);
             const mes = parseInt(nitSanitized.substring(6, 8), 10);
-    
+
             // Validar día y mes
             if (dia < 1 || dia > 31 || mes < 1 || mes > 12) {
                 errorMessage = "La fecha en el NIT no es válida.";
@@ -215,7 +228,7 @@ const AgregarCliente = () => {
                 errorMessage = "El código de municipio no es válido.";
             }
         }
-    
+
         // Formatear el NIT con guiones
         let nitFormatted = nitSanitized;
         if (nitSanitized.length > 4) {
@@ -227,12 +240,12 @@ const AgregarCliente = () => {
         if (nitSanitized.length === 14) {
             nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
         }
-    
+
         setIsNitValid(errorMessage === "");
         setFormData(prevData => ({ ...prevData, nit: nitFormatted }));
         setNitErrorMessage(errorMessage); // Actualizar el mensaje de error del NIT
     };
-    
+
 
     const handleNrcChange = (e) => {
         let nrcValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
@@ -503,13 +516,12 @@ const AgregarCliente = () => {
                                                         maxLength="9"
                                                         invalid={!isTelefonoValid}
                                                     />
-                                                    {!isTelefonoValid && (
-                                                        <FormFeedback className="text-danger">
-                                                            El teléfono ingresado no es válido. Debe tener el formato 1234-5678.
-                                                        </FormFeedback>
+                                                    {telefonoError && (
+                                                        <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
                                                     )}
                                                 </FormGroup>
                                             </Col>
+
                                         </Row>
                                         <Row form>
                                             <Col md={6}>
@@ -673,7 +685,9 @@ const AgregarCliente = () => {
                                         <Row>
                                             <Col md={12}>
                                                 <Button type="submit" color="primary">Guardar</Button>
-                                                <Button href="/GestionClientes" color="danger">Cancelar</Button>
+                                                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionClientes'}>
+                                                    Salir
+                                                </Button>
                                             </Col>
                                         </Row>
                                     </Form>
