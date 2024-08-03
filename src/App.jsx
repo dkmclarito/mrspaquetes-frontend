@@ -44,8 +44,8 @@ const App = () => {
             <Route path="/AgregarCliente" element={<AgregarCliente />} />
             <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
             <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
-            <Route path="/AgregarRolesPermisos" element={<AgregarRolesPermisos />} /> 
             <Route path="/GestionRolesPermisos" element={<GestionRolesPermisos />} />
+            <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />
 
             {/* Rutas para el módulo de vehículos */}
             <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
