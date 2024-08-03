@@ -12,10 +12,12 @@ import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
 import GestionUsuarios from './pages/GestionUsuarios';
 import AgregarUsuario from './pages/AgregarUsuario';
-import AgregarRutasPermisos from './pages/AgregarRutasPermisos';
-import VerticalLayout from './components/Layout/VerticalLayout'; 
-import 'react-toastify/dist/ReactToastify.css'; 
-import { ToastContainer } from 'react-toastify';  
+
+import GestionRolesPermisos from './pages/GestionRolesPermisos';
+import AgregarRolesPermisos from './pages/AgregarRolesPermisos';  // Asegúrate de tener este componente
+import VerticalLayout from './components/Layout/VerticalLayout';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -36,7 +38,9 @@ const App = () => {
             <Route path="/AgregarCliente" element={<AgregarCliente />} />
             <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
             <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
-            <Route path="/AgregarRutasPermisos" element={<AgregarRutasPermisos />} />
+           
+            <Route path="/GestionRolesPermisos" element={<GestionRolesPermisos />} />
+            <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />  
           </Route>
         </Route>
         
