@@ -160,16 +160,16 @@ const AgregarEmpleado = () => {
     fetchGeneros();
   }, [token]);
 
-  const validateName = (name) => {
-    // Expresión regular para permitir letras, espacios y "ñ"
-    const regex = /^[A-Za-zñÑ\s]+$/;
-    return regex.test(name) && name.length <= 80;
+  const validateNombre = (nombre) => {
+    // Expresión regular para permitir letras con tildes, espacios y "ñ"
+    const regex = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
+    return regex.test(nombre) && nombre.length <= 80;
   };
 
-  const validateApellido = (name) => {
-    // Expresión regular para permitir letras, espacios y "ñ"
-    const regex = /^[A-Za-zñÑ\s]+$/;
-    return regex.test(name) && name.length <= 80;
+  const validateApellido = (apellido) => {
+    // Expresión regular para permitir letras con tildes, espacios y "ñ"
+    const regex = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
+    return regex.test(apellido) && apellido.length <= 80;
   };
   
   
@@ -178,7 +178,7 @@ const AgregarEmpleado = () => {
     // Filtrar caracteres no permitidos
     const cleanedNombre = nombre.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ\s]/g, '');
     setNombres(cleanedNombre);
-    setIsNombreValido(validateName(cleanedNombre));
+    setIsNombreValido(validateNombre(cleanedNombre));
   };
 
  

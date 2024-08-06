@@ -60,6 +60,10 @@
     margin-top: 1rem;
 }
 
+.table-centered td, .table-centered th {
+    text-align: justify;
+}
+
 .btn-icon {
     display: inline-flex;
     align-items: center;
@@ -100,12 +104,14 @@
 .table th {
     background-color: #f8f9fa; /* Color de fondo para los encabezados */
     font-weight: bold; /* Negrita para los encabezados */
-    text-align: left; /* Alineación del texto a la izquierda en los encabezados */
 }
 
 .table td {
     background-color: #ffffff; /* Color de fondo para las celdas de datos */
-    text-align: left; /* Alineación del texto a la izquierda en las celdas de datos */
+}
+
+.table td, .table th {
+    text-align: left; /* Alineación del texto a la izquierda */
 }
 
 /* Estilo para el botón de editar */
@@ -130,54 +136,56 @@
 
 .modal-editar-empleado .modal-header {
     background-color: #555;
-}
-
-.modal-editar-empleado .modal-title {
+  }
+  
+  .modal-editar-empleado .modal-title {
     color: #f1f3f5;
-}
-
-.modal-editar-empleado .modal-footer {
+  }
+  
+  .modal-editar-empleado .modal-footer {
     justify-content: flex-start;
-}
+  }
+
+  /* Empleados.css */
 
 /* Personalización del encabezado del modal */
 .modal-header-danger {
     background-color: #dc3545;
     color: white;
-}
-
-/* Personalización del cuerpo del modal */
-.modal-body-custom {
+  }
+  
+  /* Personalización del cuerpo del modal */
+  .modal-body-custom {
     font-size: 1.2em;
-}
-
-/* Botón de eliminar */
-.modal-footer .btn-danger {
+  }
+  
+  /* Botón de eliminar */
+  .modal-footer .btn-danger {
     background-color: #dc3545;
     border-color: #dc3545;
-}
-
-/* Botón de cancelar */
-.modal-footer .btn-secondary {
+  }
+  
+  /* Botón de cancelar */
+  .modal-footer .btn-secondary {
     background-color: #6c757d;
     border-color: #6c757d;
-}
-
-/* Transiciones */
+  }
+  /* src/styles/Empleados.css */
 .fade-enter {
     opacity: 0;
-}
-
-.fade-enter-active {
+  }
+  
+  .fade-enter-active {
     opacity: 1;
     transition: opacity 300ms;
-}
-
-.fade-exit {
+  }
+  
+  .fade-exit {
     opacity: 1;
-}
-
-.fade-exit-active {
+  }
+  
+  .fade-exit-active {
     opacity: 0;
     transition: opacity 300ms;
-}
+  }
+  

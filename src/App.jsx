@@ -22,6 +22,8 @@ import GestionModelos from './pages/GestionModelos';      // Nuevo
 import AgregarModelo from './pages/AgregarModelo';        // Nuevo
 import 'react-toastify/dist/ReactToastify.css'; 
 import { ToastContainer } from 'react-toastify';  
+import GestionPaquetes from './pages/GestionPaquetes';
+import AgregarPaquete from './pages/AgregarPaquete';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -51,6 +53,10 @@ const App = () => {
             <Route path="/AgregarMarca" element={<AgregarMarca />} />
             <Route path="/GestionModelos" element={<GestionModelos />} />
             <Route path="/AgregarModelo" element={<AgregarModelo />} />
+
+             {/* Rutas para el módulo de paquetes */}
+             <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
+            <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
           </Route>
         </Route>
         

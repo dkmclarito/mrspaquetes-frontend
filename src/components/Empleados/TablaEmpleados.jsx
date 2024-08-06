@@ -33,27 +33,27 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
       <table className="table table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
-            <th className="text-center">ID</th>
-            <th className="text-center">Nombres</th>
-            <th className="text-center">Apellidos</th>
-            <th className="text-center">Cargo</th>
-            <th className="text-center">Rol</th>
-            <th className="text-center">Teléfono</th>
-            <th className="text-center">Fecha de Contratación</th>
-            <th className="text-center">Acciones</th>
+            <th>ID</th>
+            <th>Nombres</th>
+            <th>Apellidos</th>
+            <th>Cargo</th>
+            <th>Rol</th>
+            <th>Teléfono</th>
+            <th>Fecha de Contratación</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {empleados.map((empleado, index) => (
             <tr key={index}>
-              <td className="text-center">{empleado.id}</td>
-              <td className="text-center">{empleado.nombres}</td>
-              <td className="text-center">{empleado.apellidos}</td>
-              <td className="text-center">{obtenerNombreCargo(empleado.id_cargo)}</td>
-              <td className="text-center">{obtenerNombreRol(empleado)}</td>
-              <td className="text-center">{formatearTelefono(empleado.telefono)}</td>
-              <td className="text-center">{formatearFecha(empleado.fecha_contratacion)}</td>
-              <td className="text-center">
+              <td>{empleado.id}</td>
+              <td>{empleado.nombres}</td>
+              <td>{empleado.apellidos}</td>
+              <td>{obtenerNombreCargo(empleado.id_cargo)}</td>
+              <td>{obtenerNombreRol(empleado)}</td>
+              <td>{formatearTelefono(empleado.telefono)}</td>
+              <td>{formatearFecha(empleado.fecha_contratacion)}</td>
+              <td>
                 <div className="button-container">
                   <Button
                     className="me-2 btn-icon btn-danger"
