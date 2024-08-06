@@ -12,8 +12,10 @@ import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
 import GestionUsuarios from './pages/GestionUsuarios';
 import AgregarUsuario from './pages/AgregarUsuario';
-import AgregarRutasPermisos from './pages/AgregarRutasPermisos';
-import VerticalLayout from './components/Layout/VerticalLayout'; 
+import GestionRolesPermisos from './pages/GestionRolesPermisos';
+import VerticalLayout from './components/Layout/VerticalLayout';
+import 'react-toastify/dist/ReactToastify.css';
+import AgregarRolesPermisos from './pages/AgregarRolesPermisos';
 import GestionVehiculos from './pages/GestionVehiculos';  // Nuevo
 import AgregarVehiculo from './pages/AgregarVehiculo';    // Nuevo
 import GestionMarcas from './pages/GestionMarcas';        // Nuevo
@@ -44,8 +46,9 @@ const App = () => {
             <Route path="/AgregarCliente" element={<AgregarCliente />} />
             <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
             <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
-            <Route path="/AgregarRutasPermisos" element={<AgregarRutasPermisos />} />
-            
+            <Route path="/GestionRolesPermisos" element={<GestionRolesPermisos />} />
+            <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />
+
             {/* Rutas para el módulo de vehículos */}
             <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
             <Route path="/AgregarVehiculo" element={<AgregarVehiculo />} />

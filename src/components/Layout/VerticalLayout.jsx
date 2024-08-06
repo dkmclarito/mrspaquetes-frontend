@@ -111,7 +111,7 @@ const VerticalLayout = () => {
               </Dropdown>
             </li>
             <li className="nav-item">
-              <NavLink to="/AgregarRutasPermisos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+              <NavLink to="/GestionRolesPermisos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                 <BiShield className="nav-icon" />
                 {!menuCollapsed && <span>Roles y permisos</span>}
               </NavLink>

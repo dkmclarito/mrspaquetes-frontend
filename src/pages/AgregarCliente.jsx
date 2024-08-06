@@ -181,7 +181,7 @@ const AgregarCliente = () => {
         setIsTelefonoValid(isValid);
     };
     const generateErrorMessage = (errorData) => {
-        let errorMessage = "Error al agregar el empleado.";
+        let errorMessage = "Error al agregar el cliente.";
 
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
@@ -193,7 +193,7 @@ const AgregarCliente = () => {
             } else if (errorKeys.includes("nit")) {
                 errorMessage = "El NIT ya está registrado.";
             } else {
-                errorMessage = errorData.message || "Error al agregar el empleado.";
+                errorMessage = errorData.message || "Error al agregar el cliente.";
             }
         }
 
@@ -341,16 +341,18 @@ const AgregarCliente = () => {
             const errorData = error.response.data.error;
             let errorMessage = "Error al agregar el cliente.";
 
-            if (errorData.dui) {
-                errorMessage = "El DUI ya está registrado.";
-            } else if (errorData.telefono) {
-                errorMessage = "El teléfono ya está registrado.";
-            } else if (errorData.nit) {
-                errorMessage = "El NIT ya está registrado.";
-            } else if (errorData.nrc) {
-                errorMessage = "El NRC ya está registrado.";
-            } else {
-                errorMessage = errorData.message || errorMessage;
+            if (errorData.errors) {
+                const errorKeys = Object.keys(errorData.errors);
+
+                if (errorKeys.includes("dui") && errorKeys.includes("email")) {
+                    errorMessage = "El DUI y el correo electrónico ya están registrados.";
+                } else if (errorKeys.includes("dui")) {
+                    errorMessage = "El DUI ya está registrado.";
+                } else if (errorKeys.includes("nit")) {
+                    errorMessage = "El NIT ya está registrado.";
+                } else {
+                    errorMessage = errorData.message || "Error al agregar el cliente.";
+                }
             }
 
             setAlertaExito(false);
@@ -362,7 +364,6 @@ const AgregarCliente = () => {
             setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
         }
     };
-
 
     const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
