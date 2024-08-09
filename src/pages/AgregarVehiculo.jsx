@@ -108,35 +108,41 @@ const AgregarVehiculo = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Eliminar ' T' de capacidadCarga si existe
+    let cleanedCapacidadCarga = capacidadCarga;
+    if (cleanedCapacidadCarga.endsWith(' T')) {
+        cleanedCapacidadCarga = cleanedCapacidadCarga.slice(0, -2); // Elimina los últimos 2 caracteres
+    }
+
     const vehiculoData = {
-      id_marca: marcaSeleccionada,
-      id_modelo: modeloSeleccionado,
-      placa,
-      capacidad_carga: capacidadCarga,
-      id_estado: idEstado,
-      year_fabricacion: anio,
-      id_empleado_conductor: empleadoConductor,
-      id_empleado_apoyo: empleadoApoyo
+        id_marca: marcaSeleccionada,
+        id_modelo: modeloSeleccionado,
+        placa,
+        capacidad_carga: cleanedCapacidadCarga, // Usar el valor limpiado
+        id_estado: idEstado,
+        year_fabricacion: anio,
+        id_empleado_conductor: empleadoConductor,
+        id_empleado_apoyo: empleadoApoyo
     };
 
     try {
-      const response = await axios.post(`${API_URL}/vehiculo`, vehiculoData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        }
-      });
+        const response = await axios.post(`${API_URL}/vehiculo`, vehiculoData, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            }
+        });
 
-      console.log("Vehículo registrado:", response.data);
-      setAlertaExito(true);
-      setTimeout(() => navigate('/GestionVehiculos'), 2000);
-      resetForm();
-      setAlertaError(false);
+        console.log("Vehículo registrado:", response.data);
+        setAlertaExito(true);
+        setTimeout(() => navigate('/GestionVehiculos'), 2000);
+        resetForm();
+        setAlertaError(false);
     } catch (error) {
-      console.error("Error de solicitud:", error.response);
-      handleError(error);
+        console.error("Error de solicitud:", error.response);
+        handleError(error);
     }
-  };
+};
 
   const resetForm = () => {
     setMarcaSeleccionada("");
