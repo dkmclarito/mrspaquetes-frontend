@@ -26,12 +26,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';  
 import GestionPaquetes from './pages/GestionPaquetes';
 import AgregarPaquete from './pages/AgregarPaquete';
+import { AuthProvider } from './services/AuthContext';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
   return (
     <Router>
+      <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<Logout />} />
@@ -66,6 +68,7 @@ const App = () => {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
       </Routes>
+      </AuthProvider>
     </Router>
   );
 };
