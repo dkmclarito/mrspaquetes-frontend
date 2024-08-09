@@ -146,8 +146,6 @@ const AgregarCliente = () => {
         if (formattedDui.length > 8) {
             formattedDui = formattedDui.slice(0, 8) + "-" + formattedDui.slice(8, 9);
         }
-
-        // Validar el DUI con el formato correcto (debe tener 10 caracteres y seguir el patrón)
         const isValid = formattedDui.length === 10 && formattedDui.match(/^0\d{7}-\d{1}$/);
         setDui(formattedDui);
         setIsDuiValid(isValid);
@@ -340,10 +338,18 @@ const AgregarCliente = () => {
         if (error.response && error.response.data) {
             const errorData = error.response.data.error;
             let errorMessage = "Error al agregar el cliente.";
-
-            if (errorData.errors) {
+    
+            // Detectar errores de duplicación
+            if (errorData && errorData.includes("Duplicate entry")) {
+                if (errorData.includes("dui")) {
+                    errorMessage = "El DUI ya está registrado. Por favor, intenta con otro.";
+                } else if (errorData.includes("nit")) {
+                    errorMessage = "El NIT ya está registrado. Por favor, intenta con otro.";
+                }
+            } else if (errorData.errors) {
+                // Manejar otros errores de validación
                 const errorKeys = Object.keys(errorData.errors);
-
+    
                 if (errorKeys.includes("dui") && errorKeys.includes("email")) {
                     errorMessage = "El DUI y el correo electrónico ya están registrados.";
                 } else if (errorKeys.includes("dui")) {
@@ -354,7 +360,7 @@ const AgregarCliente = () => {
                     errorMessage = errorData.message || "Error al agregar el cliente.";
                 }
             }
-
+    
             setAlertaExito(false);
             setAlertaError(true);
             setErrorMensaje(errorMessage);
@@ -364,6 +370,7 @@ const AgregarCliente = () => {
             setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
         }
     };
+    
 
     const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
