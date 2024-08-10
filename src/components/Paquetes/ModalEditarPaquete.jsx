@@ -1,18 +1,78 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import "/src/styles/Empleados.css";
-import { toast } from 'react-toastify';
+import '/src/styles/Empleados.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const getCurrentDate = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return { year, month, day };
+// Función para convertir dd-mm-yyyy a yyyy-mm-dd
+const formatDateForInput = (dateString) => {
+  const [day, month, year] = dateString.split('-');
+  return `${year}-${month}-${day}`;
 };
 
-const { year: currentYear, month: currentMonth, day: currentDay } = getCurrentDate();
+// Función para convertir yyyy-mm-dd a dd-mm-yyyy
+const formatDateFromInput = (dateString) => {
+  const [year, month, day] = dateString.split('-');
+  return `${day}-${month}-${year}`;
+};
+
+// Obtener el año actual
+const getCurrentYear = () => new Date().getFullYear();
+const currentYear = getCurrentYear();
+const minDate = `${currentYear}-01-01`;
+const maxDate = `${currentYear}-12-31`;
+
+// Función para formatear el peso
+const formatPeso = (value) => {
+  let [integerPart, decimalPart] = value.replace(/,/g, '').split('.');
+
+  if (integerPart.length > 3) {
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  return decimalPart !== undefined ? `${integerPart}.${decimalPart}` : integerPart;
+};
+
+// Validación del campo
+const validateField = (name, value, fechaEnvio) => {
+  let error = '';
+
+  switch (name) {
+    case 'tipo_paquete':
+    case 'empaque':
+    case 'estado_paquete':
+      error = value === '' ? `Debe seleccionar un ${name.replace('_', ' ')}.` : '';
+      break;
+    case 'peso':
+      const valueWithoutCommas = value.replace(/,/g, '');
+      const pesoPattern = /^\d+(\.\d{1,2})?$/;
+      const isNegative = parseFloat(valueWithoutCommas) < 0;
+      const isZeroOrEmpty = parseFloat(valueWithoutCommas) <= 0 || isNaN(parseFloat(valueWithoutCommas));
+
+      if (isNegative) {
+        error = 'El peso no puede ser negativo.';
+      } else if (!pesoPattern.test(valueWithoutCommas)) {
+        error = 'Formato de peso inválido. Ejemplo válido: 1234.56';
+      } else if (isZeroOrEmpty) {
+        error = 'El peso debe ser mayor que cero.';
+      }
+      break;
+    case 'fecha_envio':
+      error = value === '' || new Date(value) > new Date() ? 'La fecha de envío es obligatoria y no puede ser futura.' : '';
+      break;
+    case 'fecha_entrega_estimada':
+      error = value === '' || new Date(value) < new Date(fechaEnvio) ? 'La fecha de entrega estimada es obligatoria y no puede ser anterior a la fecha de envío.' : '';
+      break;
+    case 'descripcion_contenido':
+      error = value.trim() === '' ? 'La descripción es obligatoria.' : '';
+      break;
+    default:
+      break;
+  }
+
+  return error;
+};
 
 const ModalEditarPaquete = ({
   modalEditar,
@@ -25,264 +85,259 @@ const ModalEditarPaquete = ({
   estadosPaquete = []
 }) => {
   const [formErrors, setFormErrors] = useState({
-    tipo: '',
+    tipo_paquete: '',
     empaque: '',
-    estado: '',
+    estado_paquete: '',
     peso: '',
-    fechaEnvio: '',
-    fechaEntrega: '',
-    descripcion: ''
+    fecha_envio: '',
+    fecha_entrega_estimada: '',
+    descripcion_contenido: ''
   });
 
   useEffect(() => {
-    console.log('Paquete editado en modal:', paqueteEditado);
+    if (paqueteEditado) {
+      //console.log('Paquete editado en modal:', paqueteEditado);
+    }
   }, [paqueteEditado]);
 
-  useEffect(() => {
-    setPaqueteEditado(prev => ({
-      ...prev,
-      fecha_envio: `${currentYear}-${currentMonth}-${currentDay}`,
-      fecha_entrega_estimada: `${currentYear}-${currentMonth}-${currentDay}`
-    }));
-  }, [currentDay, currentMonth, currentYear]);
-
-  const formatoFecha = (fecha) => {
-    if (!fecha) return '';
-    const [year, month, day] = fecha.split('-');
-    return `${day}-${month}-${year}`;
-  };
-
-  const convertirFechaParaInput = (fecha) => {
-    if (!fecha) return '';
-    const [day, month, year] = fecha.split('-');
-    return `${year}-${month}-${day}`;
-  };
-
   const handleFechaChange = (e, field) => {
-    const fecha = e.target.value;
-    let error = '';
-
-    if (!fecha) {
-      error = 'La fecha es obligatoria.';
-    } else {
-      const [year, month, day] = fecha.split('-').map(Number);
-      if (month < 1 || month > 12) {
-        error = 'El mes debe estar entre 1 y 12.';
-      } else if (day < 1 || day > 31) {
-        error = 'El día debe estar entre 1 y 31.';
-      } else if (field === 'fecha_envio' && new Date(fecha) > new Date()) {
-        error = 'La fecha de envío no puede ser futura.';
-      } else if (field === 'fecha_entrega_estimada' && new Date(fecha) < new Date(paqueteEditado.fecha_envio)) {
-        error = 'La fecha de entrega estimada no puede ser anterior a la fecha de envío.';
-      }
-    }
-
+    if (!paqueteEditado) return;
+    const fechaInput = e.target.value;
     setPaqueteEditado(prevState => ({
       ...prevState,
-      [field]: fecha
+      [field]: formatDateFromInput(fechaInput)
     }));
+    setFormErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: fechaInput === '' ? 'La fecha es obligatoria.' : ''
+    }));
+  };
+
+  const handlePesoChange = (e) => {
+    const { value } = e.target;
+    const validChars = value.replace(/[^0-9.,]/g, '');
+    let [integerPart, decimalPart] = validChars.split('.');
+    
+    integerPart = integerPart.slice(0, 7);
+    
+    if (decimalPart) {
+      decimalPart = decimalPart.slice(0, 2);
+    }
+
+    const formattedPeso = formatPeso(integerPart + (decimalPart !== undefined ? '.' + decimalPart : ''));
+
+    setPaqueteEditado(prev => ({
+      ...prev,
+      peso: formattedPeso
+    }));
+
+    const error = validateField('peso', formattedPeso);
+    setFormErrors(prev => ({
+      ...prev,
+      peso: error
+    }));
+  };
+
+  const handleChange = (e, field) => {
+    if (!paqueteEditado) return;
+    const { value } = e.target;
+    setPaqueteEditado(prevState => ({
+      ...prevState,
+      [field]: value
+    }));
+    const error = validateField(field, value, paqueteEditado.fecha_envio);
     setFormErrors(prevErrors => ({
       ...prevErrors,
       [field]: error
     }));
   };
 
-  const handleChange = (e, field) => {
-    const { value } = e.target;
-    setPaqueteEditado(prevState => ({
-      ...prevState,
-      [field]: value
-    }));
-    setFormErrors(prevErrors => ({
-      ...prevErrors,
-      [field]: value === '' ? `El campo ${field} es obligatorio.` : ''
-    }));
-  };
-
   const handleSelectChange = (e, field) => {
+    if (!paqueteEditado) return;
     const value = e.target.value;
     setPaqueteEditado(prevState => ({
       ...prevState,
       [field]: value
     }));
+    const error = validateField(field, value, paqueteEditado.fecha_envio);
     setFormErrors(prevErrors => ({
       ...prevErrors,
-      [field]: value === '' ? `Debe seleccionar un ${field}.` : ''
+      [field]: error
     }));
   };
 
-  const handleGuardarCambios = () => {
-    const pesoValido = paqueteEditado.peso && !isNaN(paqueteEditado.peso);
-    const fechaEnvioValida = paqueteEditado.fecha_envio && new Date(paqueteEditado.fecha_envio) <= new Date();
-    const fechaEntregaValida = paqueteEditado.fecha_entrega_estimada && new Date(paqueteEditado.fecha_entrega_estimada) >= new Date(paqueteEditado.fecha_envio);
-    const descripcionValida = paqueteEditado.descripcion_contenido && paqueteEditado.descripcion_contenido.length > 0;
-
-    setFormErrors({
-      peso: pesoValido ? '' : 'El peso es obligatorio y debe ser un número.',
-      fechaEnvio: fechaEnvioValida ? '' : 'La fecha de envío es obligatoria y no puede ser futura.',
-      fechaEntrega: fechaEntregaValida ? '' : 'La fecha de entrega estimada es obligatoria y no puede ser anterior a la fecha de envío.',
-      descripcion: descripcionValida ? '' : 'La descripción es obligatoria.'
-    });
-
-    const camposValidos = pesoValido && fechaEnvioValida && fechaEntregaValida && descripcionValida;
-
-    if (!camposValidos) return;
-
-    const paqueteAEnviar = {
-      ...paqueteEditado,
-      fecha_envio: convertirFechaParaInput(paqueteEditado.fecha_envio),
-      fecha_entrega_estimada: convertirFechaParaInput(paqueteEditado.fecha_entrega_estimada)
+  const handleGuardarCambios = async () => {
+    //console.log('handleGuardarCambios llamado'); 
+  
+    if (!paqueteEditado) return;
+  
+    const camposValidos = Object.keys(formErrors).every(field => formErrors[field] === '');
+    //console.log('Errores en formulario:', formErrors); 
+  
+    if (!camposValidos) {
+      toast.error('Por favor, corrige los errores en el formulario.', {
+        position: 'top-right',
+        autoClose: 500,
+      });
+      return;
+    }
+  
+    try {
+      const paqueteAEnviar = {
+      id: paqueteEditado.id, 
+      id_tipo_paquete: tiposPaquete.find(tipo => tipo.nombre === paqueteEditado.tipo_paquete)?.id,
+      id_empaque: empaques.find(empaque => empaque.empaquetado === paqueteEditado.empaque)?.id,
+      id_estado_paquete: estadosPaquete.find(estado => estado.nombre === paqueteEditado.estado_paquete)?.id,
+      peso: paqueteEditado.peso,
+      fecha_envio: formatDateForInput(paqueteEditado.fecha_envio),
+      fecha_entrega_estimada: formatDateForInput(paqueteEditado.fecha_entrega_estimada),
+      descripcion_contenido: paqueteEditado.descripcion_contenido
     };
 
-    guardarCambiosPaquete(paqueteAEnviar);
-    toast.success('Cambios guardados con éxito.');
-    setModalEditar(false);
+  
+      //console.log('Paquete a enviar:', paqueteAEnviar); 
+  
+      await guardarCambiosPaquete(paqueteAEnviar);
+      toast.success('Cambios guardados con éxito.', {
+        position: 'top-right',
+        autoClose: 500,
+      });
+      setModalEditar(false);
+    } catch (error) {
+      console.error('Error al guardar los cambios del paquete:', error);
+      toast.error('Hubo un error al guardar los cambios. Intenta nuevamente.', {
+        position: 'top-right',
+        autoClose: 500,
+      });
+    }
   };
+  
+
+  const getFormattedDate = (date) => date ? formatDateForInput(date) : '';
 
   return (
-    <Modal show={modalEditar} onHide={() => setModalEditar(false)} size="lg">
-      <Modal.Header closeButton>
-        <Modal.Title>Editar Paquete</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="tipo">
-                <Form.Label>Tipo de Paquete</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={paqueteEditado ? tiposPaquete.find(tipo => tipo.nombre === paqueteEditado.tipo_paquete)?.id || '' : ''}
-                  onChange={(e) => handleSelectChange(e, 'id_tipo_paquete')}
-                  isInvalid={!!formErrors.tipo}
-                >
-                  <option value="">Seleccionar Tipo</option>
-                  {tiposPaquete.map(tipo => (
-                    <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
-                  ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.tipo}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="empaque">
-                <Form.Label>Empaque</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={paqueteEditado ? empaques.find(empaque => empaque.empaquetado === paqueteEditado.empaque)?.id || '' : ''}
-                  onChange={(e) => handleSelectChange(e, 'id_empaque')}
-                  isInvalid={!!formErrors.empaque}
-                >
-                  <option value="">Seleccionar Empaque</option>
-                  {empaques.map(empaque => (
-                    <option key={empaque.id} value={empaque.id}>{empaque.empaquetado}</option>
-                  ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.empaque}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="estado">
-                <Form.Label>Estado</Form.Label>
-                <Form.Control
-                  as="select"
-                  value={paqueteEditado ? estadosPaquete.find(estado => estado.nombre === paqueteEditado.estado_paquete)?.id || '' : ''}
-                  onChange={(e) => handleSelectChange(e, 'id_estado_paquete')}
-                  isInvalid={!!formErrors.estado}
-                >
-                  <option value="">Seleccionar Estado</option>
-                  {estadosPaquete.map(estado => (
-                    <option key={estado.id} value={estado.id}>{estado.nombre}</option>
-                  ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.estado}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="peso">
-                <Form.Label>Peso (Libras)</Form.Label>
-                <Form.Control
-                  type="number"
-                  step="0.01"
-                  value={paqueteEditado ? paqueteEditado.peso || '' : ''}
-                  onChange={(e) => handleChange(e, 'peso')}
-                  isInvalid={!!formErrors.peso}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.peso}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={6}>
-              <Form.Group controlId="fechaEnvio">
-                <Form.Label>Fecha de Envío</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={paqueteEditado ? convertirFechaParaInput(paqueteEditado.fecha_envio) : ''}
-                  onChange={(e) => handleFechaChange(e, 'fecha_envio')}
-                  isInvalid={!!formErrors.fechaEnvio}
-                  min={`${currentYear}-01-01`}
-                  max={`${currentYear}-12-31`}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.fechaEnvio}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <Form.Group controlId="fechaEntrega">
-                <Form.Label>Fecha de Entrega Estimada</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={paqueteEditado ? convertirFechaParaInput(paqueteEditado.fecha_entrega_estimada) : ''}
-                  onChange={(e) => handleFechaChange(e, 'fecha_entrega_estimada')}
-                  isInvalid={!!formErrors.fechaEntrega}
-                  min={`${currentYear}-01-01`}
-                  max={`${currentYear}-12-31`}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.fechaEntrega}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row>
-            <Col md={12}>
-              <Form.Group controlId="descripcion">
-                <Form.Label>Descripción del Contenido</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  value={paqueteEditado ? paqueteEditado.descripcion_contenido || '' : ''}
-                  onChange={(e) => handleChange(e, 'descripcion_contenido')}
-                  isInvalid={!!formErrors.descripcion}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {formErrors.descripcion}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => setModalEditar(false)}>Cerrar</Button>
-        <Button variant="primary" onClick={handleGuardarCambios}>Guardar Cambios</Button>
-      </Modal.Footer>
-    </Modal>
+    <>
+      <Modal show={modalEditar} onHide={() => setModalEditar(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Paquete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId="tipo_paquete">
+                  <Form.Label>Tipo de Paquete</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={paqueteEditado?.tipo_paquete || ''}
+                    onChange={(e) => handleSelectChange(e, 'tipo_paquete')}
+                  >
+                    <option value="">Selecciona un tipo</option>
+                    {tiposPaquete.map(tipo => (
+                      <option key={tipo.id} value={tipo.nombre}>{tipo.nombre}</option>
+                    ))}
+                  </Form.Control>
+                  <Form.Text className="text-danger">{formErrors.tipo_paquete}</Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId="empaque">
+                  <Form.Label>Empaque</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={paqueteEditado?.empaque || ''}
+                    onChange={(e) => handleSelectChange(e, 'empaque')}
+                  >
+                    <option value="">Selecciona un empaque</option>
+                    {empaques.map(empaque => (
+                      <option key={empaque.id} value={empaque.empaquetado}>{empaque.empaquetado}</option>
+                    ))}
+                  </Form.Control>
+                  <Form.Text className="text-danger">{formErrors.empaque}</Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId="estado_paquete">
+                  <Form.Label>Estado del Paquete</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={paqueteEditado?.estado_paquete || ''}
+                    onChange={(e) => handleSelectChange(e, 'estado_paquete')}
+                  >
+                    <option value="">Selecciona un estado</option>
+                    {estadosPaquete.map(estado => (
+                      <option key={estado.id} value={estado.nombre}>{estado.nombre}</option>
+                    ))}
+                  </Form.Control>
+                  <Form.Text className="text-danger">{formErrors.estado_paquete}</Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId="peso">
+                  <Form.Label>Peso</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={paqueteEditado?.peso || ''}
+                    onChange={handlePesoChange}
+                  />
+                  <Form.Text className="text-danger">{formErrors.peso}</Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId="fecha_envio">
+                  <Form.Label>Fecha de Envío</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={getFormattedDate(paqueteEditado?.fecha_envio) || ''}
+                    onChange={(e) => handleFechaChange(e, 'fecha_envio')}
+                    min={minDate}
+                    max={maxDate}
+                  />
+                  <Form.Text className="text-danger">{formErrors.fecha_envio}</Form.Text>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group controlId="fecha_entrega_estimada">
+                  <Form.Label>Fecha de Entrega Estimada</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={getFormattedDate(paqueteEditado?.fecha_entrega_estimada) || ''}
+                    onChange={(e) => handleFechaChange(e, 'fecha_entrega_estimada')}
+                    min={paqueteEditado?.fecha_envio ? formatDateForInput(paqueteEditado.fecha_envio) : minDate}
+                    max={maxDate}
+                  />
+                  <Form.Text className="text-danger">{formErrors.fecha_entrega_estimada}</Form.Text>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group controlId="descripcion_contenido">
+              <Form.Label>Descripción del Contenido</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={paqueteEditado?.descripcion_contenido || ''}
+                onChange={(e) => handleChange(e, 'descripcion_contenido')}
+              />
+              <Form.Text className="text-danger">{formErrors.descripcion_contenido}</Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setModalEditar(false)}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={handleGuardarCambios}>
+            Guardar Cambios
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <ToastContainer />
+    </>
   );
 };
 
 export default ModalEditarPaquete;
-
-

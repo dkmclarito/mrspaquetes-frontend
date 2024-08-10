@@ -58,7 +58,7 @@ const fetchData = async () => {
 
     try {
       const responseTipos = await axios.get(`${API_URL}/dropdown/get_tipo_paquete`, config);
-      console.log('Tipos de paquete:', responseTipos.data);
+      //console.log('Tipos de paquete:', responseTipos.data);
       setTiposPaquete(responseTipos.data.tipo_paquete || []);
     } catch (error) {
       console.error('Error fetching tipos de paquete:', error);
@@ -66,7 +66,7 @@ const fetchData = async () => {
 
     try {
       const responseEmpaques = await axios.get(`${API_URL}/dropdown/get_empaques`, config);
-      console.log('Empaques:', responseEmpaques.data);
+      //console.log('Empaques:', responseEmpaques.data);
       setEmpaques(responseEmpaques.data.empaques || []);
     } catch (error) {
       console.error('Error fetching empaques:', error);
@@ -74,7 +74,7 @@ const fetchData = async () => {
 
     try {
       const responseEstados = await axios.get(`${API_URL}/dropdown/get_estado_paquete`, config);
-      console.log('Estados de paquete:', responseEstados.data);
+      //console.log('Estados de paquete:', responseEstados.data);
       setEstadosPaquete(responseEstados.data.estado_paquetes || []);
     } catch (error) {
       console.error('Error fetching estados de paquete:', error);
@@ -112,13 +112,12 @@ const fetchData = async () => {
       const config = { headers: { 'Authorization': `Bearer ${token}` } };
   
       // Verifica la estructura del paquete
-      console.log('Enviando datos al servidor:', paqueteActualizado);
+      //console.log('Enviando datos al servidor:', paqueteActualizado);
   
       await axios.put(`${API_URL}/paquete/${paqueteActualizado.id}`, paqueteActualizado, config);
       fetchPaquetes();
       setModalEditar(false);
-      toast.success('Paquete actualizado exitosamente');
-    } catch (error) {
+      } catch (error) {
       console.error('Error updating paquete:', error.response ? error.response.data : error.message);
       toast.error(`Error al actualizar el paquete: ${error.response ? error.response.data.message : error.message}`);
     }
@@ -220,6 +219,7 @@ const fetchData = async () => {
                 />
               </CardBody>
             </Card>
+            <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
@@ -229,7 +229,9 @@ const fetchData = async () => {
               innerClass="pagination"
               itemClass="page-item"
               linkClass="page-link"
+              
             />
+            </Col>
           </Col>
         </Row>
       </Container>

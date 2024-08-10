@@ -60,9 +60,10 @@ const AgregarEmpleado = () => {
   const today = new Date();
   const currentYear = today.getFullYear();
   const minYear = 1900;
-  const [maxDate, setMaxDate] = useState('');
-  const [telefonoError, setTelefonoError] = useState("");
-  useEffect(() => {
+ const [maxDate, setMaxDate] = useState('');
+ const [telefonoError, setTelefonoError] = useState("");
+ const [isFechaNacimientoRequerida, setIsFechaNacimientoRequerida] = useState(false);
+ useEffect(() => {
     const fetchCargos = async () => {
       try {
         const response = await fetch(`${API_URL}/dropdown/get_cargos`, {
@@ -326,7 +327,12 @@ const AgregarEmpleado = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!fechaNacimiento) {
+      setIsFechaNacimientoRequerida(true);
+      return;
+    } else {
+      setIsFechaNacimientoRequerida(false);
+    }
     if (!isNombreValido || !isApellidosValid || !isTelefonoValid || !validarFechas() || !isDuiValid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
         position: "bottom-right",
@@ -555,113 +561,113 @@ const AgregarEmpleado = () => {
                     value={fechaNacimiento}
                     onChange={handleFechaNacimientoChange}
                     max={getFechaActual()}
-                    invalid={!isFechaNacimientoValida}
+                    invalid={!isFechaNacimientoValida || isFechaNacimientoRequerida}
                   />
-                  <FormFeedback>
-                    La fecha de nacimiento debe ser válida de una persona mayor de edad y no puede ser en el futuro.
-                  </FormFeedback>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="fechaContratacion">Fecha de Contratación</Label>
-                  <Input
-                    type="date"
-                    id="fechaContratacion"
-                    value={fechaContratacion}
-                    onChange={handleFechaContratacionChange}
-                    required
-                    invalid={!isFechaContratacionValida}
-                  />
-                  <FormFeedback>La fecha de contratación no puede ser posterior a la fecha actual.</FormFeedback>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="cargo">Cargo</Label>
-                  <Input
-                    type="select"
-                    id="cargo"
-                    value={cargo}
-                    onChange={(e) => setCargo(e.target.value)}
-                    required
-                  >
-                    <option value="">Seleccione un cargo</option>
-                    {cargos.map((car) => (
-                      <option key={car.id} value={car.id}>
-                        {car.nombre}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="departamento">Departamento</Label>
-                  <Input
-                    type="select"
-                    id="departamento"
-                    value={departamento}
-                    onChange={(e) => setDepartamento(e.target.value)}
-                    required
-                  >
-                    <option value="">Seleccione un departamento</option>
-                    {departamentos.map((dep) => (
-                      <option key={dep.id} value={dep.id}>
-                        {dep.nombre}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="municipio">Municipio</Label>
-                  <Input
-                    type="select"
-                    id="municipio"
-                    value={municipio}
-                    onChange={(e) => setMunicipio(e.target.value)}
-                    required
-                    disabled={!departamento}
-                  >
-                    <option value="">Seleccione un municipio</option>
-                    {municipiosPorDepartamento[departamento]?.map((mun) => (
-                      <option key={mun.id} value={mun.id}>
-                        {mun.nombre}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="direccion">Dirección</Label>
-                  <Input
-                    type="text"
-                    id="direccion"
-                    value={direccion}
-                    onChange={(e) => setDireccion(e.target.value)}
-                    required
-                  />
-                </FormGroup>
-              </Col>
-              <Col md="12">
-                <Button color="primary" type="submit">
-                  Registrar
-                </Button>
-                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionEmpleados'}>
-                  Salir
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        </CardBody>
-      </Card>
-      <ToastContainer />
-    </Container>
-  );
-};
+                      <FormFeedback>
+                        La fecha de nacimiento es requerida, debe ser válida de una persona mayor de edad y no puede ser en el futuro.
+                      </FormFeedback>
+                    </FormGroup>
+                        </Col>
+                        <Col md="6">
+                        <FormGroup>
+                              <Label for="fechaContratacion">Fecha de Contratación</Label>
+                              <Input          
+                                  type="date"
+                                  id="fechaContratacion"
+                                  value={fechaContratacion}
+                                  onChange={handleFechaContratacionChange}
+                                  required
+                                  invalid={!isFechaContratacionValida}
+                              />
+                              <FormFeedback>La fecha de contratación no puede ser posterior a la fecha actual.</FormFeedback>
+                          </FormGroup>
+                      </Col>
+                        <Col md="6">
+                        <FormGroup>
+                        <Label for="cargo">Cargo</Label>
+                        <Input
+                          type="select"
+                          id="cargo"
+                          value={cargo}
+                          onChange={(e) => setCargo(e.target.value)}
+                          required
+                        >
+                          <option value="">Seleccione un cargo</option>
+                          {cargos.map((car) => (
+                            <option key={car.id} value={car.id}>
+                              {car.nombre}
+                            </option>
+                          ))}
+                        </Input>
+                        </FormGroup>
+                        </Col>
+                        <Col md="6">
+                        <FormGroup>
+                        <Label for="departamento">Departamento</Label>
+                        <Input
+                          type="select"
+                          id="departamento"
+                          value={departamento}
+                          onChange={(e) => setDepartamento(e.target.value)}
+                          required
+                        >
+                          <option value="">Seleccione un departamento</option>
+                          {departamentos.map((dep) => (
+                            <option key={dep.id} value={dep.id}>
+                              {dep.nombre}
+                            </option>
+                          ))}
+                        </Input>
+                        </FormGroup>
+                        </Col>
+                        <Col md="6">
+                        <FormGroup>
+                        <Label for="municipio">Municipio</Label>
+                        <Input
+                          type="select"
+                          id="municipio"
+                          value={municipio}
+                          onChange={(e) => setMunicipio(e.target.value)}
+                          required
+                          disabled={!departamento}
+                        >
+                          <option value="">Seleccione un municipio</option>
+                          {municipiosPorDepartamento[departamento]?.map((mun) => (
+                            <option key={mun.id} value={mun.id}>
+                              {mun.nombre}
+                            </option>
+                          ))}
+                        </Input>
+                        </FormGroup>
+                        </Col>
+                        <Col md="6">
+                        <FormGroup>
+                        <Label for="direccion">Dirección</Label>
+                        <Input
+                          type="text"
+                          id="direccion"
+                          value={direccion}
+                          onChange={(e) => setDireccion(e.target.value)}
+                          required
+                        />
+                        </FormGroup>
+                        </Col>
+                        <Col md="12">
+                        <Button color="primary" type="submit">
+                        Registrar
+                        </Button>
+                        <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionEmpleados'}>
+                        Salir
+                        </Button>
+                     </Col>
+                  </Row>
+                </Form>
+             </CardBody>
+            </Card>
+          <ToastContainer />
+         </Container>
+       );
+    };
 
 export default AgregarEmpleado;
 

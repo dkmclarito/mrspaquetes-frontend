@@ -1,9 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Button } from "reactstrap";
+import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import "/src/styles/Empleados.css";
+import '/src/styles/Empleados.css'; 
 
 const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar }) => {
   const obtenerNombreCargo = (id) => {
@@ -30,17 +30,17 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
 
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
-      <table className="table table-centered table-nowrap mb-0">
-        <thead className="thead-light">
+     <Table striped className="table-centered table-nowrap mb-0">
+     <thead className="thead-light">
           <tr>
-            <th>ID</th>
-            <th>Nombres</th>
-            <th>Apellidos</th>
-            <th>Cargo</th>
-            <th>Rol</th>
-            <th>Teléfono</th>
-            <th>Fecha de Contratación</th>
-            <th>Acciones</th>
+            <th className="text-center">ID</th>
+            <th className="text-center">Nombres</th>
+            <th className="text-center">Apellidos</th>
+            <th className="text-center">Cargo</th>
+            <th className="text-center">Rol</th>
+            <th className="text-center">Teléfono</th>
+            <th className="text-center">Fecha de Contratación</th>
+            <th className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -72,7 +72,7 @@ const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 };
@@ -85,5 +85,3 @@ TablaEmpleados.propTypes = {
 };
 
 export default TablaEmpleados;
-
-
