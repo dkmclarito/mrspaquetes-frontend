@@ -98,7 +98,7 @@ const GestionVehiculos = () => {
   const filtrarVehiculos = (vehiculos) => {
     if (!busqueda) return vehiculos;
     return vehiculos.filter(vehiculo =>
-      vehiculo.nombre.toLowerCase().includes(busqueda.toLowerCase())
+      (vehiculo.nombre || "").toLowerCase().includes(busqueda.toLowerCase())
     );
   };
 

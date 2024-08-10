@@ -49,13 +49,9 @@ const ModalEditarVehiculo = ({
                         headers: { Authorization: `Bearer ${token}` }
                     });
 
-                    console.log('Fetched vehicle data:', data);
-
+                    // Encuentra los empleados para conductor y apoyo
                     const conductorEmpleado = empleados.find(empleado => `${empleado.nombres} ${empleado.apellidos}` === data.conductor.trim());
                     const apoyoEmpleado = empleados.find(empleado => `${empleado.nombres} ${empleado.apellidos}` === data.apoyo.trim());
-
-                    console.log('Conductor found:', conductorEmpleado);
-                    console.log('Apoyo found:', apoyoEmpleado);
 
                     setVehiculoEditado(prev => ({
                         ...prev,
@@ -64,7 +60,8 @@ const ModalEditarVehiculo = ({
                         id_modelo: modelos.find(modelo => modelo.nombre === data.modelo)?.id || "",
                         id_empleado_conductor: conductorEmpleado ? conductorEmpleado.id : "",
                         id_empleado_apoyo: apoyoEmpleado ? apoyoEmpleado.id : "",
-                        id_estado: estados.find(estado => estado.estado === data.estado)?.id || ""
+                        id_estado: estados.find(estado => estado.estado === data.estado)?.id || "",
+                        capacidad_carga: data.capacidad_carga.replace(' T', '') || "" // Mantener el formato original
                     }));
 
                 } catch (error) {
@@ -79,19 +76,34 @@ const ModalEditarVehiculo = ({
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await guardarCambiosVehiculo();
+            // Verificar que capacidad carga es un número
+            const capacidadCargaNum = parseFloat(vehiculoEditado.capacidad_carga);
+            if (isNaN(capacidadCargaNum) || vehiculoEditado.capacidad_carga === "") {
+                setError("La capacidad de carga debe ser un número.");
+                return;
+            }
+
+            // Formatear capacidad carga para enviar sin 'T'
+            const capacidadCarga = capacidadCargaNum.toFixed(2);
+            await guardarCambiosVehiculo({ ...vehiculoEditado, capacidad_carga: capacidadCarga });
             setModalEditar(false);
         } catch (err) {
             console.error("Error al guardar los cambios:", err);
-            setError("Error al guardar los cambios. Por favor, intenta nuevamente.");
+            const errorMsg = err.response?.data?.error?.join(", ") || "Error al guardar los cambios. Por favor, intenta nuevamente.";
+            setError(errorMsg);
         }
     };
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
+
+        // Mantener el formato de capacidad_carga con la 'T' en el estado, pero permitir sólo números en el input
+        const sanitizedValue = name === "capacidad_carga" ? value.replace(/[^0-9.]/g, '') : value;
+
+        // Convertir capacidad_carga a número si es necesario
         setVehiculoEditado((prev) => ({
             ...prev,
-            [name]: value
+            [name]: name === "capacidad_carga" ? sanitizedValue : sanitizedValue
         }));
     };
 
@@ -209,7 +221,7 @@ const ModalEditarVehiculo = ({
                                 >
                                     <option value="">Seleccione Apoyo</option>
                                     {empleados
-                                        .filter((empleado) => empleado.id_cargo === 2) // Assuming `2` is for Apoyo roles
+                                        .filter((empleado) => empleado.id_cargo === 2) // Filtra empleados con id_cargo 2 para apoyo
                                         .map((empleado) => (
                                             <option key={empleado.id} value={empleado.id}>
                                                 {empleado.nombres} {empleado.apellidos}
@@ -220,7 +232,23 @@ const ModalEditarVehiculo = ({
                         </Col>
                     </Row>
                     <Row>
-                        <Col md={12}>
+                        <Col md={6}>
+                            <FormGroup>
+                                <Label for="capacidad_carga">Capacidad de Carga</Label>
+                                <div className="input-group">
+                                    <Input
+                                        type="text"
+                                        id="capacidad_carga"
+                                        name="capacidad_carga"
+                                        value={vehiculoEditado?.capacidad_carga || ""}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                    <span className="input-group-text">T</span>
+                                </div>
+                            </FormGroup>
+                        </Col>
+                        <Col md={6}>
                             <FormGroup>
                                 <Label for="estado">Estado</Label>
                                 <Input
@@ -242,8 +270,12 @@ const ModalEditarVehiculo = ({
                         </Col>
                     </Row>
                     <ModalFooter>
-                        <Button type="submit" color="primary">Guardar</Button>
-                        <Button color="secondary" onClick={() => setModalEditar(false)}>Cancelar</Button>
+                        <Button color="primary" type="submit">
+                            Guardar Cambios
+                        </Button>
+                        <Button color="secondary" onClick={() => setModalEditar(false)}>
+                            Cancelar
+                        </Button>
                     </ModalFooter>
                 </form>
             </ModalBody>

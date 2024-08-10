@@ -9,11 +9,11 @@ import "../styles/Empleados.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 function getFechaContratacionPorDefecto() {
-    const anioActual = new Date().getFullYear();
-    const fechaActual = new Date();
-    const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
-    const dia = String(fechaActual.getDate()).padStart(2, '0');
-    return `${anioActual}-${mes}-${dia}`;
+  const anioActual = new Date().getFullYear();
+  const fechaActual = new Date();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  return `${anioActual}-${mes}-${dia}`;
 }
 
 function getFechaMinimaNacimiento() {
@@ -172,8 +172,8 @@ const AgregarEmpleado = () => {
     const regex = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
     return regex.test(apellido) && apellido.length <= 80;
   };
-  
-  
+
+
   const handleNombresChange = (e) => {
     const nombre = e.target.value;
     // Filtrar caracteres no permitidos
@@ -182,7 +182,7 @@ const AgregarEmpleado = () => {
     setIsNombreValido(validateNombre(cleanedNombre));
   };
 
- 
+
   const handleApellidosChange = (e) => {
     const apellido = e.target.value;
     // Filtrar caracteres no permitidos
@@ -190,7 +190,7 @@ const AgregarEmpleado = () => {
     setApellidos(cleanedApellido);
     setIsApellidosValid(validateApellido(cleanedApellido));
   };
-  
+
   const handleFechaNacimientoChange = (e) => {
     const { value } = e.target;
     const fechaSeleccionada = new Date(value);
@@ -251,7 +251,7 @@ const AgregarEmpleado = () => {
 
     setIsFechaContratacionValida(esFechaValida);
     if (esFechaValida) {
-        setFechaContratacion(`${anioActual}-${mes}-${dia}`);
+      setFechaContratacion(`${anioActual}-${mes}-${dia}`);
     }
   };
 
@@ -278,21 +278,21 @@ const AgregarEmpleado = () => {
 
     // Verificar si el primer dígito es 6, 7 o 2
     if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
-        setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
-        setIsTelefonoValid(false);
-        // Prevent further input by not updating state by default
-        return;
+      setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
+      setIsTelefonoValid(false);
+      // Prevent further input by not updating state by default
+      return;
     } else {
-        setTelefonoError("");
+      setTelefonoError("");
     }
 
     // Limit to 8 digits
     if (telefonoValue.length > 8) {
-        telefonoValue = telefonoValue.slice(0, 8);
+      telefonoValue = telefonoValue.slice(0, 8);
     }
 
     if (telefonoValue.length > 4) {
-        telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
+      telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
     }
 
     setTelefono(telefonoValue);
@@ -300,13 +300,13 @@ const AgregarEmpleado = () => {
     // Validar el formato 1234-5678
     const isValidFormat = /^\d{4}-\d{4}$/.test(telefonoValue);
     if (!isValidFormat) {
-        setTelefonoError("El número de teléfono debe tener el formato 1234-5678");
-        setIsTelefonoValid(false);
+      setTelefonoError("El número de teléfono debe tener el formato 1234-5678");
+      setIsTelefonoValid(false);
     } else {
-        setTelefonoError("");
-        setIsTelefonoValid(true);
+      setTelefonoError("");
+      setIsTelefonoValid(true);
     }
-};
+  };
 
   const validarFechas = () => {
     const fechaNacimientoDate = new Date(fechaNacimiento);
@@ -368,7 +368,7 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-      return; 
+      return;
     }
 
     if (!validarFechas()) {
@@ -397,7 +397,7 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-      return; 
+      return;
     }
 
     try {
@@ -460,8 +460,8 @@ const AgregarEmpleado = () => {
         <CardBody>
           <Form onSubmit={handleSubmit}>
             <Row>
-            <Col md="6">
-                  <FormGroup>
+              <Col md="6">
+                <FormGroup>
                   <Label for="nombres">Nombres</Label>
                   <Input
                     type="text"
@@ -495,67 +495,67 @@ const AgregarEmpleado = () => {
                     </FormFeedback>
                   )}
                 </FormGroup>
-                            </Col>
-                            <Col md="6">
-                              <FormGroup>
-                                <Label for="genero">Género</Label>
-                                <Input
-                                  type="select"
-                                  id="genero"
-                                  value={genero}
-                                  onChange={(e) => setGenero(e.target.value)}
-                                  required
-                                >
-                                  <option value="">Seleccione un género</option>
-                                  {generos.map((gen) => (
-                                    <option key={gen.id} value={gen.id}>
-                                      {gen.nombre}
-                                    </option>
-                                  ))}
-                                </Input>
-                              </FormGroup>
-                            </Col>
-                            <Col md={6}>
-                            <FormGroup className="form-group-custom">
-                            <Label for="dui">DUI</Label>
-                            <Input
-                             type="text"
-                             id="dui"
-                             value={dui}
-                             onChange={handleDuiChange}
-                             required
-                             maxLength="10"
-                             invalid={!isDuiValid}                                                              
-                             />
-                              {!isDuiValid && (
-                                 <FormFeedback className="text-danger">
-                                     El DUI ingresado no es válido. Debe tener el formato 02345678-9.
-                                 </FormFeedback>
-                             )}             
-                                  </FormGroup>
-                              </Col>                                                                                                                              
-                            <Col md={6}>
-                            <FormGroup className="form-group-custom">
-                            <Label for="telefono">Teléfono</Label>
-                            <Input
-                                                        type="text"
-                                                        id="telefono"
-                                                        value={telefono}
-                                                        onChange={handleTelefonoChange}
-                                                        required
-                                                        maxLength="9"
-                                                        invalid={!isTelefonoValid}
-                                                    />
-                                                    {telefonoError && (
-                                                        <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
-                                                        
-                                  )}
-                              </FormGroup>
-                          </Col>
-                          <Col md="6">
-                          <FormGroup>
-                      <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
-                      <Input
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label for="genero">Género</Label>
+                  <Input
+                    type="select"
+                    id="genero"
+                    value={genero}
+                    onChange={(e) => setGenero(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione un género</option>
+                    {generos.map((gen) => (
+                      <option key={gen.id} value={gen.id}>
+                        {gen.nombre}
+                      </option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup className="form-group-custom">
+                  <Label for="dui">DUI</Label>
+                  <Input
+                    type="text"
+                    id="dui"
+                    value={dui}
+                    onChange={handleDuiChange}
+                    required
+                    maxLength="10"
+                    invalid={!isDuiValid}
+                  />
+                  {!isDuiValid && (
+                    <FormFeedback className="text-danger">
+                      El DUI ingresado no es válido. Debe tener el formato 02345678-9.
+                    </FormFeedback>
+                  )}
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup className="form-group-custom">
+                  <Label for="telefono">Teléfono</Label>
+                  <Input
+                    type="text"
+                    id="telefono"
+                    value={telefono}
+                    onChange={handleTelefonoChange}
+                    required
+                    maxLength="9"
+                    invalid={!isTelefonoValid}
+                  />
+                  {telefonoError && (
+                    <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
+
+                  )}
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
+                  <Input
                     type="date"
                     id="fechaNacimiento"
                     value={fechaNacimiento}
@@ -670,6 +670,6 @@ const AgregarEmpleado = () => {
     };
 
 export default AgregarEmpleado;
-                        
-                              
+
+
 

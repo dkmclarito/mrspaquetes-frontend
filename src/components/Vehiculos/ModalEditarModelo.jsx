@@ -58,23 +58,6 @@ const ModalEditarModelo = ({
           />
         </FormGroup>
         <FormGroup>
-          <Label for="marca">Marca</Label>
-          <Input
-            type="select"
-            id="marca"
-            value={modeloEditado ? modeloEditado.marca_id : ""}
-            onChange={(e) => setModeloEditado(prevState => ({ ...prevState, marca_id: e.target.value }))}
-            required
-          >
-            <option value="">Seleccione una marca</option>
-            {Array.isArray(marcas) && marcas.map(marca => (
-              <option key={marca.id} value={marca.id}>
-                {marca.nombre}
-              </option>
-            ))}
-          </Input>
-        </FormGroup>
-        <FormGroup>
           <Label for="descripcion">Descripción</Label>
           <Input
             type="textarea"
