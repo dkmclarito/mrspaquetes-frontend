@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, FormFeedback } from "reactstrap";
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -11,6 +11,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 const AgregarModelo = () => {
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
+    const [marcaSeleccionada, setMarcaSeleccionada] = useState("");
+    const [marcas, setMarcas] = useState([]);
     const [isNombreValid, setIsNombreValid] = useState(true);
     const [alertaExito, setAlertaExito] = useState(false);
     const [alertaError, setAlertaError] = useState(false);
@@ -19,28 +21,50 @@ const AgregarModelo = () => {
     const navigate = useNavigate();
     const token = AuthService.getCurrentUser();
 
+    useEffect(() => {
+        const fetchMarcas = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/dropdown/get_marcas`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setMarcas(response.data.marcas || []);
+            } catch (error) {
+                handleError(error);
+            }
+        };
+
+        fetchMarcas();
+    }, [token]);
+
     const handleNombreChange = (e) => {
         const value = e.target.value;
         setNombre(value);
-        setIsNombreValid(value.trim().length > 0); // Validate if the name is not empty
+        setIsNombreValid(value.trim().length > 0);
     };
 
     const handleDescripcionChange = (e) => {
         setDescripcion(e.target.value);
     };
 
+    const handleMarcaChange = (e) => {
+        setMarcaSeleccionada(e.target.value);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!isNombreValid) {
+        if (!isNombreValid || !marcaSeleccionada) {
             setAlertaError(true);
-            setErrorMensaje("Por favor, ingresa un nombre válido.");
+            setErrorMensaje("Por favor, completa todos los campos requeridos.");
             return;
         }
 
         const modeloData = {
             nombre,
             descripcion,
+            id_marca: marcaSeleccionada,
         };
 
         try {
@@ -63,6 +87,7 @@ const AgregarModelo = () => {
     const resetForm = () => {
         setNombre("");
         setDescripcion("");
+        setMarcaSeleccionada("");
     };
 
     const handleError = (error) => {
@@ -90,6 +115,7 @@ const AgregarModelo = () => {
                                         value={nombre}
                                         onChange={handleNombreChange}
                                         invalid={!isNombreValid}
+                                        required
                                     />
                                     <FormFeedback>Por favor, ingresa un nombre válido.</FormFeedback>
                                 </FormGroup>
@@ -101,6 +127,24 @@ const AgregarModelo = () => {
                                         value={descripcion}
                                         onChange={handleDescripcionChange}
                                     />
+                                </FormGroup>
+                                <FormGroup>
+                                    <Label for="marca">Marca</Label>
+                                    <Input
+                                        type="select"
+                                        name="marca"
+                                        id="marca"
+                                        value={marcaSeleccionada}
+                                        onChange={handleMarcaChange}
+                                        required
+                                    >
+                                        <option value="">Seleccione Marca</option>
+                                        {marcas.map((marca) => (
+                                            <option key={marca.id} value={marca.id}>
+                                                {marca.nombre}
+                                            </option>
+                                        ))}
+                                    </Input>
                                 </FormGroup>
                                 <Button type="submit" color="primary">Agregar Modelo</Button>
                                 {alertaExito && <Alert color="success" toggle={() => setAlertaExito(false)}>Modelo agregado exitosamente!</Alert>}
