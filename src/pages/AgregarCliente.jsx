@@ -214,16 +214,18 @@ const AgregarCliente = () => {
         if (nitSanitized.length !== 14) {
             errorMessage = "El NIT debe tener 14 dígitos.";
         } else {
-            // Validar el formato del NIT
-            const codigoMunicipio = parseInt(nitSanitized.substring(0, 4), 10);
+            // Validar los primeros 4 dígitos
+            const primerosDosDigitos = parseInt(nitSanitized.substring(0, 2), 10);
+            const segundosDosDigitos = parseInt(nitSanitized.substring(2, 4), 10);
             const dia = parseInt(nitSanitized.substring(4, 6), 10);
             const mes = parseInt(nitSanitized.substring(6, 8), 10);
 
-            // Validar día y mes
-            if (dia < 1 || dia > 31 || mes < 1 || mes > 12) {
+            if (primerosDosDigitos < 1 || primerosDosDigitos > 14) {
+                errorMessage = "Los primeros dos dígitos deben estar entre 01 y 14.";
+            } else if (segundosDosDigitos < 1 || segundosDosDigitos > 35) {
+                errorMessage = "Los segundos dos dígitos deben estar entre 01 y 35.";
+            } else if (dia < 1 || dia > 31 || mes < 1 || mes > 12) {
                 errorMessage = "La fecha en el NIT no es válida.";
-            } else if (codigoMunicipio < 101 || codigoMunicipio > 9999) {
-                errorMessage = "El código de municipio no es válido.";
             }
         }
 
