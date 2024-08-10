@@ -69,6 +69,7 @@ const App = () => {
         <Route path="*" element={<Navigate to={isAuthenticated ? "/home" : "/login"} replace />} />
       </Routes>
       </AuthProvider>
+      <ToastContainer />
     </Router>
   );
 };
