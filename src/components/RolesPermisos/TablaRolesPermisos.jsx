@@ -17,12 +17,9 @@ const TablaRolesPermisos = ({ roles, onAssignPermissions }) => {
           {roles.map((rol) => (
             <tr key={rol.id}>
               <td>{rol.id}</td>
-              <td>{rol.name}</td>
+              <td>{rol.alias} {/* Usa el alias en lugar del nombre técnico */}</td>
               <td>
-          
-
-                <Button onClick={() => onAssignPermissions(rol.id, rol.name)}>Asignar Permisos</Button>
-
+                <Button onClick={() => onAssignPermissions(rol.id, rol.alias)}>Asignar Permisos</Button>
               </td>
             </tr>
           ))}
