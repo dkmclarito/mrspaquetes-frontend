@@ -194,7 +194,42 @@ body {
   margin: 0;
 }
 
-/* Dark Mode Styles */
+/* Estilos predeterminados para el PageTitleBox */
+.page-title-box {
+  background-color: #ffffff;
+  color: #333333;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 2em;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1.2em;
+  color: #666666;
+}
+
+/* Estilos para las Tablas */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1em;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+/*---------------- Dark Mode Styles -----------------*/
 .dark-mode {
   background-color: #121212;
   color: #ffffff;
@@ -260,22 +295,7 @@ body {
 }
 */
 
-/* Estilos para las Tablas */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 1em;
-  text-align: left;
-}
-
-.table th,
-.table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-}
-
-/* Estilos del Modo Oscuro para las Tablas */
+/* TABLAS */
 .dark-mode .table {
   background-color: #333;
   color: #ffffff;
@@ -292,7 +312,7 @@ body {
   color: #ffffff;
 }
 
-/* Estilos del Modo Oscuro para .card */
+/* CARD */
 .dark-mode .card {
   background-color: #2b2b2b;
   color: #ffffff;
@@ -333,6 +353,11 @@ body {
   color: white;
 }
 
+.dark-mode .card-body textarea {
+  background-color: #444;
+  color: white;
+}
+
 .dark-mode .card  select {
   background-color: #444;
   color: white;
@@ -347,27 +372,7 @@ body {
   color: #b3b9c6;
 }
 
-/* Estilos predeterminados para el PageTitleBox */
-.page-title-box {
-  background-color: #ffffff;
-  color: #333333;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 2em;
-}
-
-.page-subtitle {
-  margin: 0;
-  font-size: 1.2em;
-  color: #666666;
-}
-
-/* Estilos del Modo Oscuro para PageTitleBox */
+/* PageTitleBox */
 .dark-mode .page-title-box {
   background-color: #1e1e1e;
   color: #f1f1f1;
@@ -425,6 +430,23 @@ body {
   border: 1px solid #555;
 }
 
+/* BREADCRUMD */
+.dark-mode .breadcrumb {
+  color: rgb(172, 172, 172);
+}
+
+.dark-mode .breadcrumb a {
+  color: rgb(172, 172, 172);
+}
+
+.dark-mode .breadcrumb .active {
+  color: rgb(172, 172, 172);
+}
+
+.dark-mode .breadcrumb-item + .breadcrumb-item::before {
+  color: rgb(172, 172, 172);
+}
+
 /* MODALES */
 .modal-content {
   background-color: #777777;
@@ -468,4 +490,33 @@ body {
 .modal .btn-primary:hover {
   background-color: #1e8043;
   border-color: #666;
+}
+
+
+.dark-mode .dark-mode-select__control {
+  background-color: #444 !important;
+  color: white !important;
+  border-color: #444 !important;
+}
+
+.dark-mode .dark-mode-select__menu {
+  background-color: #2b2b2b !important;
+  color: white !important;
+}
+
+.dark-mode .dark-mode-select__option {
+  background-color: #444 !important;
+  color: white !important;
+}
+
+.dark-mode .dark-mode-select__option--is-focused {
+  background-color: #555 !important;
+}
+
+.dark-mode .dark-mode-select__option--is-selected {
+  background-color: #666 !important;
+}
+
+.dark-mode .dark-mode-select__single-value {
+  color: white !important;
 }
