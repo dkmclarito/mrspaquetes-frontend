@@ -22,8 +22,14 @@ const AgregarUsuario = () => {
   const [alertaExito, setAlertaExito] = useState(false);
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const token = AuthService.getCurrentUser();
+
+  useEffect(() => {
+    const darkModePreference = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(darkModePreference);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,6 +174,37 @@ const AgregarUsuario = () => {
     }
   };
 
+  // Estilos manuales DrakMode
+  const customSelectStyles = {    
+    container: (provided) => ({
+      ...provided,
+      width: '100%',
+    }),
+    control: (provided) => ({
+      ...provided,
+      backgroundColor: isDarkMode ? '#444' : '#fff',
+      color: isDarkMode ? '#fff' : '#000',
+      border: isDarkMode ? '1px solid #444' : '1px solid #ced4da',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: isDarkMode ? '#333' : '#fff',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: isDarkMode ? (state.isSelected ? '#555' : '#444') : (state.isSelected ? '#f1f1f1' : '#fff'),
+      color: isDarkMode ? '#fff' : '#000',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: isDarkMode ? '#fff' : '#000',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: isDarkMode ? '#fff' : '#6c757d',
+    }),
+  };
+
   return (
     <div>
       <Container fluid>
@@ -261,6 +298,7 @@ const AgregarUsuario = () => {
                       <Label for="clienteId">Cliente</Label>
                       <Select
                         id="clienteId"
+                        styles={customSelectStyles}
                         options={clientesDropdown.map(cliente => ({ value: cliente.id, label: `${cliente.nombre} ${cliente.apellido}` }))}
                         onChange={selectedOption => setClienteId(selectedOption ? selectedOption.value : "")}
                         isSearchable
@@ -275,6 +313,7 @@ const AgregarUsuario = () => {
                       <Label for="empleadoId">Empleado</Label>
                       <Select
                         id="empleadoId"
+                        styles={customSelectStyles}
                         options={empleadosDropdown.map(empleado => ({ value: empleado.id, label: `${empleado.nombres} ${empleado.apellidos}` }))}
                         onChange={selectedOption => setEmpleadoId(selectedOption ? selectedOption.value : "")}
                         isSearchable
