@@ -222,7 +222,7 @@ const AgregarPaquete = () => {
         throw new Error(errorMessage);
       }
 
-      console.log('Paquete registrado exitosamente');
+      //console.log('Paquete registrado exitosamente');
 
       toast.success('¡Paquete registrado con éxito!', {
         position: "bottom-right",

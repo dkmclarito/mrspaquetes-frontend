@@ -62,6 +62,7 @@ const AgregarEmpleado = () => {
   const minYear = 1900;
  const [maxDate, setMaxDate] = useState('');
  const [telefonoError, setTelefonoError] = useState("");
+ const [isFechaNacimientoRequerida, setIsFechaNacimientoRequerida] = useState(false);
  useEffect(() => {
     const fetchCargos = async () => {
       try {
@@ -326,7 +327,12 @@ const AgregarEmpleado = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    if (!fechaNacimiento) {
+      setIsFechaNacimientoRequerida(true);
+      return;
+    } else {
+      setIsFechaNacimientoRequerida(false);
+    }
     if (!isNombreValido || !isApellidosValid || !isTelefonoValid || !validarFechas() || !isDuiValid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
         position: "bottom-right",
@@ -555,10 +561,10 @@ const AgregarEmpleado = () => {
                     value={fechaNacimiento}
                     onChange={handleFechaNacimientoChange}
                     max={getFechaActual()}
-                    invalid={!isFechaNacimientoValida}
+                    invalid={!isFechaNacimientoValida || isFechaNacimientoRequerida}
                   />
                       <FormFeedback>
-                        La fecha de nacimiento debe ser válida de una persona mayor de edad y no puede ser en el futuro.
+                        La fecha de nacimiento es requerida, debe ser válida de una persona mayor de edad y no puede ser en el futuro.
                       </FormFeedback>
                     </FormGroup>
                         </Col>

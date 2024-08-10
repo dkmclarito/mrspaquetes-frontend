@@ -1,4 +1,4 @@
-/* empleados.css */
+/* Clientes.css */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
 .form-group-custom {
@@ -61,33 +61,7 @@
 }
 
 .table-centered td, .table-centered th {
-    text-align: center;
-}
-
-.btn-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.375rem 0.75rem;
-}
-
-.btn-icon i {
-    margin-right: 5px;
-    font-size: 1.2rem; /* Ajusta el tamaño del icono según tus necesidades */
-}
-
-.button-container {
-    display: flex;
-    justify-content: center;
-    gap: 10px; /* Ajusta el espacio entre los botones según tus necesidades */
-}
-
-.me-2 {
-    margin-right: 0.5rem;
-}
-
-.custom-button {
-    margin-top: -20px; /* Ajusta el valor según sea necesario */
+    text-align: center; /* Cambiado a center para que el contenido esté centrado */
 }
 
 .table {
@@ -102,7 +76,8 @@
 }
 
 .table th {
-    background-color: #f8f9fa; /* Color de fondo para los encabezados */
+    background-color: #6a6b70; /* Color de fondo oscuro para los encabezados */
+    color: #ffffff; /* Color del texto en el encabezado */
     font-weight: bold; /* Negrita para los encabezados */
 }
 
@@ -110,169 +85,80 @@
     background-color: #ffffff; /* Color de fondo para las celdas de datos */
 }
 
-.table td, .table th {
-    text-align: left; /* Alineación del texto a la izquierda */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa; /* Color de fondo para filas alternas */
 }
 
-/* Estilo para el botón de editar */
-.btn-primary {
-    background-color: #007bff; /* Color original del botón de editar */
+.table-hover tbody tr:hover {
+    background-color: #e9ecef; /* Color de fondo al pasar el ratón */
+}
+
+/* Estilo para el botón de eliminar */
+.btn-danger {
+    background-color: #dc3545; /* Color original del botón de eliminar */
     border: none; /* Sin borde */
 }
 
-.btn-primary:hover {
-    background-color: #0056b3; /* Color al pasar el ratón */
+.btn-danger:hover {
+    background-color: #c82333; /* Color más oscuro al pasar el ratón */
 }
 
 .btn-editar {
-  background-color: #4d5f65; /* Azul claro específico */
-  border-color: #9dd5e8; /* Asegura que el borde sea del mismo color */
+    background-color: #007bff; /* Azul para el botón de editar */
+    border: none; /* Sin borde */
+    color: #ffffff;
 }
 
 .btn-editar:hover {
-  background-color: #898d90; /* Color más oscuro para el hover */
-  border-color: #1e90ff; /* Color más oscuro para el borde en hover */
+    background-color: #0056b3; /* Color más oscuro al pasar el ratón */
 }
-/* Clientes.css */
 
-.pagination {
-    display: flex;
-    justify-content: center;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-  
-  .page-item {
-    margin: 0 5px;
-  }
-  
-  .page-link {
-    display: block;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    color: #007bff;
-    text-decoration: none;
-  }
-  
-  .page-link:hover {
-    background-color: #f8f9fa;
-  }
-  
-  .active .page-link {
-    background-color: #007bff;
+.modal-editar-empleado .modal-header {
+    background-color: #555;
+    color: #f1f3f5;
+}
+
+.modal-editar-empleado .modal-title {
+    color: #f1f3f5;
+}
+
+.modal-editar-empleado .modal-footer {
+    justify-content: flex-start;
+}
+
+.modal-header-danger {
+    background-color: #dc3545;
     color: white;
-    border: 1px solid #007bff;
-  }
-  
-  .table-responsive {
-    overflow-x: auto;
-  }
-  
-  .pagination-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-  }
-  
-  .pagination-container .btn {
-    margin: 0 5px;
-  }
-  /* Estilos para el Modal */
-.modal-custom .modal-dialog {
-    max-width: 80%; /* Ajusta el ancho del modal según sea necesario */
-  }
-  
-  .modal-custom .modal-content {
-    border-radius: 8px; /* Bordes redondeados */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
-  }
-  
-  .modal-custom .modal-header {
-    background-color: #f8f9fa; /* Color de fondo para el encabezado */
-    border-bottom: 1px solid #dee2e6; /* Línea inferior del encabezado */
-  }
-  
-  .modal-custom .modal-title {
-    font-size: 1.5rem; /* Tamaño de fuente del título */
-    font-weight: 500; /* Peso de la fuente */
-  }
-  
-  .modal-custom .modal-body {
-    padding: 2rem; /* Espaciado en el cuerpo del modal */
-  }
-  
-  .modal-custom .form-group {
-    margin-bottom: 1.5rem; /* Espaciado entre los campos del formulario */
-  }
-  
-  .modal-custom .form-control {
-    border-radius: 4px; /* Bordes redondeados para los campos de formulario */
-    border: 1px solid #ced4da; /* Borde del campo de formulario */
-  }
-  
-  .modal-custom .form-control:focus {
-    border-color: #80bdff; /* Color del borde en estado de enfoque */
-    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Sombra del campo en estado de enfoque */
-  }
-  
-  .modal-custom .form-feedback {
-    color: #dc3545; /* Color del texto de error */
-    font-size: 0.875rem; /* Tamaño de fuente del mensaje de error */
-  }
-  
-  .modal-custom .modal-footer {
-    border-top: 1px solid #dee2e6; /* Línea superior del pie del modal */
-    padding: 1rem; /* Espaciado en el pie del modal */
-  }
-  
-  .modal-custom .btn-primary {
-    background-color: #007bff; /* Color de fondo del botón de guardar cambios */
-    border-color: #007bff; /* Color del borde del botón de guardar cambios */
-  }
-  
-  .modal-custom .btn-primary:hover {
-    background-color: #0056b3; /* Color de fondo del botón de guardar cambios al pasar el cursor */
-    border-color: #004085; /* Color del borde del botón de guardar cambios al pasar el cursor */
-  }
-  
-  .modal-custom .btn-secondary {
-    background-color: #6c757d; /* Color de fondo del botón de cancelar */
-    border-color: #6c757d; /* Color del borde del botón de cancelar */
-  }
-  
-  .modal-custom .btn-secondary:hover {
-    background-color: #5a6268; /* Color de fondo del botón de cancelar al pasar el cursor */
-    border-color: #4e555b; /* Color del borde del botón de cancelar al pasar el cursor */
-  }
-  /* General table styling */
-.table-centered {
-    width: 100%;
-    margin: 0 auto;
-  }
-  
-  /* Center table headers and cells */
-  .table-centered th, .table-centered td {
-    text-align: center;
-  }
-  
-  /* Style for table actions */
-  .button-container {
-    display: flex;
-    justify-content: center;
-    gap: 8px; /* Adjust gap between buttons */
-  }
-  
-  /* Optional: Add a little padding to buttons for better appearance */
-  .btn-icon {
-    padding: 6px 12px; /* Adjust padding as needed */
-  }
-  
-  /* Optional: Style for table light header */
-  .thead-light th {
-    background-color: #f8f9fa;
-    text-align: center;
-  }
-  
-  
+}
+
+.modal-body-custom {
+    font-size: 1.2em;
+}
+
+.modal-footer .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.modal-footer .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.fade-enter {
+    opacity: 0;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity 300ms;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transition: opacity 300ms;
+}
