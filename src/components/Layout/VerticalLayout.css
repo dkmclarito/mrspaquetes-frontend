@@ -194,42 +194,7 @@ body {
   margin: 0;
 }
 
-/* Estilos predeterminados para el PageTitleBox */
-.page-title-box {
-  background-color: #ffffff;
-  color: #333333;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 2em;
-}
-
-.page-subtitle {
-  margin: 0;
-  font-size: 1.2em;
-  color: #666666;
-}
-
-/* Estilos para las Tablas */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 1em;
-  text-align: left;
-}
-
-.table th,
-.table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-}
-
-/*---------------- Dark Mode Styles -----------------*/
+/* Dark Mode Styles */
 .dark-mode {
   background-color: #121212;
   color: #ffffff;
@@ -295,7 +260,22 @@ body {
 }
 */
 
-/* TABLAS */
+/* Estilos para las Tablas */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1em;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+/* Estilos del Modo Oscuro para las Tablas */
 .dark-mode .table {
   background-color: #333;
   color: #ffffff;
@@ -312,7 +292,7 @@ body {
   color: #ffffff;
 }
 
-/* CARD */
+/* Estilos del Modo Oscuro para .card */
 .dark-mode .card {
   background-color: #2b2b2b;
   color: #ffffff;
@@ -353,11 +333,6 @@ body {
   color: white;
 }
 
-.dark-mode .card-body textarea {
-  background-color: #444;
-  color: white;
-}
-
 .dark-mode .card  select {
   background-color: #444;
   color: white;
@@ -372,7 +347,27 @@ body {
   color: #b3b9c6;
 }
 
-/* PageTitleBox */
+/* Estilos predeterminados para el PageTitleBox */
+.page-title-box {
+  background-color: #ffffff;
+  color: #333333;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 2em;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1.2em;
+  color: #666666;
+}
+
+/* Estilos del Modo Oscuro para PageTitleBox */
 .dark-mode .page-title-box {
   background-color: #1e1e1e;
   color: #f1f1f1;
@@ -430,23 +425,6 @@ body {
   border: 1px solid #555;
 }
 
-/* BREADCRUMD */
-.dark-mode .breadcrumb {
-  color: rgb(172, 172, 172);
-}
-
-.dark-mode .breadcrumb a {
-  color: rgb(172, 172, 172);
-}
-
-.dark-mode .breadcrumb .active {
-  color: rgb(172, 172, 172);
-}
-
-.dark-mode .breadcrumb-item + .breadcrumb-item::before {
-  color: rgb(172, 172, 172);
-}
-
 /* MODALES */
 .modal-content {
   background-color: #777777;
@@ -492,31 +470,35 @@ body {
   border-color: #666;
 }
 
-
-.dark-mode .dark-mode-select__control {
-  background-color: #444 !important;
-  color: white !important;
-  border-color: #444 !important;
+/* Estilo del Submenú */
+.sub-menu {
+  display: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
-.dark-mode .dark-mode-select__menu {
-  background-color: #2b2b2b !important;
-  color: white !important;
+.sub-menu.active {
+  display: block;
+  margin-left: 20px; /* Ajusta el margen izquierdo para alinear con el elemento padre */
 }
 
-.dark-mode .dark-mode-select__option {
-  background-color: #444 !important;
-  color: white !important;
+.sub-menu li {
+  margin-bottom: 5px;
 }
 
-.dark-mode .dark-mode-select__option--is-focused {
-  background-color: #555 !important;
+.sub-menu .nav-link {
+  padding: 8px 20px;
+  font-size: 0.85em; /* Tamaño de fuente más pequeño */
+  color: #b3b9c6; /* Color de texto del submenú */
 }
 
-.dark-mode .dark-mode-select__option--is-selected {
-  background-color: #666 !important;
+.sub-menu .nav-link:hover {
+  background-color: #212636;  
+  color: white; /* Color de texto al pasar el ratón sobre el submenú */
 }
 
-.dark-mode .dark-mode-select__single-value {
-  color: white !important;
+.sub-menu .nav-link.active {
+  font-weight: bold;
+  color: #04aad6; /* Color de texto activo en el submenú */
 }
