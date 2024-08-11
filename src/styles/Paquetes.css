@@ -1,4 +1,4 @@
-/* Usuarios.css */
+/* Paquetes.css */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
 .form-group-custom {
@@ -61,7 +61,7 @@
 }
 
 .table-centered td, .table-centered th {
-    text-align: center; /* Cambiado a center para que el contenido esté centrado */
+    text-align: justify; /* Cambiado a center para que el contenido esté centrado */
 }
 
 .table {

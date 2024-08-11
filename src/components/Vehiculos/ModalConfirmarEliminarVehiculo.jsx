@@ -1,34 +1,30 @@
-import React from "react";
+import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 
-const ModalConfirmarEliminarVehiculo = ({
-  isOpen,
-  toggle,
-  onConfirm,
-  entityType = "vehículo",  // Default to "vehículo"
-  entityName,
-  customMessage
-}) => (
-  <Modal isOpen={isOpen} toggle={toggle}>
-    <ModalHeader toggle={toggle}>Confirmar Eliminación</ModalHeader>
-    <ModalBody>
-      {customMessage || `¿Estás seguro de que deseas eliminar ${entityType ? `este ${entityType.toLowerCase()}` : "este elemento"}${entityName ? `: ${entityName}` : ""}?`}
-    </ModalBody>
-    <ModalFooter>
-      <Button color="danger" onClick={onConfirm}>Eliminar</Button>
-      <Button color="secondary" onClick={toggle}>Cancelar</Button>
-    </ModalFooter>
-  </Modal>
-);
+const ModalConfirmarEliminarVehiculo = ({ confirmarEliminar, confirmarEliminarVehiculo, setConfirmarEliminar }) => {
+  const handleToggle = useCallback(() => {
+    setConfirmarEliminar(false);
+  }, [setConfirmarEliminar]);
+
+  return (
+    <Modal isOpen={confirmarEliminar} toggle={handleToggle}>
+      <ModalHeader toggle={handleToggle}>Confirmar Eliminación</ModalHeader>
+      <ModalBody>
+        ¿Estás seguro de que deseas eliminar este vehículo?
+      </ModalBody>
+      <ModalFooter>
+        <Button color="danger" onClick={confirmarEliminarVehiculo} aria-label="Eliminar vehículo">Eliminar</Button>
+        <Button color="secondary" onClick={handleToggle} aria-label="Cancelar">Cancelar</Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
 
 ModalConfirmarEliminarVehiculo.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  toggle: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  entityType: PropTypes.string, // Tipo de entidad (por ejemplo, "Modelo", "Marca", "Vehículo")
-  entityName: PropTypes.string, // Nombre específico del elemento a eliminar
-  customMessage: PropTypes.string, // Mensaje personalizado para la confirmación
+  confirmarEliminar: PropTypes.bool.isRequired,
+  confirmarEliminarVehiculo: PropTypes.func.isRequired,
+  setConfirmarEliminar: PropTypes.func.isRequired,
 };
 
 export default ModalConfirmarEliminarVehiculo;

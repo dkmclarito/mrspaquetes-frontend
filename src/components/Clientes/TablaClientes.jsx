@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Button } from "reactstrap";
+import { Button, Table } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import "/src/styles/Clientes.css";
@@ -31,8 +31,8 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
 
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
-      <table className="table table-centered table-nowrap mb-0">
-        <thead className="thead-light">
+      <Table striped className="table-centered table-nowrap mb-0">
+      <thead className="thead-light">
           <tr>
             <th className="text-center">ID</th>
             <th className="text-center">Nombre</th>
@@ -48,14 +48,14 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
           {clientes.length > 0 ? (
             clientes.map(cliente => (
               <tr key={cliente.id}>
-                <td className="text-center">{cliente.id}</td>
-                <td className="text-center">{cliente.nombre}</td>
-                <td className="text-center">{cliente.apellido}</td>
-                <td className="text-center">{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
-                <td className="text-center">{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
-                <td className="text-center">{cliente.telefono || 'N/A'}</td>
-                <td className="text-center">{formatearFecha(cliente.fecha_registro)}</td>
-                <td className="text-center">
+                <td>{cliente.id}</td>
+                <td>{cliente.nombre}</td>
+                <td>{cliente.apellido}</td>
+                <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
+                <td>{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
+                <td>{cliente.telefono || 'N/A'}</td>
+                <td>{formatearFecha(cliente.fecha_registro)}</td>
+                <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
@@ -81,7 +81,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
             </tr>
           )}
         </tbody>
-      </table>
+        </Table>
     </div>
   );
 };

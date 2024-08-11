@@ -233,6 +233,26 @@ body {
   color: #e0e0e0;
 }
 
+.dark-mode .dropdown-menu {
+  background-color: #212636;
+  color: #e0e0e0;
+}
+
+.dark-mode .dropdown-menu:hover {
+  background-color: #454545;
+  color: #e0e0e0;
+}
+
+.dark-mode .dropdown-item {
+  background-color: #212636;
+  color: #e0e0e0;
+}
+
+.dark-mode .dropdown-item:hover {
+  background-color: #454545;
+  color: #e0e0e0;
+}
+
 /*
 .dark-mode .footer {
   background-color: #333;
@@ -309,6 +329,11 @@ body {
 }
 
 .dark-mode .card-body span {
+  background-color: #444;
+  color: white;
+}
+
+.dark-mode .card  select {
   background-color: #444;
   color: white;
 }
@@ -394,6 +419,12 @@ body {
   border: 1px solid #555;
 }
 
+.dark-mode #tipoUsuario {
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+}
+
 /* MODALES */
 .modal-content {
   background-color: #777777;
@@ -405,6 +436,11 @@ body {
   background-color: #5e5e5e;
   color: #fff;
   border: 1px solid #fff;
+}
+
+.modal select {
+  background-color: #5e5e5e;
+  color: white;
 }
 
 /* Estilo para el placeholder */
@@ -432,4 +468,37 @@ body {
 .modal .btn-primary:hover {
   background-color: #1e8043;
   border-color: #666;
+}
+
+/* Estilo del Submenú */
+.sub-menu {
+  display: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sub-menu.active {
+  display: block;
+  margin-left: 20px; /* Ajusta el margen izquierdo para alinear con el elemento padre */
+}
+
+.sub-menu li {
+  margin-bottom: 5px;
+}
+
+.sub-menu .nav-link {
+  padding: 8px 20px;
+  font-size: 0.85em; /* Tamaño de fuente más pequeño */
+  color: #b3b9c6; /* Color de texto del submenú */
+}
+
+.sub-menu .nav-link:hover {
+  background-color: #212636;  
+  color: white; /* Color de texto al pasar el ratón sobre el submenú */
+}
+
+.sub-menu .nav-link.active {
+  font-weight: bold;
+  color: #04aad6; /* Color de texto activo en el submenú */
 }

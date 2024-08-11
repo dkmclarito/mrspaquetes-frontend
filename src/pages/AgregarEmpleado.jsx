@@ -9,11 +9,11 @@ import "../styles/Empleados.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 function getFechaContratacionPorDefecto() {
-    const anioActual = new Date().getFullYear();
-    const fechaActual = new Date();
-    const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
-    const dia = String(fechaActual.getDate()).padStart(2, '0');
-    return `${anioActual}-${mes}-${dia}`;
+  const anioActual = new Date().getFullYear();
+  const fechaActual = new Date();
+  const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+  const dia = String(fechaActual.getDate()).padStart(2, '0');
+  return `${anioActual}-${mes}-${dia}`;
 }
 
 function getFechaMinimaNacimiento() {
@@ -58,10 +58,12 @@ const AgregarEmpleado = () => {
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
   const today = new Date();
+  const [duiError, setDuiError] = useState(""); 
   const currentYear = today.getFullYear();
   const minYear = 1900;
  const [maxDate, setMaxDate] = useState('');
  const [telefonoError, setTelefonoError] = useState("");
+ const [isFechaNacimientoRequerida, setIsFechaNacimientoRequerida] = useState(false);
  useEffect(() => {
     const fetchCargos = async () => {
       try {
@@ -160,28 +162,47 @@ const AgregarEmpleado = () => {
     fetchGeneros();
   }, [token]);
 
-  const validateName = (name) => {
-    // Expresión regular para permitir letras, espacios y "ñ"
-    const regex = /^[A-Za-zñÑ\s]+$/;
-    return regex.test(name) && name.length <= 80;
+  const validateNombre = (nombre) => {
+    // Expresión regular para permitir letras con tildes, espacios y "ñ"
+    const regex = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
+    return regex.test(nombre) && nombre.length <= 80;
   };
 
-  const validateApellido = (name) => {
-    // Expresión regular para permitir letras, espacios y "ñ"
-    const regex = /^[A-Za-zñÑ\s]+$/;
-    return regex.test(name) && name.length <= 80;
+  const validateApellido = (apellido) => {
+    // Expresión regular para permitir letras con tildes, espacios y "ñ"
+    const regex = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
+    return regex.test(apellido) && apellido.length <= 80;
   };
+
+  const verificarDuiUnico = async (dui) => {
+    try {
+      const response = await fetch(`${API_URL}/empleados/verificar_dui/${dui}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
   
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      return data.existe; 
+    } catch (error) {
+      console.error("Error al verificar el DUI:", error);
+      return false; 
+    }
+  };
   
   const handleNombresChange = (e) => {
     const nombre = e.target.value;
     // Filtrar caracteres no permitidos
     const cleanedNombre = nombre.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ\s]/g, '');
     setNombres(cleanedNombre);
-    setIsNombreValido(validateName(cleanedNombre));
+    setIsNombreValido(validateNombre(cleanedNombre));
   };
 
- 
+
   const handleApellidosChange = (e) => {
     const apellido = e.target.value;
     // Filtrar caracteres no permitidos
@@ -189,7 +210,7 @@ const AgregarEmpleado = () => {
     setApellidos(cleanedApellido);
     setIsApellidosValid(validateApellido(cleanedApellido));
   };
-  
+
   const handleFechaNacimientoChange = (e) => {
     const { value } = e.target;
     const fechaSeleccionada = new Date(value);
@@ -205,7 +226,7 @@ const AgregarEmpleado = () => {
   };
   useEffect(() => {
     const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const formattedDate = today.toISOString().split('T')[0]; 
     setMaxDate(formattedDate);
   }, []);
 
@@ -250,7 +271,7 @@ const AgregarEmpleado = () => {
 
     setIsFechaContratacionValida(esFechaValida);
     if (esFechaValida) {
-        setFechaContratacion(`${anioActual}-${mes}-${dia}`);
+      setFechaContratacion(`${anioActual}-${mes}-${dia}`);
     }
   };
 
@@ -277,21 +298,21 @@ const AgregarEmpleado = () => {
 
     // Verificar si el primer dígito es 6, 7 o 2
     if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
-        setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
-        setIsTelefonoValid(false);
-        // Prevent further input by not updating state by default
-        return;
+      setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
+      setIsTelefonoValid(false);
+      // Prevent further input by not updating state by default
+      return;
     } else {
-        setTelefonoError("");
+      setTelefonoError("");
     }
 
     // Limit to 8 digits
     if (telefonoValue.length > 8) {
-        telefonoValue = telefonoValue.slice(0, 8);
+      telefonoValue = telefonoValue.slice(0, 8);
     }
 
     if (telefonoValue.length > 4) {
-        telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
+      telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
     }
 
     setTelefono(telefonoValue);
@@ -299,13 +320,13 @@ const AgregarEmpleado = () => {
     // Validar el formato 1234-5678
     const isValidFormat = /^\d{4}-\d{4}$/.test(telefonoValue);
     if (!isValidFormat) {
-        setTelefonoError("El número de teléfono debe tener el formato 1234-5678");
-        setIsTelefonoValid(false);
+      setTelefonoError("El número de teléfono debe tener el formato 1234-5678");
+      setIsTelefonoValid(false);
     } else {
-        setTelefonoError("");
-        setIsTelefonoValid(true);
+      setTelefonoError("");
+      setIsTelefonoValid(true);
     }
-};
+  };
 
   const validarFechas = () => {
     const fechaNacimientoDate = new Date(fechaNacimiento);
@@ -326,6 +347,12 @@ const AgregarEmpleado = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!fechaNacimiento) {
+      setIsFechaNacimientoRequerida(true);
+      return;
+    } else {
+      setIsFechaNacimientoRequerida(false);
+    }
   
     if (!isNombreValido || !isApellidosValid || !isTelefonoValid || !validarFechas() || !isDuiValid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
@@ -338,37 +365,13 @@ const AgregarEmpleado = () => {
       });
       return;
     }
-    const empleadoData = {
-      nombres,
-      apellidos,
-      id_genero: genero,
-      dui: dui.replace(/-/g, ""),
-      telefono: telefono.replace(/-/g, ""),
-      fecha_nacimiento: fechaNacimiento,
-      fecha_contratacion: fechaContratacion,
-      id_estado: 1,
-      id_cargo: cargo,
-      id_departamento: departamento,
-      id_municipio: municipio,
-      direccion,
-    };
-
-    if (!isTelefonoValid) {
-      toast.error("El número de teléfono ingresado no es válido. Debe tener el formato 0000-0000.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return; 
-    }
-
-    if (!validarFechas()) {
-      setIsFechaNacimientoValida(false);
-      setIsFechaContratacionValida(false);
-      toast.error("Las fechas ingresadas no son válidas.", {
+  
+    // Verificar si el DUI ya está registrado
+    const duiSinGuion = dui.replace(/-/g, "");
+    const duiUnico = await verificarDuiUnico(duiSinGuion);
+    
+    if (!duiUnico) {
+      toast.error("El DUI ingresado ya está registrado.", {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -378,22 +381,22 @@ const AgregarEmpleado = () => {
       });
       return;
     }
-
-    setIsFechaNacimientoValida(true);
-    setIsFechaContratacionValida(true);
-
-    if (!isDuiValid) {
-      toast.error("El DUI ingresado no es válido. Debe tener el formato 0XXXXXXX-X.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return; 
-    }
-
+  
+    const empleadoData = {
+      nombres,
+      apellidos,
+      id_genero: genero,
+      dui: duiSinGuion,
+      telefono: telefono.replace(/-/g, ""),
+      fecha_nacimiento: fechaNacimiento,
+      fecha_contratacion: fechaContratacion,
+      id_estado: 1,
+      id_cargo: cargo,
+      id_departamento: departamento,
+      id_municipio: municipio,
+      direccion,
+    };
+  
     try {
       const response = await fetch(`${API_URL}/empleados`, {
         method: "POST",
@@ -403,15 +406,32 @@ const AgregarEmpleado = () => {
         },
         body: JSON.stringify(empleadoData),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = generateErrorMessage(errorData);
+        let errorMessage = "Error al agregar el empleado.";
+  
+        // Verifica si la respuesta tiene el campo que indica DUI duplicado
+        if (errorData.error && errorData.error.includes("DUI_DUPLICADO")) {
+          errorMessage = "El DUI ingresado ya está registrado.";
+        } else {
+          errorMessage = `Error: ${errorData.message || 'Error desconocido'}`;
+        }
+  
+        toast.error(errorMessage, {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+        });
+  
         throw new Error(errorMessage);
       }
-
+  
       const data = await response.json();
-
+  
       toast.success("¡Empleado agregado con éxito!", {
         position: "bottom-right",
         autoClose: 5000,
@@ -420,11 +440,12 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-
+  
       setTimeout(() => {
         navigate("/GestionEmpleados");
       }, 2000);
-
+  
+      // Limpiar campos
       setNombres("");
       setApellidos("");
       setGenero("");
@@ -447,15 +468,15 @@ const AgregarEmpleado = () => {
       });
     }
   };
-
+  
   return (
     <Container><Breadcrumbs title="Formulario de Registro de Empleados" breadcrumbItem="Ingrese la información" />
       <Card>
         <CardBody>
           <Form onSubmit={handleSubmit}>
             <Row>
-            <Col md="6">
-                  <FormGroup>
+              <Col md="6">
+                <FormGroup>
                   <Label for="nombres">Nombres</Label>
                   <Input
                     type="text"
@@ -489,76 +510,76 @@ const AgregarEmpleado = () => {
                     </FormFeedback>
                   )}
                 </FormGroup>
-                            </Col>
-                            <Col md="6">
-                              <FormGroup>
-                                <Label for="genero">Género</Label>
-                                <Input
-                                  type="select"
-                                  id="genero"
-                                  value={genero}
-                                  onChange={(e) => setGenero(e.target.value)}
-                                  required
-                                >
-                                  <option value="">Seleccione un género</option>
-                                  {generos.map((gen) => (
-                                    <option key={gen.id} value={gen.id}>
-                                      {gen.nombre}
-                                    </option>
-                                  ))}
-                                </Input>
-                              </FormGroup>
-                            </Col>
-                            <Col md={6}>
-                            <FormGroup className="form-group-custom">
-                            <Label for="dui">DUI</Label>
-                            <Input
-                             type="text"
-                             id="dui"
-                             value={dui}
-                             onChange={handleDuiChange}
-                             required
-                             maxLength="10"
-                             invalid={!isDuiValid}                                                              
-                             />
-                              {!isDuiValid && (
-                                 <FormFeedback className="text-danger">
-                                     El DUI ingresado no es válido. Debe tener el formato 02345678-9.
-                                 </FormFeedback>
-                             )}             
-                                  </FormGroup>
-                              </Col>                                                                                                                              
-                            <Col md={6}>
-                            <FormGroup className="form-group-custom">
-                            <Label for="telefono">Teléfono</Label>
-                            <Input
-                                                        type="text"
-                                                        id="telefono"
-                                                        value={telefono}
-                                                        onChange={handleTelefonoChange}
-                                                        required
-                                                        maxLength="9"
-                                                        invalid={!isTelefonoValid}
-                                                    />
-                                                    {telefonoError && (
-                                                        <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
-                                                        
-                                  )}
-                              </FormGroup>
-                          </Col>
-                          <Col md="6">
-                          <FormGroup>
-                      <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
-                      <Input
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label for="genero">Género</Label>
+                  <Input
+                    type="select"
+                    id="genero"
+                    value={genero}
+                    onChange={(e) => setGenero(e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccione un género</option>
+                    {generos.map((gen) => (
+                      <option key={gen.id} value={gen.id}>
+                        {gen.nombre}
+                      </option>
+                    ))}
+                  </Input>
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup className="form-group-custom">
+                  <Label for="dui">DUI</Label>
+                  <Input
+                   
+                    type="text"
+                    id="dui"
+                    value={dui}
+                    onChange={handleDuiChange}
+                    invalid={!isDuiValid}
+                    maxLength="10"
+                  />
+                  {!isDuiValid && (
+                    <FormFeedback className="text-danger">
+                      El DUI ingresado no es válido. Debe tener el formato 02345678-9.
+                    </FormFeedback>
+                  )}
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup className="form-group-custom">
+                  <Label for="telefono">Teléfono</Label>
+                  <Input
+                    type="text"
+                    id="telefono"
+                    value={telefono}
+                    onChange={handleTelefonoChange}
+                    required
+                    maxLength="9"
+                    invalid={!isTelefonoValid}
+                  />
+                  {telefonoError && (
+                    <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
+
+                  )}
+                </FormGroup>
+              </Col>
+              <Col md="6">
+                <FormGroup>
+                  <Label for="fechaNacimiento">Fecha de Nacimiento</Label>
+                  <Input
                     type="date"
                     id="fechaNacimiento"
                     value={fechaNacimiento}
                     onChange={handleFechaNacimientoChange}
                     max={getFechaActual()}
-                    invalid={!isFechaNacimientoValida}
+                    invalid={!isFechaNacimientoValida || isFechaNacimientoRequerida}
                   />
                       <FormFeedback>
-                        La fecha de nacimiento debe ser válida de una persona mayor de edad y no puede ser en el futuro.
+                        La fecha de nacimiento es requerida, debe ser válida de una persona mayor de edad y no puede ser en el futuro.
                       </FormFeedback>
                     </FormGroup>
                         </Col>
@@ -664,6 +685,3 @@ const AgregarEmpleado = () => {
     };
 
 export default AgregarEmpleado;
-                        
-                              
-

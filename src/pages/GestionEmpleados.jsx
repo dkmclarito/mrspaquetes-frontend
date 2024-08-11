@@ -11,62 +11,88 @@ import "../styles/Empleados.css";
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 7;
 
 const GestionEmpleados = () => {
   document.title = "Empleados | Mr. Paquetes";
 
   const [empleados, setEmpleados] = useState([]);
   const [cargos, setCargos] = useState([]);
+  const [estados, setEstados] = useState([]);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
   const [empleadoEditado, setEmpleadoEditado] = useState(null);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [empleadoAEliminar, setEmpleadoAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
 
+  // Fetch initial data
   const fetchData = async () => {
     try {
       const token = AuthService.getCurrentUser();
       const empleadosResponse = await axios.get(`${API_URL}/empleados`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (empleadosResponse.data && Array.isArray(empleadosResponse.data.empleados)) {
-        setEmpleados(empleadosResponse.data.empleados);
-      } else {
-        console.error("Respuesta no válida para empleados:", empleadosResponse.data);
-      }
+      setEmpleados(empleadosResponse.data.empleados || []);
 
       const cargosResponse = await axios.get(`${API_URL}/dropdown/get_cargos`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (cargosResponse.data && Array.isArray(cargosResponse.data.cargos)) {
-        setCargos(cargosResponse.data.cargos);
-      } else {
-        console.error("Respuesta no válida para cargos:", cargosResponse.data);
-      }
+      setCargos(cargosResponse.data.cargos || []);
+
+      const estadosResponse = await axios.get(`${API_URL}/dropdown/get_estado_empleados`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEstados(estadosResponse.data.estado_empleados || []);
+
+      const departamentosResponse = await axios.get(`${API_URL}/dropdown/get_departamentos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDepartamentos(departamentosResponse.data || []);
     } catch (error) {
       console.error("Error al obtener datos:", error);
     }
   };
 
+  
+  const fetchMunicipios = async (idDepartamento) => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/dropdown/get_municipio/${idDepartamento}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log("Respuesta de municipios:", response.data); 
+      setMunicipios(response.data.municipio || []); 
+    } catch (error) {
+      console.error("Error al obtener municipios:", error);
+    }
+  };
+
+ 
   useEffect(() => {
     fetchData();
   }, []);
 
+ 
+  useEffect(() => {
+    if (departamentoSeleccionado) {
+      fetchMunicipios(departamentoSeleccionado);
+    } else {
+      setMunicipios([]); 
+    }
+  }, [departamentoSeleccionado]);
+
   const guardarCambiosEmpleado = async () => {
     try {
-      // Quitar el guion del teléfono antes de enviar
       const empleadoParaGuardar = {
         ...empleadoEditado,
         telefono: empleadoEditado.telefono.replace("-", "")
       };
 
-      const token = localStorage.getItem('token');
+      const token = AuthService.getCurrentUser();
       const response = await axios.put(
         `${API_URL}/empleados/${empleadoParaGuardar.id}`,
         empleadoParaGuardar,
@@ -78,8 +104,8 @@ const GestionEmpleados = () => {
         }
       );
       console.log('Empleado actualizado:', response.data);
-      fetchData(); // Actualiza los datos después de guardar los cambios
-      setModalEditar(false); // Cierra el modal
+      fetchData();
+      setModalEditar(false);
     } catch (error) {
       console.error('Error al actualizar empleado:', error);
     }
@@ -94,9 +120,7 @@ const GestionEmpleados = () => {
     try {
       const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/empleados/${empleadoAEliminar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       const nuevosEmpleados = empleados.filter(empleado => empleado.id !== empleadoAEliminar);
@@ -119,13 +143,19 @@ const GestionEmpleados = () => {
     const busquedaLower = busqueda.toLowerCase();
     return empleados.filter(empleado =>
       `${empleado.nombres} ${empleado.apellidos}`.toLowerCase().includes(busquedaLower) ||
-      obtenerNombreCargo(empleado.id_cargo).toLowerCase().includes(busquedaLower)
+      obtenerNombreCargo(empleado.id_cargo).toLowerCase().includes(busquedaLower) ||
+      obtenerNombreEstado(empleado.id_estado).toLowerCase().includes(busquedaLower)
     );
   };
 
   const obtenerNombreCargo = (id) => {
     const cargo = cargos.find(cargo => cargo.id === id);
     return cargo ? cargo.nombre : '';
+  };
+
+  const obtenerNombreEstado = (id) => {
+    const estado = estados.find(estado => estado.id === id);
+    return estado ? estado.estado : '';
   };
 
   const handlePageChange = (pageNumber) => {
@@ -141,7 +171,7 @@ const GestionEmpleados = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Empleados " breadcrumbItem="Listado de Empleados" />
+        <Breadcrumbs title="Gestión de Empleados" breadcrumbItem="Listado de Empleados" />
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
@@ -151,7 +181,7 @@ const GestionEmpleados = () => {
                 id="busqueda"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre, apellido o cargo"
+                placeholder="Buscar por nombre, apellido, cargo o estado"
                 style={{ width: "300px" }}
               />
               <div style={{ marginLeft: "auto" }}>
@@ -170,6 +200,7 @@ const GestionEmpleados = () => {
                 <TablaEmpleados
                   empleados={paginatedEmpleados}
                   cargos={cargos}
+                  estados={estados}
                   eliminarEmpleado={eliminarEmpleado}
                   toggleModalEditar={toggleModalEditar}
                 />
@@ -200,13 +231,17 @@ const GestionEmpleados = () => {
         guardarCambiosEmpleado={guardarCambiosEmpleado}
         setModalEditar={setModalEditar}
         cargos={cargos}
+        estados={estados}
+        departamentos={departamentos}
+        municipios={municipios} 
+        setDepartamentoSeleccionado={setDepartamentoSeleccionado}
       />
-      
-      <ModalConfirmarEliminar
+       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarEmpleado={confirmarEliminarEmpleado}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+
     </div>
   );
 };
