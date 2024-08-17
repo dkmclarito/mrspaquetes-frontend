@@ -62,6 +62,7 @@ const App = () => {
               {/* Rutas para 'conductor' */}
               <Route element={<PrivateRoute allowedRoles={['admin','conductor','cliente']} />}>
                 <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
+                <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
                 {/*AQUI RUTAS */}
               </Route>              
             </Route>

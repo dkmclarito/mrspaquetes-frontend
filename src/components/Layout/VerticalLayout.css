@@ -28,6 +28,29 @@ body {
   flex-direction: column;
   z-index: 100;
 }
+/* CSS HEX */
+colors{
+  --burnt-sienna: #e28f48;
+  --black: #040404;
+  --merino: #f3eddd;
+  --cherokee: #facc87;
+  --pueblo: #722d10;
+  --gold-sand: #e5b286;
+  --potters-clay: #825637;
+  --taupe: #473d30;
+  --nandor: #53645e;
+  --shuttle-gray: #545c64;
+  --porsche: #eaa565;
+  --black-pearl: #041118;
+  --fiery-orange: #b55416;
+  --nutmeg: #7c4325;
+  --regent-gray: #929ca0;
+  --sirocco: #768284;
+  --river-bed: #4c5c60;
+  --mondo: #42332a;
+  --mako: #444c54;
+  --outer-space: #283a3c;
+  }
 
 .vertical-nav {
   width: 220px;
@@ -36,7 +59,7 @@ body {
   top: 0;
   left: 0;
   overflow-y: auto;
-  background-color: #121621;
+  background-color: #071e2a;
   color: white;
   padding-top: 5px;
   border-right: 1px solid #212636;
@@ -60,7 +83,7 @@ body {
 }
 
 .logo-img {
-  width: 90px;
+  width: 150px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -72,7 +95,7 @@ body {
 }
 
 .logo-expanded {
-  width: 90px;
+  width: 150px;
 }
 
 .vertical-nav .nav-link {
@@ -99,7 +122,7 @@ body {
   top: 0;
   bottom: 0;
   width: 4px;
-  background-color: #04aad6;
+  background-color: #53645e;
 }
 
 .vertical-nav .nav-link:hover {
@@ -169,7 +192,7 @@ body {
 }
 
 .footer {
-  background-color: #121621;
+  background-color: #071e2a;
   color: white;
   padding: 15px 20px;
   text-align: center;
@@ -328,7 +351,7 @@ body {
 }
 
 .dark-mode .nav-link.active {
-  color: #bb86fc;
+  color: #ffffff;
 }
 
 /*
@@ -366,12 +389,11 @@ body {
   color: #e0e0e0;
 }
 
-/*
+
 .dark-mode .footer {
-  background-color: #333;
-  color: #e0e0e0;
+  background-color: #041118;
 }
-*/
+
 
 /*Sub titulo*/
 .dark-mode .breadcrumb {
@@ -574,4 +596,8 @@ body {
 .dark-mode .btn-danger:hover{
   background-color: rgba(255, 0, 0, 0.197);
   color: red;
+}
+
+.dark-mode .vertical-nav{
+  background-color: #041118;
 }
