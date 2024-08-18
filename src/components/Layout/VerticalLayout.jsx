@@ -5,7 +5,7 @@ import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
 import { BiHome, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShield, BiShoppingBag, BiMenu, BiPlus } from 'react-icons/bi';
-import logoImage from "../../assets/images/logo-dark.png";
+import logoImage from "../../assets/logo-oscuro.png";
 import { useAuth } from '../../services/AuthContext';
 
 const VerticalLayout = () => {
