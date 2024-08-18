@@ -83,10 +83,11 @@ colors{
 }
 
 .logo-img {
-  width: 150px;
+  width: 100px;
   height: auto;
   display: block;
   margin: 0 auto;
+  padding: 0;
 }
 
 .logo-collapsed {
@@ -95,7 +96,7 @@ colors{
 }
 
 .logo-expanded {
-  width: 150px;
+  width: 100px;
 }
 
 .vertical-nav .nav-link {
