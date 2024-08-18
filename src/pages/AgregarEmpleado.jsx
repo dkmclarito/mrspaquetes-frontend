@@ -37,7 +37,6 @@ const AgregarEmpleado = () => {
   const [cargos, setCargos] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [municipiosPorDepartamento, setMunicipiosPorDepartamento] = useState({});
-  const [generos, setGeneros] = useState([]);
   const [nombres, setNombres] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [genero, setGenero] = useState("");
@@ -138,29 +137,6 @@ const AgregarEmpleado = () => {
 
     fetchMunicipios();
   }, [departamento, token]);
-
-  useEffect(() => {
-    const fetchGeneros = async () => {
-      try {
-        const response = await fetch(`${API_URL}/dropdown/get_generos`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        const responseData = await response.json();
-        if (responseData.generos && Array.isArray(responseData.generos)) {
-          setGeneros(responseData.generos);
-        } else {
-          console.error("Respuesta no válida para géneros:", responseData);
-        }
-      } catch (error) {
-        console.error("Error al obtener los géneros:", error);
-      }
-    };
-
-    fetchGeneros();
-  }, [token]);
 
   const validateNombre = (nombre) => {
     // Expresión regular para permitir letras con tildes, espacios y "ñ"
@@ -385,8 +361,7 @@ const AgregarEmpleado = () => {
     const empleadoData = {
       nombres,
       apellidos,
-      id_genero: genero,
-      dui: duiSinGuion,
+      dui: dui.replace(/-/g, ""),
       telefono: telefono.replace(/-/g, ""),
       fecha_nacimiento: fechaNacimiento,
       fecha_contratacion: fechaContratacion,
@@ -448,7 +423,6 @@ const AgregarEmpleado = () => {
       // Limpiar campos
       setNombres("");
       setApellidos("");
-      setGenero("");
       setDui("");
       setTelefono("");
       setFechaNacimiento("");
@@ -509,25 +483,6 @@ const AgregarEmpleado = () => {
                       Los apellidos deben contener solo letras y espacios, no deben contener números.
                     </FormFeedback>
                   )}
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="genero">Género</Label>
-                  <Input
-                    type="select"
-                    id="genero"
-                    value={genero}
-                    onChange={(e) => setGenero(e.target.value)}
-                    required
-                  >
-                    <option value="">Seleccione un género</option>
-                    {generos.map((gen) => (
-                      <option key={gen.id} value={gen.id}>
-                        {gen.nombre}
-                      </option>
-                    ))}
-                  </Input>
                 </FormGroup>
               </Col>
               <Col md={6}>
