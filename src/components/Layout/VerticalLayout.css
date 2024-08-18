@@ -83,7 +83,7 @@ colors{
 }
 
 .logo-img {
-  width: 90px;
+  width: 150px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -96,7 +96,7 @@ colors{
 }
 
 .logo-expanded {
-  width: 90px;
+  width: 150px;
 }
 
 .vertical-nav .nav-link {
