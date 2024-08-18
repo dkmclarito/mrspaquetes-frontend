@@ -29,6 +29,7 @@ const GestionPaquetes = () => {
   const [estadosPaquete, setEstadosPaquete] = useState([]);
   const [modalEliminar, setModalEliminar] = useState(false);
   const [paqueteAEliminar, setPaqueteAEliminar] = useState(null);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState('');
 
   const navigate = useNavigate();
 
@@ -46,7 +47,7 @@ const GestionPaquetes = () => {
       setPaquetes(response.data.data || []);
       setTotalItems(response.data.total || 0);
     } catch (error) {
-      toast.error('Error al cargar los datos de paquetes');
+     // toast.error('Error al cargar los datos de paquetes');
       console.error('Error fetching paquetes:', error);
     }
   };
@@ -128,22 +129,45 @@ const fetchData = async () => {
     setSearchTerm(event.target.value);
   };
 
+  const formatearFechaBusquedad = (fecha) => {
+    if (!fecha) return '';
+    const date = new Date(fecha);
+    // Obtener el día, mes y año
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0'); // Los meses son 0-indexados
+    const año = date.getFullYear();
+    // Formato "día mes año"
+    return `${dia} ${mes} ${año}`;
+  };
+  
+  const normalizarBusqueda = (busqueda) => {
+    if (!busqueda) return '';
+    // Reemplaza guiones y barras por espacios
+    return busqueda.replace(/[-/]/g, ' ').toLowerCase();
+  };
+  
   const filtrarPaquetes = (paquetes) => {
-    if (!searchTerm) return paquetes;
-
-    const searchLower = searchTerm.toLowerCase();
+    if (!searchTerm && !estadoSeleccionado) return paquetes;
+  
+    const searchLower = normalizarBusqueda(searchTerm);
+  
     return paquetes.filter(paquete => {
       const tipoPaquete = paquete.tipo_paquete ? paquete.tipo_paquete.toLowerCase() : '';
       const estadoPaquete = paquete.estado_paquete ? paquete.estado_paquete.toLowerCase() : '';
-      const fechaEnvio = paquete.fecha_envio ? paquete.fecha_envio.toLowerCase() : '';
-      const fechaEntrega = paquete.fecha_entrega_estimada ? paquete.fecha_entrega_estimada.toLowerCase() : '';
       
-      return tipoPaquete.includes(searchLower) ||
+      // Convertir las fechas a formato "día mes año"
+      const fechaEnvio = formatearFechaBusquedad(paquete.fecha_envio).toLowerCase();
+      const fechaEntrega = formatearFechaBusquedad(paquete.fecha_entrega_estimada).toLowerCase();
+      
+      return (tipoPaquete.includes(searchLower) ||
         estadoPaquete.includes(searchLower) ||
         fechaEnvio.includes(searchLower) ||
-        fechaEntrega.includes(searchLower);
+        fechaEntrega.includes(searchLower)) &&
+        (!estadoSeleccionado || estadoPaquete === estadoSeleccionado);
     });
   };
+  
+  
 
   const getPaginatedPaquetes = (paquetes) => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -170,7 +194,7 @@ const fetchData = async () => {
     const paquetesFiltrados = filtrarPaquetes(paquetes);
     setPaquetesFiltrados(getPaginatedPaquetes(paquetesFiltrados));
     setTotalItems(paquetesFiltrados.length);
-  }, [searchTerm, paquetes, currentPage]);
+  }, [searchTerm, paquetes, currentPage, estadoSeleccionado]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -195,9 +219,24 @@ const fetchData = async () => {
                 id="busqueda"
                 value={searchTerm}
                 onChange={handleSearch}
-                placeholder="Buscar por tipo, estado, fecha de envío, fecha de entrega"
+                placeholder="Buscar por tipo, fecha de envío, fecha de entrega"
                 style={{ width: "475px" }}
               />
+              <Label for="estadoPaquete" style={{ marginRight: "10px", marginLeft: "20px" }}>Estado:</Label>
+              <Input
+                type="select"
+                id="estadoPaquete"
+                value={estadoSeleccionado}
+                onChange={(e) => setEstadoSeleccionado(e.target.value)}
+                style={{ width: "200px" }}
+              >
+                <option value="">Todos los estados</option>
+                {estadosPaquete.map(estado => (
+                  <option key={estado.id} value={estado.nombre.toLowerCase()}>
+                    {estado.nombre}
+                  </option>
+                ))}
+              </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarPaquete" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Paquete
@@ -220,32 +259,30 @@ const fetchData = async () => {
               </CardBody>
             </Card>
             <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
-            <Pagination
-              activePage={currentPage}
-              itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={totalItems}
-              pageRangeDisplayed={5}
-              onChange={handlePageChange}
-              innerClass="pagination"
-              itemClass="page-item"
-              linkClass="page-link"
-              
-            />
+              <Pagination
+                activePage={currentPage}
+                itemsCountPerPage={ITEMS_PER_PAGE}
+                totalItemsCount={totalItems}
+                pageRangeDisplayed={5}
+                onChange={handlePageChange}
+                innerClass="pagination"
+                itemClass="page-item"
+                linkClass="page-link"
+              />
             </Col>
           </Col>
         </Row>
       </Container>
       <ModalEditarPaquete
-  modalEditar={modalEditar}
-  paqueteEditado={paqueteAEditar}
-  setPaqueteEditado={setPaqueteAEditar}
-  guardarCambiosPaquete={actualizarPaquete}
-  setModalEditar={setModalEditar}
-  tiposPaquete={tiposPaquete}
-  empaques={empaques}
-  estadosPaquete={estadosPaquete}
-/>
-
+        modalEditar={modalEditar}
+        paqueteEditado={paqueteAEditar}
+        setPaqueteEditado={setPaqueteAEditar}
+        guardarCambiosPaquete={actualizarPaquete}
+        setModalEditar={setModalEditar}
+        tiposPaquete={tiposPaquete}
+        empaques={empaques}
+        estadosPaquete={estadosPaquete}
+      />
       <ModalConfirmarEliminarPaquete
         isOpen={modalEliminar}
         toggle={() => setModalEliminar(!modalEliminar)}
@@ -253,6 +290,7 @@ const fetchData = async () => {
       />
     </div>
   );
+  
 };
 
 export default GestionPaquetes;
