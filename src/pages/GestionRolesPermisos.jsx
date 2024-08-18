@@ -8,6 +8,14 @@ import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Mapeo de nombres técnicos a nombres en español
+const roleAliases = {
+    admin: 'Administrador',
+    cliente: 'Cliente',
+    conductor: 'Conductor',
+    basico: 'Básico'
+};
+
 const GestionRolesPermisos = () => {
     const [roles, setRoles] = useState([]);
     const navigate = useNavigate();
@@ -27,7 +35,11 @@ const GestionRolesPermisos = () => {
             });
 
             if (response.data && Array.isArray(response.data)) {
-                setRoles(response.data); 
+                const transformedRoles = response.data.map(role => ({
+                    ...role,
+                    alias: roleAliases[role.name] || role.name  // Usa el alias si está disponible, de lo contrario usa el nombre original
+                }));
+                setRoles(transformedRoles);
             } else {
                 console.error('Datos recibidos no son un array:', response.data);
             }

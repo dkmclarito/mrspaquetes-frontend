@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button } from "reactstrap";
+import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, Row, Col } from "reactstrap";
 
 const ModalEditarModelo = ({
   modalEditar,
@@ -8,15 +8,19 @@ const ModalEditarModelo = ({
   setModeloEditado,
   guardarCambiosModelo,
   setModalEditar,
-  marcas
+  marcas = []
 }) => {
   const [error, setError] = useState(null);
+  const [marcaSeleccionada, setMarcaSeleccionada] = useState("");
 
   useEffect(() => {
     if (modalEditar && modeloEditado) {
       setError(null);
+      // Buscar la marca seleccionada en el array de marcas
+      const marca = marcas.find(marca => marca.id === modeloEditado.id_marca);
+      setMarcaSeleccionada(marca ? marca.nombre : "");
     }
-  }, [modalEditar, modeloEditado]);
+  }, [modalEditar, modeloEditado, marcas]);
 
   const handleGuardarCambios = () => {
     setError(null);
@@ -26,7 +30,7 @@ const ModalEditarModelo = ({
       return;
     }
 
-    if (!modeloEditado.marca_id) {
+    if (!modeloEditado.id_marca) {
       setError("Debe seleccionar una marca.");
       return;
     }
@@ -41,6 +45,21 @@ const ModalEditarModelo = ({
     };
 
     guardarCambiosModelo(modeloActualizado);
+    setModalEditar(false); // Cerrar el modal después de guardar
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setModeloEditado((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+
+    // Si se selecciona una nueva marca, actualizar el nombre de la marca seleccionada
+    if (name === "id_marca") {
+      const marca = marcas.find(marca => marca.id === value);
+      setMarcaSeleccionada(marca ? marca.nombre : "");
+    }
   };
 
   return (
@@ -52,34 +71,61 @@ const ModalEditarModelo = ({
           <Input
             type="text"
             id="nombre"
-            value={modeloEditado ? modeloEditado.nombre : ""}
-            onChange={(e) => setModeloEditado(prevState => ({ ...prevState, nombre: e.target.value }))}
+            name="nombre"
+            value={modeloEditado?.nombre || ""}
+            onChange={handleInputChange}
             required
           />
         </FormGroup>
+
+        <Row>
+          <FormGroup>
+            <Label for="marca">Marca</Label>
+            <Input
+              type="select"
+              id="marca"
+              name="id_marca"
+              value={modeloEditado?.id_marca || ""}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Seleccione Marca</option>
+              {marcas.map((marca) => (
+                <option key={marca.id} value={marca.id}>
+                  {marca.nombre}
+                </option>
+              ))}
+            </Input>
+          </FormGroup>
+        </Row>
+
         <FormGroup>
           <Label for="descripcion">Descripción</Label>
           <Input
             type="textarea"
             id="descripcion"
-            value={modeloEditado ? modeloEditado.descripcion : ""}
-            onChange={(e) => setModeloEditado(prevState => ({ ...prevState, descripcion: e.target.value }))}
+            name="descripcion"
+            value={modeloEditado?.descripcion || ""}
+            onChange={handleInputChange}
             required
           />
         </FormGroup>
+
         <FormGroup>
           <Label for="status">Estado</Label>
           <Input
             type="select"
             id="status"
-            value={modeloEditado ? modeloEditado.status : ""}
-            onChange={(e) => setModeloEditado(prevState => ({ ...prevState, status: e.target.value }))}
+            name="status"
+            value={modeloEditado?.status || ""}
+            onChange={handleInputChange}
             required
           >
             <option value="1">Activo</option>
             <option value="0">Inactivo</option>
           </Input>
         </FormGroup>
+
         {error && <p className="text-danger">{error}</p>}
       </ModalBody>
       <ModalFooter>
@@ -96,7 +142,7 @@ ModalEditarModelo.propTypes = {
   setModeloEditado: PropTypes.func.isRequired,
   guardarCambiosModelo: PropTypes.func.isRequired,
   setModalEditar: PropTypes.func.isRequired,
-  marcas: PropTypes.array.isRequired
+  marcas: PropTypes.array
 };
 
 export default ModalEditarModelo;

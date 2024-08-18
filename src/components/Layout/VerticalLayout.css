@@ -28,6 +28,29 @@ body {
   flex-direction: column;
   z-index: 100;
 }
+/* CSS HEX */
+colors{
+  --burnt-sienna: #e28f48;
+  --black: #040404;
+  --merino: #f3eddd;
+  --cherokee: #facc87;
+  --pueblo: #722d10;
+  --gold-sand: #e5b286;
+  --potters-clay: #825637;
+  --taupe: #473d30;
+  --nandor: #53645e;
+  --shuttle-gray: #545c64;
+  --porsche: #eaa565;
+  --black-pearl: #041118;
+  --fiery-orange: #b55416;
+  --nutmeg: #7c4325;
+  --regent-gray: #929ca0;
+  --sirocco: #768284;
+  --river-bed: #4c5c60;
+  --mondo: #42332a;
+  --mako: #444c54;
+  --outer-space: #283a3c;
+  }
 
 .vertical-nav {
   width: 220px;
@@ -36,7 +59,7 @@ body {
   top: 0;
   left: 0;
   overflow-y: auto;
-  background-color: #121621;
+  background-color: #071e2a;
   color: white;
   padding-top: 5px;
   border-right: 1px solid #212636;
@@ -60,10 +83,11 @@ body {
 }
 
 .logo-img {
-  width: 90px;
+  width: 100px;
   height: auto;
   display: block;
   margin: 0 auto;
+  padding: 0;
 }
 
 .logo-collapsed {
@@ -72,7 +96,7 @@ body {
 }
 
 .logo-expanded {
-  width: 90px;
+  width: 100px;
 }
 
 .vertical-nav .nav-link {
@@ -99,7 +123,7 @@ body {
   top: 0;
   bottom: 0;
   width: 4px;
-  background-color: #04aad6;
+  background-color: #53645e;
 }
 
 .vertical-nav .nav-link:hover {
@@ -169,7 +193,7 @@ body {
 }
 
 .footer {
-  background-color: #121621;
+  background-color: #071e2a;
   color: white;
   padding: 15px 20px;
   text-align: center;
@@ -186,7 +210,105 @@ body {
   width: calc(100% - 70px);
 }
 
+/* Estilo del Submenú */
+.sub-menu {
+  display: none;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
 
+.sub-menu.active {
+  display: block;
+  margin-left: 20px; /* Ajusta el margen izquierdo para alinear con el elemento padre */
+}
+
+.sub-menu li {
+  margin-bottom: 5px;
+}
+
+.sub-menu .nav-link {
+  padding: 8px 20px;
+  font-size: 0.85em; /* Tamaño de fuente más pequeño */
+  color: #b3b9c6; /* Color de texto del submenú */
+}
+
+.sub-menu .nav-link:hover {
+  background-color: #212636;  
+  color: white; /* Color de texto al pasar el ratón sobre el submenú */
+}
+
+.sub-menu .nav-link.active {
+  font-weight: bold;
+  color: #04aad6; /* Color de texto activo en el submenú */
+}
+
+/* MODALES */
+.modal-content {
+  background-color: #777777;
+  color: #000000;
+  /*border:white 2px dashed;*/
+}
+
+.modal .form-control {
+  background-color: #5e5e5e;
+  color: #fff;
+  border: 1px solid #fff;
+}
+
+.modal select {
+  background-color: #5e5e5e;
+  color: white;
+}
+
+/* Estilo para el placeholder */
+/*
+.modal .form-control::placeholder {
+  color: #888;
+}
+*/
+
+.modal .btn-secondary {
+  /*background-color: #4173ded8;*/
+  /*border-color: #555;*/
+  background-color: #e08609bc;
+  color: white;  
+}
+
+.modal .btn-secondary:hover {
+  background-color: #b76e08;
+  border-color: #666;
+}
+
+.modal .btn-primary {
+  background-color: #0da83e97;
+  
+}
+
+.modal .btn-primary:hover {
+  background-color: #1e8043;
+  border-color: #666;
+}
+
+/* Estilos predeterminados para el PageTitleBox */
+.page-title-box {
+  background-color: #ffffff;
+  color: #333333;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 2em;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 1.2em;
+  color: #666666;
+}
 
 html,
 body {
@@ -194,7 +316,22 @@ body {
   margin: 0;
 }
 
-/* Dark Mode Styles */
+/* Estilos para las Tablas */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 1em;
+  text-align: left;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+/*-------------------------- Dark Mode Styles--------------------------- */
 .dark-mode {
   background-color: #121212;
   color: #ffffff;
@@ -215,7 +352,7 @@ body {
 }
 
 .dark-mode .nav-link.active {
-  color: #bb86fc;
+  color: #ffffff;
 }
 
 /*
@@ -253,26 +390,27 @@ body {
   color: #e0e0e0;
 }
 
-/*
+
 .dark-mode .footer {
-  background-color: #333;
-  color: #e0e0e0;
-}
-*/
-
-/* Estilos para las Tablas */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-  font-size: 1em;
-  text-align: left;
+  background-color: #041118;
 }
 
-.table th,
-.table td {
-  padding: 12px 15px;
-  border: 1px solid #ddd;
+
+/*Sub titulo*/
+.dark-mode .breadcrumb {
+  color: rgb(144, 144, 144); 
+}
+
+.dark-mode .breadcrumb a {
+  color: rgb(144, 144, 144); 
+}
+
+.dark-mode .breadcrumb .active {
+  color: rgb(144, 144, 144); 
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  color: rgb(144, 144, 144); 
 }
 
 /* Estilos del Modo Oscuro para las Tablas */
@@ -296,7 +434,7 @@ body {
 .dark-mode .card {
   background-color: #2b2b2b;
   color: #ffffff;
-  border: 1px solid #444;
+  /*border: 1px solid #444;*/
 }
 
 .dark-mode .card-header {
@@ -305,7 +443,7 @@ body {
 }
 
 .dark-mode .card-body {
-  background-color: #2b2b2b;
+  background-color: #1e1e1e;
 }
 
 .dark-mode .card-footer {
@@ -347,26 +485,6 @@ body {
   color: #b3b9c6;
 }
 
-/* Estilos predeterminados para el PageTitleBox */
-.page-title-box {
-  background-color: #ffffff;
-  color: #333333;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 2em;
-}
-
-.page-subtitle {
-  margin: 0;
-  font-size: 1.2em;
-  color: #666666;
-}
-
 /* Estilos del Modo Oscuro para PageTitleBox */
 .dark-mode .page-title-box {
   background-color: #1e1e1e;
@@ -388,12 +506,19 @@ body {
   color: #fff;
 }
 
-.dark-mode .page-item {
-  background-color: #444;
+.dark-mode .page-item.disabled .page-link {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
 }
 
+/*.dark-mode .page-item {
+  background-color: #444;
+}*/
+
 .dark-mode .page-link {
+  background-color: rgba(255, 255, 255, 0.733);
   color: #000000;
+  border-color:rgba(255, 255, 255, 0.733);
 }
 
 .dark-mode .page-link:hover {
@@ -403,6 +528,13 @@ body {
 .dark-mode .page-item.active .page-link {
   background-color: #555;
   border-color: #555;
+  color:white;
+}
+
+.dark-mode .page-item.active .page-link:hover {
+  background-color: #2a2a2a;
+  border-color: #555;
+  color:white;
 }
 
 
@@ -425,47 +557,48 @@ body {
   border: 1px solid #555;
 }
 
-/* MODALES */
-.modal-content {
-  background-color: #777777;
-  color: #000000;
-  /*border:white 2px dashed;*/
+/*Botonesss*/
+
+.dark-mode .btn-primary{
+  background-color: rgba(255, 255, 255, 0.22);
+  /*color: rgb(170, 170, 170);*/
+  color: rgb(197, 212, 221);
+  border-color: gray;
+  border-width: 1px;
+  border-style: solid;
 }
 
-.modal .form-control {
-  background-color: #5e5e5e;
-  color: #fff;
-  border: 1px solid #fff;
+.dark-mode .btn-primary:hover{
+  background-color: rgb(128, 128, 128);
+  color: rgba(255, 255, 255, 0.725);
 }
 
-.modal select {
-  background-color: #5e5e5e;
-  color: white;
+.dark-mode .btn-editar{
+  background-color: #1e1e1e26;
+  color: rgba(30, 136, 193, 0.961);
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
 }
 
-/* Estilo para el placeholder */
-/*
-.modal .form-control::placeholder {
-  color: #888;
-}
-*/
-
-.modal .btn-secondary {
-  background-color: #1645a9;
-  border-color: #555;
+.dark-mode .btn-editar:hover{
+  background-color: rgba(0, 125, 192, 0.237);
+  color: rgba(0, 125, 192, 0.961);
 }
 
-.modal .btn-secondary:hover {
-  background-color: #3c6bd2;
-  border-color: #666;
+.dark-mode .btn-danger{
+  background-color: #1e1e1e26;
+  color: rgb(255, 45, 45);
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
 }
 
-.modal .btn-primary {
-  background-color: #0da83e;
-  border-color: #555;
+.dark-mode .btn-danger:hover{
+  background-color: rgba(255, 0, 0, 0.197);
+  color: red;
 }
 
-.modal .btn-primary:hover {
-  background-color: #1e8043;
-  border-color: #666;
+.dark-mode .vertical-nav{
+  background-color: #041118;
 }

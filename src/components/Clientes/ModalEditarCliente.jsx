@@ -1,30 +1,47 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, FormFeedback, Row, Col } from "reactstrap";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import "/src/styles/Clientes.css";
-import { toast } from 'react-toastify';
 
-// Función para convertir la fecha de YYYY-MM-DD HH:MM:SS a YYYY-MM-DD
 const formatDate = (date) => {
   if (!date) return "";
   const [year, month, day] = date.split(' ')[0].split('-');
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
 
-// Función para validar el formato de DUI
-const isValidDUI = (dui) => {
-  return dui.length === 10 && dui.match(/^0\d{7}-\d{1}$/);
-};
+const isValidDUI = (formattedDui) => formattedDui.length === 10 && formattedDui.match(/^0\d{7}-\d{1}$/);
+const isValidTelefono = (telefono) => telefono.length === 9 && telefono.match(/^\d{4}-\d{4}$/);
+const isValidNIT = (nit) => nit.length === 14 && nit.match(/^\d{4}-\d{6}-\d{3}-\d$/);
 
-// Función para validar el formato de teléfono
-const isValidTelefono = (telefono) => {
-  return telefono.length === 9 && telefono.match(/^\d{4}-\d{4}$/);
-};
+const generateErrorMessage = (errorData) => {
+  let errorMessage = "Error al guardar los cambios.";
 
-const isValidNIT = (nit) => {
-  return nit.length === 14 && nit.match(/^\d{4}-\d{6}-\d{3}-\d$/);
-};
+  if (errorData.errors) {
+    const errorKeys = Object.keys(errorData.errors);
 
+    if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
+      errorMessage = "El DUI y el teléfono ya están registrados.";
+    } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
+      errorMessage = "El NIT y el teléfono ya están registrados.";
+    } else if (errorKeys.includes("dui") && errorKeys.includes("email")) {
+      errorMessage = "El DUI y el correo electrónico ya están registrados.";
+    } else if (errorKeys.includes("dui")) {
+      errorMessage = "El DUI ya está registrado.";
+    } else if (errorKeys.includes("nit")) {
+      errorMessage = "El NIT ya está registrado.";
+    } else if (errorKeys.includes("telefono")) {
+      errorMessage = "El teléfono ya está registrado.";
+    } else {
+      errorMessage = errorData.message || "Error al guardar los cambios.";
+    }
+  } else if (errorData.error) {
+    errorMessage = errorData.error.join(", ");
+  }
+
+  return errorMessage;
+};
 const ModalEditarCliente = ({
   modalEditar,
   clienteEditado,
@@ -53,7 +70,7 @@ const ModalEditarCliente = ({
 
     let duiValue = e.target.value.replace(/[^\d]/g, "");
     if (duiValue.length > 9) {
-        duiValue = duiValue.slice(0, 8) + "-" + duiValue.slice(8, 9);
+      duiValue = duiValue.slice(0, 8) + "-" + duiValue.slice(8, 9);
     }
     duiValue = duiValue.startsWith('0') ? duiValue : '0' + duiValue;
     setClienteEditado(prev => ({ ...prev, dui: duiValue }));
@@ -61,18 +78,17 @@ const ModalEditarCliente = ({
     const isValid = isValidDUI(duiValue);
     setIsDuiValid(isValid);
     if (!isValid) {
-        setError("El DUI ingresado no es válido. Por favor, revisa el formato.");
+      setError("El DUI ingresado no es válido. Por favor, revisa el formato.");
     } else {
-        setError("");
+      setError("");
     }
   };
 
   const handleNitChange = (e) => {
     if (clienteEditado?.id_tipo_persona === 1) return; // No permitir cambios en el NIT si es persona natural
-  
-    let nitValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
-  
-    // Formatear el NIT según el formato requerido
+
+    let nitValue = e.target.value.replace(/[^\d]/g, "");
+
     if (nitValue.length <= 4) {
       nitValue = nitValue;
     } else if (nitValue.length <= 10) {
@@ -82,16 +98,16 @@ const ModalEditarCliente = ({
     } else {
       nitValue = `${nitValue.slice(0, 4)}-${nitValue.slice(4, 10)}-${nitValue.slice(10, 13)}-${nitValue.slice(13, 14)}`;
     }
-  
+
     setClienteEditado(prev => ({ ...prev, nit: nitValue }));
-  
+
     const isValid = isValidNIT(nitValue);
     setIsNitValid(isValid);
     if (!isValid) {
       setError("El NIT ingresado no es válido. Por favor, revisa el formato.");
     } else {
       setError("");
-    }  
+    }
   };
 
   const handleTelefonoChange = (e) => {
@@ -115,14 +131,14 @@ const ModalEditarCliente = ({
   const handleNrcChange = (e) => {
     let nrcValue = e.target.value.replace(/[^\d]/g, "");
     if (nrcValue.length > 7) {
-        nrcValue = nrcValue.slice(0, 7);
+      nrcValue = nrcValue.slice(0, 7);
     }
     if (nrcValue.length > 6) {
-        nrcValue = nrcValue.slice(0, 6) + "-" + nrcValue.slice(6);
+      nrcValue = nrcValue.slice(0, 6) + "-" + nrcValue.slice(6);
     }
 
     setClienteEditado(prev => ({ ...prev, nrc: nrcValue }));
-};
+  };
 
   const handleNombreEmpresaChange = (e) => {
     setClienteEditado(prev => ({ ...prev, nombre_empresa: e.target.value }));
@@ -147,6 +163,7 @@ const ModalEditarCliente = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (clienteEditado?.id_tipo_persona === 2) {
       if (!isNitValid) {
         setError("El NIT ingresado no es válido. Por favor, revisa el formato.");
@@ -158,27 +175,29 @@ const ModalEditarCliente = ({
         return;
       }
     }
-  
+
     if (!isTelefonoValid) {
       setError("El teléfono ingresado no es válido. Por favor, revisa el formato.");
       return;
     }
-  
+
     setError("");
     try {
       await guardarCambiosCliente();
+      toast.success("Cliente actualizado exitosamente.");
+      setModalEditar(false);
     } catch (err) {
-      setError("Error al guardar los cambios. Por favor, intenta nuevamente.");
+      const errorMessage = generateErrorMessage(err.response?.data || {});
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
-  
 
   const esPersonaJuridica = clienteEditado?.id_tipo_persona === 2;
   const currentYear = new Date().getFullYear();
   const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Months are 0-based
   const minDate = `${currentYear}-${currentMonth}-01`;
   const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
-
   return (
     <Modal
       isOpen={modalEditar}

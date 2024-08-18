@@ -31,10 +31,6 @@ const AgregarVehiculo = () => {
     anio: '',
   });
 
-  const [isDuiValid, setIsDuiValid] = useState(true);
-  const [dui, setDui] = useState("");
-  const [isJuridicalPerson, setIsJuridicalPerson] = useState(false);
-
   const navigate = useNavigate();
   const token = AuthService.getCurrentUser();
 

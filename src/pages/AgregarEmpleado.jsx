@@ -57,6 +57,7 @@ const AgregarEmpleado = () => {
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
   const today = new Date();
+  const [duiError, setDuiError] = useState(""); 
   const currentYear = today.getFullYear();
   const minYear = 1900;
  const [maxDate, setMaxDate] = useState('');
@@ -149,7 +150,26 @@ const AgregarEmpleado = () => {
     return regex.test(apellido) && apellido.length <= 80;
   };
 
-
+  const verificarDuiUnico = async (dui) => {
+    try {
+      const response = await fetch(`${API_URL}/empleados/verificar_dui/${dui}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      return data.existe; 
+    } catch (error) {
+      console.error("Error al verificar el DUI:", error);
+      return false; 
+    }
+  };
+  
   const handleNombresChange = (e) => {
     const nombre = e.target.value;
     // Filtrar caracteres no permitidos
@@ -182,7 +202,7 @@ const AgregarEmpleado = () => {
   };
   useEffect(() => {
     const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const formattedDate = today.toISOString().split('T')[0]; 
     setMaxDate(formattedDate);
   }, []);
 
@@ -309,6 +329,7 @@ const AgregarEmpleado = () => {
     } else {
       setIsFechaNacimientoRequerida(false);
     }
+  
     if (!isNombreValido || !isApellidosValid || !isTelefonoValid || !validarFechas() || !isDuiValid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
         position: "bottom-right",
@@ -320,6 +341,23 @@ const AgregarEmpleado = () => {
       });
       return;
     }
+  
+    // Verificar si el DUI ya está registrado
+    const duiSinGuion = dui.replace(/-/g, "");
+    const duiUnico = await verificarDuiUnico(duiSinGuion);
+    
+    if (!duiUnico) {
+      toast.error("El DUI ingresado ya está registrado.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+      });
+      return;
+    }
+  
     const empleadoData = {
       nombres,
       apellidos,
@@ -333,48 +371,7 @@ const AgregarEmpleado = () => {
       id_municipio: municipio,
       direccion,
     };
-
-    if (!isTelefonoValid) {
-      toast.error("El número de teléfono ingresado no es válido. Debe tener el formato 0000-0000.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return;
-    }
-
-    if (!validarFechas()) {
-      setIsFechaNacimientoValida(false);
-      setIsFechaContratacionValida(false);
-      toast.error("Las fechas ingresadas no son válidas.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return;
-    }
-
-    setIsFechaNacimientoValida(true);
-    setIsFechaContratacionValida(true);
-
-    if (!isDuiValid) {
-      toast.error("El DUI ingresado no es válido. Debe tener el formato 0XXXXXXX-X.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return;
-    }
-
+  
     try {
       const response = await fetch(`${API_URL}/empleados`, {
         method: "POST",
@@ -384,15 +381,32 @@ const AgregarEmpleado = () => {
         },
         body: JSON.stringify(empleadoData),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = generateErrorMessage(errorData);
+        let errorMessage = "Error al agregar el empleado.";
+  
+        // Verifica si la respuesta tiene el campo que indica DUI duplicado
+        if (errorData.error && errorData.error.includes("DUI_DUPLICADO")) {
+          errorMessage = "El DUI ingresado ya está registrado.";
+        } else {
+          errorMessage = `Error: ${errorData.message || 'Error desconocido'}`;
+        }
+  
+        toast.error(errorMessage, {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+        });
+  
         throw new Error(errorMessage);
       }
-
+  
       const data = await response.json();
-
+  
       toast.success("¡Empleado agregado con éxito!", {
         position: "bottom-right",
         autoClose: 5000,
@@ -401,11 +415,12 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-
+  
       setTimeout(() => {
         navigate("/GestionEmpleados");
       }, 2000);
-
+  
+      // Limpiar campos
       setNombres("");
       setApellidos("");
       setDui("");
@@ -427,7 +442,7 @@ const AgregarEmpleado = () => {
       });
     }
   };
-
+  
   return (
     <Container><Breadcrumbs title="Formulario de Registro de Empleados" breadcrumbItem="Ingrese la información" />
       <Card>
@@ -474,13 +489,13 @@ const AgregarEmpleado = () => {
                 <FormGroup className="form-group-custom">
                   <Label for="dui">DUI</Label>
                   <Input
+                   
                     type="text"
                     id="dui"
                     value={dui}
                     onChange={handleDuiChange}
-                    required
-                    maxLength="10"
                     invalid={!isDuiValid}
+                    maxLength="10"
                   />
                   {!isDuiValid && (
                     <FormFeedback className="text-danger">
@@ -625,6 +640,3 @@ const AgregarEmpleado = () => {
     };
 
 export default AgregarEmpleado;
-
-
-

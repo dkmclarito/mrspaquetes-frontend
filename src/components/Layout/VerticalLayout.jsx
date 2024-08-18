@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import Footer from './Footer';
 import Header from './Header';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './VerticalLayout.css';
-import { BiHome, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShoppingBag, BiShield, BiMenu } from 'react-icons/bi';
-import logoImage from "../../assets/images/logo-dark.png";
+import { BiHome, BiUser, BiGroup, BiPackage, BiDirections, BiCar, BiShield, BiShoppingBag, BiMenu, BiPlus } from 'react-icons/bi';
+import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from '../../services/AuthContext';
 
 const VerticalLayout = () => {
   const [darkMode, setDarkMode] = useState(() => JSON.parse(localStorage.getItem('darkMode')) || false);
   const [menuCollapsed, setMenuCollapsed] = useState(() => JSON.parse(localStorage.getItem('menuCollapsed')) || false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeSubMenu, setActiveSubMenu] = useState(null);
+  const [selectedSubMenuItem, setSelectedSubMenuItem] = useState(null);
   const [shouldReload, setShouldReload] = useState(true);
   const { user, loading } = useAuth();
 
@@ -39,8 +39,18 @@ const VerticalLayout = () => {
     setMenuCollapsed(!menuCollapsed);
   };
 
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
+  const handleSubMenuClick = (subMenuName) => {
+    setActiveSubMenu(prev => (prev === subMenuName ? null : subMenuName));
+  };
+
+  const handleSubMenuItemClick = (item) => {
+    setSelectedSubMenuItem(item);
+    setActiveSubMenu(null);
+  };
+
+  const handleMenuItemClick = () => {
+    setActiveSubMenu(null);
+    setSelectedSubMenuItem(null);
   };
 
   const hasRole = (role) => {
@@ -67,7 +77,7 @@ const VerticalLayout = () => {
           </div>
           <ul className={`nav flex-column ${menuCollapsed ? 'icons-only' : ''}`}>
             <li className="nav-item">
-              <NavLink to="/home" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+              <NavLink to="/home" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                 <BiHome className="nav-icon" />
                 {!menuCollapsed && <span>Inicio</span>}
               </NavLink>
@@ -76,68 +86,88 @@ const VerticalLayout = () => {
             {hasRole('admin') && (
               <>
                 <li className="nav-item">
-                  <NavLink to="/GestionUsuarios" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionUsuarios" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiUser className="nav-icon" />
                     {!menuCollapsed && <span>Usuarios</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink to="/GestionEmpleados" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionEmpleados" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiGroup className="nav-icon" />
                     {!menuCollapsed && <span>Empleados</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink to="/GestionClientes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionClientes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiGroup className="nav-icon" />
                     {!menuCollapsed && <span>Clientes</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiPackage className="nav-icon" />
                     {!menuCollapsed && <span>Paquetes</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink to="/rutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/rutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiDirections className="nav-icon" />
                     {!menuCollapsed && <span>Rutas</span>}
                   </NavLink>
                 </li>
+
+                {/* Submenu for Vehículos */}
                 <li className="nav-item">
-                  <Dropdown nav isOpen={dropdownOpen} toggle={toggleDropdown}>
-                    <DropdownToggle nav caret>
-                      <BiCar className="nav-icon" />
-                      {!menuCollapsed && <span>Vehículos</span>}
-                    </DropdownToggle>
-                    <DropdownMenu className={dropdownOpen ? 'dropdown-expanded' : ''}>
-                      <DropdownItem>
-                        <NavLink to="/GestionMarcas" className="dropdown-item">
-                          Marcas
-                        </NavLink>
-                      </DropdownItem>
-                      <DropdownItem>
-                        <NavLink to="/GestionModelos" className="dropdown-item">
-                          Modelos
-                        </NavLink>
-                      </DropdownItem>
-                      <DropdownItem>
-                        <NavLink to="/GestionVehiculos" className="dropdown-item">
-                          Vehículos
-                        </NavLink>
-                      </DropdownItem>
-                    </DropdownMenu>
-                  </Dropdown>
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === 'vehicles' || selectedSubMenuItem ? 'active' : ''}`} 
+                    onClick={() => handleSubMenuClick('vehicles')}
+                  >
+                    <BiCar className="nav-icon" />
+                    {!menuCollapsed && <span>Vehículos</span>}
+                    {activeSubMenu === 'vehicles' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
+                  </div>
+                  <ul className={`sub-menu ${activeSubMenu === 'vehicles' ? 'active' : ''}`}>
+                    <li>
+                      <NavLink 
+                        to="/GestionMarcas" 
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                        onClick={() => handleSubMenuItemClick('Marcas')}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Marcas
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink 
+                        to="/GestionModelos" 
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                        onClick={() => handleSubMenuItemClick('Modelos')}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Modelos
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink 
+                        to="/GestionVehiculos" 
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                        onClick={() => handleSubMenuItemClick('Vehículos')}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Vehículos
+                      </NavLink>
+                    </li>
+                  </ul>
                 </li>
+
                 <li className="nav-item">
-                  <NavLink to="/GestionRolesPermisos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionRolesPermisos" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiShield className="nav-icon" />
                     {!menuCollapsed && <span>Roles y permisos</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink to="/historial" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/historial" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiShoppingBag className="nav-icon" />
                     {!menuCollapsed && <span>Historial</span>}
                   </NavLink>
@@ -146,15 +176,15 @@ const VerticalLayout = () => {
             )}
 
             {hasRole('conductor') && (
-              <>                
+              <>
                 <li className="nav-item">
-                  <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiPackage className="nav-icon" />
                     {!menuCollapsed && <span>Paquetes</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink to="/rutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/rutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiDirections className="nav-icon" />
                     {!menuCollapsed && <span>Rutas</span>}
                   </NavLink>
@@ -164,7 +194,7 @@ const VerticalLayout = () => {
 
             {hasRole('cliente') && (
               <li className="nav-item">
-                <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                   <BiPackage className="nav-icon" />
                   {!menuCollapsed && <span>Paquetes</span>}
                 </NavLink>
@@ -173,10 +203,10 @@ const VerticalLayout = () => {
           </ul>
         </nav>
       </div>
-      <div className={`main-content ${menuCollapsed ? 'collapsed' : ''} ${dropdownOpen ? 'dropdown-open' : ''}`}>
+      <div className={`main-content ${menuCollapsed ? 'collapsed' : ''}`}>
         <Outlet />
       </div>
-      <Footer menuCollapsed={menuCollapsed} />
+      <Footer menuCollapsed={menuCollapsed}/>
     </div>
   );
 };
