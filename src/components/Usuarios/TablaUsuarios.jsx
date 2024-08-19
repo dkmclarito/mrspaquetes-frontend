@@ -13,7 +13,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             <th className="text-center">ID</th>
           
             <th className="text-center">Email</th>
-            <th className="text-center">Tipo de usuario</th>
+        
             <th className="text-center">Fecha de creación</th>
             <th className="text-center">Acciones</th>
           </tr>
@@ -25,7 +25,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                 <td>{usuario.id}</td>
           
                 <td>{usuario.email}</td>
-                <td>{usuario.type === 0 ? 'Empleado' : 'Cliente'}</td>
+       
                 <td>{usuario.created_at ? usuario.created_at.split('T')[0] : '2024-06-20'}</td>
                 <td>
                   <div className="button-container">

@@ -23,7 +23,6 @@ const GestionUsuarios = () => {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
-  const [tipoUsuario, setTipoUsuario] = useState(""); // "" para todos, 0 para empleados, 1 para clientes
   const [currentPage, setCurrentPage] = useState(1);
   const [clientes, setClientes] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -166,10 +165,6 @@ const GestionUsuarios = () => {
   const filtrarUsuarios = (usuarios) => {
     let usuariosFiltrados = usuarios;
 
-    if (tipoUsuario) {
-      usuariosFiltrados = usuariosFiltrados.filter(usuario => usuario.type === parseInt(tipoUsuario));
-    }
-
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
       usuariosFiltrados = usuariosFiltrados.filter(usuario =>
@@ -186,7 +181,7 @@ const GestionUsuarios = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [tipoUsuario, busqueda]);
+  }, [busqueda]);
 
   const usuariosFiltrados = filtrarUsuarios(usuarios);
   const paginatedUsuarios = usuariosFiltrados.slice(
@@ -203,18 +198,7 @@ const GestionUsuarios = () => {
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
-              <Label for="tipoUsuario" style={{ marginRight: "10px" }}>Tipo de Usuario:</Label>
-              <Input
-                type="select"
-                id="tipoUsuario"
-                value={tipoUsuario}
-                onChange={(e) => setTipoUsuario(e.target.value)}
-                style={{ width: "200px" }}
-              >
-                <option value="">Todos</option>
-                <option value="0">Empleados</option>
-                <option value="1">Clientes</option>
-              </Input>
+              
               <Label for="busqueda" style={{ marginRight: "10px", marginLeft: "20px" }}>Buscar:</Label>
               <Input
                 type="text"

@@ -87,7 +87,7 @@ const AgregarUsuario = () => {
       email,
       password,
       role_id: parseInt(rol, 10),
-      type: 0, // Tipo empleado
+      //type: 0, // Tipo empleado
       id_empleado: parseInt(empleadoId, 10),
     };
 
