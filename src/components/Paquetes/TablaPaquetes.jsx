@@ -23,34 +23,40 @@ const TablaPaquetes = ({ paquetes, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {paquetes.map((paquete) => (
-            <tr key={paquete.id}>
-              <td>{paquete.id}</td>
-              <td>{paquete.tipo_paquete || 'N/A'}</td>
-              <td>{paquete.empaque || 'N/A'}</td>
-              <td>{paquete.peso}</td>
-              <td>{paquete.estado_paquete || 'N/A'}</td>
-              <td>{paquete.fecha_envio}</td>
-              <td>{paquete.fecha_entrega_estimada}</td>
-              <td>{paquete.descripcion_contenido}</td>
-              <td>
-                <div className="button-container">
-                  <Button
-                    className="me-2 btn-icon btn-danger"
-                    onClick={() => onDelete(paquete)}
-                  >
-                    <FontAwesomeIcon icon={faTimes} />
-                  </Button>
-                  <Button
-                    className="btn-icon btn-editar"
-                    onClick={() => onEdit(paquete)}
-                  >
-                    <FontAwesomeIcon icon={faPencilAlt} />
-                  </Button>
-                </div>
-              </td>
+          {paquetes.length > 0 ? (
+            paquetes.map((paquete) => (
+              <tr key={paquete.id}>
+                <td>{paquete.id}</td>
+                <td>{paquete.tipo_paquete || 'N/A'}</td>
+                <td>{paquete.empaque || 'N/A'}</td>
+                <td>{paquete.peso}</td>
+                <td>{paquete.estado_paquete || 'N/A'}</td>
+                <td>{paquete.fecha_envio}</td>
+                <td>{paquete.fecha_entrega_estimada}</td>
+                <td>{paquete.descripcion_contenido}</td>
+                <td>
+                  <div className="button-container">
+                    <Button
+                      className="me-2 btn-icon btn-danger"
+                      onClick={() => onDelete(paquete)}
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </Button>
+                    <Button
+                      className="btn-icon btn-editar"
+                      onClick={() => onEdit(paquete)}
+                    >
+                      <FontAwesomeIcon icon={faPencilAlt} />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="9" className="text-center">Sin paquetes.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </div>
