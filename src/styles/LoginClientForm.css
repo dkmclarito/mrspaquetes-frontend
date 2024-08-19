@@ -1,0 +1,89 @@
+.client-login-form {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 35px;
+    background-color: #f7f7f7;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.client-login-form h2 {
+    text-align: center;
+    margin-bottom: 22px;
+    color: #5a3e85;
+}
+
+.client-login-form p {
+    font: inherit;
+    color: #333;
+    font-size: 15px;
+    text-align: center;
+}
+
+.client-login-form .logo {
+    width: 110px;
+    margin-bottom: 12px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.client-login-form label {
+    display: block;
+    font-size: 19px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.client-login-form input[type="email"],
+.client-login-form input[type="password"] {
+    width: 100%;
+    padding: 11px;
+    margin-bottom: 22px;
+    font-size: 17px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    color: #333;
+}
+
+.client-login-form .password-input {
+    position: relative;
+}
+
+.client-login-form .forgot-password {
+    font-size: 15px;
+    color: #5a3e85;
+    cursor: pointer;
+    text-align: right;
+    display: block;
+    margin-top: 10px;
+}
+
+.client-login-form .forgot-password:hover {
+    text-decoration: underline;
+}
+
+.client-login-form button {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background-color: #6e3ea0;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 19px;
+    cursor: pointer;
+    margin-bottom: 10px; /* Space between buttons */
+}
+
+.client-login-form button:hover {
+    background-color: #502a78;
+}
+
+.client-login-form .register-button {
+    background-color: #ff5722; /* Different color for register button */
+}
+
+.client-login-form .register-button:hover {
+    background-color: #e64a19;
+}

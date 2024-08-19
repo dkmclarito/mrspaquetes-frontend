@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLock } from "react-icons/fi";
 import AuthService from "../../services/authService";
-import "../../styles/LoginForm.css";
+import "../../styles/LoginClientForm.css";
 
 const ClienteLogin = ({ logo }) => {
   const [email, setEmail] = useState("");
@@ -30,11 +30,12 @@ const ClienteLogin = ({ logo }) => {
   };
 
   const handleRegister = () => {
-    navigate("/cliente/registro");
+    console.log("Navigating to RegisterCliente"); // Debugging line
+    navigate("/RegisterCliente");
   };
 
   return (
-    <div className="login-form">
+    <div className="client-login-form">
       <img src={logo} alt="Logo" className="logo" />
       <h2>Bienvenido/a!</h2>
       <p>Inicia sesión para acceder a tu cuenta</p>
