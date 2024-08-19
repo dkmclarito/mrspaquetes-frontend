@@ -27,6 +27,7 @@ import AgregarPaquete from './pages/AgregarPaquete';
 import { ToastContainer } from 'react-toastify';  
 import { AuthProvider } from './services/AuthContext';
 
+
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 

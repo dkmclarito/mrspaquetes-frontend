@@ -19,7 +19,6 @@ const AgregarCliente = () => {
     const [isGiroValid, setIsGiroValid] = useState(true);
     const [tiposPersonas, setTiposPersonas] = useState([]);
     const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
-    const [generos, setGeneros] = useState([]);
     const [departamentos, setDepartamentos] = useState([]);
     const [municipiosPorDepartamento, setMunicipiosPorDepartamento] = useState({});
     const [nombres, setNombres] = useState("");
@@ -64,28 +63,6 @@ const AgregarCliente = () => {
         };
         fetchTiposPersonas();
     }, [token]);
-
-    useEffect(() => {
-        const fetchGeneros = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/dropdown/get_generos`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                if (response.data.generos && Array.isArray(response.data.generos)) {
-                    setGeneros(response.data.generos);
-                } else {
-                    console.error("Respuesta no válida para géneros:", response.data);
-                }
-            } catch (error) {
-                console.error("Error al obtener los géneros:", error);
-            }
-        };
-
-        fetchGeneros();
-    }, [token]);
-
 
     useEffect(() => {
         const fetchDepartamentos = async () => {
@@ -283,7 +260,7 @@ const AgregarCliente = () => {
         e.preventDefault();
     
         // Validaciones de campos
-        if (!isDuiValid || !isTelefonoValid || tipoPersona === "" || genero === "") {
+        if (!isDuiValid || !isTelefonoValid || tipoPersona === "") {
             setAlertaError(true);
             setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
@@ -294,7 +271,6 @@ const AgregarCliente = () => {
             nombre: nombres,
             apellido: apellidos,
             id_tipo_persona: tipoPersona,
-            id_genero: genero,
             dui,
             telefono,
             direccion,
@@ -308,6 +284,7 @@ const AgregarCliente = () => {
             giro: tipoPersona === "1" ? null : giro,
             fecha_registro: fechaRegistro.replace(/-/g, "/"),
             id_estado: 1
+            
         };
     
         console.log("Datos a enviar:", clienteData);
@@ -336,7 +313,6 @@ const AgregarCliente = () => {
         setNombres("");
         setApellidos("");
         setTipoPersona("");
-        setGenero("");
         setDui("");
         setTelefono("");
         setFechaRegistro("");
@@ -492,25 +468,6 @@ const AgregarCliente = () => {
                                                         {tiposPersonas.map((tp) => (
                                                             <option key={tp.id} value={tp.id}>
                                                                 {tp.nombre}
-                                                            </option>
-                                                        ))}
-                                                    </Input>
-                                                </FormGroup>
-                                            </Col>
-                                            <Col md={6}>
-                                                <FormGroup className="form-group-custom">
-                                                    <Label for="genero">Género</Label>
-                                                    <Input
-                                                        type="select"
-                                                        id="genero"
-                                                        value={genero}
-                                                        onChange={(e) => setGenero(e.target.value)}
-                                                        required
-                                                    >
-                                                        <option value="">Seleccione</option>
-                                                        {generos.map((gen) => (
-                                                            <option key={gen.id} value={gen.id}>
-                                                                {gen.nombre}
                                                             </option>
                                                         ))}
                                                     </Input>
