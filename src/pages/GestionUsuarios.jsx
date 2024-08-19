@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import TablaUsuarios from "../components/Usuarios/TablaUsuarios";
@@ -111,44 +111,46 @@ const GestionUsuarios = () => {
   };
 
   const toggleModalEditar = (usuario) => {
-    setUsuarioEditado(usuario);
-    setModalEditar(!modalEditar);
+    setUsuarioEditado({
+      ...usuario,
+      id_empleado: usuario.id_empleado, // Asegura que id_empleado esté presente
+      role_id: usuario.role_id // Asegura que role_id esté presente
+    });
+    setModalEditar(true);
   };
 
   const guardarCambiosUsuario = async (usuarioActualizado) => {
     try {
       const token = AuthService.getCurrentUser();
       const data = {
-       
         email: usuarioActualizado.email,
         type: usuarioActualizado.type,
         status: usuarioActualizado.status,
         role_id: usuarioActualizado.role_id,
-        id_empleado: usuarioActualizado.type === "0" ? usuarioActualizado.id_empleado : null,
-        id_cliente: usuarioActualizado.type === "1" ? usuarioActualizado.id_cliente : null,
+        id_empleado: usuarioActualizado.id_empleado,
+       
         password: usuarioActualizado.password,
         password_confirmation: usuarioActualizado.password_confirmation
       };
-  
-      // Opcionalmente, elimina las propiedades `id_empleado` o `id_cliente` si son nulas
+
       if (data.id_empleado === null) {
         delete data.id_empleado;
       }
-      if (data.id_cliente === null) {
-        delete data.id_cliente;
-      }
-  
+   
+
       const response = await axios.put(`${API_URL}/auth/update/${usuarioActualizado.id}`, data, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         }
       });
-  
+
       if (response.status === 200) {
-        setUsuarios((prevUsuarios) => prevUsuarios.map(usuario =>
-          usuario.id === usuarioActualizado.id ? usuarioActualizado : usuario
-        ));
+        setUsuarios((prevUsuarios) =>
+          prevUsuarios.map((usuario) =>
+            usuario.id === usuarioActualizado.id ? usuarioActualizado : usuario
+          )
+        );
         setModalEditar(false);
         setUsuarioEditado(null);
       } else {
@@ -167,7 +169,7 @@ const GestionUsuarios = () => {
 
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
-      usuariosFiltrados = usuariosFiltrados.filter(usuario =>
+      usuariosFiltrados = usuariosFiltrados.filter((usuario) =>
         `${usuario.email}`.toLowerCase().includes(busquedaLower)
       );
     }
@@ -189,17 +191,16 @@ const GestionUsuarios = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const totalPages = Math.ceil(usuariosFiltrados.length / ITEMS_PER_PAGE);
-
   return (
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Lista de usuarios" />
         <Row>
           <Col lg={12}>
-            <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
-              
-              <Label for="busqueda" style={{ marginRight: "10px", marginLeft: "20px" }}>Buscar:</Label>
+            <div style={{ marginTop: "10px", display: "flex", alignItems: "center" }}>
+              <Label for="busqueda" style={{ marginRight: "10px", marginLeft: "20px" }}>
+                Buscar:
+              </Label>
               <Input
                 type="text"
                 id="busqueda"
@@ -231,7 +232,7 @@ const GestionUsuarios = () => {
           </Col>
         </Row>
         <Row>
-          <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
+          <Col lg={12} style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
@@ -259,10 +260,11 @@ const GestionUsuarios = () => {
         confirmarEliminarUsuario={confirmarEliminarUsuario}
         setConfirmarEliminar={setConfirmarEliminar}
       />
-
-<br /><br /><br /><br />
+      <br />
+      <br />
+      <br />
+      <br />
     </div>
-    
   );
 };
 
