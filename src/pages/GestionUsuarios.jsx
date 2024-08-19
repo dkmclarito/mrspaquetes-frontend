@@ -120,7 +120,7 @@ const GestionUsuarios = () => {
     try {
       const token = AuthService.getCurrentUser();
       const data = {
-        name: usuarioActualizado.name,
+       
         email: usuarioActualizado.email,
         type: usuarioActualizado.type,
         status: usuarioActualizado.status,
@@ -173,7 +173,7 @@ const GestionUsuarios = () => {
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
       usuariosFiltrados = usuariosFiltrados.filter(usuario =>
-        `${usuario.name}`.toLowerCase().includes(busquedaLower)
+        `${usuario.email}`.toLowerCase().includes(busquedaLower)
       );
     }
 
@@ -221,7 +221,7 @@ const GestionUsuarios = () => {
                 id="busqueda"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre"
+                placeholder="Buscar por email"
                 style={{ width: "300px" }}
               />
               <div style={{ marginLeft: "auto" }}>

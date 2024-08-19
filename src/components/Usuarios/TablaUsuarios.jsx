@@ -11,7 +11,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
         <thead className="thead-light">
           <tr>
             <th className="text-center">ID</th>
-            <th className="text-center">Nombre</th>
+          
             <th className="text-center">Email</th>
             <th className="text-center">Tipo de usuario</th>
             <th className="text-center">Fecha de creación</th>
@@ -23,7 +23,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             usuarios.map(usuario => (
               <tr key={usuario.id}>
                 <td>{usuario.id}</td>
-                <td>{usuario.name}</td>
+          
                 <td>{usuario.email}</td>
                 <td>{usuario.type === 0 ? 'Empleado' : 'Cliente'}</td>
                 <td>{usuario.created_at ? usuario.created_at.split('T')[0] : '2024-06-20'}</td>
