@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
 import AuthService from "../services/authService";
+import { useNavigate } from "react-router-dom";  // Importa useNavigate
 import "../styles/usuarios.css";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import Select from 'react-select';
@@ -17,8 +18,9 @@ const AgregarUsuario = () => {
   const [alertaExito, setAlertaExito] = useState(false);
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
-  
+
   const token = AuthService.getCurrentUser();
+  const navigate = useNavigate();  // Usa useNavigate para la redirección
 
   useEffect(() => {
     const fetchEmpleados = async () => {
@@ -39,6 +41,22 @@ const AgregarUsuario = () => {
     fetchEmpleados();
   }, [token]);
 
+  const displayAlert = (type, message) => {
+    setErrorMensaje(message);
+    if (type === "success") {
+      setAlertaExito(true);
+      setTimeout(() => {
+        setAlertaExito(false);
+        navigate('/GestionUsuarios');  // Redirige a GestionUsuarios después de 5 segundos
+      }, 3000);
+    } else if (type === "error") {
+      setAlertaError(true);
+      setTimeout(() => {
+        setAlertaError(false);
+      }, 5000);
+    }
+  };
+
   const validateEmail = (email) => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|info|biz|co|us|ca)$/;
     return re.test(email);
@@ -49,42 +67,19 @@ const AgregarUsuario = () => {
     return re.test(password);
   };
 
-  const checkEmailExists = async (email) => {
-    try {
-      const response = await axios.get(`${API_URL}/auth/get_users`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      return response.data.some(user => user.email === email);
-    } catch (error) {
-      console.error("Error al verificar el correo electrónico:", error);
-      return false;
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!email || !validateEmail(email)) {
-      setAlertaError(true);
-      setErrorMensaje("El correo electrónico es inválido o está vacío.");
-      return;
-    }
-    if (await checkEmailExists(email)) {
-      setAlertaError(true);
-      setErrorMensaje("El correo electrónico ya está registrado.");
+      displayAlert("error", "El correo electrónico debe ser válido.");
       return;
     }
     if (!password || !validatePassword(password)) {
-      setAlertaError(true);
-      setErrorMensaje("La contraseña no cumple con los requisitos mínimos.");
+      displayAlert("error", "La contraseña debe tener al menos 5 caracteres, incluyendo una mayúscula, una minúscula y un número.");
       return;
     }
     if (!rol || !empleadoId) {
-      setAlertaError(true);
-      setErrorMensaje("Todos los campos son obligatorios.");
+      displayAlert("error", "Todos los campos son obligatorios.");
       return;
     }
 
@@ -105,19 +100,26 @@ const AgregarUsuario = () => {
       });
 
       if (response.status === 200) {
-        setAlertaExito(true);
         setEmail("");
         setPassword("");
         setRol("");
         setEmpleadoId("");
-      } else {
-        throw new Error(`Error HTTP ${response.status} - ${response.statusText}`);
+        displayAlert("success", "Usuario agregado exitosamente!");
       }
     } catch (error) {
-      console.error("Error al agregar usuario:", error);
-      setAlertaError(true);
-      setErrorMensaje("No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
-    }
+      if (error.response && error.response.status === 422) {
+        const errors = error.response.data.errors || error.response.data;
+    
+        if (errors.email) {
+          displayAlert("error", "El correo electrónico ya está registrado.");
+        } else {
+          displayAlert("error", "El correo electrónico ya está registrado."); //err message
+        }
+      } else {
+        console.error("Error al agregar usuario:", error);
+        displayAlert("error", "No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
+      }
+    }    
   };
 
   return (
@@ -126,7 +128,7 @@ const AgregarUsuario = () => {
       <Card>
         <CardBody>
           <h5 className="mb-4">Agregar Usuario</h5>
-          {alertaExito && <Alert color="success">Usuario agregado exitosamente!</Alert>}
+          {alertaExito && <Alert color="success">{errorMensaje}</Alert>}
           {alertaError && <Alert color="danger">{errorMensaje}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Row>
