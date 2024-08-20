@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import "/src/styles/usuarios.css"; 
+import "/src/styles/usuarios.css";
 
 const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
   const renderStatus = (status) => {
@@ -31,11 +31,9 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             <th className="text-center">ID</th>
             <th className="text-center">Email</th>
             <th className="text-center">Estado</th>
+            <th className="text-center">Empleado</th>
+            <th className="text-center">Rol</th>
             <th className="text-center">Fecha de creación</th>
-
-            <th className="text-center">ID Empleado</th>
-            <th className="text-center">ID Role</th>
-
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -46,11 +44,11 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                 <td className="text-center">{usuario.id}</td>
                 <td className="text-center">{usuario.email}</td>
                 <td className="text-center">{renderStatus(usuario.status)}</td>
-                <td className="text-center">{usuario.created_at ? usuario.created_at.split('T')[0] : '2024-06-20'}</td>
-
-                <td className="text-center">{usuario.id_empleado}</td>
-                <td className="text-center">{usuario.role_id}</td>
-
+                <td className="text-center">{usuario.nombre_completo_empleado}</td>
+                <td className="text-center">
+                  {usuario.role_id === 1 ? 'Admin' : usuario.role_id === 3 ? 'Conductor' : usuario.role_id === 4 ? 'Básico' : 'Desconocido'}
+                </td>
+                <td className="text-center">{usuario.created_at ? usuario.created_at.split(' ')[0] : '2024-06-20'}</td>
                 <td className="text-center">
                   <div className="button-container">
                     <Button
@@ -69,14 +67,11 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                     </Button>
                   </div>
                 </td>
-
-              
-                
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">Sin usuarios.</td>
+              <td colSpan="7" className="text-center">Sin usuarios.</td>
             </tr>
           )}
         </tbody>
