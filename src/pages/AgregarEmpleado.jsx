@@ -152,23 +152,36 @@ const AgregarEmpleado = () => {
 
   const verificarDuiUnico = async (dui) => {
     try {
-      const response = await fetch(`${API_URL}/empleados/verificar_dui/${dui}`, {
+      // Realiza una solicitud al método `index` con el parámetro de DUI
+      const response = await fetch(`${API_URL}/empleados?dui=${encodeURIComponent(dui)}`, {
+        method: 'GET',
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
   
       if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
   
       const data = await response.json();
-      return data.existe; 
+  
+      // Asegúrate de que `data.empleados` existe y es un array
+      if (!Array.isArray(data.empleados)) {
+        console.error("La respuesta de la API no contiene un array de empleados.");
+        return false;
+      }
+  
+      // Verifica si el arreglo de empleados contiene elementos
+      const existe = data.empleados.some(empleado => empleado.dui === dui);
+      return existe;
     } catch (error) {
       console.error("Error al verificar el DUI:", error);
-      return false; 
+      return false;
     }
   };
+  
+  
   
   const handleNombresChange = (e) => {
     const nombre = e.target.value;
@@ -323,6 +336,8 @@ const AgregarEmpleado = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Validar que la fecha de nacimiento esté llena
     if (!fechaNacimiento) {
       setIsFechaNacimientoRequerida(true);
       return;
@@ -330,6 +345,7 @@ const AgregarEmpleado = () => {
       setIsFechaNacimientoRequerida(false);
     }
   
+    // Verificar si hay errores en el formulario
     if (!isNombreValido || !isApellidosValid || !isTelefonoValid || !validarFechas() || !isDuiValid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
         position: "bottom-right",
@@ -343,11 +359,9 @@ const AgregarEmpleado = () => {
     }
   
     // Verificar si el DUI ya está registrado
-    const duiSinGuion = dui.replace(/-/g, "");
-    const duiUnico = await verificarDuiUnico(duiSinGuion);
-    
-    if (!duiUnico) {
-      toast.error("El DUI ingresado ya está registrado.", {
+    const duiExiste = await verificarDuiUnico(dui.replace(/-/g, ""));
+    if (duiExiste) {
+      toast.error("El DUI ya está registrado.", {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -358,6 +372,7 @@ const AgregarEmpleado = () => {
       return;
     }
   
+    // Datos del empleado a enviar
     const empleadoData = {
       nombres,
       apellidos,
@@ -383,16 +398,7 @@ const AgregarEmpleado = () => {
       });
   
       if (!response.ok) {
-        const errorData = await response.json();
         let errorMessage = "Error al agregar el empleado.";
-  
-        // Verifica si la respuesta tiene el campo que indica DUI duplicado
-        if (errorData.error && errorData.error.includes("DUI_DUPLICADO")) {
-          errorMessage = "El DUI ingresado ya está registrado.";
-        } else {
-          errorMessage = `Error: ${errorData.message || 'Error desconocido'}`;
-        }
-  
         toast.error(errorMessage, {
           position: "bottom-right",
           autoClose: 5000,
@@ -401,12 +407,10 @@ const AgregarEmpleado = () => {
           pauseOnHover: false,
           draggable: true,
         });
-  
         throw new Error(errorMessage);
       }
   
       const data = await response.json();
-  
       toast.success("¡Empleado agregado con éxito!", {
         position: "bottom-right",
         autoClose: 5000,
@@ -551,92 +555,92 @@ const AgregarEmpleado = () => {
                               />
                               <FormFeedback>La fecha de contratación no puede ser posterior a la fecha actual.</FormFeedback>
                           </FormGroup>
-                      </Col>
-                        <Col md="6">
-                        <FormGroup>
-                        <Label for="cargo">Cargo</Label>
-                        <Input
-                          type="select"
-                          id="cargo"
-                          value={cargo}
-                          onChange={(e) => setCargo(e.target.value)}
-                          required
-                        >
-                          <option value="">Seleccione un cargo</option>
-                          {cargos.map((car) => (
-                            <option key={car.id} value={car.id}>
-                              {car.nombre}
-                            </option>
-                          ))}
-                        </Input>
-                        </FormGroup>
-                        </Col>
-                        <Col md="6">
-                        <FormGroup>
-                        <Label for="departamento">Departamento</Label>
-                        <Input
-                          type="select"
-                          id="departamento"
-                          value={departamento}
-                          onChange={(e) => setDepartamento(e.target.value)}
-                          required
-                        >
-                          <option value="">Seleccione un departamento</option>
-                          {departamentos.map((dep) => (
-                            <option key={dep.id} value={dep.id}>
-                              {dep.nombre}
-                            </option>
-                          ))}
-                        </Input>
-                        </FormGroup>
-                        </Col>
-                        <Col md="6">
-                        <FormGroup>
-                        <Label for="municipio">Municipio</Label>
-                        <Input
-                          type="select"
-                          id="municipio"
-                          value={municipio}
-                          onChange={(e) => setMunicipio(e.target.value)}
-                          required
-                          disabled={!departamento}
-                        >
-                          <option value="">Seleccione un municipio</option>
-                          {municipiosPorDepartamento[departamento]?.map((mun) => (
-                            <option key={mun.id} value={mun.id}>
-                              {mun.nombre}
-                            </option>
-                          ))}
-                        </Input>
-                        </FormGroup>
-                        </Col>
-                        <Col md="6">
-                        <FormGroup>
-                        <Label for="direccion">Dirección</Label>
-                        <Input
-                          type="text"
-                          id="direccion"
-                          value={direccion}
-                          onChange={(e) => setDireccion(e.target.value)}
-                          required
-                        />
-                        </FormGroup>
-                        </Col>
-                        <Col md="12">
-                        <Button color="primary" type="submit">
-                        Registrar
-                        </Button>
-                        <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionEmpleados'}>
-                        Salir
-                        </Button>
-                     </Col>
-                  </Row>
-                </Form>
-             </CardBody>
-            </Card>
-          <ToastContainer />
-         </Container>
-       );
-    };
+                          </Col>
+                            <Col md="6">
+                            <FormGroup>
+                            <Label for="cargo">Cargo</Label>
+                            <Input
+                              type="select"
+                              id="cargo"
+                              value={cargo}
+                              onChange={(e) => setCargo(e.target.value)}
+                              required
+                            >
+                              <option value="">Seleccione un cargo</option>
+                              {cargos.map((car) => (
+                                <option key={car.id} value={car.id}>
+                                  {car.nombre}
+                                </option>
+                              ))}
+                            </Input>
+                            </FormGroup>
+                            </Col>
+                            <Col md="6">
+                            <FormGroup>
+                            <Label for="departamento">Departamento</Label>
+                            <Input
+                              type="select"
+                              id="departamento"
+                              value={departamento}
+                              onChange={(e) => setDepartamento(e.target.value)}
+                              required
+                            >
+                              <option value="">Seleccione un departamento</option>
+                              {departamentos.map((dep) => (
+                                <option key={dep.id} value={dep.id}>
+                                  {dep.nombre}
+                                </option>
+                              ))}
+                            </Input>
+                            </FormGroup>
+                            </Col>
+                            <Col md="6">
+                            <FormGroup>
+                            <Label for="municipio">Municipio</Label>
+                            <Input
+                              type="select"
+                              id="municipio"
+                              value={municipio}
+                              onChange={(e) => setMunicipio(e.target.value)}
+                              required
+                              disabled={!departamento}
+                            >
+                              <option value="">Seleccione un municipio</option>
+                              {municipiosPorDepartamento[departamento]?.map((mun) => (
+                                <option key={mun.id} value={mun.id}>
+                                  {mun.nombre}
+                                </option>
+                              ))}
+                            </Input>
+                            </FormGroup>
+                            </Col>
+                            <Col md="6">
+                            <FormGroup>
+                            <Label for="direccion">Dirección</Label>
+                            <Input
+                              type="text"
+                              id="direccion"
+                              value={direccion}
+                              onChange={(e) => setDireccion(e.target.value)}
+                              required
+                            />
+                            </FormGroup>
+                            </Col>
+                            <Col md="12">
+                            <Button color="primary" type="submit">
+                            Registrar
+                            </Button>
+                            <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionEmpleados'}>
+                            Salir
+                            </Button>
+                            </Col>
+                          </Row>
+                        </Form>
+                    </CardBody>
+                    </Card>
+                  <ToastContainer />
+                </Container>
+              );
+            };
 
 export default AgregarEmpleado;
