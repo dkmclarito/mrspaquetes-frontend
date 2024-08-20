@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLock } from "react-icons/fi";
-import AuthService from "../../services/authService";
+import axios from "axios";
 import "../../styles/LoginClientForm.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ClienteLogin = ({ logo }) => {
   const [email, setEmail] = useState("");
@@ -12,10 +14,12 @@ const ClienteLogin = ({ logo }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
-      const response = await AuthService.login(email, password);
-      if (response.token) {
-        localStorage.setItem("token", response.token);
+      const response = await axios.post(`${API_URL}/login-cliente`, { email, password });
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
         navigate("/home");
       } else {
         setError("Credenciales inválidas");
@@ -30,7 +34,6 @@ const ClienteLogin = ({ logo }) => {
   };
 
   const handleRegister = () => {
-    console.log("Navigating to RegisterCliente"); // Debugging line
     navigate("/RegisterCliente");
   };
 
@@ -61,7 +64,7 @@ const ClienteLogin = ({ logo }) => {
             />
           </div>
           <span className="forgot-password" onClick={handleForgotPassword}>
-            <FiLock className="password-icon" /> Olvidaste tu contraseña?
+            <FiLock className="password-icon" /> ¿Olvidaste tu contraseña?
           </span>
         </div>
         <button type="submit">Iniciar Sesión</button>

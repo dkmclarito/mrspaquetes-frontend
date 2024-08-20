@@ -9,6 +9,11 @@ import "../styles/Clientes.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AgregarCliente = () => {
+    const [isEmailValid, setIsEmailValid] = useState(true);
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [emailError, setEmailError] = useState("");
+    const [isPasswordValid, setIsPasswordValid] = useState(true);
+    const [passwordError, setPasswordError] = useState("");
     const [nitErrorMessage, setNitErrorMessage] = useState(""); // Estado para el mensaje de error del NIT
     const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
@@ -16,7 +21,6 @@ const AgregarCliente = () => {
     const [isNitValid, setIsNitValid] = useState(true);
     const [telefonoError, setTelefonoError] = useState("");
     const [isNrcValid, setIsNrcValid] = useState(true);
-    const [isGiroValid, setIsGiroValid] = useState(true);
     const [tiposPersonas, setTiposPersonas] = useState([]);
     const [fechaRegistro, setFechaRegistro] = useState(new Date().toISOString().split('T')[0]);
     const [departamentos, setDepartamentos] = useState([]);
@@ -24,12 +28,13 @@ const AgregarCliente = () => {
     const [nombres, setNombres] = useState("");
     const [apellidos, setApellidos] = useState("");
     const [tipoPersona, setTipoPersona] = useState("");
-    const [genero, setGenero] = useState("");
     const [dui, setDui] = useState("");
     const [telefono, setTelefono] = useState("");
     const [direccion, setDireccion] = useState("");
     const [departamento, setDepartamento] = useState("");
     const [municipio, setMunicipio] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [esContribuyente, setEsContribuyente] = useState(false);
     const [nombreComercial, setNombreComercial] = useState("");
     const [nit, setNit] = useState("");
@@ -111,6 +116,38 @@ const AgregarCliente = () => {
         fetchMunicipios();
     }, [departamento, token]);
 
+    const handleEmailChange = (e) => {
+        const email = e.target.value;
+        // Simple email pattern for validation
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (emailPattern.test(email)) {
+            setIsEmailValid(true);
+            setEmailError("");
+        } else {
+            setIsEmailValid(false);
+            setEmailError("El correo electrónico no es válido.");
+        }
+
+        setEmail(email);
+    };
+
+    const handlePasswordChange = (e) => {
+        const password = e.target.value;
+        // Pattern for validating password (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character)
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (passwordPattern.test(password)) {
+            setIsPasswordValid(true);
+            setPasswordError("");
+        } else {
+            setIsPasswordValid(false);
+            setPasswordError("La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, una minúscula, un número y un carácter especial.");
+        }
+
+        setPassword(password);
+    };
+
 
     const handleDuiChange = (e) => {
         let value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
@@ -130,7 +167,7 @@ const AgregarCliente = () => {
 
     const handleTelefonoChange = (e) => {
         let telefonoValue = e.target.value.replace(/[^\d]/g, "");
-    
+
         // Verificar si el primer dígito es 6 o 7
         if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
             setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
@@ -140,28 +177,28 @@ const AgregarCliente = () => {
         } else {
             setTelefonoError("");
         }
-    
+
         // Limit to 8 digits
         if (telefonoValue.length > 8) {
             telefonoValue = telefonoValue.slice(0, 8);
         }
-    
+
         if (telefonoValue.length > 4) {
             telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
         }
-    
+
         setTelefono(telefonoValue);
-    
+
         const isValid = telefonoValue.length === 9;
         setIsTelefonoValid(isValid);
     };
 
     const generateErrorMessage = (errorData) => {
         let errorMessage = "Error al agregar el cliente.";
-    
+
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
-    
+
             if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
                 errorMessage = "El DUI y el teléfono ya están registrados.";
             } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
@@ -178,23 +215,23 @@ const AgregarCliente = () => {
                 errorMessage = errorData.message || "Error al agregar el cliente.";
             }
         }
-    
+
         return errorMessage;
     };
-    
-    
+
+
 
     const handleNitChange = (event) => {
         const value = event.target.value || ""; // Asegúrate de que el valor no sea undefined
-    
+
         // Eliminar caracteres no numéricos
         let nitSanitized = value.replace(/[^\d]/g, "");
-    
+
         // Limitar la longitud máxima a 14 caracteres
         if (nitSanitized.length > 14) {
             nitSanitized = nitSanitized.slice(0, 14);
         }
-    
+
         // Validar longitud y formato del NIT
         let errorMessage = "";
         if (nitSanitized.length !== 14 && nitSanitized.length > 0) {
@@ -205,7 +242,7 @@ const AgregarCliente = () => {
             const segundosDosDigitos = parseInt(nitSanitized.substring(2, 4), 10);
             const dia = parseInt(nitSanitized.substring(4, 6), 10);
             const mes = parseInt(nitSanitized.substring(6, 8), 10);
-    
+
             if (primerosDosDigitos < 1 || primerosDosDigitos > 14) {
                 errorMessage = "Los primeros dos dígitos deben estar entre 01 y 14.";
             } else if (segundosDosDigitos < 1 || segundosDosDigitos > 35) {
@@ -214,7 +251,7 @@ const AgregarCliente = () => {
                 errorMessage = "La fecha en el NIT no es válida.";
             }
         }
-    
+
         // Formatear el NIT con guiones
         let nitFormatted = nitSanitized;
         if (nitSanitized.length > 4) {
@@ -226,17 +263,17 @@ const AgregarCliente = () => {
         if (nitSanitized.length === 14) {
             nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
         }
-    
+
         console.log('Sanitized NIT:', nitSanitized); // Verifica el NIT sanitizado
         console.log('Formatted NIT:', nitFormatted); // Verifica el NIT formateado
-    
+
         // Actualizar el estado y el mensaje de error
         setNit(value); // Mantener el valor ingresado
         setIsNitValid(errorMessage === "");
         setFormData(prevData => ({ ...prevData, nit: nitFormatted })); // Actualizar el NIT en formData
         setNitErrorMessage(errorMessage); // Actualizar el mensaje de error del NIT
     };
-    
+
 
     const handleNrcChange = (e) => {
         let nrcValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
@@ -258,18 +295,20 @@ const AgregarCliente = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         // Validaciones de campos
-        if (!isDuiValid || !isTelefonoValid || tipoPersona === "") {
+        if (!isDuiValid || !isTelefonoValid || !isEmailValid || !isPasswordValid || tipoPersona === "") {
             setAlertaError(true);
             setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
         }
-    
+
         // Datos del cliente
         const clienteData = {
             nombre: nombres,
             apellido: apellidos,
+            email,
+            password,
             id_tipo_persona: tipoPersona,
             dui,
             telefono,
@@ -284,19 +323,18 @@ const AgregarCliente = () => {
             giro: tipoPersona === "1" ? null : giro,
             fecha_registro: fechaRegistro.replace(/-/g, "/"),
             id_estado: 1
-            
         };
-    
+
         console.log("Datos a enviar:", clienteData);
-    
+
         try {
-            const response = await axios.post(`${API_URL}/clientes`, clienteData, {
+            const response = await axios.post(`${API_URL}/admin-registrar-cliente`, clienteData, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 }
             });
-    
+
             console.log("Cliente registrado:", response.data);
             setAlertaExito(true);
             setTimeout(() => navigate('/GestionClientes'), 2000);
@@ -307,9 +345,12 @@ const AgregarCliente = () => {
             handleError(error);
         }
     };
-    
-    
+
+
+
     const resetForm = () => {
+        setEmail("");
+        setPassword("");
         setNombres("");
         setApellidos("");
         setTipoPersona("");
@@ -326,52 +367,52 @@ const AgregarCliente = () => {
         setGiro("");
         setNombreEmpresa("");
     };
-    
+
     const handleError = (error) => {
-    let errorMessage = "Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.";
+        let errorMessage = "Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.";
 
-    if (error.response && error.response.data) {
-        const errorData = error.response.data.error || error.response.data.message;
-        console.error("Error data:", errorData); // Forzar visualización en consola
+        if (error.response && error.response.data) {
+            const errorData = error.response.data.error || error.response.data.message;
+            console.error("Error data:", errorData); // Forzar visualización en consola
 
-        // Detectar errores de duplicación
-        if (errorData && Array.isArray(errorData)) {
-            if (errorData.includes("El DUI ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
-                errorMessage = "El DUI y el teléfono ya están registrados.";
-            } else if (errorData.includes("El NIT ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
-                errorMessage = "El NIT y el teléfono ya están registrados.";
-            } else if (errorData.includes("El DUI ya está registrado.")) {
-                errorMessage = "El DUI ya está registrado.";
-            } else if (errorData.includes("El NIT ya está registrado.")) {
-                errorMessage = "El NIT ya está registrado.";
-            } else if (errorData.includes("El teléfono ya está registrado.")) {
-                errorMessage = "El teléfono ya está registrado.";
-            }
-        } else if (error.response.data.errors) {
-            const errorKeys = Object.keys(error.response.data.errors);
-            console.error("Error keys:", errorKeys); // Forzar visualización en consola
+            // Detectar errores de duplicación
+            if (errorData && Array.isArray(errorData)) {
+                if (errorData.includes("El DUI ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
+                    errorMessage = "El DUI y el teléfono ya están registrados.";
+                } else if (errorData.includes("El NIT ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
+                    errorMessage = "El NIT y el teléfono ya están registrados.";
+                } else if (errorData.includes("El DUI ya está registrado.")) {
+                    errorMessage = "El DUI ya está registrado.";
+                } else if (errorData.includes("El NIT ya está registrado.")) {
+                    errorMessage = "El NIT ya está registrado.";
+                } else if (errorData.includes("El teléfono ya está registrado.")) {
+                    errorMessage = "El teléfono ya está registrado.";
+                }
+            } else if (error.response.data.errors) {
+                const errorKeys = Object.keys(error.response.data.errors);
+                console.error("Error keys:", errorKeys); // Forzar visualización en consola
 
-            if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
-                errorMessage = "El DUI y el teléfono ya están registrados.";
-            } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
-                errorMessage = "El NIT y el teléfono ya están registrados.";
-            } else if (errorKeys.includes("dui") && errorKeys.includes("email")) {
-                errorMessage = "El DUI y el correo electrónico ya están registrados.";
-            } else if (errorKeys.includes("dui")) {
-                errorMessage = "El DUI ya está registrado.";
-            } else if (errorKeys.includes("nit")) {
-                errorMessage = "El NIT ya está registrado.";
-            } else if (errorKeys.includes("telefono")) {
-                errorMessage = "El teléfono ya está registrado.";
+                if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
+                    errorMessage = "El DUI y el teléfono ya están registrados.";
+                } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
+                    errorMessage = "El NIT y el teléfono ya están registrados.";
+                } else if (errorKeys.includes("dui") && errorKeys.includes("email")) {
+                    errorMessage = "El DUI y el correo electrónico ya están registrados.";
+                } else if (errorKeys.includes("dui")) {
+                    errorMessage = "El DUI ya está registrado.";
+                } else if (errorKeys.includes("nit")) {
+                    errorMessage = "El NIT ya está registrado.";
+                } else if (errorKeys.includes("telefono")) {
+                    errorMessage = "El teléfono ya está registrado.";
+                }
             }
         }
-    }
 
-    console.error("Error message:", errorMessage); // Forzar visualización del mensaje final
-    setAlertaExito(false);
-    setAlertaError(true);
-    setErrorMensaje(errorMessage);
-};
+        console.error("Error message:", errorMessage); // Forzar visualización del mensaje final
+        setAlertaExito(false);
+        setAlertaError(true);
+        setErrorMensaje(errorMessage);
+    };
 
 
     const handleDepartamentoChange = (e) => {
@@ -392,6 +433,7 @@ const AgregarCliente = () => {
             setNombreEmpresa("");
         }
     };
+
 
     const isJuridicalPerson = tipoPersona === "2";
 
@@ -452,6 +494,38 @@ const AgregarCliente = () => {
                                                     />
                                                 </FormGroup>
                                             </Col>
+                                        </Row>
+
+                                        <Row form>
+                                            <Col md={6}>
+                                                <FormGroup className="form-group-custom">
+                                                    <Label for="email">Correo Electrónico</Label>
+                                                    <Input
+                                                        type="email"
+                                                        name="email"
+                                                        id="email"
+                                                        value={email}
+                                                        onChange={handleEmailChange}
+                                                        invalid={!isEmailValid}
+                                                    />
+                                                    <FormFeedback>{emailError}</FormFeedback>
+                                                </FormGroup>
+                                            </Col>
+                                            <Col md={6}>
+                                            <Label for="password">Contraseña</Label>
+                                                <FormGroup className="password-group">
+                                                    <Input
+                                                        type="password"
+                                                        name="password"
+                                                        id="password"
+                                                        value={password}
+                                                        onChange={handlePasswordChange}
+                                                        invalid={!isPasswordValid}
+                                                    />
+                                                    <FormFeedback>{passwordError}</FormFeedback>
+                                                </FormGroup>
+                                            </Col>
+
                                         </Row>
                                         <Row form>
                                             <Col md={6}>
