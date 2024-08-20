@@ -28,11 +28,26 @@ const ModalEditarUsuario = ({
     }
   }, [modalEditar, usuarioEditado]);
 
+  const validateEmail = (email) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|info|biz|co|us|ca)$/;
+    return re.test(email);
+  };
+
+  const validatePassword = (password) => {
+    const re = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z]).{5,}$/;
+    return re.test(password);
+  };
+
   const handleGuardarCambios = async () => {
     setError(null);
 
-    if (!usuarioEditado.email) {
-      setError("El correo electrónico es obligatorio.");
+    if (!usuarioEditado.email || !validateEmail(usuarioEditado.email)) {
+      setError("El correo electrónico debe ser válido y contener un dominio conocido.");
+      return;
+    }
+
+    if (mostrarCamposContrasena && !validatePassword(password)) {
+      setError("La contraseña debe tener al menos 5 caracteres, incluyendo una mayúscula, una minúscula y un número.");
       return;
     }
 
@@ -41,24 +56,38 @@ const ModalEditarUsuario = ({
       return;
     }
 
+    if (!usuarioEditado.id_empleado) {
+      setError("El empleado es obligatorio.");
+      return;
+    }
+
+    if (!usuarioEditado.role_id) {
+      setError("El rol es obligatorio.");
+      return;
+    }
+
+    if (usuarioEditado.status === null || usuarioEditado.status === undefined) {
+      setError("El estado es obligatorio.");
+      return;
+    }
+
     const usuarioActualizado = {
       ...usuarioEditado,
-      password: mostrarCamposContrasena ? password : undefined,
-      password_confirmation: mostrarCamposContrasena ? confirmPassword : undefined
+      password: mostrarCamposContrasena ? password : usuarioEditado.password,
+      password_confirmation: mostrarCamposContrasena ? confirmPassword : usuarioEditado.password
     };
 
     try {
       const token = AuthService.getCurrentUser();
       const data = {
         email: usuarioActualizado.email,
+        password: usuarioActualizado.password,
         role_id: parseInt(usuarioActualizado.role_id, 10),
         id_empleado: parseInt(usuarioActualizado.id_empleado, 10),
-        status: usuarioActualizado.status // Asegúrate de incluir el estado en la actualización
+        status: usuarioActualizado.status
       };
 
-      if (usuarioActualizado.password) {
-        data.password = usuarioActualizado.password;
-      }
+      console.log("Datos enviados:", data);
 
       const response = await axios.put(`${API_URL}/auth/update/${usuarioActualizado.id}`, data, {
         headers: {
@@ -78,13 +107,14 @@ const ModalEditarUsuario = ({
     } catch (error) {
       if (error.response && error.response.status === 422) {
         const errors = error.response.data.errors || error.response.data;
+        console.log("Detalles del error:", errors);
 
         if (errors.email) {
           setError("El correo electrónico ya está registrado.");
         } else if (errors.role_id) {
           setError("El rol es obligatorio.");
-        } else if (errors.id_empleado) {
-          setError("El empleado es obligatorio.");
+        } else if (errors.id_empleado && errors.id_empleado[0] === "Este empleado ya tiene su usuario.") {
+          setError("El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
         } else {
           setError("Error al actualizar usuario.");
         }
@@ -179,7 +209,7 @@ const ModalEditarUsuario = ({
             </FormGroup>
           </>
         )}
-        {error && <p className="text-danger">{error}</p>}
+        {error && <p className="text-white">{error}</p>} {/* Mensaje de error en blanco */}
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleGuardarCambios}>Guardar Cambios</Button>
