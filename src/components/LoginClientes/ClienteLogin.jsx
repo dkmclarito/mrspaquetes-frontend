@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiLock } from "react-icons/fi";
-import axios from "axios";
+import AuthService from "../../services/authService"; // Importar AuthService
 import "../../styles/LoginClientForm.css";
-
-const API_URL = import.meta.env.VITE_API_URL;
 
 const ClienteLogin = ({ logo }) => {
   const [email, setEmail] = useState("");
@@ -16,10 +14,9 @@ const ClienteLogin = ({ logo }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${API_URL}/login-cliente`, { email, password });
-
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
+      const token = await AuthService.loginClient(email, password); // Cambiar a AuthService
+      if (token) {
+        localStorage.setItem("token", token);
         navigate("/home");
       } else {
         setError("Credenciales inválidas");
@@ -34,7 +31,7 @@ const ClienteLogin = ({ logo }) => {
   };
 
   const handleRegister = () => {
-    navigate("/RegisterCliente");
+    navigate("/registercliente");
   };
 
   return (

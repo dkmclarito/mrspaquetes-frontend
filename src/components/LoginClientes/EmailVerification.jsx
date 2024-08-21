@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import "../../styles/EmailVerification.css";
+import styles from './EmailVerification.module.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,39 +50,39 @@ const EmailVerification = () => {
   };
 
   return (
-    <div className="registerContainer">
-      <div className="registerCard">
-        <h1 className="registerTitle">Verificación de Correo Electrónico</h1>
+    <div className={styles.registerContainer}>
+      <div className={styles.registerCard}>
+        <h1 className={styles.registerTitle}>Verificación de Correo Electrónico</h1>
         {message && (
-          <div className={`message ${message.includes('éxito') ? 'success' : 'error'}`}>
+          <div className={`${styles.message} ${message.includes('éxito') ? styles.success : styles.error}`}>
             {message}
           </div>
         )}
-        <div className="registerForm">
-          <div className="formGroup">
-            <label className="formLabel">Correo Electrónico</label>
+        <div className={styles.registerForm}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Correo Electrónico</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Ingresa tu correo electrónico"
-              className="formInput"
+              className={styles.formInput}
             />
           </div>
-          <button onClick={handleSendOtp} className="submitButton" disabled={isSending}>
+          <button onClick={handleSendOtp} className={styles.submitButton} disabled={isSending}>
             {isSending ? 'Enviando...' : 'Enviar Código de Verificación'}
           </button>
-          <div className="formGroup">
-            <label className="formLabel">Código de Verificación</label>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Código de Verificación</label>
             <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Ingresa el código de verificación"
-              className="formInput"
+              className={styles.formInput}
             />
           </div>
-          <button onClick={handleVerifyEmail} className="submitButton" disabled={isVerifying}>
+          <button onClick={handleVerifyEmail} className={styles.submitButton} disabled={isVerifying}>
             {isVerifying ? 'Verificando...' : 'Verificar Correo'}
           </button>
         </div>
