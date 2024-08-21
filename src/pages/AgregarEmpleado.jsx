@@ -37,6 +37,7 @@ const AgregarEmpleado = () => {
   const [cargos, setCargos] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [municipiosPorDepartamento, setMunicipiosPorDepartamento] = useState({});
+  const [generos, setGeneros] = useState([]);
   const [nombres, setNombres] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [genero, setGenero] = useState("");
@@ -138,6 +139,29 @@ const AgregarEmpleado = () => {
     fetchMunicipios();
   }, [departamento, token]);
 
+  useEffect(() => {
+    const fetchGeneros = async () => {
+      try {
+        const response = await fetch(`${API_URL}/dropdown/get_generos`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+        const responseData = await response.json();
+        if (responseData.generos && Array.isArray(responseData.generos)) {
+          setGeneros(responseData.generos);
+        } else {
+          console.error("Respuesta no válida para géneros:", responseData);
+        }
+      } catch (error) {
+        console.error("Error al obtener los géneros:", error);
+      }
+    };
+
+    fetchGeneros();
+  }, [token]);
+
   const validateNombre = (nombre) => {
     // Expresión regular para permitir letras con tildes, espacios y "ñ"
     const regex = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
@@ -215,7 +239,7 @@ const AgregarEmpleado = () => {
   };
   useEffect(() => {
     const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; 
+    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
     setMaxDate(formattedDate);
   }, []);
 
@@ -435,6 +459,7 @@ const AgregarEmpleado = () => {
       setDireccion("");
       setDepartamento("");
       setMunicipio("");
+  
     } catch (error) {
       toast.error(`Error al agregar el empleado: ${error.message}`, {
         position: "bottom-right",
@@ -489,6 +514,7 @@ const AgregarEmpleado = () => {
                   )}
                 </FormGroup>
               </Col>
+              
               <Col md={6}>
                 <FormGroup className="form-group-custom">
                   <Label for="dui">DUI</Label>
@@ -644,3 +670,6 @@ const AgregarEmpleado = () => {
             };
 
 export default AgregarEmpleado;
+
+
+

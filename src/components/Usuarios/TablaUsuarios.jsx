@@ -3,17 +3,36 @@ import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
-import "/src/styles/usuarios.css"; 
+import "/src/styles/usuarios.css";
+
 const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
+  const renderStatus = (status) => {
+    return (
+      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span
+          style={{
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            backgroundColor: status === 1 ? 'green' : 'red',
+            marginRight: '8px'
+          }}
+        />
+        {status === 1 ? 'Activo' : 'Inactivo'}
+      </span>
+    );
+  };
+
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <Table striped className="table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
             <th className="text-center">ID</th>
-            <th className="text-center">Nombre</th>
             <th className="text-center">Email</th>
-            <th className="text-center">Tipo de usuario</th>
+            <th className="text-center">Estado</th>
+            <th className="text-center">Empleado</th>
+            <th className="text-center">Rol</th>
             <th className="text-center">Fecha de creación</th>
             <th className="text-center">Acciones</th>
           </tr>
@@ -22,12 +41,15 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
           {usuarios.length > 0 ? (
             usuarios.map(usuario => (
               <tr key={usuario.id}>
-                <td>{usuario.id}</td>
-                <td>{usuario.name}</td>
-                <td>{usuario.email}</td>
-                <td>{usuario.type === 0 ? 'Empleado' : 'Cliente'}</td>
-                <td>{usuario.created_at ? usuario.created_at.split('T')[0] : '2024-06-20'}</td>
-                <td>
+                <td className="text-center">{usuario.id}</td>
+                <td className="text-center">{usuario.email}</td>
+                <td className="text-center">{renderStatus(usuario.status)}</td>
+                <td className="text-center">{usuario.nombre_completo_empleado}</td>
+                <td className="text-center">
+                  {usuario.role_id === 1 ? 'Admin' : usuario.role_id === 3 ? 'Conductor' : usuario.role_id === 4 ? 'Básico' : 'Desconocido'}
+                </td>
+                <td className="text-center">{usuario.created_at ? usuario.created_at.split(' ')[0] : '2024-06-20'}</td>
+                <td className="text-center">
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
@@ -49,7 +71,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">Sin usuarios.</td>
+              <td colSpan="7" className="text-center">Sin usuarios.</td>
             </tr>
           )}
         </tbody>
