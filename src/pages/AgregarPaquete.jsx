@@ -180,10 +180,11 @@ const AgregarPaquete = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     let valid = true;
     let errorsTemp = { ...errors };
-
+  
+    // Ensure all fields are validated
     Object.keys(nuevoPaquete).forEach(key => {
       const error = validateField(key, nuevoPaquete[key]);
       if (error) {
@@ -191,9 +192,9 @@ const AgregarPaquete = () => {
         valid = false;
       }
     });
-
+  
     setErrors(errorsTemp);
-
+  
     if (!valid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
         position: "bottom-right",
@@ -205,7 +206,13 @@ const AgregarPaquete = () => {
       });
       return;
     }
-
+  
+    // Convert formatted peso back to number
+    const convertPesoToNumber = (peso) => {
+      // Remove commas and parse to float
+      return parseFloat(peso.replace(/,/g, ''));
+    };
+  
     try {
       const response = await fetch(`${API_URL}/paquete`, {
         method: 'POST',
@@ -213,17 +220,18 @@ const AgregarPaquete = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(nuevoPaquete),
+        body: JSON.stringify({
+          ...nuevoPaquete,
+          peso: convertPesoToNumber(nuevoPaquete.peso), // Ensure peso is in number format
+        }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         const errorMessage = `Error: ${errorData?.message || response.statusText}`;
         throw new Error(errorMessage);
       }
-
-      //console.log('Paquete registrado exitosamente');
-
+  
       toast.success('¡Paquete registrado con éxito!', {
         position: "bottom-right",
         autoClose: 300,
@@ -232,11 +240,11 @@ const AgregarPaquete = () => {
         pauseOnHover: false,
         draggable: true,
       });
-
+  
       setTimeout(() => {
         navigate('/GestionPaquetes');
       }, 1000);
-
+  
     } catch (error) {
       console.error('Error al registrar el paquete:', error);
       toast.error(`Error al registrar el paquete: ${error.message}`, {
@@ -249,6 +257,7 @@ const AgregarPaquete = () => {
       });
     }
   };
+  
   return (
     <Container fluid>
       <Breadcrumbs title="Registrar Paquete" breadcrumbItem="Nuevo Paquete" />
