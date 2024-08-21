@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button } from "reactstrap";
+import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, InputGroup, InputGroupText } from "reactstrap";
 import axios from "axios";
+import { BiShow, BiHide } from "react-icons/bi"; // Importamos los íconos de ojo
 import AuthService from "../../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -16,17 +17,47 @@ const ModalEditarUsuario = ({
 }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
+  const [errorEmail, setErrorEmail] = useState(null);
+  const [errorPassword, setErrorPassword] = useState(null);
+  const [errorEmpleado, setErrorEmpleado] = useState(null);
+  const [errorRol, setErrorRol] = useState(null);
+  const [errorStatus, setErrorStatus] = useState(null);
+  const [errorGeneral, setErrorGeneral] = useState(null);
   const [mostrarCamposContrasena, setMostrarCamposContrasena] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+  const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
-    if (modalEditar && usuarioEditado) {
+    const fetchUsuarios = async () => {
+      try {
+        const token = AuthService.getCurrentUser();
+        const response = await axios.get(`${API_URL}/auth/get_users`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (response.data && Array.isArray(response.data.users)) {
+          setUsuarios(response.data.users);
+        }
+      } catch (error) {
+        console.error("Error al obtener usuarios:", error);
+      }
+    };
+
+    if (modalEditar) {
+      fetchUsuarios();
       setPassword("");
       setConfirmPassword("");
-      setError(null);
+      setErrorEmail(null);
+      setErrorPassword(null);
+      setErrorEmpleado(null);
+      setErrorRol(null);
+      setErrorStatus(null);
+      setErrorGeneral(null);
       setMostrarCamposContrasena(false);
     }
-  }, [modalEditar, usuarioEditado]);
+  }, [modalEditar]);
 
   const validateEmail = (email) => {
     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|info|biz|co|us|ca)$/;
@@ -39,35 +70,53 @@ const ModalEditarUsuario = ({
   };
 
   const handleGuardarCambios = async () => {
-    setError(null);
+    // Limpiar errores previos
+    setErrorEmail(null);
+    setErrorPassword(null);
+    setErrorEmpleado(null);
+    setErrorRol(null);
+    setErrorStatus(null);
+    setErrorGeneral(null);
 
     if (!usuarioEditado.email || !validateEmail(usuarioEditado.email)) {
-      setError("El correo electrónico debe ser válido y contener un dominio conocido.");
+      setErrorEmail("El correo electrónico debe ser válido y contener un dominio conocido.");
       return;
     }
 
     if (mostrarCamposContrasena && !validatePassword(password)) {
-      setError("La contraseña debe tener al menos 5 caracteres, incluyendo una mayúscula, una minúscula y un número.");
+      setErrorPassword("La contraseña debe tener al menos 5 caracteres, incluyendo una mayúscula, una minúscula y un número.");
       return;
     }
 
     if (mostrarCamposContrasena && (password !== confirmPassword)) {
-      setError("Las contraseñas no coinciden.");
+      setErrorPassword("Las contraseñas no coinciden.");
       return;
     }
 
     if (!usuarioEditado.id_empleado) {
-      setError("El empleado es obligatorio.");
+      setErrorEmpleado("El empleado es obligatorio.");
       return;
     }
 
     if (!usuarioEditado.role_id) {
-      setError("El rol es obligatorio.");
+      setErrorRol("El rol es obligatorio.");
       return;
     }
 
     if (usuarioEditado.status === null || usuarioEditado.status === undefined) {
-      setError("El estado es obligatorio.");
+      setErrorStatus("El estado es obligatorio.");
+      return;
+    }
+
+    const emailExistente = usuarios.find(user => user.email === usuarioEditado.email && user.id !== usuarioEditado.id);
+    if (emailExistente) {
+      setErrorEmail("El correo electrónico ya está registrado por otro usuario.");
+      return;
+    }
+
+    const empleadoExistente = usuarios.find(user => user.id_empleado === parseInt(usuarioEditado.id_empleado, 10) && user.id !== usuarioEditado.id);
+    if (empleadoExistente) {
+      setErrorEmpleado("El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
       return;
     }
 
@@ -102,7 +151,7 @@ const ModalEditarUsuario = ({
         setUsuarioEditado(null);
         window.location.reload();  // Recarga la página para reflejar los cambios
       } else {
-        setError("Error al actualizar usuario");
+        setErrorGeneral("Error al actualizar usuario");
       }
     } catch (error) {
       if (error.response && error.response.status === 422) {
@@ -110,17 +159,17 @@ const ModalEditarUsuario = ({
         console.log("Detalles del error:", errors);
 
         if (errors.email) {
-          setError("El correo electrónico ya está registrado.");
+          setErrorEmail("El correo electrónico ya está registrado.");
         } else if (errors.role_id) {
-          setError("El rol es obligatorio.");
+          setErrorRol("El rol es obligatorio.");
         } else if (errors.id_empleado && errors.id_empleado[0] === "Este empleado ya tiene su usuario.") {
-          setError("El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
+          setErrorEmpleado("El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
         } else {
-          setError("Error al actualizar usuario.");
+          setErrorGeneral("Error al actualizar usuario.");
         }
       } else {
         console.error("Error al actualizar usuario:", error);
-        setError("No se pudo actualizar el usuario. Inténtelo de nuevo más tarde.");
+        setErrorGeneral("No se pudo actualizar el usuario. Inténtelo de nuevo más tarde.");
       }
     }
   };
@@ -138,6 +187,7 @@ const ModalEditarUsuario = ({
             onChange={(e) => setUsuarioEditado(prevState => ({ ...prevState, email: e.target.value }))}
             required
           />
+          {errorEmail && <p className="text-white">{errorEmail}</p>}
         </FormGroup>
         <FormGroup>
           <Label for="empleadoId">Empleado</Label>
@@ -155,6 +205,7 @@ const ModalEditarUsuario = ({
               </option>
             ))}
           </Input>
+          {errorEmpleado && <p className="text-white">{errorEmpleado}</p>}
         </FormGroup>
         <FormGroup>
           <Label for="rol">Rol</Label>
@@ -170,6 +221,7 @@ const ModalEditarUsuario = ({
             <option value="3">Conductor</option>
             <option value="4">Básico</option>
           </Input>
+          {errorRol && <p className="text-white">{errorRol}</p>}
         </FormGroup>
         <FormGroup>
           <Label for="status">Estado</Label>
@@ -183,6 +235,7 @@ const ModalEditarUsuario = ({
             <option value="1">Activo</option>
             <option value="0">Inactivo</option>
           </Input>
+          {errorStatus && <p className="text-white">{errorStatus}</p>}
         </FormGroup>
         {!mostrarCamposContrasena && (
           <Button color="secondary" onClick={() => setMostrarCamposContrasena(true)}>Modificar Contraseña</Button>
@@ -191,25 +244,36 @@ const ModalEditarUsuario = ({
           <>
             <FormGroup>
               <Label for="password">Nueva Contraseña</Label>
-              <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <InputGroup>
+                <Input
+                  type={mostrarPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <InputGroupText onClick={() => setMostrarPassword(!mostrarPassword)}>
+                  {mostrarPassword ? <BiHide /> : <BiShow />}
+                </InputGroupText>
+              </InputGroup>
             </FormGroup>
             <FormGroup>
               <Label for="confirmPassword">Confirmar Contraseña</Label>
-              <Input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+              <InputGroup>
+                <Input
+                  type={mostrarConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <InputGroupText onClick={() => setMostrarConfirmPassword(!mostrarConfirmPassword)}>
+                  {mostrarConfirmPassword ? <BiHide /> : <BiShow />}
+                </InputGroupText>
+              </InputGroup>
+              {errorPassword && <p className="text-white">{errorPassword}</p>}
             </FormGroup>
           </>
         )}
-        {error && <p className="text-white">{error}</p>} {/* Mensaje de error en blanco */}
+        {errorGeneral && <p className="text-white">{errorGeneral}</p>}
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleGuardarCambios}>Guardar Cambios</Button>

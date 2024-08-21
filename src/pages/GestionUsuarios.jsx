@@ -24,6 +24,8 @@ const GestionUsuarios = () => {
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
+  const [rolFiltro, setRolFiltro] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -31,7 +33,6 @@ const GestionUsuarios = () => {
       try {
         const token = AuthService.getCurrentUser();
 
-        // Obtener usuarios y empleados en paralelo
         const [usuariosResponse, empleadosResponse] = await Promise.all([
           axios.get(`${API_URL}/auth/get_users`, {
             headers: {
@@ -57,7 +58,7 @@ const GestionUsuarios = () => {
           }));
 
           setUsuarios(usuariosConEmpleados);
-          setEmpleados(empleadosResponse.data.empleados); // Guardar empleados para usar en el modal
+          setEmpleados(empleadosResponse.data.empleados); 
         } else {
           console.error("Datos inesperados al obtener usuarios o empleados:", usuariosResponse.data);
         }
@@ -96,8 +97,8 @@ const GestionUsuarios = () => {
   const toggleModalEditar = (usuario) => {
     setUsuarioEditado({
       ...usuario,
-      id_empleado: usuario.id_empleado, // Asegura que id_empleado esté presente
-      role_id: usuario.role_id // Asegura que role_id esté presente
+      id_empleado: usuario.id_empleado, 
+      role_id: usuario.role_id 
     });
     setModalEditar(true);
   };
@@ -145,14 +146,23 @@ const GestionUsuarios = () => {
     }
   };
 
-  const filtrarUsuarios = (usuarios) => {
+  const filtrarUsuarios = () => {
     let usuariosFiltrados = usuarios;
 
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
       usuariosFiltrados = usuariosFiltrados.filter((usuario) =>
-        `${usuario.email}`.toLowerCase().includes(busquedaLower)
+        usuario.email.toLowerCase().includes(busquedaLower) ||
+        usuario.nombre_completo_empleado.toLowerCase().includes(busquedaLower)
       );
+    }
+
+    if (rolFiltro) {
+      usuariosFiltrados = usuariosFiltrados.filter(usuario => usuario.role_id === parseInt(rolFiltro, 10));
+    }
+
+    if (estadoFiltro) {
+      usuariosFiltrados = usuariosFiltrados.filter(usuario => usuario.status.toString() === estadoFiltro);
     }
 
     return usuariosFiltrados;
@@ -164,7 +174,7 @@ const GestionUsuarios = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [busqueda]);
+  }, [busqueda, rolFiltro, estadoFiltro]);
 
   const usuariosFiltrados = filtrarUsuarios(usuarios);
   const paginatedUsuarios = usuariosFiltrados.slice(
@@ -175,7 +185,7 @@ const GestionUsuarios = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Lista de usuarios" />
+        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Lista de usuarios Empleados" />
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center" }}>
@@ -187,9 +197,38 @@ const GestionUsuarios = () => {
                 id="busqueda"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por email"
+                placeholder="Escriba email o nombre de empleado"
                 style={{ width: "300px" }}
               />
+              <Label for="rolFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+                Rol:
+              </Label>
+              <Input
+                type="select"
+                id="rolFiltro"
+                value={rolFiltro}
+                onChange={(e) => setRolFiltro(e.target.value)}
+                style={{ width: "150px" }}
+              >
+                <option value="">Todos</option>
+                <option value="1">Administrador</option>
+                <option value="3">Conductor</option>
+                <option value="4">Básico</option>
+              </Input>
+              <Label for="estadoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+                Estado:
+              </Label>
+              <Input
+                type="select"
+                id="estadoFiltro"
+                value={estadoFiltro}
+                onChange={(e) => setEstadoFiltro(e.target.value)}
+                style={{ width: "150px" }}
+              >
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarUsuario" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Usuario
@@ -234,7 +273,7 @@ const GestionUsuarios = () => {
         guardarCambiosUsuario={guardarCambiosUsuario}
         setModalEditar={setModalEditar}
         clientes={[]}
-        empleados={empleados} // Pasamos la lista de empleados al modal
+        empleados={empleados}
       />
       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}

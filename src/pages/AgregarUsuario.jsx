@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
+import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, InputGroup, InputGroupText } from "reactstrap";
+import { BiShow, BiHide } from "react-icons/bi"; // Importamos los íconos de ojo
 import AuthService from "../services/authService";
-import { useNavigate } from "react-router-dom";  // Importa useNavigate
+import { useNavigate } from "react-router-dom";
 import "../styles/usuarios.css";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import Select from 'react-select';
@@ -18,9 +19,11 @@ const AgregarUsuario = () => {
   const [alertaExito, setAlertaExito] = useState(false);
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
+  const [usuarios, setUsuarios] = useState([]);
+  const [mostrarPassword, setMostrarPassword] = useState(false); // Estado para mostrar/ocultar la contraseña
 
   const token = AuthService.getCurrentUser();
-  const navigate = useNavigate();  // Usa useNavigate para la redirección
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEmpleados = async () => {
@@ -38,7 +41,23 @@ const AgregarUsuario = () => {
       }
     };
 
+    const fetchUsuarios = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/auth/get_users`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (response.data && Array.isArray(response.data.users)) {
+          setUsuarios(response.data.users);
+        }
+      } catch (error) {
+        console.error("Error al obtener usuarios:", error);
+      }
+    };
+
     fetchEmpleados();
+    fetchUsuarios();
   }, [token]);
 
   const displayAlert = (type, message) => {
@@ -47,7 +66,7 @@ const AgregarUsuario = () => {
       setAlertaExito(true);
       setTimeout(() => {
         setAlertaExito(false);
-        navigate('/GestionUsuarios');  // Redirige a GestionUsuarios después de 5 segundos
+        navigate('/GestionUsuarios');
       }, 3000);
     } else if (type === "error") {
       setAlertaError(true);
@@ -83,11 +102,24 @@ const AgregarUsuario = () => {
       return;
     }
 
+    // Verificar si el correo ya está registrado
+    const emailExistente = usuarios.find(user => user.email === email);
+    if (emailExistente) {
+      displayAlert("error", "El correo electrónico ya está registrado.");
+      return;
+    }
+
+    // Verificar si el empleado ya está asociado a un usuario
+    const empleadoExistente = usuarios.find(user => user.id_empleado === parseInt(empleadoId, 10));
+    if (empleadoExistente) {
+      displayAlert("error", "El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
+      return;
+    }
+
     const usuarioData = {
       email,
       password,
       role_id: parseInt(rol, 10),
-      //type: 0, // Tipo empleado
       id_empleado: parseInt(empleadoId, 10),
     };
 
@@ -107,18 +139,8 @@ const AgregarUsuario = () => {
         displayAlert("success", "Usuario agregado exitosamente!");
       }
     } catch (error) {
-      if (error.response && error.response.status === 422) {
-        const errors = error.response.data.errors || error.response.data;
-    
-        if (errors.email) {
-          displayAlert("error", "El correo electrónico ya está registrado.");
-        } else {
-          displayAlert("error", "El correo electrónico ya está registrado."); //err message
-        }
-      } else {
-        console.error("Error al agregar usuario:", error);
-        displayAlert("error", "No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
-      }
+      displayAlert("error", "No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
+      console.error("Error al agregar usuario:", error);
     }    
   };
 
@@ -147,13 +169,18 @@ const AgregarUsuario = () => {
               <Col md="6">
                 <FormGroup>
                   <Label for="password">Contraseña</Label>
-                  <Input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <InputGroup>
+                    <Input
+                      type={mostrarPassword ? "text" : "password"}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <InputGroupText onClick={() => setMostrarPassword(!mostrarPassword)}>
+                      {mostrarPassword ? <BiHide /> : <BiShow />}
+                    </InputGroupText>
+                  </InputGroup>
                 </FormGroup>
               </Col>
               <Col md="6">
