@@ -12,6 +12,7 @@ import GestionEmpleados from './pages/GestionEmpleados';
 import AgregarEmpleado from './pages/AgregarEmpleado';
 import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
+import AgregarDatos from './pages/PerfilCliente';
 import GestionUsuarios from './pages/GestionUsuarios';
 import AgregarUsuario from './pages/AgregarUsuario';
 import GestionRolesPermisos from './pages/GestionRolesPermisos';
@@ -76,6 +77,7 @@ const App = () => {
               <Route element={<PrivateRoute allowedRoles={['admin', 'conductor', 'cliente']} />}>
                 <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
                 <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
+                <Route path="/PerfilCliente" element={<AgregarDatos />} />
                 {/* Aquí van las rutas adicionales */}
               </Route>
             </Route>

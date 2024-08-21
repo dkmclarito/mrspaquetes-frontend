@@ -3,9 +3,12 @@ import { BiUser, BiLogOut } from 'react-icons/bi';
 import DarkModeSwitch from './DarkModeSwitch';
 import './Header.css';
 import AuthService from "../../services/authService";
+import { useNavigate } from 'react-router-dom';
+
 
 const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
   const [user, setUser] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user')); // Obtener datos del usuario desde el Local Storage
@@ -13,6 +16,9 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
       setUser(userData);
     }
   }, []);
+  const handlePerfil = () => {
+    navigate("/PerfilCliente"); // Redirigir a la página de perfil
+  };
 
   const handleLogout = () => {
     AuthService.logout(); // Utiliza AuthService para manejar el logout
@@ -23,7 +29,10 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
     <header className={`header-container ${menuCollapsed ? 'collapsed' : ''}`}>
     <div className="header-left"> {/* Contenedor para el nombre del usuario e ícono */}
       {user && <span>{user.name}</span>} {/* Mostrar el nombre del usuario */}
+      <button className='perfil-icon' onClick={handlePerfil}>
       <BiUser className="header-icon" />
+      Perfil
+      </button>
     </div>
     <div className="header-right"> {/* Contenedor para logout y dark mode switch */}
     <button className="logout-button" onClick={handleLogout}>
