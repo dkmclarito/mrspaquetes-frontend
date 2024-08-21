@@ -16,7 +16,7 @@ const ClienteLogin = ({ logo }) => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${API_URL}/login_cliente`, { email, password });
+      const response = await axios.post(`${API_URL}/login-cliente`, { email, password });
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
