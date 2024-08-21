@@ -14,53 +14,53 @@ const RegisterCliente = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(''); // Clear any previous messages
-  
+    setMessage(''); // Limpiar mensajes previos
+
     try {
-      // Validate email format and password length
+      // Validar formato de email y longitud de contraseña
       if (!email || !password || password.length < 6) {
-        setMessage('Please provide a valid email and a password with at least 6 characters.');
+        setMessage('Por favor, ingrese un correo electrónico válido y una contraseña de al menos 6 caracteres.');
         return;
       }
-  
-      // Send registration request
+
+      // Enviar solicitud de registro
       const response = await axios.post(`${API_URL}/register`, { email, password });
-  
+
       if (response.status === 200) {
         setIsRegistered(true);
-        setMessage('Registration successful! Please check your email for a verification code.');
-        // Optionally, redirect or perform other actions
+        setMessage('¡Registro exitoso! Por favor, revisa tu correo electrónico para obtener el código de verificación.');
+        setTimeout(() => navigate('/email-verification'), 3000); // Redirigir después de 3 segundos
       } else {
-        setMessage(`Registration failed: ${response.data.message || 'Error'}`);
+        setMessage(`Fallo en el registro: ${response.data.message || 'Error'}`);
       }
     } catch (error) {
       if (error.response && error.response.status === 422) {
-        // Handle validation errors
+        // Manejar errores de validación
         const errors = error.response.data.errors || {};
-        let errorMessage = 'Validation failed: ';
+        let errorMessage = 'Falló la validación: ';
         for (const [field, messages] of Object.entries(errors)) {
           errorMessage += `${field}: ${messages.join(', ')}; `;
         }
-        setMessage(errorMessage || `Registration failed: ${error.response.data.message || 'Error'}`);
+        setMessage(errorMessage || `Fallo en el registro: ${error.response.data.message || 'Error'}`);
       } else {
-        setMessage(`Registration failed: ${error.response?.data?.message || 'Error'}`);
+        setMessage(`Fallo en el registro: ${error.response?.data?.message || 'Error'}`);
       }
     }
   };
-  
+
   return (
     <div className={styles.registerContainer}>
       <div className={styles.registerCard}>
-        <h2 className={styles.registerTitle}>{isRegistered ? 'Verify Your Email' : 'Client Registration'}</h2>
+        <h2 className={styles.registerTitle}>{isRegistered ? 'Verifica tu correo electrónico' : 'Registro de Cliente'}</h2>
         {message && (
-          <p className={`${styles.message} ${message.includes('successful') ? styles.success : styles.error}`}>
+          <p className={`${styles.message} ${message.includes('exitoso') ? styles.success : styles.error}`}>
             {message}
           </p>
         )}
         {!isRegistered ? (
           <form onSubmit={handleSubmit} className={styles.registerForm}>
             <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.formLabel}>Email:</label>
+              <label htmlFor="email" className={styles.formLabel}>Correo Electrónico:</label>
               <input
                 type="email"
                 id="email"
@@ -71,7 +71,7 @@ const RegisterCliente = () => {
               />
             </div>
             <div className={styles.formGroup}>
-              <label htmlFor="password" className={styles.formLabel}>Password:</label>
+              <label htmlFor="password" className={styles.formLabel}>Contraseña:</label>
               <input
                 type="password"
                 id="password"
@@ -81,10 +81,10 @@ const RegisterCliente = () => {
                 required
               />
             </div>
-            <button type="submit" className={styles.submitButton}>Register</button>
+            <button type="submit" className={styles.submitButton}>Registrar</button>
           </form>
         ) : (
-          <p>Please check your email for a verification code.</p>
+          <p>Por favor, revisa tu correo electrónico para obtener el código de verificación.</p>
         )}
       </div>
     </div>
