@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import PrivateRoute from './components/Login/PrivateRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import LoginClientePage from './pages/LoginClientePage'; // Corrected
-import RegisterCliente from './pages/RegisterCliente'; // Corrected
+import LoginClientePage from './pages/LoginClientePage';
+import RegisterCliente from './pages/RegisterCliente';
 import Logout from './components/Login/Logout';
 import AuthService from './services/authService';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -28,7 +28,9 @@ import GestionPaquetes from './pages/GestionPaquetes';
 import AgregarPaquete from './pages/AgregarPaquete';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './services/AuthContext';
-import EmailVerification from './components/LoginClientes/EmailVerification'; // Imported
+import EmailVerification from './components/LoginClientes/EmailVerification';
+import ForgetPassword from './components/LoginClientes/ForgetPassword'; // Nuevo: Importación de ForgetPassword
+import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo: Importación de ResetPassword
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -42,6 +44,10 @@ const App = () => {
           <Route path="/registercliente" element={<RegisterCliente />} />
           <Route path="/email-verification" element={<EmailVerification />} />
           <Route path="/logout" element={<Logout />} />
+
+          {/* Nuevas rutas para "Olvidé mi contraseña" y "Restablecer contraseña" */}
+          <Route path="/forget-password" element={<ForgetPassword />} /> 
+          <Route path="/reset-password" element={<ResetPassword />} /> 
 
           {/* Rutas privadas con VerticalLayout */}
           <Route element={<PrivateRoute allowedRoles={['admin', 'conductor', 'cliente']} />}>

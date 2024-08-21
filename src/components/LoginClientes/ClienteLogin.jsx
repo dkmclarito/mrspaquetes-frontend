@@ -14,7 +14,7 @@ const ClienteLogin = ({ logo }) => {
     e.preventDefault();
 
     try {
-      const token = await AuthService.loginClient(email, password); // Cambiar a AuthService
+      const token = await AuthService.loginClient(email, password);
       if (token) {
         localStorage.setItem("token", token);
         navigate("/home");
@@ -27,7 +27,7 @@ const ClienteLogin = ({ logo }) => {
   };
 
   const handleForgotPassword = () => {
-    navigate("/forgot-password");
+    navigate("/forget-password");
   };
 
   const handleRegister = () => {
