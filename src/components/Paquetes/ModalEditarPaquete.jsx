@@ -5,6 +5,7 @@ import '/src/styles/Empleados.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 // Función para convertir dd-mm-yyyy a yyyy-mm-dd
 const formatDateForInput = (dateString) => {
   const [day, month, year] = dateString.split('-');
@@ -198,10 +199,7 @@ const ModalEditarPaquete = ({
       //console.log('Paquete a enviar:', paqueteAEnviar); 
   
       await guardarCambiosPaquete(paqueteAEnviar);
-      toast.success('Cambios guardados con éxito.', {
-        position: 'top-right',
-        autoClose: 500,
-      });
+   
       setModalEditar(false);
     } catch (error) {
       console.error('Error al guardar los cambios del paquete:', error);

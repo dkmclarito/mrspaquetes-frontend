@@ -5,6 +5,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencilAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
 import '/src/styles/Paquetes.css'; // Asegúrate de que los estilos están en este archivo
 
+const formatPeso = (peso) => {
+  if (peso === null || peso === undefined) return 'N/A';
+  
+  // Parse the weight to a float and format it
+  const number = parseFloat(peso.replace(/,/g, ''));
+  return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 const TablaPaquetes = ({ paquetes, onEdit, onDelete }) => {
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
@@ -23,34 +31,40 @@ const TablaPaquetes = ({ paquetes, onEdit, onDelete }) => {
           </tr>
         </thead>
         <tbody>
-          {paquetes.map((paquete) => (
-            <tr key={paquete.id}>
-              <td>{paquete.id}</td>
-              <td>{paquete.tipo_paquete || 'N/A'}</td>
-              <td>{paquete.empaque || 'N/A'}</td>
-              <td>{paquete.peso}</td>
-              <td>{paquete.estado_paquete || 'N/A'}</td>
-              <td>{paquete.fecha_envio}</td>
-              <td>{paquete.fecha_entrega_estimada}</td>
-              <td>{paquete.descripcion_contenido}</td>
-              <td>
-                <div className="button-container">
-                  <Button
-                    className="me-2 btn-icon btn-danger"
-                    onClick={() => onDelete(paquete)}
-                  >
-                    <FontAwesomeIcon icon={faTimes} />
-                  </Button>
-                  <Button
-                    className="btn-icon btn-editar"
-                    onClick={() => onEdit(paquete)}
-                  >
-                    <FontAwesomeIcon icon={faPencilAlt} />
-                  </Button>
-                </div>
-              </td>
+          {paquetes.length > 0 ? (
+            paquetes.map((paquete) => (
+              <tr key={paquete.id}>
+                <td>{paquete.id}</td>
+                <td>{paquete.tipo_paquete || 'N/A'}</td>
+                <td>{paquete.empaque || 'N/A'}</td>
+                <td>{formatPeso(paquete.peso)}</td>
+                <td>{paquete.estado_paquete || 'N/A'}</td>
+                <td>{paquete.fecha_envio}</td>
+                <td>{paquete.fecha_entrega_estimada}</td>
+                <td>{paquete.descripcion_contenido}</td>
+                <td>
+                  <div className="button-container">
+                    <Button
+                      className="me-2 btn-icon btn-danger"
+                      onClick={() => onDelete(paquete)}
+                    >
+                      <FontAwesomeIcon icon={faTimes} />
+                    </Button>
+                    <Button
+                      className="btn-icon btn-editar"
+                      onClick={() => onEdit(paquete)}
+                    >
+                      <FontAwesomeIcon icon={faPencilAlt} />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="9" className="text-center">Sin paquetes.</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </div>

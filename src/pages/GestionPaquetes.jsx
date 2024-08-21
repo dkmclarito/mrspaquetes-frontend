@@ -29,6 +29,7 @@ const GestionPaquetes = () => {
   const [estadosPaquete, setEstadosPaquete] = useState([]);
   const [modalEliminar, setModalEliminar] = useState(false);
   const [paqueteAEliminar, setPaqueteAEliminar] = useState(null);
+  const [estadoSeleccionado, setEstadoSeleccionado] = useState('');
 
   const navigate = useNavigate();
 
@@ -44,48 +45,41 @@ const GestionPaquetes = () => {
         ...config
       });
       setPaquetes(response.data.data || []);
-      setTotalItems(response.data.total || 0);
     } catch (error) {
-      toast.error('Error al cargar los datos de paquetes');
       console.error('Error fetching paquetes:', error);
     }
   };
 
-const fetchData = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const config = { headers: { 'Authorization': `Bearer ${token}` } };
-
+  const fetchData = async () => {
     try {
-      const responseTipos = await axios.get(`${API_URL}/dropdown/get_tipo_paquete`, config);
-      //console.log('Tipos de paquete:', responseTipos.data);
-      setTiposPaquete(responseTipos.data.tipo_paquete || []);
-    } catch (error) {
-      console.error('Error fetching tipos de paquete:', error);
-    }
+      const token = localStorage.getItem('token');
+      const config = { headers: { 'Authorization': `Bearer ${token}` } };
 
-    try {
-      const responseEmpaques = await axios.get(`${API_URL}/dropdown/get_empaques`, config);
-      //console.log('Empaques:', responseEmpaques.data);
-      setEmpaques(responseEmpaques.data.empaques || []);
-    } catch (error) {
-      console.error('Error fetching empaques:', error);
-    }
+      try {
+        const responseTipos = await axios.get(`${API_URL}/dropdown/get_tipo_paquete`, config);
+        setTiposPaquete(responseTipos.data.tipo_paquete || []);
+      } catch (error) {
+        console.error('Error fetching tipos de paquete:', error);
+      }
 
-    try {
-      const responseEstados = await axios.get(`${API_URL}/dropdown/get_estado_paquete`, config);
-      //console.log('Estados de paquete:', responseEstados.data);
-      setEstadosPaquete(responseEstados.data.estado_paquetes || []);
-    } catch (error) {
-      console.error('Error fetching estados de paquete:', error);
-    }
-  } catch (error) {
-    toast.error('Error al cargar datos adicionales');
-    console.error('Error fetching additional data:', error);
-  }
-};
+      try {
+        const responseEmpaques = await axios.get(`${API_URL}/dropdown/get_empaques`, config);
+        setEmpaques(responseEmpaques.data.empaques || []);
+      } catch (error) {
+        console.error('Error fetching empaques:', error);
+      }
 
-  
+      try {
+        const responseEstados = await axios.get(`${API_URL}/dropdown/get_estado_paquete`, config);
+        setEstadosPaquete(responseEstados.data.estado_paquetes || []);
+      } catch (error) {
+        console.error('Error fetching estados de paquete:', error);
+      }
+    } catch (error) {
+      toast.error('Error al cargar datos adicionales');
+      console.error('Error fetching additional data:', error);
+    }
+  };
 
   const handleAddPaquete = () => {
     navigate('/AgregarPaquete');
@@ -110,38 +104,57 @@ const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { 'Authorization': `Bearer ${token}` } };
-  
-      // Verifica la estructura del paquete
-      //console.log('Enviando datos al servidor:', paqueteActualizado);
-  
+
       await axios.put(`${API_URL}/paquete/${paqueteActualizado.id}`, paqueteActualizado, config);
       fetchPaquetes();
       setModalEditar(false);
-      } catch (error) {
+      //toast.success('Paquete actualizado exitosamente');
+    } catch (error) {
       console.error('Error updating paquete:', error.response ? error.response.data : error.message);
       toast.error(`Error al actualizar el paquete: ${error.response ? error.response.data.message : error.message}`);
     }
   };
-  
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset to the first page when searching
+  };
+
+  const handleEstadoChange = (event) => {
+    setEstadoSeleccionado(event.target.value);
+    setCurrentPage(1); // Reset to the first page when changing the estado
+  };
+
+  const formatearFechaBusquedad = (fecha) => {
+    if (!fecha) return '';
+    const date = new Date(fecha);
+    const dia = date.getDate().toString().padStart(2, '0');
+    const mes = (date.getMonth() + 1).toString().padStart(2, '0');
+    const año = date.getFullYear();
+    return `${dia} ${mes} ${año}`;
+  };
+
+  const normalizarBusqueda = (busqueda) => {
+    if (!busqueda) return '';
+    return busqueda.replace(/[-/]/g, ' ').toLowerCase();
   };
 
   const filtrarPaquetes = (paquetes) => {
-    if (!searchTerm) return paquetes;
+    if (!searchTerm && !estadoSeleccionado) return paquetes;
 
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = normalizarBusqueda(searchTerm);
+
     return paquetes.filter(paquete => {
       const tipoPaquete = paquete.tipo_paquete ? paquete.tipo_paquete.toLowerCase() : '';
       const estadoPaquete = paquete.estado_paquete ? paquete.estado_paquete.toLowerCase() : '';
-      const fechaEnvio = paquete.fecha_envio ? paquete.fecha_envio.toLowerCase() : '';
-      const fechaEntrega = paquete.fecha_entrega_estimada ? paquete.fecha_entrega_estimada.toLowerCase() : '';
-      
-      return tipoPaquete.includes(searchLower) ||
+      const fechaEnvio = formatearFechaBusquedad(paquete.fecha_envio).toLowerCase();
+      const fechaEntrega = formatearFechaBusquedad(paquete.fecha_entrega_estimada).toLowerCase();
+
+      return (tipoPaquete.includes(searchLower) ||
         estadoPaquete.includes(searchLower) ||
         fechaEnvio.includes(searchLower) ||
-        fechaEntrega.includes(searchLower);
+        fechaEntrega.includes(searchLower)) &&
+        (!estadoSeleccionado || estadoPaquete === estadoSeleccionado);
     });
   };
 
@@ -168,9 +181,9 @@ const fetchData = async () => {
 
   useEffect(() => {
     const paquetesFiltrados = filtrarPaquetes(paquetes);
-    setPaquetesFiltrados(getPaginatedPaquetes(paquetesFiltrados));
     setTotalItems(paquetesFiltrados.length);
-  }, [searchTerm, paquetes, currentPage]);
+    setPaquetesFiltrados(getPaginatedPaquetes(paquetesFiltrados));
+  }, [searchTerm, paquetes, currentPage, estadoSeleccionado]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -195,9 +208,24 @@ const fetchData = async () => {
                 id="busqueda"
                 value={searchTerm}
                 onChange={handleSearch}
-                placeholder="Buscar por tipo, estado, fecha de envío, fecha de entrega"
+                placeholder="Buscar por tipo, fecha de envío, fecha de entrega"
                 style={{ width: "475px" }}
               />
+              <Label for="estadoPaquete" style={{ marginRight: "10px", marginLeft: "20px" }}>Estado:</Label>
+              <Input
+                type="select"
+                id="estadoPaquete"
+                value={estadoSeleccionado}
+                onChange={handleEstadoChange}
+                style={{ width: "200px" }}
+              >
+                <option value="">Todos los estados</option>
+                {estadosPaquete.map(estado => (
+                  <option key={estado.id} value={estado.nombre.toLowerCase()}>
+                    {estado.nombre}
+                  </option>
+                ))}
+              </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarPaquete" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Paquete
@@ -220,32 +248,30 @@ const fetchData = async () => {
               </CardBody>
             </Card>
             <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
-            <Pagination
-              activePage={currentPage}
-              itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={totalItems}
-              pageRangeDisplayed={5}
-              onChange={handlePageChange}
-              innerClass="pagination"
-              itemClass="page-item"
-              linkClass="page-link"
-              
-            />
+              <Pagination
+                activePage={currentPage}
+                itemsCountPerPage={ITEMS_PER_PAGE}
+                totalItemsCount={totalItems}
+                pageRangeDisplayed={5}
+                onChange={handlePageChange}
+                innerClass="pagination"
+                itemClass="page-item"
+                linkClass="page-link"
+              />
             </Col>
           </Col>
         </Row>
       </Container>
       <ModalEditarPaquete
-  modalEditar={modalEditar}
-  paqueteEditado={paqueteAEditar}
-  setPaqueteEditado={setPaqueteAEditar}
-  guardarCambiosPaquete={actualizarPaquete}
-  setModalEditar={setModalEditar}
-  tiposPaquete={tiposPaquete}
-  empaques={empaques}
-  estadosPaquete={estadosPaquete}
-/>
-
+        modalEditar={modalEditar}
+        paqueteEditado={paqueteAEditar}
+        setPaqueteEditado={setPaqueteAEditar}
+        guardarCambiosPaquete={actualizarPaquete}
+        setModalEditar={setModalEditar}
+        tiposPaquete={tiposPaquete}
+        empaques={empaques}
+        estadosPaquete={estadosPaquete}
+      />
       <ModalConfirmarEliminarPaquete
         isOpen={modalEliminar}
         toggle={() => setModalEliminar(!modalEliminar)}

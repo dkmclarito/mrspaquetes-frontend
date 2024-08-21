@@ -8,12 +8,7 @@ import "../styles/Clientes.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const AgregarCliente = () => {
-    const [isEmailValid, setIsEmailValid] = useState(true);
-    const [passwordVisible, setPasswordVisible] = useState(false);
-    const [emailError, setEmailError] = useState("");
-    const [isPasswordValid, setIsPasswordValid] = useState(true);
-    const [passwordError, setPasswordError] = useState("");
+const AgregarDatos = () => {
     const [nitErrorMessage, setNitErrorMessage] = useState(""); // Estado para el mensaje de error del NIT
     const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
@@ -46,8 +41,9 @@ const AgregarCliente = () => {
     const [errorMensaje, setErrorMensaje] = useState("");
 
     const navigate = useNavigate();
-
+   
     const token = AuthService.getCurrentUser();
+
 
     useEffect(() => {
         const fetchTiposPersonas = async () => {
@@ -116,37 +112,9 @@ const AgregarCliente = () => {
         fetchMunicipios();
     }, [departamento, token]);
 
-    const handleEmailChange = (e) => {
-        const email = e.target.value;
-        // Simple email pattern for validation
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+   
 
-        if (emailPattern.test(email)) {
-            setIsEmailValid(true);
-            setEmailError("");
-        } else {
-            setIsEmailValid(false);
-            setEmailError("El correo electrónico no es válido.");
-        }
-
-        setEmail(email);
-    };
-
-    const handlePasswordChange = (e) => {
-        const password = e.target.value;
-        // Pattern for validating password (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character)
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-        if (passwordPattern.test(password)) {
-            setIsPasswordValid(true);
-            setPasswordError("");
-        } else {
-            setIsPasswordValid(false);
-            setPasswordError("La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula, una minúscula, un número y un carácter especial.");
-        }
-
-        setPassword(password);
-    };
+   
 
 
     const handleDuiChange = (e) => {
@@ -194,7 +162,7 @@ const AgregarCliente = () => {
     };
 
     const generateErrorMessage = (errorData) => {
-        let errorMessage = "Error al agregar el cliente.";
+        let errorMessage = "Error al agregar Datos.";
 
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
@@ -212,7 +180,7 @@ const AgregarCliente = () => {
             } else if (errorKeys.includes("telefono")) {
                 errorMessage = "El teléfono ya está registrado.";
             } else {
-                errorMessage = errorData.message || "Error al agregar el cliente.";
+                errorMessage = errorData.message || "Error al agregar Datos.";
             }
         }
 
@@ -297,7 +265,7 @@ const AgregarCliente = () => {
         e.preventDefault();
 
         // Validaciones de campos
-        if (!isDuiValid || !isTelefonoValid || !isEmailValid || !isPasswordValid || tipoPersona === "") {
+        if (!isDuiValid || !isTelefonoValid || tipoPersona === "") {
             setAlertaError(true);
             setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
@@ -307,8 +275,6 @@ const AgregarCliente = () => {
         const clienteData = {
             nombre: nombres,
             apellido: apellidos,
-            email,
-            password,
             id_tipo_persona: tipoPersona,
             dui,
             telefono,
@@ -321,23 +287,23 @@ const AgregarCliente = () => {
             nit: tipoPersona === "1" ? null : nit,
             nrc: tipoPersona === "1" ? null : nrc,
             giro: tipoPersona === "1" ? null : giro,
-            fecha_registro: fechaRegistro.replace(/-/g, "/"),
+            fecha_registro: new Date(fechaRegistro).toISOString().split('T')[0],
             id_estado: 1
         };
 
         console.log("Datos a enviar:", clienteData);
 
         try {
-            const response = await axios.post(`${API_URL}/admin-registrar-cliente`, clienteData, {
+            const response = await axios.post(`${API_URL}/crear-perfil-cliente`, clienteData, {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 }
             });
 
-            console.log("Cliente registrado:", response.data);
+            console.log("Datos registrado:", response.data);
             setAlertaExito(true);
-            setTimeout(() => navigate('/GestionClientes'), 2000);
+            setTimeout(() => navigate('/home'), 2000);
             resetForm();
             setAlertaError(false);
         } catch (error) {
@@ -450,7 +416,7 @@ const AgregarCliente = () => {
     return (
         <React.Fragment>
             <div className="page-content">
-                <Breadcrumbs title="Clientes" breadcrumbItem="Agregar Cliente" />
+                <Breadcrumbs title="Perfil" breadcrumbItem="Agregar Datos" />
                 <Container fluid>
                     <Row>
                         <Col lg="12">
@@ -496,37 +462,6 @@ const AgregarCliente = () => {
                                             </Col>
                                         </Row>
 
-                                        <Row form>
-                                            <Col md={6}>
-                                                <FormGroup className="form-group-custom">
-                                                    <Label for="email">Correo Electrónico</Label>
-                                                    <Input
-                                                        type="email"
-                                                        name="email"
-                                                        id="email"
-                                                        value={email}
-                                                        onChange={handleEmailChange}
-                                                        invalid={!isEmailValid}
-                                                    />
-                                                    <FormFeedback>{emailError}</FormFeedback>
-                                                </FormGroup>
-                                            </Col>
-                                            <Col md={6}>
-                                            <Label for="password">Contraseña</Label>
-                                                <FormGroup className="password-group">
-                                                    <Input
-                                                        type="password"
-                                                        name="password"
-                                                        id="password"
-                                                        value={password}
-                                                        onChange={handlePasswordChange}
-                                                        invalid={!isPasswordValid}
-                                                    />
-                                                    <FormFeedback>{passwordError}</FormFeedback>
-                                                </FormGroup>
-                                            </Col>
-
-                                        </Row>
                                         <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
@@ -750,7 +685,7 @@ const AgregarCliente = () => {
                                         <Row>
                                             <Col md={12}>
                                                 <Button type="submit" color="primary">Guardar</Button>
-                                                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionClientes'}>
+                                                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/home'}>
                                                     Salir
                                                 </Button>
                                             </Col>
@@ -766,4 +701,4 @@ const AgregarCliente = () => {
     );
 };
 
-export default AgregarCliente;
+export default AgregarDatos;

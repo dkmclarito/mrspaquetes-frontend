@@ -162,3 +162,26 @@
     opacity: 0;
     transition: opacity 300ms;
 }
+.password-group {
+    position: relative;
+}
+
+.password-input-container {
+    position: relative;
+}
+
+.password-input-container input {
+    padding-right: 2.5rem; /* Space for the toggle button */
+}
+
+.password-toggle-button {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem; /* Adjust this value as needed */
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #007bff;
+    font-size: 1.25rem; /* Adjust size as needed */
+}

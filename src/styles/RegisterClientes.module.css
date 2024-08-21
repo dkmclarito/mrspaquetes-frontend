@@ -1,0 +1,117 @@
+/* Improved background with gradient */
+.registerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  padding: 20px;
+}
+
+/* Form styling with a more modern and sleek look */
+.registerCard {
+  background-color: #ffffff;
+  padding: 3rem;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  width: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Slight hover effect to make the form more interactive */
+.registerCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Improved title styling */
+.registerTitle {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Message box styling */
+.message {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+/* Success message styling */
+.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+/* Error message styling */
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Form styling */
+.registerForm {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grouping form fields with better spacing */
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+/* Form label styling with improved readability */
+.formLabel {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Improved form input styling */
+.formInput {
+  padding: 0.875rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover and focus states for form inputs */
+.formInput:hover,
+.formInput:focus {
+  border-color: #6e8efb;
+  box-shadow: 0 0 5px rgba(110, 142, 251, 0.5);
+}
+
+/* Enhanced submit button styling */
+.submitButton {
+  padding: 0.875rem;
+  background-color: #6e8efb;
+  color: white;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  text-align: center;
+}
+
+/* Hover and active states for the submit button */
+.submitButton:hover {
+  background-color: #a777e3;
+}
+
+.submitButton:active {
+  transform: scale(0.98);
+}

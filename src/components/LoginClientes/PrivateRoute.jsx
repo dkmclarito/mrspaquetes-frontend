@@ -7,11 +7,11 @@ const PrivateRoute = ({ allowedRoles }) => {
   const userRole = JSON.parse(localStorage.getItem("role"))?.role;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/cliente-login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(userRole)) {
-    return <Navigate to="/login" replace />; // Redirige a la página de inicio si no tiene el rol adecuado
+    return <Navigate to="/cliente-login" replace />; // Redirige a la página de inicio si no tiene el rol adecuado
   }
 
   return <Outlet />;
