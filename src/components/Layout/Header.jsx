@@ -8,12 +8,15 @@ import { useNavigate } from 'react-router-dom';
 
 const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
   const [user, setUser] = useState({});
+  const [role, setRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user')); // Obtener datos del usuario desde el Local Storage
+    const userRole = JSON.parse(localStorage.getItem('role'))?.role;
     if (userData) {
       setUser(userData);
+      setRole(userRole);
     }
   }, []);
   const handlePerfil = () => {
@@ -38,10 +41,12 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
     <header className={`header-container ${menuCollapsed ? 'collapsed' : ''}`}>
     <div className="header-left"> {/* Contenedor para el nombre del usuario e ícono */}
       {user && <span>{user.name}</span>} {/* Mostrar el nombre del usuario */}
+      {role === 'cliente' && (
       <button className='user' onClick={handlePerfil}>
       <BiUser className="user-icon" />
       Perfil
       </button>
+      )}
     </div>
     <div className="header-right"> {/* Contenedor para logout y dark mode switch */}
     <button className="logout-button" onClick={handleLogout}>
