@@ -9,22 +9,7 @@ const login = async (email, password) => {
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem("role", JSON.stringify({ role: response.data.role }));
-      return response.data.token;
-    }
-    return null;
-  } catch (error) {
-    throw error;
-  }
-};
-
-// Método para iniciar sesión como cliente
-const loginClient = async (email, password) => {
-  try {
-    const response = await axios.post(`${API_URL}/login-cliente`, { email, password });
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("userId", response.data.user.id); // Guarda el userId aquí
       localStorage.setItem("role", JSON.stringify({ role: response.data.role }));
       return response.data.token;
     }
@@ -38,6 +23,7 @@ const loginClient = async (email, password) => {
 const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
+  localStorage.removeItem("userId"); // Asegúrate de remover el userId también
   localStorage.removeItem("role");
   //localStorage.clear(); // Alternativamente, puedes usar esto para limpiar todos los datos del almacenamiento local.
 };
@@ -56,7 +42,6 @@ const getUserDetails = () => {
 // Exporta el servicio de autenticación
 const AuthService = {
   login,
-  loginClient,
   logout,
   getCurrentUser,
   getUserDetails,

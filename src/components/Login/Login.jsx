@@ -13,9 +13,16 @@ const Login = ({ logo }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const token = await AuthService.login(email, password);
-      if (token) {
-        navigate("/home");
+      const response = await AuthService.login(email, password);
+
+      if (response) {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user.status === 1) { // Verifica si el usuario está activo (1 = Activo)
+          navigate("/home");
+        } else {
+          setError("ACCESO DENEGADO, COMUNICATE CON UN ADMINISTRADOR");
+          AuthService.logout();
+        }
       } else {
         setError("Credenciales inválidas");
       }

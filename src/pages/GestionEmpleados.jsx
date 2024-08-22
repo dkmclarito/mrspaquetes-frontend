@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaEmpleados from "../components/Empleados/TablaEmpleados";
 import ModalEditarEmpleado from "../components/Empleados/ModalEditarEmpleado";
@@ -15,6 +15,7 @@ const ITEMS_PER_PAGE = 7;
 
 const GestionEmpleados = () => {
   document.title = "Empleados | Mr. Paquetes";
+  const navigate = useNavigate();
 
   const [empleados, setEmpleados] = useState([]);
   const [cargos, setCargos] = useState([]);
@@ -29,7 +30,65 @@ const GestionEmpleados = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
 
-  // Fetch initial data
+  // Verificar el estado del usuario
+  const checkUserStatus = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const userId = localStorage.getItem("userId");
+      const role = JSON.parse(localStorage.getItem("role"))?.role;
+
+      console.log("Token:", token);
+      console.log("User ID:", userId);
+
+      if (!token || !userId) {
+        console.warn("Token o User ID no disponible, redirigiendo al login.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/auth/get_users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const user = response.data.users.find(u => u.id === parseInt(userId, 10));
+
+      if (user) {
+        if (user.status === 0) {
+          // Si el usuario está inactivo, cerrar la sesión y redirigir al login correspondiente
+          console.warn("Usuario inactivo, cerrando sesión.");
+          AuthService.logout();
+
+          if (role === "admin" || role === "empleado" || role === "basico") {
+            navigate("/login"); // Redirigir al login de empleados/administradores
+          } else {
+            navigate("/clientelogin"); // Redirigir al login de clientes
+          }
+
+          window.location.reload(); // Opcional, para asegurarse de que la sesión se cierre por completo
+        } else {
+          console.log("Usuario activo, puede continuar.");
+        }
+      } else {
+        console.error("Usuario no encontrado en la respuesta.");
+        AuthService.logout();
+        navigate("/login");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      navigate("/login");
+      window.location.reload();
+    }
+  };
+
+  useEffect(() => {
+    checkUserStatus();
+    fetchData();
+  }, []);
+
   const fetchData = async () => {
     try {
       const token = AuthService.getCurrentUser();
@@ -57,31 +116,24 @@ const GestionEmpleados = () => {
     }
   };
 
-  
   const fetchMunicipios = async (idDepartamento) => {
     try {
       const token = AuthService.getCurrentUser();
       const response = await axios.get(`${API_URL}/dropdown/get_municipio/${idDepartamento}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Respuesta de municipios:", response.data); 
-      setMunicipios(response.data.municipio || []); 
+      console.log("Respuesta de municipios:", response.data);
+      setMunicipios(response.data.municipio || []);
     } catch (error) {
       console.error("Error al obtener municipios:", error);
     }
   };
 
- 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
- 
   useEffect(() => {
     if (departamentoSeleccionado) {
       fetchMunicipios(departamentoSeleccionado);
     } else {
-      setMunicipios([]); 
+      setMunicipios([]);
     }
   }, [departamentoSeleccionado]);
 
@@ -236,12 +288,11 @@ const GestionEmpleados = () => {
         municipios={municipios} 
         setDepartamentoSeleccionado={setDepartamentoSeleccionado}
       />
-       <ModalConfirmarEliminar
+      <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarEmpleado={confirmarEliminarEmpleado}
         setConfirmarEliminar={setConfirmarEliminar}
       />
-
     </div>
   );
 };

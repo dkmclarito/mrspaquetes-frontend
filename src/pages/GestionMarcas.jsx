@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import TablaMarcas from "../components/Vehiculos/TablaMarcas";
 import ModalEditarMarca from "../components/Vehiculos/ModalEditarMarca";
@@ -24,7 +24,60 @@ const GestionMarcas = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const navigate = useNavigate();
+
+  const checkUserStatus = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const userId = localStorage.getItem("userId");
+      const role = JSON.parse(localStorage.getItem("role"))?.role;
+
+      if (!token || !userId) {
+        console.warn("Token o User ID no disponible, redirigiendo al login.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/auth/get_users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const user = response.data.users.find(u => u.id === parseInt(userId, 10));
+
+      if (user) {
+        if (user.status === 0) {
+          console.warn("Usuario inactivo, cerrando sesión.");
+          AuthService.logout();
+
+          if (role === "admin" || role === "empleado" || role === "basico") {
+            navigate("/login"); 
+          } else {
+            navigate("/clientelogin"); 
+          }
+
+          window.location.reload(); 
+        } else {
+          console.log("Usuario activo, puede continuar.");
+        }
+      } else {
+        console.error("Usuario no encontrado en la respuesta.");
+        AuthService.logout();
+        navigate("/login");
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      navigate("/login");
+      window.location.reload();
+    }
+  };
+
   useEffect(() => {
+    checkUserStatus();
+
     const fetchData = async () => {
       try {
         const token = AuthService.getCurrentUser();
@@ -46,7 +99,7 @@ const GestionMarcas = () => {
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const eliminarMarca = (idMarca) => {
     setConfirmarEliminar(true);
