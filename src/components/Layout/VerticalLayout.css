@@ -648,3 +648,21 @@ body {
 .dark-mode .dark-mode-select__single-value {
   color: white;
 }
+
+/* TextAreas*/
+.dark-mode textarea {
+  background-color: #444;
+  color: white;
+  border: 1px solid white;
+}
+
+.dark-mode textarea::placeholder {
+  color: #888;
+}
+
+.dark-mode textarea:focus {
+  background-color: #444;
+  color: white; 
+  border-color: #777; 
+  box-shadow: 0 0 5px rgba(119, 119, 119, 0.8); 
+}
