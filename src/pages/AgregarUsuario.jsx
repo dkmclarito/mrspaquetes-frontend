@@ -205,6 +205,7 @@ const AgregarUsuario = () => {
                   <Label for="empleadoId">Empleado</Label>
                   <Select
                     id="empleadoId"
+                    classNamePrefix="dark-mode-select"
                     options={empleadosDropdown.map(empleado => ({ value: empleado.id, label: `${empleado.nombres} ${empleado.apellidos}` }))}
                     onChange={selectedOption => setEmpleadoId(selectedOption ? selectedOption.value : "")}
                     isSearchable
