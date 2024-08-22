@@ -7,7 +7,7 @@ const Logout = () => {
 
   useEffect(() => {
     AuthService.logout();
-    navigate("/cliente-login");
+     navigate("/clientelogin");
   }, [navigate]);
 
   return null;
