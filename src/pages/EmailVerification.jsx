@@ -105,7 +105,7 @@ const EmailVerification = () => {
                 className={`${styles.submitButton} ${styles.reenviarButton}`}
                 disabled={isSending}
               >
-                {isSending ? 'Enviando...' : 'Reenviar código'}
+                {isSending ? 'Enviando...' : 'Reenviar'}
               </Button>
             </div>
             {emailError && <FormFeedback>{emailError}</FormFeedback>}

@@ -14,7 +14,7 @@
   padding: 3rem;
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  max-width: 600px; /* Increased width */
+  max-width: 450px; /* Original width */
   width: 100%;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -61,31 +61,34 @@
 .emailContainer {
   display: flex;
   align-items: center;
+  gap: 10px; /* Add some spacing between input and button */
 }
 
 /* Styling for email input */
 .emailInput {
-  flex-grow: 2; /* Allows the input to take up more space */
+  flex-grow: 1; /* Allows the input to take up remaining space */
   padding: 0.75rem;
   font-size: 1rem;
   border: 1px solid #ddd;
   border-radius: 6px;
   box-sizing: border-box;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  /* Width adjusted to fit the button and container */
+  min-width: 250px; /* Adjust this value based on your button size */
 }
 
 /* Reenviar button styling */
 .reenviarButton {
-  width: 50px; /* Restored width */
-  text-align: center;
-  padding: 8px;
-  font-size: 8px;
+  padding: 0.4rem 0.75rem; /* Adjust padding to make button smaller */
+  font-size: 0.875rem; /* Slightly smaller font size */
   background-color: #283a3c;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
+  text-align: center;
+  width: auto; /* Let width fit the content */
 }
 
 /* Hover and active states for the Reenviar button */
@@ -94,15 +97,14 @@
 }
 
 .reenviarButton:active {
-  transform: scale(0.95);
+  transform: scale(0.90);
 }
 
-/* Grouping form fields with better spacing */
+/* General form field and label styling */
 .formGroup {
   margin-bottom: 1.5rem;
 }
 
-/* Form label styling with improved readability */
 .formLabel {
   margin-bottom: 0.5rem;
   font-size: 1rem;
