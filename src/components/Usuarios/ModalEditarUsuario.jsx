@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, InputGroup, InputGroupText } from "reactstrap";
 import axios from "axios";
-import { BiShow, BiHide } from "react-icons/bi"; // Importamos los íconos de ojo
+import { BiShow, BiHide } from "react-icons/bi";
 import AuthService from "../../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -70,7 +70,6 @@ const ModalEditarUsuario = ({
   };
 
   const handleGuardarCambios = async () => {
-    // Limpiar errores previos
     setErrorEmail(null);
     setErrorPassword(null);
     setErrorEmpleado(null);
@@ -136,14 +135,21 @@ const ModalEditarUsuario = ({
         status: usuarioActualizado.status
       };
 
-      console.log("Datos enviados:", data);
-
       const response = await axios.put(`${API_URL}/auth/update/${usuarioActualizado.id}`, data, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         }
       });
+
+      // Si el estado del usuario cambia a inactivo, cerrar sesión y destruir el token
+      if (usuarioEditado.status === 0) {
+        await axios.post(`${API_URL}/auth/logout/${usuarioEditado.id}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
 
       if (response.status === 200) {
         guardarCambiosUsuario(usuarioActualizado);
@@ -156,7 +162,6 @@ const ModalEditarUsuario = ({
     } catch (error) {
       if (error.response && error.response.status === 422) {
         const errors = error.response.data.errors || error.response.data;
-        console.log("Detalles del error:", errors);
 
         if (errors.email) {
           setErrorEmail("El correo electrónico ya está registrado.");
@@ -293,3 +298,4 @@ ModalEditarUsuario.propTypes = {
 };
 
 export default ModalEditarUsuario;
+
