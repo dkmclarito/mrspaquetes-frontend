@@ -29,7 +29,7 @@ import GestionPaquetes from './pages/GestionPaquetes';
 import AgregarPaquete from './pages/AgregarPaquete';
 import { ToastContainer } from 'react-toastify';
 import { AuthProvider } from './services/AuthContext';
-import EmailVerification from './components/LoginClientes/EmailVerification';
+import EmailVerification from './pages/EmailVerification';
 import ForgetPassword from './components/LoginClientes/ForgetPassword'; // Nuevo: Importación de ForgetPassword
 import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo: Importación de ResetPassword
 

@@ -1,60 +1,55 @@
-/* Improved background with gradient */
+/* Container styling for the registration form */
 .registerContainer {
-  display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background: #071e2a;
   padding: 20px;
+  align-content: space-around;
 }
 
-/* Form styling with a more modern and sleek look */
+/* Form styling to match the client login form */
 .registerCard {
-  background-color: #ffffff;
-  padding: 3rem;
-  border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  max-width: 450px;
-  width: 100%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 500px; /* Adjusted maximum width */
+  margin: 0 auto;
+  padding: 20px; /* Reduced padding */
+  background-color: #f7f7f7;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Slight hover effect to make the form more interactive */
-.registerCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
-
-/* Improved title styling */
+/* Title styling */
 .registerTitle {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #722d10;
   text-align: center;
-  font-weight: bold;
-  letter-spacing: 1px;
+  margin-bottom: 22px;
+  color: #722d10;
+  font-size: 1.5rem;
 }
 
 /* Message box styling */
 .message {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  border-radius: 6px;
+  font-size: 15px;
   text-align: center;
-  font-size: 1rem;
-  font-weight: bold;
+  margin-bottom: 22px;
+  color: #041118;
 }
 
 /* Success message styling */
 .success {
   background-color: #d4edda;
   color: #155724;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
 /* Error message styling */
 .error {
   background-color: #f8d7da;
   color: #721c24;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
 }
 
 /* Form styling */
@@ -63,28 +58,27 @@
   flex-direction: column;
 }
 
-/* Grouping form fields with better spacing */
+/* Grouping form fields with improved spacing */
 .formGroup {
-  margin-bottom: 1.5rem;
+  margin-bottom: 22px;
 }
 
-/* Form label styling with improved readability */
+/* Form label styling */
 .formLabel {
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
+  display: block;
+  font-size: 19px;
+  margin-bottom: 10px;
   color: #041118;
-  font-weight: 500;
 }
 
 /* Improved form input styling */
 .formInput {
-  padding: 0.875rem;
-  font-size: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
   width: 100%;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  padding: 8px; /* Reduced padding */
+  font-size: 15px; /* Adjusted font size */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  color: #041118;
 }
 
 /* Hover and focus states for form inputs */
@@ -94,17 +88,28 @@
   box-shadow: 0 0 5px rgba(110, 142, 251, 0.5);
 }
 
+/* Logo styling */
+.logo {
+  width: 110px;
+  margin-bottom: 12px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Enhanced submit button styling */
 .submitButton {
-  padding: 0.875rem;
+  display: block;
+  width: 100%;
+  padding: 13px;
   background-color: #071e2a;
   color: white;
-  font-size: 1.2rem;
   border: none;
   border-radius: 6px;
+  font-size: 19px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
-  text-align: center;
+  margin-bottom: 10px;
 }
 
 /* Hover and active states for the submit button */
@@ -114,4 +119,22 @@
 
 .submitButton:active {
   transform: scale(0.98);
+}
+
+/* Register button styling to differentiate from submit button */
+.registerButton {
+  background-color: #0f0f0f;
+  display: block;
+  width: 100%;
+  padding: 13px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 19px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.registerButton:hover {
+  background-color: #212322;
 }
