@@ -29,8 +29,8 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
     <header className={`header-container ${menuCollapsed ? 'collapsed' : ''}`}>
     <div className="header-left"> {/* Contenedor para el nombre del usuario e ícono */}
       {user && <span>{user.name}</span>} {/* Mostrar el nombre del usuario */}
-      <button className='perfil-icon' onClick={handlePerfil}>
-      <BiUser className="header-icon" />
+      <button className='user' onClick={handlePerfil}>
+      <BiUser className="user-icon" />
       Perfil
       </button>
     </div>

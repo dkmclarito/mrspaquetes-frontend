@@ -41,6 +41,24 @@
   margin-right: 20px; 
 }
 
+.user{
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 0;
+  margin-left: 10px;
+  margin: 5px;
+  margin-bottom: 10px;
+}
+
+.user-icon{
+  margin:  5px;
+  margin-left: 10px;
+  margin-bottom: 5px;
+}
+
 .user-info {
   display: flex;
   align-items: center;
