@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Form, FormGroup, Label, Input, Button, FormFeedback } from 'reactstrap';
+import { Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
 import styles from '../styles/RegisterClientes.module.css';
 import logo from '../assets/logo.png';
 
@@ -113,7 +113,7 @@ const RegisterCliente = () => {
                     <Form onSubmit={handleSubmit}>
                         <FormGroup className={styles.formGroup}>
                             <Label for="email" className={styles.formLabel}>Correo Electrónico</Label>
-                            <Input
+                            <input
                                 type="email"
                                 name="email"
                                 id="email"
@@ -127,7 +127,7 @@ const RegisterCliente = () => {
                         </FormGroup>
                         <FormGroup className={styles.formGroup}>
                             <Label for="password" className={styles.formLabel}>Contraseña</Label>
-                            <Input
+                            <input
                                 type="password"
                                 name="password"
                                 id="password"
@@ -141,7 +141,7 @@ const RegisterCliente = () => {
                         </FormGroup>
                         <FormGroup className={styles.formGroup}>
                             <Label for="confirmPassword" className={styles.formLabel}>Confirmar Contraseña</Label>
-                            <Input
+                            <input
                                 type="password"
                                 name="confirmPassword"
                                 id="confirmPassword"
@@ -153,13 +153,13 @@ const RegisterCliente = () => {
                             />
                             {confirmPasswordError && <FormFeedback>{confirmPasswordError}</FormFeedback>}
                         </FormGroup>
-                        <Button
+                        <button
                             type="submit"
                             className={styles.submitButton}
                             disabled={!!emailError || !!passwordError || !!confirmPasswordError}
                         >
                             Registrar
-                        </Button>
+                        </button>
                     </Form>
                 )}
             </div>

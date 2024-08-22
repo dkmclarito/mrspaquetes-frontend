@@ -74,7 +74,7 @@
 /* Improved form input styling */
 .formInput {
   width: 100%;
-  padding: 50px; /* Reduced padding */
+  padding: 10px; /* Reduced padding */
   font-size: 15px; /* Adjusted font size */
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -114,7 +114,7 @@
 
 /* Hover and active states for the submit button */
 .submitButton:hover {
-  background-color: #020f16;
+  background-color: #50623E;
 }
 
 .submitButton:active {
