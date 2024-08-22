@@ -11,7 +11,7 @@ body {
 }
 
 .area {
-    background: #1a0033;  /* Dark purple background */
+    background: #071e2a;  /* Dark purple background */
     background: -webkit-linear-gradient(to right, #ff7e5f, #feb47b);  /* Gradient from orange to light orange */
     width: 100%;
     height: 100vh;
