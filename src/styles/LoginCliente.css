@@ -11,7 +11,7 @@ body {
 }
 
 .area {
-    background: #071e2a;  /* Dark purple background */
+    background: #65574E;  /* Dark purple background */
     background: -webkit-linear-gradient(to right, #ff7e5f, #feb47b);  /* Gradient from orange to light orange */
     width: 100%;
     height: 100vh;
@@ -43,11 +43,20 @@ body {
     list-style: none;
     width: 20px;
     height: 20px;
-    background: rgba(255, 255, 255, 0.2);
+    background: #E1DFDB;
     animation: animate 25s linear infinite;
     bottom: -150px;
 }
-
+.colores{
+    color:#D6D2CE;
+    color:#E1DFDB;
+    color:#1A1514;
+    color: #65574E;
+    color: #958D86;
+    color: #33691E;
+    color: #51504b;
+    color: #50623E;
+}
 .circles li:nth-child(1) {
     left: 25%;
     width: 80px;

@@ -4,13 +4,13 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #071e2a;
+  background: #65574E;
   padding: 20px;
 }
 
 /* Form styling with a more modern and sleek look */
 .registerCard {
-  background-color: #ffffff;
+  background-color: #E1DFDB;
   padding: 3rem;
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -29,7 +29,7 @@
 .registerTitle {
   font-size: 2rem;
   margin-bottom: 1.5rem;
-  color: #722d10;
+  color: #1A1514;
   text-align: center;
   font-weight: bold;
   letter-spacing: 1px;
@@ -81,7 +81,7 @@
 .reenviarButton {
   padding: 0.4rem 0.75rem; /* Adjust padding to make button smaller */
   font-size: 0.875rem; /* Slightly smaller font size */
-  background-color: #283a3c;
+  background-color: #33691E;
   color: white;
   border: none;
   border-radius: 6px;
@@ -93,7 +93,7 @@
 
 /* Hover and active states for the Reenviar button */
 .reenviarButton:hover {
-  background-color: #4c5c60;
+  background-color: #50623E;
 }
 
 .reenviarButton:active {
@@ -108,7 +108,7 @@
 .formLabel {
   margin-bottom: 0.5rem;
   font-size: 1rem;
-  color: #041118;
+  color: #1A1514;
   font-weight: 500;
 }
 
@@ -126,14 +126,14 @@
 /* Hover and focus states for form inputs */
 .formInput:hover,
 .formInput:focus {
-  border-color: #6e8efb;
-  box-shadow: 0 0 5px rgba(110, 142, 251, 0.5);
+  border-color: #1A1514;
+  box-shadow: 0 0 5px #1A1514;
 }
 
 /* Enhanced submit button styling */
 .submitButton {
   padding: 0.875rem;
-  background-color: #283a3c;
+  background-color: #33691E;
   color: white;
   font-size: 1.2rem;
   border: none;
@@ -146,7 +146,7 @@
 
 /* Hover and active states for the submit button */
 .submitButton:hover {
-  background-color: #4c5c60;
+  background-color: #50623E;
 }
 
 .submitButton:active {
