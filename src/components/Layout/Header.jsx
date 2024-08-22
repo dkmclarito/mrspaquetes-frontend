@@ -21,8 +21,17 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
   };
 
   const handleLogout = () => {
-    AuthService.logout(); // Utiliza AuthService para manejar el logout
-    window.location.reload(); // Recarga la página o redirige al usuario al inicio de sesión
+    const role = JSON.parse(localStorage.getItem("role"))?.role;
+  
+    AuthService.logout();
+  
+    if (role === "admin" || role === "empleado" || role === "basico") {
+      navigate("/login");
+    } else {
+      navigate("/clientelogin");
+    }
+  
+    window.location.reload();
   };
 
   return (
