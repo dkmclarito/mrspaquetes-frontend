@@ -561,16 +561,16 @@ body {
 /*Botonesss*/
 
 .dark-mode .btn-primary{
-  background-color: rgba(255, 255, 255, 0.22);
+  background-color: rgba(22, 36, 190, 0.546);
   /*color: rgb(170, 170, 170);*/
-  color: rgb(197, 212, 221);
-  border-color: gray;
+  color: rgb(255, 255, 255);
+  border-color: rgb(46, 99, 204);
   border-width: 1px;
   border-style: solid;
 }
 
 .dark-mode .btn-primary:hover{
-  background-color: rgb(128, 128, 128);
+  background-color: rgba(22, 36, 190, 0.318);
   color: rgba(255, 255, 255, 0.725);
 }
 
@@ -599,6 +599,18 @@ body {
   background-color: rgba(255, 0, 0, 0.197);
   color: red;
 }
+
+.dark-mode .btn-custom-red {
+  background-color: darkred;
+  color: white;
+  border-color: red;
+}
+
+.dark-mode .btn-custom-red:hover {
+  background-color: darkred;
+  border-color: darkred;
+}
+
 
 .dark-mode .vertical-nav{
   background-color: #041118;
@@ -668,7 +680,7 @@ body {
 }
 
 /*fecha de registro  de agregar cliente*/
-.dark-mode-input-date {
+.dark-mode .dark-mode-input-date {
   background-color: #444;
   color: white;
   border: 1px solid white;
@@ -677,22 +689,25 @@ body {
   font-size: 16px;
 }
 
-.dark-mode-input-date::-webkit-datetime-edit {
+.dark-mode .dark-mode-input-date::-webkit-datetime-edit {
   color: white;
 }
 
-.dark-mode-input-date::-webkit-datetime-edit-fields-wrapper {
+.dark-mode .dark-mode-input-date::-webkit-datetime-edit-fields-wrapper {
   color: white;
 }
 
-.dark-mode-input-date::-webkit-datetime-edit-month-field,
-.dark-mode-input-date::-webkit-datetime-edit-day-field,
-.dark-mode-input-date::-webkit-datetime-edit-year-field {
+.dark-mode .dark-mode-input-date::-webkit-datetime-edit-month-field,
+.dark-mode .dark-mode-input-date::-webkit-datetime-edit-day-field,
+.dark-mode .dark-mode-input-date::-webkit-datetime-edit-year-field {
   color: white;
 }
 
-.dark-mode-input-date::-webkit-inner-spin-button,
-.dark-mode-input-date::-webkit-calendar-picker-indicator {
+.dark-mode .dark-mode-input-date::-webkit-inner-spin-button,
+.dark-mode .dark-mode-input-date::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
+.dark-mode table .estatus-darkmode{
+  background-color: #555;
+}

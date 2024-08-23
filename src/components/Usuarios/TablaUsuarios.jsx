@@ -8,7 +8,7 @@ import "/src/styles/usuarios.css";
 const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
   const renderStatus = (status) => {
     return (
-      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span className="estatus-darkmode" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span
           style={{
             width: '10px',

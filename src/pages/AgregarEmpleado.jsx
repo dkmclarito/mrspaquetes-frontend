@@ -631,7 +631,7 @@ const AgregarEmpleado = () => {
                             <Button color="primary" type="submit">
                             Registrar
                             </Button>
-                            <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionEmpleados'}>
+                            <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionEmpleados'}>
                             Salir
                             </Button>
                             </Col>

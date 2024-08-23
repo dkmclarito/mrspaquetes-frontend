@@ -215,7 +215,7 @@ const AgregarUsuario = () => {
               </Col>
             </Row>
             <Button type="submit" color="primary">Agregar Usuario</Button>
-            <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionUsuarios'}>
+            <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionUsuarios'}>
               Salir
             </Button>
           </Form>

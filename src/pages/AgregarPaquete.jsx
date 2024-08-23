@@ -394,7 +394,7 @@ const AgregarPaquete = () => {
                 <Button color="primary" type="submit">
                   Registrar
                 </Button>
-                <Button color="secondary" className="ms-2" onClick={() => navigate('/GestionPaquetes')}>
+                <Button className="ms-2 btn-custom-red" onClick={() => navigate('/GestionPaquetes')}>
                   Salir
                 </Button>
               </Col>

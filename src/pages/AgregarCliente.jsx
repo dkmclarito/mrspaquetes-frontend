@@ -751,7 +751,7 @@ const AgregarCliente = () => {
                                         <Row>
                                             <Col md={12}>
                                                 <Button type="submit" color="primary">Guardar</Button>
-                                                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionClientes'}>
+                                                <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionClientes'}>
                                                     Salir
                                                 </Button>
                                             </Col>
