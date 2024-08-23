@@ -9,8 +9,91 @@ import Breadcrumbs from "../components/RolesPermisos/Common/Breadcrumbs";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Mapeo de permisos a español
 const permisosEspañol = {
-    //... mapeo de permisos en español ...
+    "auth-view_user": "Ver usuario",
+    "auth-get_user_by_id": "Obtener usuario por ID",
+    "auth-get_users": "Obtener usuarios",
+    "auth-assign_user_role": "Asignar rol a usuario",
+    "auth-assign_permissions_to_role": "Asignar permisos a rol",
+    "auth-update": "Actualizar autenticación",
+    "auth-store": "Almacenar autenticación",
+    "auth-destroy": "Eliminar autenticación",
+    "roles-view": "Ver roles",
+    "roles-create": "Crear roles",
+    "roles-update": "Actualizar roles",
+    "roles-assign_permissions": "Asignar permisos a roles",
+    "roles-destroy": "Eliminar roles",
+    "permission-view": "Ver permisos",
+    "permission-create": "Crear permisos",
+    "permission-update": "Actualizar permisos",
+    "permission-destroy": "Eliminar permisos",
+    "tipoPersona-view": "Ver tipo de persona",
+    "tipoPersona-create": "Crear tipo de persona",
+    "tipoPersona-update": "Actualizar tipo de persona",
+    "tipoPersona-destroy": "Eliminar tipo de persona",
+    "clientes-view": "Ver clientes",
+    "clientes-create": "Crear clientes",
+    "clientes-update": "Actualizar clientes",
+    "clientes-destroy": "Eliminar clientes",
+    "modeloVehiculo-view": "Ver modelo de vehículo",
+    "modeloVehiculo-show": "Mostrar modelo de vehículo",
+    "modeloVehiculo-create": "Crear modelo de vehículo",
+    "modeloVehiculo-update": "Actualizar modelo de vehículo",
+    "modeloVehiculo-destroy": "Eliminar modelo de vehículo",
+    "marcaVehiculo-view": "Ver marca de vehículo",
+    "marcaVehiculo-show": "Mostrar marca de vehículo",
+    "marcaVehiculo-create": "Crear marca de vehículo",
+    "marcaVehiculo-update": "Actualizar marca de vehículo",
+    "marcaVehiculo-destroy": "Eliminar marca de vehículo",
+    "vehiculo-view": "Ver vehículo",
+    "vehiculo-show": "Mostrar vehículo",
+    "vehiculo-create": "Crear vehículo",
+    "vehiculo-update": "Actualizar vehículo",
+    "vehiculo-destroy": "Eliminar vehículo",
+    "empleados-view": "Ver empleados",
+    "empleados-show": "Mostrar empleados",
+    "empleados-create": "Crear empleados",
+    "empleados-update": "Actualizar empleados",
+    "empleados-destroy": "Eliminar empleados",
+    "rutas-view": "Ver rutas",
+    "rutas-show": "Mostrar rutas",
+    "rutas-create": "Crear rutas",
+    "rutas-update": "Actualizar rutas",
+    "rutas-destroy": "Eliminar rutas",
+    "direcciones-view": "Ver direcciones",
+    "direcciones-show": "Mostrar direcciones",
+    "direcciones-create": "Crear direcciones",
+    "direcciones-update": "Actualizar direcciones",
+    "direcciones-destroy": "Eliminar direcciones",
+    "destinos-view": "Ver destinos",
+    "destinos-show": "Mostrar destinos",
+    "destinos-create": "Crear destinos",
+    "destinos-update": "Actualizar destinos",
+    "destinos-destroy": "Eliminar destinos",
+    "bodegas-view": "Ver bodegas",
+    "bodegas-show": "Mostrar bodegas",
+    "bodegas-create": "Crear bodegas",
+    "bodegas-update": "Actualizar bodegas",
+    "bodegas-destroy": "Eliminar bodegas",
+    "asignacionrutas-view": "Ver asignación de rutas",
+    "asignacionrutas-show": "Mostrar asignación de rutas",
+    "asignacionrutas-create": "Crear asignación de rutas",
+    "asignacionrutas-update": "Actualizar asignación de rutas",
+    "asignacionrutas-destroy": "Eliminar asignación de rutas",
+    "paquete-view": "Ver paquete",
+    "paquete-show": "Mostrar paquete",
+    "paquete-create": "Crear paquete",
+    "paquete-update": "Actualizar paquete",
+    "paquete-destroy": "Eliminar paquete",
+    "paquete-restore": "Restaurar paquete",
+    "historialpaquetes-view": "Ver historial de paquetes",
+    "historialpaquete-show": "Mostrar historial de paquete",
+    "incidencias-view": "Ver incidencias",
+    "incidencias-create": "Crear incidencias",
+    "incidencias-show": "Mostrar incidencias",
+    "incidencias-update": "Actualizar incidencias",
+    "incidencias-destroy": "Eliminar incidencias"
 };
 
 const AgregarRolesPermisos = () => {
@@ -21,58 +104,7 @@ const AgregarRolesPermisos = () => {
     const [permisosAsignados, setPermisosAsignados] = useState([]);
     const [roleName, setRoleName] = useState(state?.name || ''); 
 
-    const checkUserStatus = async () => {
-        try {
-            const token = AuthService.getCurrentUser();
-            const userId = localStorage.getItem("userId");
-            const role = JSON.parse(localStorage.getItem("role"))?.role;
-
-            if (!token || !userId) {
-                console.warn("Token o User ID no disponible, redirigiendo al login.");
-                navigate("/login");
-                return;
-            }
-
-            const response = await axios.get(`${API_URL}/auth/get_users`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const user = response.data.users.find(u => u.id === parseInt(userId, 10));
-
-            if (user) {
-                if (user.status === 0) {
-                    console.warn("Usuario inactivo, cerrando sesión.");
-                    AuthService.logout();
-
-                    if (role === "admin" || role === "empleado" || role === "basico") {
-                        navigate("/login");
-                    } else {
-                        navigate("/clientelogin");
-                    }
-
-                    window.location.reload();
-                } else {
-                    console.log("Usuario activo, puede continuar.");
-                }
-            } else {
-                console.error("Usuario no encontrado en la respuesta.");
-                AuthService.logout();
-                navigate("/login");
-                window.location.reload();
-            }
-        } catch (error) {
-            console.error("Error al verificar el estado del usuario:", error);
-            AuthService.logout();
-            navigate("/login");
-            window.location.reload();
-        }
-    };
-
     useEffect(() => {
-        checkUserStatus();
-
         const fetchPermisosAsignados = async () => {
             try {
                 const token = AuthService.getCurrentUser(); 
@@ -94,7 +126,7 @@ const AgregarRolesPermisos = () => {
         };
 
         fetchPermisosAsignados();
-    }, [id, navigate]);
+    }, [id]);
 
     const handlePermisoChange = (permisoId, isChecked) => {
         setPermisosAsignados(current => {

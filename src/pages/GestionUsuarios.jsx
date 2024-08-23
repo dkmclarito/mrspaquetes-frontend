@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import TablaUsuarios from "../components/Usuarios/TablaUsuarios";
 import ModalEditarUsuario from "../components/Usuarios/ModalEditarUsuario";
@@ -16,7 +16,6 @@ const ITEMS_PER_PAGE = 5;
 
 const GestionUsuarios = () => {
   document.title = "Usuarios | Mr. Paquetes";
-  const navigate = useNavigate();
 
   const [usuarios, setUsuarios] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -30,61 +29,6 @@ const GestionUsuarios = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    const checkUserStatus = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
-        const userId = localStorage.getItem("userId");
-        const role = JSON.parse(localStorage.getItem("role"))?.role;
-
-        console.log("Token:", token);
-        console.log("User ID:", userId);
-
-        if (!token || !userId) {
-          console.warn("Token o User ID no disponible, redirigiendo al login.");
-          navigate("/login");
-          return;
-        }
-
-        const response = await axios.get(`${API_URL}/auth/get_users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const user = response.data.users.find(u => u.id === parseInt(userId, 10));
-
-        if (user) {
-          if (user.status === 0) {
-            // Si el usuario está inactivo, cerrar la sesión y redirigir al login correspondiente
-            console.warn("Usuario inactivo, cerrando sesión.");
-            AuthService.logout();
-
-            if (role === "admin" || role === "empleado" || role === "basico") {
-              navigate("/login"); // Redirigir al login de empleados/administradores
-            } else {
-              navigate("/clientelogin"); // Redirigir al login de clientes
-            }
-
-            window.location.reload(); // Opcional, para asegurarse de que la sesión se cierre por completo
-          } else {
-            console.log("Usuario activo, puede continuar.");
-          }
-        } else {
-          console.error("Usuario no encontrado en la respuesta.");
-          AuthService.logout();
-          navigate("/login");
-          window.location.reload();
-        }
-      } catch (error) {
-        console.error("Error al verificar el estado del usuario:", error);
-        AuthService.logout();
-        navigate("/login");
-        window.location.reload();
-      }
-    };
-
-    checkUserStatus();
-
     const fetchData = async () => {
       try {
         const token = AuthService.getCurrentUser();
@@ -124,7 +68,7 @@ const GestionUsuarios = () => {
     };
 
     fetchData();
-  }, [navigate]);
+  }, []);
 
   const eliminarUsuario = (idUsuario) => {
     setConfirmarEliminar(true);
@@ -345,4 +289,3 @@ const GestionUsuarios = () => {
 };
 
 export default GestionUsuarios;
-

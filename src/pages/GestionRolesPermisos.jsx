@@ -20,63 +20,12 @@ const GestionRolesPermisos = () => {
     const [roles, setRoles] = useState([]);
     const navigate = useNavigate();
 
-    const checkUserStatus = async () => {
-        try {
-            const token = AuthService.getCurrentUser();
-            const userId = localStorage.getItem("userId");
-            const role = JSON.parse(localStorage.getItem("role"))?.role;
-
-            if (!token || !userId) {
-                console.warn("Token o User ID no disponible, redirigiendo al login.");
-                navigate("/login");
-                return;
-            }
-
-            const response = await axios.get(`${API_URL}/auth/get_users`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            const user = response.data.users.find(u => u.id === parseInt(userId, 10));
-
-            if (user) {
-                if (user.status === 0) {
-                    console.warn("Usuario inactivo, cerrando sesión.");
-                    AuthService.logout();
-
-                    if (role === "admin" || role === "empleado" || role === "basico") {
-                        navigate("/login");
-                    } else {
-                        navigate("/clientelogin");
-                    }
-
-                    window.location.reload();
-                } else {
-                    console.log("Usuario activo, puede continuar.");
-                }
-            } else {
-                console.error("Usuario no encontrado en la respuesta.");
-                AuthService.logout();
-                navigate("/login");
-                window.location.reload();
-            }
-        } catch (error) {
-            console.error("Error al verificar el estado del usuario:", error);
-            AuthService.logout();
-            navigate("/login");
-            window.location.reload();
-        }
-    };
-
     useEffect(() => {
-        checkUserStatus();
-
         const fetchRoles = async () => {
             const token = AuthService.getCurrentUser(); 
             if (!token) {
                 console.error("No se encontró token de autorización.");
-                return;
+                return;  // Sale de la función si no hay token
             }
             
             const response = await axios.get(`${API_URL}/roles`, {
@@ -88,7 +37,7 @@ const GestionRolesPermisos = () => {
             if (response.data && Array.isArray(response.data)) {
                 const transformedRoles = response.data.map(role => ({
                     ...role,
-                    alias: roleAliases[role.name] || role.name 
+                    alias: roleAliases[role.name] || role.name  // Usa el alias si está disponible, de lo contrario usa el nombre original
                 }));
                 setRoles(transformedRoles);
             } else {
@@ -97,10 +46,10 @@ const GestionRolesPermisos = () => {
         };
 
         fetchRoles();
-    }, [navigate]);
+    }, []);
 
     const handleAssignPermissions = (id, name) => {
-        navigate(`/AgregarRolesPermisos/${id}`, { state: { name } });
+        navigate(`/AgregarRolesPermisos/${id}`, { state: { name } });  // Navega a la página para asignar permisos con el nombre del rol
     };
 
     return (
@@ -120,4 +69,3 @@ const GestionRolesPermisos = () => {
 };
 
 export default GestionRolesPermisos;
-
