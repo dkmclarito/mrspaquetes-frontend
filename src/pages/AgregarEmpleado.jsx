@@ -215,7 +215,7 @@ const AgregarEmpleado = () => {
   };
   useEffect(() => {
     const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    const formattedDate = today.toISOString().split('T')[0]; 
     setMaxDate(formattedDate);
   }, []);
 
@@ -435,7 +435,6 @@ const AgregarEmpleado = () => {
       setDireccion("");
       setDepartamento("");
       setMunicipio("");
-  
     } catch (error) {
       toast.error(`Error al agregar el empleado: ${error.message}`, {
         position: "bottom-right",

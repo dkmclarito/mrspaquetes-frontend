@@ -57,31 +57,27 @@ const GestionEmpleados = () => {
     }
   };
 
-  
   const fetchMunicipios = async (idDepartamento) => {
     try {
       const token = AuthService.getCurrentUser();
       const response = await axios.get(`${API_URL}/dropdown/get_municipio/${idDepartamento}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Respuesta de municipios:", response.data); 
-      setMunicipios(response.data.municipio || []); 
+      setMunicipios(response.data.municipio || []);
     } catch (error) {
       console.error("Error al obtener municipios:", error);
     }
   };
 
- 
   useEffect(() => {
     fetchData();
   }, []);
 
- 
   useEffect(() => {
     if (departamentoSeleccionado) {
       fetchMunicipios(departamentoSeleccionado);
     } else {
-      setMunicipios([]); 
+      setMunicipios([]);
     }
   }, [departamentoSeleccionado]);
 
@@ -103,7 +99,6 @@ const GestionEmpleados = () => {
           }
         }
       );
-      console.log('Empleado actualizado:', response.data);
       fetchData();
       setModalEditar(false);
     } catch (error) {
@@ -162,6 +157,11 @@ const GestionEmpleados = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleSearchChange = (e) => {
+    setBusqueda(e.target.value);
+    setCurrentPage(1); // Resetear la página actual a 1 al cambiar la búsqueda
+  };
+
   const empleadosFiltrados = filtrarEmpleados(empleados);
   const paginatedEmpleados = empleadosFiltrados.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -180,9 +180,9 @@ const GestionEmpleados = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre, apellido, cargo o estado"
-                style={{ width: "300px" }}
+                onChange={handleSearchChange}
+                placeholder="Buscar por nombre, apellido o cargo"
+                style={{ width: "400px" }}
               />
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarEmpleado" className="btn btn-primary custom-button">
@@ -236,12 +236,11 @@ const GestionEmpleados = () => {
         municipios={municipios} 
         setDepartamentoSeleccionado={setDepartamentoSeleccionado}
       />
-       <ModalConfirmarEliminar
+      <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarEmpleado={confirmarEliminarEmpleado}
         setConfirmarEliminar={setConfirmarEliminar}
       />
-
     </div>
   );
 };
