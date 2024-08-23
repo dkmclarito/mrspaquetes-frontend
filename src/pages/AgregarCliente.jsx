@@ -600,6 +600,7 @@ const AgregarCliente = () => {
                                                         required
                                                         min={minDate} // Set min date
                                                         max={maxDate}
+                                                        className="dark-mode-input-date"
                                                     />
                                                 </FormGroup>
                                             </Col>

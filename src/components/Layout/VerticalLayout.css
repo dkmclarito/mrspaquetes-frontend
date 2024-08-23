@@ -666,3 +666,33 @@ body {
   border-color: #777; 
   box-shadow: 0 0 5px rgba(119, 119, 119, 0.8); 
 }
+
+/*fecha de registro  de agregar cliente*/
+.dark-mode-input-date {
+  background-color: #444;
+  color: white;
+  border: 1px solid white;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.dark-mode-input-date::-webkit-datetime-edit {
+  color: white;
+}
+
+.dark-mode-input-date::-webkit-datetime-edit-fields-wrapper {
+  color: white;
+}
+
+.dark-mode-input-date::-webkit-datetime-edit-month-field,
+.dark-mode-input-date::-webkit-datetime-edit-day-field,
+.dark-mode-input-date::-webkit-datetime-edit-year-field {
+  color: white;
+}
+
+.dark-mode-input-date::-webkit-inner-spin-button,
+.dark-mode-input-date::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
