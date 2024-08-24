@@ -103,12 +103,56 @@ const VerticalLayout = () => {
                     {!menuCollapsed && <span>Clientes</span>}
                   </NavLink>
                 </li>
+
+                {/* Submenu for Ordenes */}
                 <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === 'ordenes' || selectedSubMenuItem ? 'active' : ''}`} 
+                    onClick={() => handleSubMenuClick('ordenes')}
+                  >
+                    <BiShoppingBag className="nav-icon" />
+                    {!menuCollapsed && <span>Ordenes</span>}
+                    {activeSubMenu === 'ordenes' ? <BiDirections className="sub-menu-icon" /> : <BiPlus className="sub-menu-icon" />}
+                  </div>
+                  <ul className={`sub-menu ${activeSubMenu === 'ordenes' ? 'active' : ''}`}>
+                    <li>
+                      <NavLink 
+                        to="/GestionPaquetes" 
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                        onClick={() => handleSubMenuItemClick('Ordenes')}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Ordenes
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink 
+                        to="/GestionPaquetes" 
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                        onClick={() => handleSubMenuItemClick('Paquetes')}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Paquetes
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink 
+                        to="/GestionVehiculos" 
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                        onClick={() => handleSubMenuItemClick('Vehículos')}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Vehículos
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+                {/* <li className="nav-item">
                   <NavLink to="/GestionPaquetes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiPackage className="nav-icon" />
                     {!menuCollapsed && <span>Paquetes</span>}
                   </NavLink>
-                </li>
+                </li> */}
                 <li className="nav-item">
                   <NavLink to="/rutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiDirections className="nav-icon" />
@@ -166,12 +210,12 @@ const VerticalLayout = () => {
                     {!menuCollapsed && <span>Roles y permisos</span>}
                   </NavLink>
                 </li>
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <NavLink to="/historial" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'} onClick={handleMenuItemClick}>
                     <BiShoppingBag className="nav-icon" />
                     {!menuCollapsed && <span>Historial</span>}
                   </NavLink>
-                </li>
+                </li> */}
               </>
             )}
 
