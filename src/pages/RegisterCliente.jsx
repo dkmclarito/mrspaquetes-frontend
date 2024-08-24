@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Form, FormGroup, Label, Input, FormFeedback } from 'reactstrap';
+import { Form, FormGroup, Label, Input, Button, FormFeedback } from 'reactstrap';
 import styles from '../styles/RegisterClientes.module.css';
 import logo from '../assets/logo.png';
 
@@ -18,61 +18,53 @@ const RegisterCliente = () => {
     const [isRegistered, setIsRegistered] = useState(false);
     const navigate = useNavigate();
 
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
     const validatePassword = (password) => {
-        const minLength = 8;
-        const hasUpperCase = /[A-Z]/.test(password);
-        const hasLowerCase = /[a-z]/.test(password);
-        const hasNumber = /\d/.test(password);
-        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-        return password.length >= minLength && hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+        const minLength = 6;
+        const maxLength = 50;
+        return password.length >= minLength &&
+               password.length <= maxLength &&
+               /[A-Z]/.test(password) &&
+               /[a-z]/.test(password) &&
+               /\d/.test(password) &&
+               /[!@#$%^&*(),.?":{}|<>]/.test(password);
     };
 
     const handleEmailChange = (e) => {
         const value = e.target.value;
         setEmail(value);
-        if (!validateEmail(value)) {
-            setEmailError('Formato de correo electrónico no válido.');
-        } else {
-            setEmailError('');
-        }
+        setEmailError(validateEmail(value) ? '' : 'Formato de correo electrónico no válido.');
     };
 
     const handlePasswordChange = (e) => {
         const value = e.target.value;
         setPassword(value);
-        if (!validatePassword(value)) {
-            setPasswordError('La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un número y un carácter especial.');
-        } else {
-            setPasswordError('');
-        }
+        setPasswordError(validatePassword(value) ? '' : 'La contraseña debe tener entre 6 y 50 caracteres, incluyendo al menos una letra mayúscula, una letra minúscula, un número y un carácter especial.');
     };
 
     const handleConfirmPasswordChange = (e) => {
         const value = e.target.value;
         setConfirmPassword(value);
-        if (value !== password) {
-            setConfirmPasswordError('Las contraseñas no coinciden.');
-        } else {
-            setConfirmPasswordError('');
-        }
+        setConfirmPasswordError(value === password ? '' : 'Las contraseñas no coinciden.');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage('');
-
+    
         if (emailError || passwordError || confirmPasswordError) {
             return; // Prevenir el envío del formulario si hay errores de validación
         }
-
+    
+        if (password !== confirmPassword) {
+            alert('Las contraseñas no coinciden.');
+            return;
+        }
+    
         try {
             const response = await axios.post(`${API_URL}/register`, { email, password });
-
+    
             if (response.status === 200) {
                 setIsRegistered(true);
                 setMessage('¡Registro exitoso! Por favor, revisa tu correo electrónico para obtener el código de verificación.');
@@ -80,22 +72,40 @@ const RegisterCliente = () => {
                 // Redirigir después de un retraso para mostrar el mensaje
                 setTimeout(() => navigate('/email-verification'), 3000);
             } else {
-                setMessage(`Fallo en el registro: ${response.data.message || 'Error'}`);
+                setMessage('Fallo en el registro: Error inesperado');
             }
         } catch (error) {
-            if (error.response && error.response.status === 422) {
-                // Manejar errores de validación
-                const errors = error.response.data.errors || {};
-                let errorMessage = 'Falló la validación: ';
-                for (const [field, messages] of Object.entries(errors)) {
-                    errorMessage += `${field}: ${messages.join(', ')}; `;
+            if (error.response) {
+                const status = error.response.status;
+                const errorData = error.response.data;
+    
+                if (status === 422) {
+                    // Manejar errores de validación
+                    const errors = errorData.error || {};
+                    let errorMessage = 'Falló la validación: ';
+                    if (errors.email) {
+                        setEmailError(errors.email.join(', '));
+                    }
+                    if (errors.password) {
+                        setPasswordError(errors.password.join(', '));
+                    }
+                    if (errorMessage.endsWith(': ')) {
+                        errorMessage = 'Falló la validación: ' + Object.values(errors).flat().join(', ');
+                    }
+                    setMessage(errorMessage || 'Error inesperado');
+                } else if (status === 409) {
+                    // Manejar conflicto, como correo electrónico ya registrado
+                    setEmailError('El correo electrónico ya está registrado.');
+                    setMessage('Fallo en el registro: El correo electrónico ya está registrado.');
+                } else {
+                    setMessage(`Fallo en el registro: ${errorData.message || 'Error inesperado'}`);
                 }
-                setMessage(errorMessage || `Fallo en el registro: ${error.response.data.message || 'Error'}`);
             } else {
-                setMessage(`Fallo en el registro: ${error.response?.data?.message || 'Error'}`);
+                setMessage('Error de red. Por favor, intenta de nuevo.');
             }
         }
     };
+    
 
     return (
         <div className={styles.registerContainer}>
@@ -113,7 +123,7 @@ const RegisterCliente = () => {
                     <Form onSubmit={handleSubmit}>
                         <FormGroup className={styles.formGroup}>
                             <Label for="email" className={styles.formLabel}>Correo Electrónico</Label>
-                            <input
+                            <Input
                                 type="email"
                                 name="email"
                                 id="email"
@@ -127,7 +137,7 @@ const RegisterCliente = () => {
                         </FormGroup>
                         <FormGroup className={styles.formGroup}>
                             <Label for="password" className={styles.formLabel}>Contraseña</Label>
-                            <input
+                            <Input
                                 type="password"
                                 name="password"
                                 id="password"
@@ -141,7 +151,7 @@ const RegisterCliente = () => {
                         </FormGroup>
                         <FormGroup className={styles.formGroup}>
                             <Label for="confirmPassword" className={styles.formLabel}>Confirmar Contraseña</Label>
-                            <input
+                            <Input
                                 type="password"
                                 name="confirmPassword"
                                 id="confirmPassword"
@@ -153,13 +163,13 @@ const RegisterCliente = () => {
                             />
                             {confirmPasswordError && <FormFeedback>{confirmPasswordError}</FormFeedback>}
                         </FormGroup>
-                        <button
+                        <Button
                             type="submit"
                             className={styles.submitButton}
                             disabled={!!emailError || !!passwordError || !!confirmPasswordError}
                         >
                             Registrar
-                        </button>
+                        </Button>
                     </Form>
                 )}
             </div>

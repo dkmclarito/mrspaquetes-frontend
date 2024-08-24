@@ -9,6 +9,7 @@ import "../styles/Clientes.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AgregarDatos = () => {
+    
     const [nitErrorMessage, setNitErrorMessage] = useState(""); // Estado para el mensaje de error del NIT
     const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
@@ -41,9 +42,8 @@ const AgregarDatos = () => {
     const [errorMensaje, setErrorMensaje] = useState("");
 
     const navigate = useNavigate();
-   
-    const token = AuthService.getCurrentUser();
 
+    const token = AuthService.getCurrentUser();
 
     useEffect(() => {
         const fetchTiposPersonas = async () => {
@@ -112,11 +112,6 @@ const AgregarDatos = () => {
         fetchMunicipios();
     }, [departamento, token]);
 
-   
-
-   
-
-
     const handleDuiChange = (e) => {
         let value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
 
@@ -162,7 +157,7 @@ const AgregarDatos = () => {
     };
 
     const generateErrorMessage = (errorData) => {
-        let errorMessage = "Error al agregar Datos.";
+        let errorMessage = "Error al agregar el cliente.";
 
         if (errorData.errors) {
             const errorKeys = Object.keys(errorData.errors);
@@ -180,7 +175,7 @@ const AgregarDatos = () => {
             } else if (errorKeys.includes("telefono")) {
                 errorMessage = "El teléfono ya está registrado.";
             } else {
-                errorMessage = errorData.message || "Error al agregar Datos.";
+                errorMessage = errorData.message || "Error al agregar el cliente.";
             }
         }
 
@@ -287,14 +282,13 @@ const AgregarDatos = () => {
             nit: tipoPersona === "1" ? null : nit,
             nrc: tipoPersona === "1" ? null : nrc,
             giro: tipoPersona === "1" ? null : giro,
-            fecha_registro: new Date(fechaRegistro).toISOString().split('T')[0],
-            id_estado: 1
+            fecha_registro: fechaRegistro
         };
 
         console.log("Datos a enviar:", clienteData);
 
         try {
-            const response = await axios.post(`${API_URL}/crear-perfil-cliente`, clienteData, {
+            const response = await axios.post(`${API_URL}/crear-perfil-cliente`, clienteData,  {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
@@ -416,7 +410,7 @@ const AgregarDatos = () => {
     return (
         <React.Fragment>
             <div className="page-content">
-                <Breadcrumbs title="Perfil" breadcrumbItem="Agregar Datos" />
+                <Breadcrumbs title="Clientes" breadcrumbItem="Agregar Cliente" />
                 <Container fluid>
                     <Row>
                         <Col lg="12">
@@ -424,7 +418,7 @@ const AgregarDatos = () => {
                                 <CardBody>
                                     {alertaExito && (
                                         <Alert color="success" className="alert-dismissible fade show" role="alert">
-                                            ¡Cliente registrado exitosamente!
+                                            ¡Datos registrados exitosamente!
                                             <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                         </Alert>
                                     )}
@@ -461,7 +455,6 @@ const AgregarDatos = () => {
                                                 </FormGroup>
                                             </Col>
                                         </Row>
-
                                         <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
@@ -535,6 +528,7 @@ const AgregarDatos = () => {
                                                         required
                                                         min={minDate} // Set min date
                                                         max={maxDate}
+                                                        className="dark-mode-input-date"
                                                     />
                                                 </FormGroup>
                                             </Col>
@@ -685,7 +679,7 @@ const AgregarDatos = () => {
                                         <Row>
                                             <Col md={12}>
                                                 <Button type="submit" color="primary">Guardar</Button>
-                                                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/home'}>
+                                                <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/home'}>
                                                     Salir
                                                 </Button>
                                             </Col>
