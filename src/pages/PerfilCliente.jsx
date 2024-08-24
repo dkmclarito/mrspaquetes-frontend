@@ -29,8 +29,6 @@ const AgregarDatos = () => {
     const [direccion, setDireccion] = useState("");
     const [departamento, setDepartamento] = useState("");
     const [municipio, setMunicipio] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
     const [esContribuyente, setEsContribuyente] = useState(false);
     const [nombreComercial, setNombreComercial] = useState("");
     const [nit, setNit] = useState("");
@@ -282,7 +280,6 @@ const AgregarDatos = () => {
             nit: tipoPersona === "1" ? null : nit,
             nrc: tipoPersona === "1" ? null : nrc,
             giro: tipoPersona === "1" ? null : giro,
-            fecha_registro: fechaRegistro
         };
 
         console.log("Datos a enviar:", clienteData);
@@ -309,14 +306,11 @@ const AgregarDatos = () => {
 
 
     const resetForm = () => {
-        setEmail("");
-        setPassword("");
         setNombres("");
         setApellidos("");
         setTipoPersona("");
         setDui("");
         setTelefono("");
-        setFechaRegistro("");
         setDireccion("");
         setDepartamento("");
         setMunicipio("");
@@ -475,8 +469,6 @@ const AgregarDatos = () => {
                                                     </Input>
                                                 </FormGroup>
                                             </Col>
-                                        </Row>
-                                        <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="dui">DUI</Label>
@@ -497,6 +489,8 @@ const AgregarDatos = () => {
                                                     )}
                                                 </FormGroup>
                                             </Col>
+                                        </Row>
+                                        <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="telefono">Teléfono</Label>
@@ -514,24 +508,6 @@ const AgregarDatos = () => {
                                                     )}
                                                 </FormGroup>
                                             </Col>
-
-                                        </Row>
-                                        <Row form>
-                                            <Col md={6}>
-                                                <FormGroup className="form-group-custom">
-                                                    <Label for="fechaRegistro">Fecha de Registro</Label>
-                                                    <Input
-                                                        type="date"
-                                                        id="fechaRegistro"
-                                                        value={fechaRegistro}
-                                                        onChange={(e) => setFechaRegistro(e.target.value)}
-                                                        required
-                                                        min={minDate} // Set min date
-                                                        max={maxDate}
-                                                        className="dark-mode-input-date"
-                                                    />
-                                                </FormGroup>
-                                            </Col>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="direccion">Dirección</Label>
@@ -544,6 +520,7 @@ const AgregarDatos = () => {
                                                     />
                                                 </FormGroup>
                                             </Col>
+
                                         </Row>
                                         <Row form>
                                             <Col md={6}>
