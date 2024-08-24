@@ -2,10 +2,10 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import "/src/styles/Clientes.css";
 
-const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPersona }) => {
+const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetallesCliente, tipoPersona }) => {
 
   // Función para obtener el nombre del tipo de persona
   const obtenerNombreTipoPersona = (idTipoPersona) => {
@@ -56,7 +56,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
                 <td>{cliente.telefono || 'N/A'}</td>
                 <td>{formatearFecha(cliente.fecha_registro)}</td>
                 <td>
-                  <div className="button-container">
+                  <div className="button-container">                  
                     <Button
                       className="me-2 btn-icon btn-danger"
                       onClick={() => eliminarCliente(cliente.id)}
@@ -70,6 +70,13 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
                       aria-label="Editar cliente"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
+                    </Button>
+                    <Button
+                      className="me-2 btn-icon btn-info"
+                      onClick={() => verDetallesCliente(cliente.id)}
+                      aria-label="Ver detalles del cliente"
+                    >
+                      <FontAwesomeIcon icon={faEye} />
                     </Button>
                   </div>
                 </td>
@@ -89,6 +96,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, tipoPerso
 TablaClientes.propTypes = {
   eliminarCliente: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
+  verDetallesCliente: PropTypes.func.isRequired,
   tipoPersona: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 

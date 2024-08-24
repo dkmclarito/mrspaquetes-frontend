@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Clientes/Common/Breadcrumbs";
 import TablaClientes from "../components/Clientes/TablaClientes";
 import ModalEditarCliente from "../components/Clientes/ModalEditarCliente";
@@ -30,6 +30,11 @@ const GestionClientes = () => {
   const [clienteAEliminar, setClienteAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const navigate = useNavigate();
+  const verDetallesCliente = (idCliente) => {
+    navigate(`/DetallesCliente/${idCliente}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -161,6 +166,7 @@ const GestionClientes = () => {
                   clientes={paginatedClientes}
                   eliminarCliente={eliminarCliente}
                   toggleModalEditar={toggleModalEditar}
+                  verDetallesCliente={verDetallesCliente}
                   tipoPersona={TIPO_PERSONA} // Pasar el mapeo de tipos de persona
                 />
               </CardBody>

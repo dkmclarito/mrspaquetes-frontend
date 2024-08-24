@@ -12,6 +12,7 @@ import GestionEmpleados from './pages/GestionEmpleados';
 import AgregarEmpleado from './pages/AgregarEmpleado';
 import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
+import DetallesCliente from './pages/DetallesCliente';
 import AgregarDatos from './pages/PerfilCliente';
 import GestionUsuarios from './pages/GestionUsuarios';
 import AgregarUsuario from './pages/AgregarUsuario';
@@ -65,6 +66,7 @@ const App = () => {
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
+                <Route path="/DetallesCliente/:id" element={<DetallesCliente />} />
                 <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
                 <Route path="/AgregarVehiculo" element={<AgregarVehiculo />} />
                 <Route path="/GestionMarcas" element={<GestionMarcas />} />
