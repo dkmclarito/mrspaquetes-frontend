@@ -34,6 +34,7 @@ import { AuthProvider } from './services/AuthContext';
 import EmailVerification from './pages/EmailVerification';
 import ForgetPassword from './components/LoginClientes/ForgetPassword'; // Nuevo: Importación de ForgetPassword
 import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo: Importación de ResetPassword
+import DataUsuario from './pages/DataUsuario';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -75,6 +76,9 @@ const App = () => {
                 <Route path="/AgregarMarca" element={<AgregarMarca />} />
                 <Route path="/GestionModelos" element={<GestionModelos />} />
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
+                <Route path="/DataUsuario/:id" element={<DataUsuario />} />
+
+
               </Route>
 
               {/* Rutas para 'conductor' */}
