@@ -6,13 +6,13 @@ import Breadcrumbs from "../components/Clientes/Common/Breadcrumbs";
 import TablaClientes from "../components/Clientes/TablaClientes";
 import ModalEditarCliente from "../components/Clientes/ModalEditarCliente";
 import ModalConfirmarEliminar from "../components/Clientes/ModalConfirmarEliminar";
+import ModalDirecciones from "../components/Clientes/ModalDirecciones";
 import AuthService from "../services/authService";
 import "../styles/Clientes.css";
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Define el mapeo de tipos de persona
 const TIPO_PERSONA = {
   1: 'Persona Natural',
   2: 'Persona Jurídica'
@@ -30,11 +30,10 @@ const GestionClientes = () => {
   const [clienteAEliminar, setClienteAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalDirecciones, setModalDirecciones] = useState(false);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
   const navigate = useNavigate();
-  const verDetallesCliente = (idCliente) => {
-    navigate(`/DetallesCliente/${idCliente}`);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,14 +123,20 @@ const GestionClientes = () => {
     setCurrentPage(pageNumber);
   };
 
-  // Obtener los clientes filtrados y paginados
+  const verDirecciones = (idCliente) => {
+    setClienteSeleccionado(idCliente);
+    setModalDirecciones(true);
+  };
+
+  const verDetallesCliente = (idCliente) => {
+    navigate(`/DetallesCliente/${idCliente}`);
+  };
+
   const clientesFiltrados = filtrarClientes(clientes);
   const paginatedClientes = clientesFiltrados.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const totalPages = Math.ceil(clientesFiltrados.length / ITEMS_PER_PAGE);
 
   return (
     <div className="page-content">
@@ -167,7 +172,8 @@ const GestionClientes = () => {
                   eliminarCliente={eliminarCliente}
                   toggleModalEditar={toggleModalEditar}
                   verDetallesCliente={verDetallesCliente}
-                  tipoPersona={TIPO_PERSONA} // Pasar el mapeo de tipos de persona
+                  tipoPersona={TIPO_PERSONA}
+                  verDirecciones={verDirecciones}
                 />
               </CardBody>
             </Card>
@@ -199,6 +205,11 @@ const GestionClientes = () => {
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarCliente={confirmarEliminarCliente}
         setConfirmarEliminar={setConfirmarEliminar}
+      />
+      <ModalDirecciones
+        isOpen={modalDirecciones}
+        toggle={() => setModalDirecciones(!modalDirecciones)}
+        clienteId={clienteSeleccionado}
       />
     </div>
   );

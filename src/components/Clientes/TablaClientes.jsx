@@ -2,37 +2,32 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from 'reactstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPencilAlt, faMapMarkerAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import "/src/styles/Clientes.css";
 
-const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetallesCliente, tipoPersona }) => {
-
-  // Función para obtener el nombre del tipo de persona
+const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetallesCliente, tipoPersona, verDirecciones }) => {
   const obtenerNombreTipoPersona = (idTipoPersona) => {
     return tipoPersona[idTipoPersona] || 'Desconocido';
   };
 
-  // Función para obtener el DUI o el NIT según el tipo de persona
   const obtenerDocumento = (idTipoPersona, dui, nit) => {
-    if (idTipoPersona === 1) { // Persona Natural
+    if (idTipoPersona === 1) {
       return dui || 'N/A';
-    } else if (idTipoPersona === 2) { // Persona Jurídica
+    } else if (idTipoPersona === 2) {
       return nit || 'N/A';
     }
     return 'N/A';
   };
 
-  // Función para formatear la fecha sin la hora
   const formatearFecha = (fecha) => {
     const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', opciones);
-    return fechaFormateada;
+    return new Date(fecha).toLocaleDateString('es-ES', opciones);
   };
 
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <Table striped className="table-centered table-nowrap mb-0">
-      <thead className="thead-light">
+        <thead className="thead-light">
           <tr>
             <th className="text-center">ID</th>
             <th className="text-center">Nombre</th>
@@ -41,6 +36,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
             <th className="text-center">DUI/NIT</th>
             <th className="text-center">Teléfono</th>
             <th className="text-center">Fecha de Registro</th>
+            <th className="text-center">Direcciones</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -55,26 +51,39 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                 <td>{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
                 <td>{cliente.telefono || 'N/A'}</td>
                 <td>{formatearFecha(cliente.fecha_registro)}</td>
+                <td className="text-center">
+                  <Button
+                    color="info"
+                    className="btn-sm d-flex align-items-center justify-content-center mx-auto"
+                    onClick={() => verDirecciones(cliente.id)}
+                    style={{ width: 'fit-content' }}
+                  >
+                    <FontAwesomeIcon icon={faMapMarkerAlt} className="me-1" />
+                    <span>Ver Direcciones</span>
+                  </Button>
+                </td>
                 <td>
-                  <div className="button-container">                  
+                  <div className="d-flex justify-content-center">
                     <Button
-                      className="me-2 btn-icon btn-danger"
+                      color="danger"
+                      className="btn-sm me-2"
                       onClick={() => eliminarCliente(cliente.id)}
-                      aria-label="Eliminar cliente"
+                      title="Eliminar cliente"
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </Button>
                     <Button
-                      className="btn-icon btn-editar"
+                      color="warning"
+                      className="btn-sm me-2"
                       onClick={() => toggleModalEditar(cliente)}
-                      aria-label="Editar cliente"
+                      title="Editar cliente"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
                     <Button
-                      className="btn-icon btn-success"
+                      className="me-2 btn-icon btn-info"
                       onClick={() => verDetallesCliente(cliente.id)}
-                      aria-label="Ver detalles del cliente"
+                      title="Ver detalles del cliente"
                     >
                       <FontAwesomeIcon icon={faEye}  />
                     </Button>
@@ -84,20 +93,22 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
             ))
           ) : (
             <tr>
-              <td colSpan="8" className="text-center">No hay datos disponibles</td>
+              <td colSpan="9" className="text-center">No hay datos disponibles</td>
             </tr>
           )}
         </tbody>
-        </Table>
+      </Table>
     </div>
   );
 };
 
 TablaClientes.propTypes = {
+  clientes: PropTypes.array.isRequired,
   eliminarCliente: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
   verDetallesCliente: PropTypes.func.isRequired,
   tipoPersona: PropTypes.objectOf(PropTypes.string).isRequired,
+  verDirecciones: PropTypes.func.isRequired,
 };
 
 export default TablaClientes;

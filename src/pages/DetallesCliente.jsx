@@ -1,32 +1,100 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardBody, Col, Row, Button, Badge } from "reactstrap";
+import { Card, CardBody, Col, Row, Button, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Table } from "reactstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import AuthService from "../services/authService";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck,faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes, faEye, faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
+import FormularioDireccion from "../pages/FormularioDireccion";
+import ModalEditarDireccion from "../components/Clientes/ModalEditarDireccion";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const DetallesCliente = () => {
-  const { id } = useParams(); // Obtiene el ID de la URL
+  const { id } = useParams();
   const [cliente, setCliente] = useState(null);
+  const [direcciones, setDirecciones] = useState([]);
+  const [modalDireccion, setModalDireccion] = useState(false);
+  const [modalEditarDireccion, setModalEditarDireccion] = useState(false);
+  const [direccionSeleccionada, setDireccionSeleccionada] = useState(null);
+  const [modalConfirmacion, setModalConfirmacion] = useState(false);
+  const [direccionAEliminar, setDireccionAEliminar] = useState(null);
 
   useEffect(() => {
-    const fetchCliente = async () => {
+    const fetchClienteYDirecciones = async () => {
       try {
         const token = AuthService.getCurrentUser();
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/clientes/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        const clienteResponse = await axios.get(`${API_URL}/clientes/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        setCliente(response.data.cliente);
+        setCliente(clienteResponse.data.cliente);
+
+        const direccionesResponse = await axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setDirecciones(direccionesResponse.data.direcciones);
       } catch (error) {
-        console.error("Error al obtener los detalles del cliente:", error);
+        console.error("Error al obtener los datos:", error);
+        toast.error("Error al cargar los datos del cliente");
       }
     };
 
-    fetchCliente();
+    fetchClienteYDirecciones();
   }, [id]);
+
+  const toggleModalDireccion = () => setModalDireccion(!modalDireccion);
+
+  const onDireccionGuardada = async () => {
+    toggleModalDireccion();
+    await cargarDirecciones();
+    toast.success('Dirección guardada correctamente');
+  };
+
+  const cargarDirecciones = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDirecciones(response.data.direcciones);
+    } catch (error) {
+      console.error("Error al cargar direcciones:", error);
+      toast.error("Error al cargar las direcciones");
+    }
+  };
+
+  const editarDireccion = (direccion) => {
+    setDireccionSeleccionada(direccion);
+    setModalEditarDireccion(true);
+  };
+
+  const onDireccionEditada = async () => {
+    setModalEditarDireccion(false);
+    await cargarDirecciones();
+    toast.success('Dirección actualizada correctamente');
+  };
+
+  const confirmarEliminarDireccion = (direccionId) => {
+    setDireccionAEliminar(direccionId);
+    setModalConfirmacion(true);
+  };
+
+  const eliminarDireccion = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      await axios.delete(`${API_URL}/direcciones/${direccionAEliminar}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await cargarDirecciones();
+      setModalConfirmacion(false);
+      toast.success('Dirección eliminada correctamente');
+    } catch (error) {
+      console.error("Error al eliminar dirección:", error);
+      toast.error("Error al eliminar la dirección");
+    }
+  };
 
   if (!cliente) {
     return <p>Cargando...</p>;
@@ -107,16 +175,86 @@ const DetallesCliente = () => {
               </div>
             </Col>
           </Row>
+          <h5 className="mt-4">Direcciones del Cliente</h5>
+          <Table>
+            <thead>
+              <tr>
+                <th>Contacto</th>
+                <th>Teléfono</th>
+                <th>Departamento</th>
+                <th>Municipio</th>
+                <th>Dirección</th>
+                <th>Referencia</th>
+                <th>Acciones</th>
+
+              </tr>
+            </thead>
+            <tbody>
+              {direcciones.map((direccion) => (
+                <tr key={direccion.id}>
+                  <td>{direccion.nombre_contacto}</td>
+                  <td>{direccion.telefono}</td>
+                  <td>{direccion.id_departamento}</td>
+                  <td>{direccion.id_municipio}</td>
+                  <td>{direccion.direccion}</td>
+                  <td>{direccion.referencia}</td>
+                  <td>
+                    <Button color="info" size="sm" className="me-2" onClick={() => editarDireccion(direccion)}>
+                      <FontAwesomeIcon icon={faEdit} />
+                    </Button>
+                    <Button color="danger" size="sm" onClick={() => confirmarEliminarDireccion(direccion.id)}>
+                      <FontAwesomeIcon icon={faTrash} />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+          <Button color="primary" onClick={toggleModalDireccion}>
+            <FontAwesomeIcon icon={faPlus} /> Agregar Dirección
+          </Button>
+
           <div className="d-flex justify-content-between mt-4">
             <Link to="/GestionClientes" className="btn btn-secondary btn-regresar">
               <i className="fas fa-arrow-left"></i> Regresar
             </Link>
-            {/*<Button color="primary">*/}
-              {/*<i className="fas fa-edit"></i> Editar*/}
-            {/*</Button>*/}
           </div>
         </CardBody>
       </Card>
+
+      {/* Modal para agregar dirección */}
+      <Modal isOpen={modalDireccion} toggle={toggleModalDireccion}>
+        <ModalHeader toggle={toggleModalDireccion}>Agregar Nueva Dirección</ModalHeader>
+        <ModalBody>
+          <FormularioDireccion
+            clienteId={id}
+            onDireccionGuardada={onDireccionGuardada}
+            onCancel={toggleModalDireccion}
+          />
+        </ModalBody>
+      </Modal>
+
+      {/* Modal para editar dirección */}
+      <ModalEditarDireccion
+        isOpen={modalEditarDireccion}
+        toggle={() => setModalEditarDireccion(!modalEditarDireccion)}
+        direccion={direccionSeleccionada}
+        onDireccionEditada={onDireccionEditada}
+      />
+
+      {/* Modal de confirmación para eliminar */}
+      <Modal isOpen={modalConfirmacion} toggle={() => setModalConfirmacion(false)}>
+        <ModalHeader toggle={() => setModalConfirmacion(false)}>Confirmar Eliminación</ModalHeader>
+        <ModalBody>
+          ¿Está seguro de que desea eliminar esta dirección?
+        </ModalBody>
+        <ModalFooter>
+          <Button color="danger" onClick={eliminarDireccion}>Eliminar</Button>{' '}
+          <Button color="secondary" onClick={() => setModalConfirmacion(false)}>Cancelar</Button>
+        </ModalFooter>
+      </Modal>
+
+      <ToastContainer />
     </div>
   );
 };
