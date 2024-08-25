@@ -340,7 +340,12 @@ body {
 .dark-mode p {
   color: #bfbdbd;
 }
-
+.dark-mode .alert-heading{
+    color: #c4d8e3;
+}
+.dark-mode .alert{
+  background-color: #071e2a;
+}
 /*
 .dark-mode .vertical-nav {
   background-color: #333;

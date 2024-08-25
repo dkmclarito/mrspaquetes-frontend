@@ -168,7 +168,7 @@ const VerticalLayout = () => {
                         Paquetes
                       </NavLink>
                     </li>
-                    <li>
+                    {/* <li>
                       <NavLink 
                         to="/GestionPaquetes" 
                         className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
@@ -176,7 +176,7 @@ const VerticalLayout = () => {
                         <BiPlus className="nav-icon sub-icon" />
                         Historial de Paquetes
                       </NavLink>
-                    </li>
+                    </li> */}
                   </ul>
                 </li>
 
