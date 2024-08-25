@@ -2,7 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import "/src/styles/usuarios.css";
 
 const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
@@ -59,12 +60,20 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                       <FontAwesomeIcon icon={faTimes} />
                     </Button>
                     <Button
-                      className="btn-icon btn-editar"
+                      className="me-2 btn-icon btn-editar"
                       onClick={() => toggleModalEditar(usuario)}
                       aria-label="Editar usuario"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
+                    <Link
+                      to={`/DataUsuario/${usuario.id}`}
+                      className="btn btn-success btn-icon" 
+                      title="Ver más detalles"
+                      aria-label="Ver más detalles"
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </Link>
                   </div>
                 </td>
               </tr>
