@@ -53,7 +53,7 @@ colors{
   }
 
 .vertical-nav {
-  width: 220px;
+  width: 180px;
   height: 100%;
   position: fixed;
   top: 0;
@@ -69,11 +69,11 @@ colors{
 }
 
 .vertical-nav.menu-expanded {
-  width: 220px;
+  width: 180px;
 }
 
 .vertical-nav.menu-collapsed {
-  width: 70px;
+  width: 75px;
 }
 
 /* Oculta la barra de desplazamiento en WebKit/Blink navegadores */
@@ -83,7 +83,7 @@ colors{
 }
 
 .logo-img {
-  width: 150px;
+  width: 90px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -96,18 +96,18 @@ colors{
 }
 
 .logo-expanded {
-  width: 150px;
+  width: 90px;
 }
 
 .vertical-nav .nav-link {
   position: relative;
-  padding: 12px 20px;
+  padding: 8px 20px;
   color: #b3b9c6;
   text-decoration: none;
   font-size: 0.9em;
   transition: background-color 0.3s, color 0.3s;
   border-radius: 4px;
-  margin: 5px 10px;
+  margin: 2px 10px;
 }
 
 .vertical-nav .nav-link.active {
@@ -168,7 +168,7 @@ colors{
 
 /* Contenido Principal */
 .main-content {
-  margin-left: 220px;
+  margin-left: 180px;
   padding: 20px;
   flex: 1;
   margin-top: 45px;
@@ -199,8 +199,8 @@ colors{
   text-align: center;
   position: relative;
   bottom: 0;
-  left: 220px;
-  width: calc(100% - 220px);
+  left: 180px;
+  width: calc(100% - 180px);
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   /*transition: width 0.3s ease, left 0.3s ease;*/
 }
@@ -220,7 +220,7 @@ colors{
 
 .sub-menu.active {
   display: block;
-  margin-left: 20px; /* Ajusta el margen izquierdo para alinear con el elemento padre */
+  margin-left: 15px; /* Ajusta el margen izquierdo para alinear con el elemento padre */
 }
 
 .sub-menu li {
@@ -229,7 +229,7 @@ colors{
 
 .sub-menu .nav-link {
   padding: 8px 20px;
-  font-size: 0.85em; /* Tamaño de fuente más pequeño */
+  font-size: 0.8em; /* Tamaño de fuente más pequeño */
   color: #b3b9c6; /* Color de texto del submenú */
 }
 

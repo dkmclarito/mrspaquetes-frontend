@@ -59,7 +59,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                     style={{ width: 'fit-content' }}
                   >
                     <FontAwesomeIcon icon={faMapMarkerAlt} className="me-1" />
-                    <span className="btn-direcciones-text">Ver Direcciones</span>
+                    Ver Direcciones
                   </Button>
                 </td>
                 <td>
