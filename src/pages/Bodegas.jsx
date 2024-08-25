@@ -7,7 +7,7 @@ const GestionBodegas = () => {
       <Row>
         <Col>
           <Alert color="success" className='alert'>
-            <h4 className="alert-heading">Rutas en Desarrollo</h4>
+            <h4 className="alert-heading">Bodegas en Desarrollo</h4>
             <p className='alert-heading'>
               Esta sección está actualmente en desarrollo. Por favor, vuelve más tarde para más actualizaciones.
             </p>
