@@ -636,6 +636,32 @@ body {
   border-color: darkred;
 }
 
+.dark-mode .btn-direcciones{
+  background-color: #1e1e1e26;
+  color:rgb(56, 155, 255);
+  border-color: white;
+}
+
+.dark-mode .btn-direcciones:hover{
+  background-color: rgb(39, 86, 132);
+  color:rgb(56, 155, 255);
+  border-color: white;
+}
+.dark-mode span.btn-direcciones-text:hover{
+  background-color: rgb(39, 86, 132);
+}
+
+.dark-mode span.btn-direcciones-text{
+  color: #04aad6;
+}
+
+span.btn-direcciones-text{
+  color: white;
+}
+
+.btn-direcciones{
+  color: white;
+}
 
 .dark-mode .vertical-nav{
   background-color: #041118;

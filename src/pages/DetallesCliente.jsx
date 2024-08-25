@@ -170,6 +170,26 @@ const DetallesCliente = () => {
                       <th scope="row">Municipio:</th>
                       <td>{cliente.id_municipio || 'N/A'}</td>
                     </tr>
+                    {cliente.id_tipo_persona === 2 && (
+                      <>
+                        <tr>
+                          <th scope="row">Nombre de la Empresa:</th>
+                          <td>{cliente.nombre_empresa || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">NRC:</th>
+                          <td>{cliente.nrc || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Giro:</th>
+                          <td>{cliente.giro || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Direccion:</th>
+                          <td>{cliente.direccion || 'N/A'}</td>
+                        </tr>
+                      </>
+                    )}
                   </tbody>
                 </table>
               </div>

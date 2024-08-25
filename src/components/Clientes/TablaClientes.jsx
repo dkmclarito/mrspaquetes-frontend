@@ -54,12 +54,12 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                 <td className="text-center">
                   <Button
                     color="info"
-                    className="btn-sm d-flex align-items-center justify-content-center mx-auto"
+                    className="btn-sm d-flex align-items-center justify-content-center mx-auto btn-direcciones"
                     onClick={() => verDirecciones(cliente.id)}
                     style={{ width: 'fit-content' }}
                   >
                     <FontAwesomeIcon icon={faMapMarkerAlt} className="me-1" />
-                    <span>Ver Direcciones</span>
+                    <span className="btn-direcciones-text">Ver Direcciones</span>
                   </Button>
                 </td>
                 <td>
@@ -74,14 +74,14 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                     </Button>
                     <Button
                       color="warning"
-                      className="btn-sm me-2"
+                      className="btn-sm me-2 btn-icon btn-editar"
                       onClick={() => toggleModalEditar(cliente)}
                       title="Editar cliente"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
                     <Button
-                      className="me-2 btn-icon btn-info"
+                      className="btn-sm me-2 btn-icon btn-success"
                       onClick={() => verDetallesCliente(cliente.id)}
                       title="Ver detalles del cliente"
                     >
