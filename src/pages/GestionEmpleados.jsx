@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaEmpleados from "../components/Empleados/TablaEmpleados";
 import ModalEditarEmpleado from "../components/Empleados/ModalEditarEmpleado";
@@ -28,6 +28,11 @@ const GestionEmpleados = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
+
+  const navigate = useNavigate();
+  const verDetallesEmpleado = (idEmpleado) => {
+    navigate(`/DetallesEmpleado/${idEmpleado}`);
+  };
 
   // Fetch initial data
   const fetchData = async () => {
@@ -203,6 +208,7 @@ const GestionEmpleados = () => {
                   estados={estados}
                   eliminarEmpleado={eliminarEmpleado}
                   toggleModalEditar={toggleModalEditar}
+                  verDetallesEmpleado={verDetallesEmpleado}
                 />
               </CardBody>
             </Card>

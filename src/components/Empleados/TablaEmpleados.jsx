@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import '/src/styles/Empleados.css';
 import AuthService from "/src/services/authService"; 
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const TablaEmpleados = ({ empleados, cargos, eliminarEmpleado, toggleModalEditar }) => {
+const TablaEmpleados = ({ empleados, cargos, verDetallesEmpleado, eliminarEmpleado, toggleModalEditar }) => {
   const [roles, setRoles] = useState([]);
   const [error, setError] = useState(null);
 
@@ -115,6 +115,12 @@ return (
                   >
                     <FontAwesomeIcon icon={faPencilAlt} />
                   </Button>
+                  <Button
+                      className="btn-icon btn-success"
+                      onClick={() => verDetallesEmpleado(empleado.id)}                      
+                    >
+                      <FontAwesomeIcon icon={faEye}  />
+                    </Button>
                 </div>
               </td>
             </tr>
@@ -134,6 +140,7 @@ TablaEmpleados.propTypes = {
 empleados: PropTypes.array.isRequired,
 cargos: PropTypes.array.isRequired,
 eliminarEmpleado: PropTypes.func.isRequired,
+verDetallesEmpleado: PropTypes.func.isRequired,
 toggleModalEditar: PropTypes.func.isRequired,
 };
 

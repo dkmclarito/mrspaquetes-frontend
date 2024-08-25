@@ -72,11 +72,11 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
                     <Button
-                      className="me-2 btn-icon btn-info"
+                      className="btn-icon btn-success"
                       onClick={() => verDetallesCliente(cliente.id)}
                       aria-label="Ver detalles del cliente"
                     >
-                      <FontAwesomeIcon icon={faEye} />
+                      <FontAwesomeIcon icon={faEye}  />
                     </Button>
                   </div>
                 </td>
