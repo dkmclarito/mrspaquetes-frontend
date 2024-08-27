@@ -38,8 +38,8 @@ import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo
 import DataUsuario from './pages/DataUsuario';
 import GestionOrdenes from './pages/Ordenes';
 import GestionRutas from './pages/Rutas';
-import GestionBodegas from './pages/Bodegas';
-
+import GestionBodegas from './pages/GestionBodega';
+import AgregarBodega from './pages/AgregarBodega';
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
@@ -87,7 +87,7 @@ const App = () => {
                 <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
-
+                <Route path="/AgregarBodega" element={<AgregarBodega />} />
               </Route>
 
               {/* Rutas para 'conductor' */}
