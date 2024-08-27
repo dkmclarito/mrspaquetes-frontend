@@ -70,18 +70,32 @@ const AgregarUsuario = () => {
 
   const handleSuccessAlert = (id) => {
     confirmAlert({
-      title: 'Usuario agregado exitosamente!',
-      message: '¿Desea agregar la información del empleado ahora?',
-      buttons: [
-        {
-          label: 'Sí, crear ahora',
-          onClick: () => navigate(`/AgregarEmpleado/${id}`)
-        },
-        {
-          label: 'Agregar más tarde',
-          onClick: () => navigate('/GestionUsuarios')
-        }
-      ]
+      customUI: ({ onClose }) => {
+        return (
+          <div className="custom-dark-alert">
+            <h1>Usuario agregado exitosamente!</h1>
+            <p>¿Desea agregar la información del empleado ahora?</p>
+            <div className="alert-buttons">
+              <button
+                onClick={() => {
+                  navigate(`/AgregarEmpleado/${id}`);
+                  onClose();
+                }}
+              >
+                Sí, crear ahora
+              </button>
+              <button
+                onClick={() => {
+                  navigate('/GestionUsuarios');
+                  onClose();
+                }}
+              >
+                Agregar más tarde
+              </button>
+            </div>
+          </div>
+        );
+      }
     });
   };
 
