@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, CardBody, Table, Button } from "reactstrap";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import ModalAgregarEmpleado from "../components/Usuarios/ModalAgregarEmpleado";
 import AuthService from "../services/authService";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 
@@ -11,7 +10,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 const DataUsuario = () => {
   const { id } = useParams(); // Obtener ID del usuario desde los parámetros de la URL
   const [usuario, setUsuario] = useState(null);
-  const [modalAgregarEmpleado, setModalAgregarEmpleado] = useState(false); // Estado para controlar el modal
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,16 +49,7 @@ const DataUsuario = () => {
   }, [id]);
 
   const handleAgregarEmpleado = () => {
-    setModalAgregarEmpleado(true); // Abrir el modal cuando se hace clic en "Agregar Empleado"
-  };
-
-  const handleEmpleadoAsignado = (nuevoEmpleado) => {
-    setUsuario((prevUsuario) => ({
-      ...prevUsuario,
-      id_empleado: nuevoEmpleado.id,
-      nombre_completo_empleado: `${nuevoEmpleado.nombres} ${nuevoEmpleado.apellidos}`,
-    }));
-    setModalAgregarEmpleado(false);
+    navigate(`/AgregarEmpleado/${id}`); // Redirigir a la página de agregar empleados pasando el id del usuario
   };
 
   return (
@@ -102,7 +91,7 @@ const DataUsuario = () => {
                           {usuario.nombre_completo_empleado}
                           {!usuario.id_empleado && (
                             <Button color="secondary" onClick={handleAgregarEmpleado} style={{ marginLeft: '10px' }}>
-                              Asignar Empleado
+                              Agregar Empleado
                             </Button>
                           )}
                         </td>
@@ -129,17 +118,11 @@ const DataUsuario = () => {
           </Col>
         </Row>
       </Container>
-
-      <ModalAgregarEmpleado
-        isOpen={modalAgregarEmpleado}
-        toggle={() => setModalAgregarEmpleado(false)}
-        onEmpleadoAsignado={handleEmpleadoAsignado}
-        usuario={usuario} // Pasamos el usuario completo al modal
-      />
     </div>
   );
 };
 
 export default DataUsuario;
+
 
 
