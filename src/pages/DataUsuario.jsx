@@ -66,10 +66,7 @@ const DataUsuario = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Datos de Usuario" />
-        <Button color="primary" onClick={() => navigate("/GestionUsuarios")}>
-          Volver a Usuarios
-        </Button>
+        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Datos de Usuario" />        
         <Card>
           <CardBody>
             <h5 className="card-title">Detalles del Usuario</h5>
@@ -98,7 +95,7 @@ const DataUsuario = () => {
                       </tr>
                       <tr>
                         <th scope="row">Empleado:</th>
-                        <td>
+                        <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           {empleado ? (
                             <>
                               {`${empleado.nombres} ${empleado.apellidos}`}
@@ -133,6 +130,11 @@ const DataUsuario = () => {
                 </div>
               </Col>
             </Row>
+            <div className="d-flex justify-content-between mt-4">
+            <Link to="/GestionUsuarios" className="btn btn-secondary btn-regresar">
+              <i className="fas fa-arrow-left"></i> Regresar
+            </Link>
+            </div>
           </CardBody>
         </Card>
       </Container>

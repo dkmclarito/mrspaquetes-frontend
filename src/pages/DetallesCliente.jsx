@@ -6,6 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AuthService from "../services/authService";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import { faCheck, faTimes, faEye, faEdit, faTrash, faPlus, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import FormularioDireccion from "../pages/FormularioDireccion";
 import ModalEditarDireccion from "../components/Clientes/ModalEditarDireccion";
@@ -126,6 +127,7 @@ const DetallesCliente = () => {
 
   return (
     <div className="page-content">
+      <Breadcrumbs title="Gestión de Clientes" breadcrumbItem="Datos de Cliente" />        
       <Card>
         <CardBody>
           <h5 className="card-title">Detalles del Cliente</h5>

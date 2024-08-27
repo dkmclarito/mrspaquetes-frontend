@@ -261,6 +261,24 @@ colors{
   color: white;
 }
 
+.custom-select-modalEditarUsuario {
+  background-color: #5e5e5e;
+  color: #fff;
+  border: 1px solid #ffffff;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.custom-select-modalEditarUsuario:disabled {
+  background-color: #444;
+  color: #aaa;
+}
+
+.custom-select-modalEditarUsuario option {
+  background-color: #5e5e5e;
+  color: #fff;
+}
+
 /* Estilo para el placeholder */
 /*
 .modal .form-control::placeholder {
@@ -673,7 +691,7 @@ body {
 .dark-mode .btn-direcciones:hover{
   background-color: rgb(39, 86, 132);
   color:rgb(56, 155, 255);
-  border-color: white;
+  border-color: rgb(56, 155, 255);
 }
 .dark-mode span.btn-direcciones-text:hover{
   background-color: rgb(39, 86, 132);
@@ -789,4 +807,48 @@ span.btn-direcciones-text{
 
 .dark-mode table .estatus-darkmode{
   background-color: #555;
+}
+
+/* Alerta despues de agregar un usuario */
+.dark-mode .react-confirm-alert-overlay {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.dark-mode .react-confirm-alert {
+  background-color: #333;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .react-confirm-alert-button-group button {
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+}
+
+.dark-mode .react-confirm-alert-button-group button:hover {
+  background-color: #555;
+}
+
+
+/*alerta que salen arriba de los formularios al agregar*/
+.dark-mode .alert-danger {
+  background-color: #2b1d1d; 
+  color: #f8d7da; 
+  border-color: #922b2b; 
+}
+
+.dark-mode .alert-danger .btn-close {
+  filter: invert(1); 
+}
+
+.dark-mode .alert-success {
+  background-color: #1d2b1d;
+  color: #d4edda;
+  border-color: #155724;
+}
+
+.dark-mode .alert-success .btn-close {
+  filter: invert(1);
 }
