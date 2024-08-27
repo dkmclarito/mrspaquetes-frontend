@@ -1,133 +1,143 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, CardBody, Table, Button} from "reactstrap";
+import React, { useState, useEffect, useCallback } from "react";
+import { Container, Row, Col, Card, CardBody, Button, Badge } from "reactstrap";
 import axios from "axios";
-import { useNavigate, useParams , Link} from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import AuthService from "../services/authService";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const DataUsuario = () => {
-  const { id } = useParams(); // Obtener ID del usuario desde los parámetros de la URL
+  const { id } = useParams();
   const [usuario, setUsuario] = useState(null);
+  const [empleado, setEmpleado] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsuario = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
-        const response = await axios.get(`${API_URL}/auth/get_users`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const fetchUsuario = useCallback(async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/auth/show/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        const foundUser = response.data.users.find((user) => user.id === parseInt(id, 10));
-        if (foundUser) {
-          // Obtener el nombre del empleado si está asignado
-          if (foundUser.id_empleado) {
-            const empleadoResponse = await axios.get(`${API_URL}/empleados`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            const empleadoAsignado = empleadoResponse.data.empleados.find(e => e.id === foundUser.id_empleado);
-            foundUser.nombre_completo_empleado = empleadoAsignado ? `${empleadoAsignado.nombres} ${empleadoAsignado.apellidos}` : 'No asignado';
-          } else {
-            foundUser.nombre_completo_empleado = 'No asignado';
-          }
-          setUsuario(foundUser);
-        } else {
-          console.error("Usuario no encontrado");
+      if (response.data.user) {
+        setUsuario(response.data.user);
+        if (response.data.user.id_empleado) {
+          await fetchEmpleado(response.data.user.id_empleado, token);
         }
-      } catch (error) {
-        console.error("Error al obtener los datos del usuario:", error);
+      } else {
+        console.error("Usuario no encontrado");
       }
-    };
-
-    fetchUsuario();
+    } catch (error) {
+      console.error("Error al obtener los datos del usuario:", error);
+    }
   }, [id]);
 
+  const fetchEmpleado = async (idEmpleado, token) => {
+    try {
+      const empleadoResponse = await axios.get(`${API_URL}/empleados/${idEmpleado}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setEmpleado(empleadoResponse.data.empleado);
+    } catch (error) {
+      console.error("Error al obtener los datos del empleado:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsuario();
+  }, [fetchUsuario]);
+
   const handleAgregarEmpleado = () => {
-    navigate(`/AgregarEmpleado/${id}`); // Redirigir a la página de agregar empleados pasando el id del usuario
+    navigate(`/AgregarEmpleado/${id}`);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Fecha no disponible';
+    return new Date(dateString).toLocaleDateString('es-ES');
   };
 
   return (
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Datos de Usuario" />
-       
-        <h2 className="mt-4">Datos de Usuario</h2>
-        <Row>
-          <Col lg={12}>
-            <Card>
-              <CardBody>
-                {usuario ? (
-                  <Table striped className="table-centered table-nowrap mb-0">
-                    <thead className="thead-light">
-                      <tr>
-                        <th className="text-center">Campo</th>
-                        <th className="text-center">Valor</th>
-                      </tr>
-                    </thead>
+        <Button color="primary" onClick={() => navigate("/GestionUsuarios")}>
+          Volver a Usuarios
+        </Button>
+        <Card>
+          <CardBody>
+            <h5 className="card-title">Detalles del Usuario</h5>
+            <Row>
+              <Col sm="12">
+                <div className="table-responsive">
+                  <table className="table table-bordered">
                     <tbody>
                       <tr>
-                        <td className="text-center">ID</td>
-                        <td className="text-center">{usuario.id}</td>
+                        <th scope="row" style={{ width: '200px', whiteSpace: 'nowrap' }}>ID:</th>
+                        <td>
+                          <Badge color="primary">{usuario?.id}</Badge>
+                        </td>
                       </tr>
                       <tr>
-                        <td className="text-center">Email</td>
-                        <td className="text-center">{usuario.email}</td>
+                        <th scope="row">Email:</th>
+                        <td>{usuario?.email || 'N/A'}</td>
                       </tr>
                       <tr>
-                        <td className="text-center">Estado</td>
-                        <td className="text-center">{usuario.status === 1 ? 'Activo' : 'Inactivo'}</td>
+                        <th scope="row">Estado:</th>
+                        <td>
+                          <Badge color={usuario?.status === 1 ? "success" : "danger"}>
+                            {usuario?.status === 1 ? "Activo" : "Inactivo"}
+                          </Badge>
+                        </td>
                       </tr>
                       <tr>
-                        <td className="text-center">Empleado</td>
-                        <td className="text-center">
-                          {usuario.nombre_completo_empleado}
-                          {!usuario.id_empleado && (
-                            <Button color="secondary" onClick={handleAgregarEmpleado} style={{ marginLeft: '10px' }}>
-                              Agregar Empleado
-                            </Button>
+                        <th scope="row">Empleado:</th>
+                        <td>
+                          {empleado ? (
+                            <>
+                              {`${empleado.nombres} ${empleado.apellidos}`}
+                              <Link to={`/DetallesEmpleado/${empleado.id}`} className="btn btn-info btn-sm ms-2">
+                                <FontAwesomeIcon icon={faEye} /> Ver detalles del empleado
+                              </Link>
+                            </>
+                          ) : (
+                            <>
+                              No asignado
+                              <Button color="primary" size="sm" onClick={handleAgregarEmpleado} style={{ marginLeft: '10px' }}>
+                                Agregar Empleado
+                              </Button>
+                            </>
                           )}
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">Rol</td>
-                        <td className="text-center">{usuario.role_name || 'Desconocido'}</td>
+                        <th scope="row">Rol:</th>
+                        <td>{usuario?.role_name || 'Desconocido'}</td>
                       </tr>
                       <tr>
-                        <td className="text-center">Fecha de creación</td>
-                        <td className="text-center">{usuario.created_at ? usuario.created_at.split(' ')[0] : 'Fecha no disponible'}</td>
+                        <th scope="row">Fecha de creación:</th>
+                        <td>{formatDate(usuario?.created_at)}</td>
                       </tr>
                       <tr>
-                        <td className="text-center">Última actualización</td>
-                        <td className="text-center">{usuario.updated_at ? usuario.updated_at.split(' ')[0] : 'Fecha no disponible'}</td>
+                        <th scope="row">Última actualización:</th>
+                        <td>{formatDate(usuario?.updated_at)}</td>
                       </tr>
                     </tbody>
-                  </Table>
-                ) : (
-                  <p>Cargando datos del usuario...</p>
-                )}
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-        <div className="d-flex justify-content-between mt-4">
-            <Link to="/GestionUsuarios" className="btn btn-secondary btn-regresar">
-              <i className="fas fa-arrow-left"></i> Regresar
-            </Link>
-       
-          </div>
+                  </table>
+                </div>
+              </Col>
+            </Row>
+          </CardBody>
+        </Card>
       </Container>
-
     </div>
   );
 };
 
 export default DataUsuario;
-
-
-

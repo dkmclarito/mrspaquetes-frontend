@@ -422,7 +422,8 @@ const AgregarEmpleado = () => {
         name: userData.name,
         email: userData.email,
         role_id: userData.role_id,
-        id_empleado: data.empleado.id, // Usamos el ID correcto del empleado
+        id_empleado: data.empleado.id, 
+        status: 1
       };
 
       console.log("Datos a enviar para actualizar usuario:", updateUserData);
