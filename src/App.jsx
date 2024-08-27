@@ -9,7 +9,8 @@ import Logout from './components/Login/Logout';
 import AuthService from './services/authService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import GestionEmpleados from './pages/GestionEmpleados';
-import AgregarEmpleado from './pages/AgregarEmpleado';
+import AgregarEmpleado from './pages/AgregarEmpleado'; 
+import AgregarEmpleadoUser from './pages/AgregarEmpleado';
 import DetallesEmpleado from './pages/DetallesEmpleado';
 import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
@@ -37,8 +38,8 @@ import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo
 import DataUsuario from './pages/DataUsuario';
 import GestionOrdenes from './pages/Ordenes';
 import GestionRutas from './pages/Rutas';
-import GestionBodegas from './pages/Bodegas';
-
+import GestionBodegas from './pages/GestionBodega';
+import AgregarBodega from './pages/AgregarBodega';
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
@@ -69,6 +70,9 @@ const App = () => {
                 <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />
                 <Route path="/GestionEmpleados" element={<GestionEmpleados />} />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
+
+                <Route path="/AgregarEmpleado/:id" element={<AgregarEmpleadoUser />} />   {/* NUEVO */}
+
                 <Route path="/DetallesEmpleado/:id" element={<DetallesEmpleado />} />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
@@ -83,7 +87,7 @@ const App = () => {
                 <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
-
+                <Route path="/AgregarBodega" element={<AgregarBodega />} />
               </Route>
 
               {/* Rutas para 'conductor' */}

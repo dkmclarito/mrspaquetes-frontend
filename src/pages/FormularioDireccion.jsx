@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, FormGroup, Label, Input, Button, FormFeedback } from 'reactstrap';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 import AuthService from '../services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -58,12 +59,18 @@ const FormularioDireccion = ({ clienteId, onDireccionGuardada, onCancel }) => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'telefono') {
+            // Elimina cualquier carácter que no sea número
             let numericValue = value.replace(/[^\d]/g, '');
+
+            // Limita a 8 dígitos
             numericValue = numericValue.slice(0, 8);
+
+            // Formatea el número con un guion después del cuarto dígito
             let formattedValue = numericValue;
             if (numericValue.length > 4) {
                 formattedValue = `${numericValue.slice(0, 4)}-${numericValue.slice(4)}`;
             }
+
             setFormData(prev => ({ ...prev, [name]: formattedValue }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
@@ -129,7 +136,10 @@ const FormularioDireccion = ({ clienteId, onDireccionGuardada, onCancel }) => {
                 onDireccionGuardada();
             } catch (error) {
                 console.error('Error al guardar dirección:', error);
+                toast.error('Error al guardar la dirección');
             }
+        } else {
+            toast.error('Por favor, corrija los errores en el formulario');
         }
     };
 
@@ -219,10 +229,8 @@ const FormularioDireccion = ({ clienteId, onDireccionGuardada, onCancel }) => {
                 />
                 <FormFeedback>{errors.referencia}</FormFeedback>
             </FormGroup>
-            <div className="d-flex justify-content-between">
-                <Button type="submit" color="primary">Guardar Dirección</Button>
-                <Button type="button" color="secondary" onClick={onCancel}>Cancelar</Button>
-            </div>
+            <Button type="submit" color="primary">Guardar Dirección</Button>
+            <Button type="button" color="secondary" onClick={onCancel}>Cancelar</Button>
         </Form>
     );
 };

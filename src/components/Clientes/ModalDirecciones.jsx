@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, ModalHeader, ModalBody, Table, Button, ModalFooter } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Table, Button, Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import AuthService from '../../services/authService';
 import FormularioDireccion from '../../pages/FormularioDireccion';
 import ModalVerDireccion from './ModalVerDireccion';
@@ -11,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const API_URL = import.meta.env.VITE_API_URL;
+const DIRECCIONES_POR_PAGINA = 5;
 
 const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
     const [direcciones, setDirecciones] = useState([]);
@@ -21,6 +21,7 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
     const [modalEditarDireccion, setModalEditarDireccion] = useState(false);
     const [modalConfirmacion, setModalConfirmacion] = useState(false);
     const [direccionAEliminar, setDireccionAEliminar] = useState(null);
+    const [paginaActual, setPaginaActual] = useState(1);
 
     const cargarDirecciones = async () => {
         setLoading(true);
@@ -59,7 +60,8 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
             toast.success('Dirección eliminada correctamente');
         } catch (error) {
             console.error('Error al eliminar dirección:', error);
-            toast.error('Error al eliminar la dirección');
+            // Asumimos que cualquier error de eliminación podría ser debido a una asociación con una orden
+            toast.error('Esta dirección no puede ser eliminada porque podría estar asociada a una orden u otros registros.');
         } finally {
             setModalConfirmacion(false);
             setDireccionAEliminar(null);
@@ -92,9 +94,15 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
         toast.success('Dirección actualizada correctamente');
     };
 
+    // Cálculos para la paginación
+    const totalPaginas = Math.ceil(direcciones.length / DIRECCIONES_POR_PAGINA);
+    const indicePrimeraDireccion = (paginaActual - 1) * DIRECCIONES_POR_PAGINA;
+    const indiceUltimaDireccion = indicePrimeraDireccion + DIRECCIONES_POR_PAGINA;
+    const direccionesActuales = direcciones.slice(indicePrimeraDireccion, indiceUltimaDireccion);
+
     return (
         <>
-            <Modal isOpen={isOpen} toggle={toggle} size="lg">
+            <Modal isOpen={isOpen} toggle={toggle} size="xl" style={{ maxWidth: '50%', width: '90%' }}>
                 <ModalHeader toggle={toggle}>Direcciones del Cliente</ModalHeader>
                 <ModalBody>
                     {mostrarFormulario ? (
@@ -107,51 +115,66 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
                         <p>Cargando direcciones...</p>
                     ) : direcciones.length > 0 ? (
                         <>
-                            <Table>
-                                <thead>
-                                    <tr>
-                                        <th>Contacto</th>
-                                        <th>Teléfono</th>
-                                        <th>Dirección</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {direcciones.map((direccion) => (
-                                        <tr key={direccion.id}>
-                                            <td>{direccion.nombre_contacto}</td>
-                                            <td>{direccion.telefono}</td>
-                                            <td>{direccion.direccion}</td>
-                                            <td>
-                                                <div className="d-flex justify-content-around">
-                                                    <Button color="info" size="sm" onClick={() => verDireccion(direccion)} className="me-2">
-                                                        <FontAwesomeIcon icon={faEye} />
-                                                    </Button>
-                                                    <Button color="warning" size="sm" onClick={() => editarDireccion(direccion)} className="me-2">
-                                                        <FontAwesomeIcon icon={faEdit} />
-                                                    </Button>
-                                                    <Button color="danger" size="sm" onClick={() => confirmarEliminarDireccion(direccion.id)}>
-                                                        <FontAwesomeIcon icon={faTrash} />
-                                                    </Button>
-                                                </div>
-                                            </td>
+                            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '20px' }}>
+                                <Table responsive bordered hover>
+                                    <thead>
+                                        <tr>
+                                            <th style={{ width: '20%' }}>Contacto</th>
+                                            <th style={{ width: '15%' }}>Teléfono</th>
+                                            <th style={{ width: '50%' }}>Dirección</th>
+                                            <th style={{ width: '15%' }}>Acciones</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                            <Button color="primary" onClick={toggleFormulario}>
-                                Agregar Nueva Dirección
-                            </Button>
+                                    </thead>
+                                    <tbody>
+                                        {direccionesActuales.map((direccion) => (
+                                            <tr key={direccion.id}>
+                                                <td>{direccion.nombre_contacto}</td>
+                                                <td style={{ whiteSpace: 'nowrap' }}>{direccion.telefono}</td>
+                                                <td>{direccion.direccion}</td>
+                                                <td>
+                                                    <div className="d-flex justify-content-around">
+                                                        <Button color="info" size="sm" onClick={() => verDireccion(direccion)} className="me-2">
+                                                            <FontAwesomeIcon icon={faEye} />
+                                                        </Button>
+                                                        <Button color="warning" size="sm" onClick={() => editarDireccion(direccion)} className="me-2">
+                                                            <FontAwesomeIcon icon={faEdit} />
+                                                        </Button>
+                                                        <Button color="danger" size="sm" onClick={() => confirmarEliminarDireccion(direccion.id)}>
+                                                            <FontAwesomeIcon icon={faTrash} />
+                                                        </Button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </div>
+                            <Pagination className="justify-content-center">
+                                <PaginationItem disabled={paginaActual === 1}>
+                                    <PaginationLink previous onClick={() => setPaginaActual(paginaActual - 1)} />
+                                </PaginationItem>
+                                {[...Array(totalPaginas).keys()].map(numero => (
+                                    <PaginationItem key={numero + 1} active={paginaActual === numero + 1}>
+                                        <PaginationLink onClick={() => setPaginaActual(numero + 1)}>
+                                            {numero + 1}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ))}
+                                <PaginationItem disabled={paginaActual === totalPaginas}>
+                                    <PaginationLink next onClick={() => setPaginaActual(paginaActual + 1)} />
+                                </PaginationItem>
+                            </Pagination>
                         </>
                     ) : (
-                        <>
-                            <p>No hay direcciones asociadas a este cliente.</p>
-                            <Button color="primary" onClick={toggleFormulario}>
-                                Agregar Nueva Dirección
-                            </Button>
-                        </>
+                        <p>No hay direcciones asociadas a este cliente.</p>
                     )}
                 </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={toggleFormulario}>
+                        {mostrarFormulario ? "Cancelar" : "Agregar Nueva Dirección"}
+                    </Button>
+                    <Button color="secondary" onClick={toggle}>Cerrar</Button>
+                </ModalFooter>
             </Modal>
             <ModalVerDireccion
                 isOpen={modalVerDireccion}
@@ -164,7 +187,7 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
                 direccion={direccionSeleccionada}
                 onDireccionEditada={onDireccionEditada}
             />
-            <Modal isOpen={modalConfirmacion} toggle={() => setModalConfirmacion(false)} style={{ zIndex: 1060 }}>
+            <Modal isOpen={modalConfirmacion} toggle={() => setModalConfirmacion(false)}>
                 <ModalHeader toggle={() => setModalConfirmacion(false)}>Confirmar Eliminación</ModalHeader>
                 <ModalBody>
                     ¿Está seguro de que desea eliminar esta dirección?

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardBody, Col, Row, Button, Badge } from "reactstrap";
 import { Link, useParams } from "react-router-dom";
+import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import axios from "axios";
 import AuthService from "../services/authService";
 
@@ -32,6 +33,7 @@ const DetallesEmpleado = () => {
 
   return (
     <div className="page-content">
+      <Breadcrumbs title="Gestión de Empleados" breadcrumbItem="Datos de Empleado" />        
       <Card>
         <CardBody>
           <h5 className="card-title">Detalles del Empleado</h5>

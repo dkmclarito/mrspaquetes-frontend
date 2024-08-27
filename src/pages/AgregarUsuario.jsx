@@ -6,6 +6,8 @@ import AuthService from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import "../styles/usuarios.css";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -47,7 +49,6 @@ const AgregarUsuario = () => {
       setAlertaExito(true);
       setTimeout(() => {
         setAlertaExito(false);
-        navigate('/GestionUsuarios');
       }, 3000);
     } else if (type === "error") {
       setAlertaError(true);
@@ -65,6 +66,23 @@ const AgregarUsuario = () => {
   const validatePassword = (password) => {
     const re = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[A-Z]).{5,}$/;
     return re.test(password);
+  };
+
+  const handleSuccessAlert = (id) => {
+    confirmAlert({
+      title: 'Usuario agregado exitosamente!',
+      message: '¿Desea agregar la información del empleado ahora?',
+      buttons: [
+        {
+          label: 'Sí, crear ahora',
+          onClick: () => navigate(`/AgregarEmpleado/${id}`)
+        },
+        {
+          label: 'Agregar más tarde',
+          onClick: () => navigate('/GestionUsuarios')
+        }
+      ]
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -106,10 +124,29 @@ const AgregarUsuario = () => {
       });
 
       if (response.status === 200) {
-        setEmail("");
-        setPassword("");
-        setRol("");
-        displayAlert("success", "Usuario agregado exitosamente!");
+        // Realizar una nueva llamada para obtener el usuario recién creado
+        const fetchUserResponse = await axios.get(`${API_URL}/auth/get_users`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (fetchUserResponse.data && Array.isArray(fetchUserResponse.data.users)) {
+          const newUser = fetchUserResponse.data.users.find(user => user.email === email);
+          if (newUser) {
+            setEmail("");
+            setPassword("");
+            setRol("");
+            displayAlert("success", "Usuario agregado exitosamente!");
+            handleSuccessAlert(newUser.id); // Utiliza el ID del usuario recién creado
+          } else {
+            throw new Error("No se pudo encontrar el usuario recién creado.");
+          }
+        } else {
+          throw new Error("Error al buscar el usuario recién creado.");
+        }
+      } else {
+        throw new Error("Error en la creación del usuario.");
       }
     } catch (error) {
       displayAlert("error", "No se pudo agregar el usuario. Inténtelo de nuevo más tarde.");
@@ -186,3 +223,4 @@ const AgregarUsuario = () => {
 };
 
 export default AgregarUsuario;
+

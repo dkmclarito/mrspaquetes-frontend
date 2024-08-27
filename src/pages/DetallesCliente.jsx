@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from "react";
-import { Card, CardBody, Col, Row, Button, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Table } from "reactstrap";
+import React, { useEffect, useState, useCallback } from "react";
+import { Card, CardBody, Col, Row, Button, Badge, Modal, ModalHeader, ModalBody, ModalFooter, Table, Collapse, Pagination, PaginationItem, PaginationLink } from "reactstrap";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AuthService from "../services/authService";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck, faTimes, faEye, faEdit, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons';
+import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
+import { faCheck, faTimes, faEye, faEdit, faTrash, faPlus, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import FormularioDireccion from "../pages/FormularioDireccion";
 import ModalEditarDireccion from "../components/Clientes/ModalEditarDireccion";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const DIRECCIONES_POR_PAGINA = 5;
 
 const DetallesCliente = () => {
   const { id } = useParams();
@@ -21,48 +23,65 @@ const DetallesCliente = () => {
   const [direccionSeleccionada, setDireccionSeleccionada] = useState(null);
   const [modalConfirmacion, setModalConfirmacion] = useState(false);
   const [direccionAEliminar, setDireccionAEliminar] = useState(null);
+  const [direccionesExpandidas, setDireccionesExpandidas] = useState({});
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [cargando, setCargando] = useState(true);
+
+  const cargarDatos = useCallback(async () => {
+    try {
+      setCargando(true);
+      const token = AuthService.getCurrentUser();
+      const [clienteResponse, direccionesResponse, detallesResponse] = await Promise.all([
+        axios.get(`${API_URL}/clientes/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/dropdown/get_direcciones/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      setCliente(clienteResponse.data.cliente);
+
+      const direccionesConDetalles = direccionesResponse.data.direcciones.map(dir => {
+        const detalles = detallesResponse.data.find(d => d.id === dir.id);
+        return {
+          ...dir,
+          departamento: detalles?.departamento || dir.id_departamento,
+          municipio: detalles?.municipio || dir.id_municipio
+        };
+      });
+
+      setDirecciones(direccionesConDetalles);
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      toast.error("Error al cargar los datos del cliente y direcciones");
+    } finally {
+      setCargando(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    const fetchClienteYDirecciones = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
-        const clienteResponse = await axios.get(`${API_URL}/clientes/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setCliente(clienteResponse.data.cliente);
-
-        const direccionesResponse = await axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setDirecciones(direccionesResponse.data.direcciones);
-      } catch (error) {
-        console.error("Error al obtener los datos:", error);
-        toast.error("Error al cargar los datos del cliente");
-      }
-    };
-
-    fetchClienteYDirecciones();
-  }, [id]);
+    cargarDatos();
+  }, [cargarDatos]);
 
   const toggleModalDireccion = () => setModalDireccion(!modalDireccion);
 
-  const onDireccionGuardada = async () => {
-    toggleModalDireccion();
-    await cargarDirecciones();
-    toast.success('Dirección guardada correctamente');
+  const toggleDireccion = (id) => {
+    setDireccionesExpandidas(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const cargarDirecciones = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      const response = await axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setDirecciones(response.data.direcciones);
-    } catch (error) {
-      console.error("Error al cargar direcciones:", error);
-      toast.error("Error al cargar las direcciones");
-    }
+  const indicePrimeraDireccion = (paginaActual - 1) * DIRECCIONES_POR_PAGINA;
+  const indiceUltimaDireccion = indicePrimeraDireccion + DIRECCIONES_POR_PAGINA;
+  const direccionesActuales = direcciones.slice(indicePrimeraDireccion, indiceUltimaDireccion);
+  const totalPaginas = Math.ceil(direcciones.length / DIRECCIONES_POR_PAGINA);
+
+  const onDireccionGuardada = async () => {
+    toggleModalDireccion();
+    await cargarDatos();
+    toast.success('Dirección guardada correctamente');
   };
 
   const editarDireccion = (direccion) => {
@@ -72,7 +91,7 @@ const DetallesCliente = () => {
 
   const onDireccionEditada = async () => {
     setModalEditarDireccion(false);
-    await cargarDirecciones();
+    await cargarDatos();
     toast.success('Dirección actualizada correctamente');
   };
 
@@ -88,20 +107,27 @@ const DetallesCliente = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       await cargarDirecciones();
-      setModalConfirmacion(false);
       toast.success('Dirección eliminada correctamente');
     } catch (error) {
-      console.error("Error al eliminar dirección:", error);
-      toast.error("Error al eliminar la dirección");
+      console.error('Error al eliminar dirección:', error);
+      toast.error('Esta dirección no puede ser eliminada porque podría estar asociada a una orden u otros registros.');
+    } finally {
+      setModalConfirmacion(false);
+      setDireccionAEliminar(null);
     }
   };
 
-  if (!cliente) {
+  if (cargando) {
     return <p>Cargando...</p>;
+  }
+
+  if (!cliente) {
+    return <p>No se encontró información del cliente.</p>;
   }
 
   return (
     <div className="page-content">
+      <Breadcrumbs title="Gestión de Clientes" breadcrumbItem="Datos de Cliente" />        
       <Card>
         <CardBody>
           <h5 className="card-title">Detalles del Cliente</h5>
@@ -196,41 +222,76 @@ const DetallesCliente = () => {
             </Col>
           </Row>
           <h5 className="mt-4">Direcciones del Cliente</h5>
-          <Table>
-            <thead>
-              <tr>
-                <th>Contacto</th>
-                <th>Teléfono</th>
-                <th>Departamento</th>
-                <th>Municipio</th>
-                <th>Dirección</th>
-                <th>Referencia</th>
-                <th>Acciones</th>
-
-              </tr>
-            </thead>
-            <tbody>
-              {direcciones.map((direccion) => (
-                <tr key={direccion.id}>
-                  <td>{direccion.nombre_contacto}</td>
-                  <td>{direccion.telefono}</td>
-                  <td>{direccion.id_departamento}</td>
-                  <td>{direccion.id_municipio}</td>
-                  <td>{direccion.direccion}</td>
-                  <td>{direccion.referencia}</td>
-                  <td>
-                    <Button color="info" size="sm" className="me-2" onClick={() => editarDireccion(direccion)}>
-                      <FontAwesomeIcon icon={faEdit} />
-                    </Button>
-                    <Button color="danger" size="sm" onClick={() => confirmarEliminarDireccion(direccion.id)}>
-                      <FontAwesomeIcon icon={faTrash} />
-                    </Button>
-                  </td>
+          <div className="table-responsive">
+            <Table className="table-hover" style={{ minWidth: '800px' }}>
+              <thead>
+                <tr>
+                  <th style={{ width: '15%' }}>Contacto</th>
+                  <th style={{ width: '10%' }}>Teléfono</th>
+                  <th className="d-none d-md-table-cell" style={{ width: '10%' }}>Departamento</th>
+                  <th className="d-none d-md-table-cell" style={{ width: '10%' }}>Municipio</th>
+                  <th className="d-none d-lg-table-cell" style={{ width: '25%' }}>Dirección</th>
+                  <th className="d-none d-lg-table-cell" style={{ width: '25%' }}>Referencia</th>
+                  <th style={{ width: '5%' }}>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-          <Button color="primary" onClick={toggleModalDireccion}>
+              </thead>
+              <tbody>
+                {direccionesActuales.map((direccion) => (
+                  <React.Fragment key={direccion.id}>
+                    <tr>
+                      <td style={{ width: '15%' }}>{direccion.nombre_contacto}</td>
+                      <td style={{ width: '10%' }}>{direccion.telefono}</td>
+                      <td className="d-none d-md-table-cell" style={{ width: '10%' }}>{direccion.departamento}</td>
+                      <td className="d-none d-md-table-cell" style={{ width: '10%' }}>{direccion.municipio}</td>
+                      <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.direccion}</td>
+                      <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.referencia}</td>
+                      <td style={{ width: '5%' }}>
+                        <div className="d-flex justify-content-between">
+                          <Button color="info" size="sm" className="me-1" onClick={() => editarDireccion(direccion)}>
+                            <FontAwesomeIcon icon={faEdit} />
+                          </Button>
+                          <Button color="danger" size="sm" className="me-1" onClick={() => confirmarEliminarDireccion(direccion.id)}>
+                            <FontAwesomeIcon icon={faTrash} />
+                          </Button>
+                          <Button color="secondary" size="sm" className="d-md-none" onClick={() => toggleDireccion(direccion.id)}>
+                            <FontAwesomeIcon icon={direccionesExpandidas[direccion.id] ? faChevronUp : faChevronDown} />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="d-md-none">
+                      <td colSpan="3">
+                        <Collapse isOpen={direccionesExpandidas[direccion.id]}>
+                          <div className="p-2">
+                            <strong>Departamento:</strong> {direccion.departamento}<br />
+                            <strong>Municipio:</strong> {direccion.municipio}<br />
+                            <strong>Dirección:</strong> {direccion.direccion}<br />
+                            <strong>Referencia:</strong> {direccion.referencia}
+                          </div>
+                        </Collapse>
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+          <Pagination className="mt-3 justify-content-center">
+            <PaginationItem disabled={paginaActual === 1}>
+              <PaginationLink previous onClick={() => setPaginaActual(paginaActual - 1)} />
+            </PaginationItem>
+            {[...Array(totalPaginas).keys()].map(numero => (
+              <PaginationItem key={numero + 1} active={paginaActual === numero + 1}>
+                <PaginationLink onClick={() => setPaginaActual(numero + 1)}>
+                  {numero + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem disabled={paginaActual === totalPaginas}>
+              <PaginationLink next onClick={() => setPaginaActual(paginaActual + 1)} />
+            </PaginationItem>
+          </Pagination>
+          <Button color="primary" onClick={toggleModalDireccion} className="mt-3">
             <FontAwesomeIcon icon={faPlus} /> Agregar Dirección
           </Button>
 
