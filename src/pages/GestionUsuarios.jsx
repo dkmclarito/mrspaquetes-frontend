@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import TablaUsuarios from "../components/Usuarios/TablaUsuarios";
 import ModalEditarUsuario from "../components/Usuarios/ModalEditarUsuario";
@@ -11,11 +11,11 @@ import "../styles/usuarios.css";
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
-
 const ITEMS_PER_PAGE = 5;
 
 const GestionUsuarios = () => {
   document.title = "Usuarios | Mr. Paquetes";
+  const navigate = useNavigate();
 
   const [usuarios, setUsuarios] = useState([]);
   const [empleados, setEmpleados] = useState([]);
@@ -28,99 +28,78 @@ const GestionUsuarios = () => {
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
+  const fetchData = useCallback(async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const [usuariosResponse, empleadosResponse] = await Promise.all([
+        axios.get(`${API_URL}/auth/get_users`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/empleados`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
 
-        const [usuariosResponse, empleadosResponse] = await Promise.all([
-          axios.get(`${API_URL}/auth/get_users`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }),
-          axios.get(`${API_URL}/empleados`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          })
-        ]);
+      const empleadosMap = new Map(empleadosResponse.data.empleados.map(emp => [emp.id, `${emp.nombres} ${emp.apellidos}`]));
+      setEmpleados(empleadosResponse.data.empleados);
 
-        if (usuariosResponse.data && Array.isArray(usuariosResponse.data.users)) {
-          const empleadosMap = new Map();
-          empleadosResponse.data.empleados.forEach(empleado => {
-            empleadosMap.set(empleado.id, `${empleado.nombres} ${empleado.apellidos}`);
-          });
-
-          const usuariosConEmpleados = usuariosResponse.data.users.map(usuario => ({
-            ...usuario,
-            nombre_completo_empleado: empleadosMap.get(usuario.id_empleado) || 'Desconocido'
-          }));
-
-          setUsuarios(usuariosConEmpleados);
-          setEmpleados(empleadosResponse.data.empleados); 
-        } else {
-          console.error("Datos inesperados al obtener usuarios o empleados:", usuariosResponse.data);
-        }
-      } catch (error) {
-        console.error("Error al obtener usuarios o empleados:", error);
+      if (usuariosResponse.data && Array.isArray(usuariosResponse.data.users)) {
+        const usuariosConEmpleados = usuariosResponse.data.users.map(usuario => ({
+          ...usuario,
+          nombre_completo_empleado: usuario.role_name === 'admin'
+            ? 'Usuario administrador'
+            : (usuario.id_empleado ? empleadosMap.get(usuario.id_empleado) : 'Sin asignar')
+        }));
+        setUsuarios(usuariosConEmpleados);
+      } else {
+        console.error("Datos inesperados al obtener usuarios:", usuariosResponse.data);
       }
-    };
-
-    fetchData();
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+    }
   }, []);
 
-  const eliminarUsuario = (idUsuario) => {
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const eliminarUsuario = useCallback((idUsuario) => {
     setConfirmarEliminar(true);
     setUsuarioAEliminar(idUsuario);
-  };
+  }, []);
 
-  const confirmarEliminarUsuario = async () => {
+  const confirmarEliminarUsuario = useCallback(async () => {
     try {
       const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/auth/destroy/${usuarioAEliminar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      const nuevosUsuarios = usuarios.filter(usuario => usuario.id !== usuarioAEliminar);
-      setUsuarios(nuevosUsuarios);
+      setUsuarios(prevUsuarios => prevUsuarios.filter(usuario => usuario.id !== usuarioAEliminar));
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
     } finally {
       setConfirmarEliminar(false);
       setUsuarioAEliminar(null);
     }
-  };
+  }, [usuarioAEliminar]);
 
-  const toggleModalEditar = (usuario) => {
+  const toggleModalEditar = useCallback((usuario) => {
     setUsuarioEditado({
       ...usuario,
-      id_empleado: usuario.id_empleado, 
-      role_id: usuario.role_id 
+      id_empleado: usuario.id_empleado,
+      role_id: usuario.role_id
     });
     setModalEditar(true);
-  };
+  }, []);
 
-  const guardarCambiosUsuario = async (usuarioActualizado) => {
+  const guardarCambiosUsuario = useCallback(async (usuarioActualizado) => {
     try {
       const token = AuthService.getCurrentUser();
-      const data = {
-        email: usuarioActualizado.email,
-        type: usuarioActualizado.type,
-        status: usuarioActualizado.status,
-        role_id: usuarioActualizado.role_id,
-        id_empleado: usuarioActualizado.id_empleado,
-        password: usuarioActualizado.password,
-        password_confirmation: usuarioActualizado.password_confirmation
-      };
+      const { id, email, type, status, role_id, id_empleado, password, password_confirmation } = usuarioActualizado;
+      const data = { email, type, status, role_id, password, password_confirmation };
+      if (id_empleado) data.id_empleado = id_empleado;
 
-      if (data.id_empleado === null) {
-        delete data.id_empleado;
-      }
-
-      const response = await axios.put(`${API_URL}/auth/update/${usuarioActualizado.id}`, data, {
+      const response = await axios.put(`${API_URL}/auth/update/${id}`, data, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
@@ -128,59 +107,38 @@ const GestionUsuarios = () => {
       });
 
       if (response.status === 200) {
-        setUsuarios((prevUsuarios) =>
-          prevUsuarios.map((usuario) =>
-            usuario.id === usuarioActualizado.id ? usuarioActualizado : usuario
-          )
+        setUsuarios(prevUsuarios =>
+          prevUsuarios.map(usuario => usuario.id === id ? usuarioActualizado : usuario)
         );
         setModalEditar(false);
         setUsuarioEditado(null);
-      } else {
-        console.error("Error al actualizar usuario:", response.statusText);
       }
     } catch (error) {
       console.error("Error al actualizar usuario:", error);
-      if (error.response) {
-        console.log("Detalles del error:", error.response.data);
-      }
     }
-  };
+  }, []);
 
-  const filtrarUsuarios = () => {
-    let usuariosFiltrados = usuarios;
+  const filtrarUsuarios = useCallback(() => {
+    return usuarios.filter(usuario => {
+      const cumpleBusqueda = !busqueda ||
+        usuario.email.toLowerCase().includes(busqueda.toLowerCase()) ||
+        usuario.nombre_completo_empleado.toLowerCase().includes(busqueda.toLowerCase());
+      const cumpleRol = !rolFiltro || usuario.role_id === parseInt(rolFiltro, 10);
+      const cumpleEstado = !estadoFiltro || usuario.status.toString() === estadoFiltro;
+      return cumpleBusqueda && cumpleRol && cumpleEstado;
+    });
+  }, [usuarios, busqueda, rolFiltro, estadoFiltro]);
 
-    if (busqueda) {
-      const busquedaLower = busqueda.toLowerCase();
-      usuariosFiltrados = usuariosFiltrados.filter((usuario) =>
-        usuario.email.toLowerCase().includes(busquedaLower) ||
-        usuario.nombre_completo_empleado.toLowerCase().includes(busquedaLower)
-      );
-    }
+  const usuariosFiltrados = useMemo(() => filtrarUsuarios(), [filtrarUsuarios]);
 
-    if (rolFiltro) {
-      usuariosFiltrados = usuariosFiltrados.filter(usuario => usuario.role_id === parseInt(rolFiltro, 10));
-    }
-
-    if (estadoFiltro) {
-      usuariosFiltrados = usuariosFiltrados.filter(usuario => usuario.status.toString() === estadoFiltro);
-    }
-
-    return usuariosFiltrados;
-  };
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+  const paginatedUsuarios = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return usuariosFiltrados.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [usuariosFiltrados, currentPage]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [busqueda, rolFiltro, estadoFiltro]);
-
-  const usuariosFiltrados = filtrarUsuarios(usuarios);
-  const paginatedUsuarios = usuariosFiltrados.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="page-content">
@@ -246,6 +204,7 @@ const GestionUsuarios = () => {
                   usuarios={paginatedUsuarios}
                   eliminarUsuario={eliminarUsuario}
                   toggleModalEditar={toggleModalEditar}
+                  agregarEmpleado={(usuarioId) => navigate(`/AgregarEmpleado/${usuarioId}`)}
                 />
               </CardBody>
             </Card>
@@ -258,7 +217,7 @@ const GestionUsuarios = () => {
               itemsCountPerPage={ITEMS_PER_PAGE}
               totalItemsCount={usuariosFiltrados.length}
               pageRangeDisplayed={5}
-              onChange={handlePageChange}
+              onChange={setCurrentPage}
               itemClass="page-item"
               linkClass="page-link"
               innerClass="pagination"
@@ -272,7 +231,6 @@ const GestionUsuarios = () => {
         setUsuarioEditado={setUsuarioEditado}
         guardarCambiosUsuario={guardarCambiosUsuario}
         setModalEditar={setModalEditar}
-        clientes={[]}
         empleados={empleados}
       />
       <ModalConfirmarEliminar

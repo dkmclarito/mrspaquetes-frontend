@@ -189,11 +189,7 @@ const GestionEmpleados = () => {
                 placeholder="Buscar por nombre, apellido o cargo"
                 style={{ width: "400px" }}
               />
-              <div style={{ marginLeft: "auto" }}>
-                <Link to="/AgregarEmpleado" className="btn btn-primary custom-button">
-                  <i className="fas fa-plus"></i> Agregar Empleado
-                </Link>
-              </div>
+     
             </div>
           </Col>
         </Row>

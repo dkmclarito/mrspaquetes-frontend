@@ -9,7 +9,8 @@ import Logout from './components/Login/Logout';
 import AuthService from './services/authService';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import GestionEmpleados from './pages/GestionEmpleados';
-import AgregarEmpleado from './pages/AgregarEmpleado';
+import AgregarEmpleado from './pages/AgregarEmpleado'; 
+import AgregarEmpleadoUser from './pages/AgregarEmpleado';
 import DetallesEmpleado from './pages/DetallesEmpleado';
 import GestionClientes from './pages/GestionClientes';
 import AgregarCliente from './pages/AgregarCliente';
@@ -69,6 +70,9 @@ const App = () => {
                 <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />
                 <Route path="/GestionEmpleados" element={<GestionEmpleados />} />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
+
+                <Route path="/AgregarEmpleado/:id" element={<AgregarEmpleadoUser />} />   {/* NUEVO */}
+
                 <Route path="/DetallesEmpleado/:id" element={<DetallesEmpleado />} />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
