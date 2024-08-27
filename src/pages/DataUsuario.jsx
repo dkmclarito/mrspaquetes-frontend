@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, CardBody, Table, Button } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Table, Button} from "reactstrap";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams , Link} from "react-router-dom";
 import AuthService from "../services/authService";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 
@@ -56,9 +56,7 @@ const DataUsuario = () => {
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Datos de Usuario" />
-        <Button color="primary" onClick={() => navigate("/GestionUsuarios")}>
-          Volver a Usuarios
-        </Button>
+       
         <h2 className="mt-4">Datos de Usuario</h2>
         <Row>
           <Col lg={12}>
@@ -117,7 +115,14 @@ const DataUsuario = () => {
             </Card>
           </Col>
         </Row>
+        <div className="d-flex justify-content-between mt-4">
+            <Link to="/GestionUsuarios" className="btn btn-secondary btn-regresar">
+              <i className="fas fa-arrow-left"></i> Regresar
+            </Link>
+       
+          </div>
       </Container>
+
     </div>
   );
 };

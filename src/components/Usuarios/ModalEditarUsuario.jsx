@@ -202,6 +202,7 @@ const ModalEditarUsuario = ({
             value={usuarioEditado ? usuarioEditado.id_empleado : ""}
             onChange={(e) => setUsuarioEditado(prevState => ({ ...prevState, id_empleado: e.target.value }))}
             required
+            disabled // Deshabilita el campo de selección
           >
             <option value="">Seleccione un empleado</option>
             {empleados.map(empleado => (
