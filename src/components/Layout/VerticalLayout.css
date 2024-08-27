@@ -331,6 +331,21 @@ body {
   border: 1px solid #ddd;
 }
 
+/*Botones*/
+
+.btn-regresar{
+  background-color: #d38500;
+  color: white;
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.btn-regresar:hover{
+  background-color: #825301;
+  color: rgba(255, 255, 255, 0.7);
+}
+
 /*-------------------------- Dark Mode Styles--------------------------- */
 .dark-mode {
   background-color: #121212;
@@ -426,13 +441,17 @@ body {
 }
 
 .dark-mode .table th {
-  background-color: #444;
+  background-color: #313131;
 
 }
 
 .dark-mode .table td {
   background-color: #555;
   color: #ffffff;
+}
+
+.dark-mode .tabla-datosusuario{
+  background-color: #1e1e1e;
 }
 
 /* Estilos del Modo Oscuro para .card */
@@ -577,6 +596,7 @@ body {
 .dark-mode .btn-primary:hover{
   background-color: rgba(22, 36, 190, 0.318);
   color: rgba(255, 255, 255, 0.725);
+  border-color: #1e1e1e;
 }
 
 .dark-mode .btn-editar{
@@ -603,6 +623,7 @@ body {
 .dark-mode .btn-regresar:hover{
   background-color: #825301c3;
   color: rgba(255, 255, 255, 0.7);
+  border-color: #1e1e1e;
 }
 
 .dark-mode .btn-danger{
@@ -616,6 +637,7 @@ body {
 .dark-mode .btn-danger:hover{
   background-color: rgba(255, 0, 0, 0.197);
   color: red;
+  border-color: rgb(255, 45, 45);
 }
 
 .dark-mode .btn-success{
@@ -628,6 +650,7 @@ body {
 .dark-mode .btn-success:hover{
   background-color: rgba(18, 92, 29, 0.362);
   color: rgb(24, 137, 41);
+  border-color: rgb(54, 138, 67);
 }
 
 .dark-mode .btn-custom-red {

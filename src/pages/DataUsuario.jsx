@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, CardBody, Table, Button } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Table, Button,Badge } from "reactstrap";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ModalAgregarEmpleado from "../components/Usuarios/ModalAgregarEmpleado";
 import AuthService from "../services/authService";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
@@ -65,70 +65,73 @@ const DataUsuario = () => {
 
   return (
     <div className="page-content">
-      <Container fluid>
-        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Datos de Usuario" />
-        <Button color="primary" onClick={() => navigate("/GestionUsuarios")}>
-          Volver a Usuarios
-        </Button>
-        <h2 className="mt-4">Datos de Usuario</h2>
-        <Row>
-          <Col lg={12}>
-            <Card>
-              <CardBody>
+      <Card>
+        <CardBody>
+          <h5 className="card-title">Datos de Usuario</h5>                
+          <Row>
+            <Col sm="12">
+              <div className="table-responsive">
+                <table className="table table-bordered tabla-datosusuario">
                 {usuario ? (
-                  <Table striped className="table-centered table-nowrap mb-0">
-                    <thead className="thead-light">
-                      <tr>
-                        <th className="text-center">Campo</th>
-                        <th className="text-center">Valor</th>
-                      </tr>
-                    </thead>
+                  <Table className="">
                     <tbody>
                       <tr>
-                        <td className="text-center">ID</td>
-                        <td className="text-center">{usuario.id}</td>
+                        <th scope="row" style={{ width: '150px', whiteSpace: 'nowrap' }}>ID:</th>
+                        <td>
+                        <Badge color="primary">{usuario.id}</Badge>
+                        </td>
                       </tr>
                       <tr>
-                        <td className="text-center">Email</td>
-                        <td className="text-center">{usuario.email}</td>
+                      <th scope="row">Email:</th>
+                        <td>{usuario.email}</td>
                       </tr>
                       <tr>
-                        <td className="text-center">Estado</td>
-                        <td className="text-center">{usuario.status === 1 ? 'Activo' : 'Inactivo'}</td>
+                      <th scope="row">Estado:</th>
+                        <td>
+                          <Badge color={usuario.id_estado === 1 ? "danger" : "success"}>
+                          {usuario.status === 1 ? 'Activo' : 'Inactivo'}
+                          </Badge>
+                        </td>
                       </tr>
                       <tr>
-                        <td className="text-center">Empleado</td>
-                        <td className="text-center">
+                      <th scope="row">Empleado:</th>
+                        <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           {usuario.nombre_completo_empleado}
                           {!usuario.id_empleado && (
-                            <Button color="secondary" onClick={handleAgregarEmpleado} style={{ marginLeft: '10px' }}>
+                            <Button color="primary" onClick={handleAgregarEmpleado} style={{ marginLeft: '10px' }}>
                               Asignar Empleado
                             </Button>
                           )}
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">Rol</td>
-                        <td className="text-center">{usuario.role_name || 'Desconocido'}</td>
+                      <th scope="row">Rol:</th>
+                        <td>{usuario.role_name || 'Desconocido'}</td>
                       </tr>
                       <tr>
-                        <td className="text-center">Fecha de creación</td>
-                        <td className="text-center">{usuario.created_at ? usuario.created_at.split(' ')[0] : 'Fecha no disponible'}</td>
+                      <th scope="row">Fecha de creación:</th>
+                        <td>{usuario.created_at ? usuario.created_at.split(' ')[0] : 'Fecha no disponible'}</td>
                       </tr>
                       <tr>
-                        <td className="text-center">Última actualización</td>
-                        <td className="text-center">{usuario.updated_at ? usuario.updated_at.split(' ')[0] : 'Fecha no disponible'}</td>
+                      <th scope="row">Última actualización:</th>
+                        <td>{usuario.updated_at ? usuario.updated_at.split(' ')[0] : 'Fecha no disponible'}</td>
                       </tr>
                     </tbody>
                   </Table>
                 ) : (
                   <p>Cargando datos del usuario...</p>
                 )}
-              </CardBody>
-            </Card>
+                </table>
+              </div>
           </Col>
         </Row>
-      </Container>
+        <div className="d-flex justify-content-between mt-4">
+        <Link to="/GestionUsuarios" className="btn btn-secondary btn-regresar">
+              <i className="fas fa-arrow-left"></i> Regresar
+        </Link>
+        </div>      
+        </CardBody>
+        </Card>
 
       <ModalAgregarEmpleado
         isOpen={modalAgregarEmpleado}
