@@ -57,6 +57,7 @@ const AgregarEmpleado = () => {
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
   const { id } = useParams();  // Obtener el idUser desde los parámetros de la URL
+  const [userData, setUserData] = useState(null);
 
   const today = new Date();
   const [duiError, setDuiError] = useState(""); 
@@ -65,6 +66,37 @@ const AgregarEmpleado = () => {
   const [maxDate, setMaxDate] = useState('');
   const [telefonoError, setTelefonoError] = useState("");
   const [isFechaNacimientoRequerida, setIsFechaNacimientoRequerida] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`${API_URL}/auth/show/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setUserData(data.user);
+        console.log("Datos del usuario:", data.user);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (id) {
+      fetchUserData();
+    }
+  }, [id, token]);
+
+  useEffect(() => {
+    if (userData) {
+      console.log(`ID de Usuario: ${id}`);
+      console.log("Datos completos del usuario:", userData);
+    }
+  }, [userData, id]);
 
  useEffect(() => {
     const fetchCargos = async () => {
@@ -372,33 +404,48 @@ const AgregarEmpleado = () => {
         },
         body: JSON.stringify(empleadoData),
       });
-  
+
       if (!response.ok) {
-        let errorMessage = "Error al agregar el empleado.";
-        toast.error(errorMessage, {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-        });
-        throw new Error(errorMessage);
+        throw new Error("Error al agregar el empleado.");
       }
-  
+
       const data = await response.json();
+      console.log("Empleado creado:", data);
+
+      // Corregimos la verificación del ID del empleado
+      if (!data.empleado || !data.empleado.id) {
+        throw new Error("No se recibió un ID de empleado válido después de crear el empleado.");
+      }
 
       // Actualizar el usuario con el id_empleado
-      await fetch(`${API_URL}/auth/update/${id}`, {
+      const updateUserData = {
+        name: userData.name,
+        email: userData.email,
+        role_id: userData.role_id,
+        id_empleado: data.empleado.id, // Usamos el ID correcto del empleado
+      };
+
+      console.log("Datos a enviar para actualizar usuario:", updateUserData);
+
+      const updateResponse = await fetch(`${API_URL}/auth/update/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ id_empleado: data.id }),
+        body: JSON.stringify(updateUserData),
       });
-  
-      toast.success("¡Empleado agregado con éxito!", {
+
+      if (!updateResponse.ok) {
+        const errorData = await updateResponse.json();
+        console.error("Error al actualizar usuario:", errorData);
+        throw new Error(`Error al actualizar el usuario: ${JSON.stringify(errorData)}`);
+      }
+
+      const updatedUserData = await updateResponse.json();
+      console.log("Usuario actualizado con éxito:", updatedUserData);
+
+      toast.success("¡Empleado agregado y usuario actualizado con éxito!", {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -406,7 +453,7 @@ const AgregarEmpleado = () => {
         pauseOnHover: false,
         draggable: true,
       });
-  
+
       setTimeout(() => {
         navigate("/GestionEmpleados");
       }, 2000);
@@ -422,7 +469,7 @@ const AgregarEmpleado = () => {
       setDepartamento("");
       setMunicipio("");
     } catch (error) {
-      toast.error(`Error al agregar el empleado: ${error.message}`, {
+      toast.error(`Error: ${error.message}`, {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -432,7 +479,7 @@ const AgregarEmpleado = () => {
       });
     }
   };
-  console.log(`ID de Usuario: ${id}`);
+
   return (
     <Container><Breadcrumbs title="Formulario de Registro de Empleados" breadcrumbItem="Ingrese la información" />
       <Card>
