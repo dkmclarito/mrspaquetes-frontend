@@ -243,6 +243,67 @@ colors{
   color: #04aad6; /* Color de texto activo en el submenú */
 }
 
+/* Alerta despues de agregar un usuario */
+.react-confirm-alert-overlay {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.react-confirm-alert {
+  background-color: #333;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.5);
+}
+
+.react-confirm-alert-button-group button {
+  background-color: #444;
+  color: white;
+  border: 1px solid #555;
+}
+
+.react-confirm-alert-button-group button:hover {
+  background-color: #555;
+}
+
+.react-confirm-alert-body {
+  background-color: #333;
+}
+
+.react-confirm-alert-body h1 {
+  color: white;
+}
+
+.react-confirm-alert-body div {
+  color: white;
+}
+
+.react-confirm-alert-button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Estilos para el primer botón */
+.react-confirm-alert-button-group button:nth-child(1) {
+  background-color: #4caf50;
+  color: white;
+  border: 1px solid #388e3c;
+}
+
+.react-confirm-alert-button-group button:nth-child(1):hover {
+  background-color: #45a049;
+}
+
+/* Estilos para el segundo botón */
+.react-confirm-alert-button-group button:nth-child(2) {
+  background-color: #f44336;
+  color: white;
+  border: 1px solid #d32f2f;
+}
+
+.react-confirm-alert-button-group button:nth-child(2):hover {
+  background-color: #e53935;
+}
+
 /* MODALES */
 .modal-content {
   background-color: #777777;
@@ -808,29 +869,6 @@ span.btn-direcciones-text{
 .dark-mode table .estatus-darkmode{
   background-color: #555;
 }
-
-/* Alerta despues de agregar un usuario */
-.dark-mode .react-confirm-alert-overlay {
-  background: rgba(0, 0, 0, 0.75);
-}
-
-.dark-mode .react-confirm-alert {
-  background-color: #333;
-  color: white;
-  border-radius: 8px;
-  box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.5);
-}
-
-.dark-mode .react-confirm-alert-button-group button {
-  background-color: #444;
-  color: white;
-  border: 1px solid #555;
-}
-
-.dark-mode .react-confirm-alert-button-group button:hover {
-  background-color: #555;
-}
-
 
 /*alerta que salen arriba de los formularios al agregar*/
 .dark-mode .alert-danger {
