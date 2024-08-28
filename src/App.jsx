@@ -36,10 +36,15 @@ import EmailVerification from './pages/EmailVerification';
 import ForgetPassword from './components/LoginClientes/ForgetPassword'; // Nuevo: Importación de ForgetPassword
 import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo: Importación de ResetPassword
 import DataUsuario from './pages/DataUsuario';
-import GestionOrdenes from './pages/Ordenes';
 import GestionRutas from './pages/Rutas';
 import GestionBodegas from './pages/GestionBodega';
 import AgregarBodega from './pages/AgregarBodega';
+import AgregarOrden from './pages/AgregarOrden';
+import GestionOrdenes from './pages/GestionOrdenes';
+import DatosPaquete from './pages/DatosPaquete';
+import GenerarOrden from './pages/GenerarOrden';
+import OrdenesSeleccionarCliente from './pages/OrdenesSeleccionarCliente';
+import OrdenesDirecciones from './pages/OrdenesDirecciones';
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
@@ -84,10 +89,15 @@ const App = () => {
                 <Route path="/GestionModelos" element={<GestionModelos />} />
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
-                <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
+                <Route path="/AgregarOrden" element={<AgregarOrden />} />
+                <Route path="/OrdenesSeleccionarCliente" element={<OrdenesSeleccionarCliente />} />
+                <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
+                <Route path="/OrdenesDirecciones/:idCliente" element={<OrdenesDirecciones />} />
+                <Route path="/DatosPaquete/:idCliente" element={<DatosPaquete />} />
+                <Route path="/GenerarOrden/:idCliente" element={<GenerarOrden />} />
               </Route>
 
               {/* Rutas para 'conductor' */}
