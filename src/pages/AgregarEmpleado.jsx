@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, FormFeedback } from "reactstrap";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate, useParams } from "react-router-dom";  // Agregado useParams para obtener el idUser
+import { useNavigate, useParams } from "react-router-dom";
 import "../styles/Empleados.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -54,10 +54,10 @@ const AgregarEmpleado = () => {
   const [isFechaContratacionValida, setIsFechaContratacionValida] = useState(true);
   const [isNombreValido, setIsNombreValido] = useState(true);
   const [isApellidosValid, setIsApellidosValid] = useState(true);
-  const token = AuthService.getCurrentUser();
-  const navigate = useNavigate();
-  const { id } = useParams();  // Obtener el idUser desde los parámetros de la URL
   const [userData, setUserData] = useState(null);
+  const { id } = useParams();  
+  const navigate = useNavigate();
+  const token = AuthService.getCurrentUser();
 
   const today = new Date();
   const [duiError, setDuiError] = useState(""); 
@@ -67,29 +67,28 @@ const AgregarEmpleado = () => {
   const [telefonoError, setTelefonoError] = useState("");
   const [isFechaNacimientoRequerida, setIsFechaNacimientoRequerida] = useState(false);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(`${API_URL}/auth/show/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setUserData(data.user);
-        console.log("Datos del usuario:", data.user);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+  const fetchUserData = useCallback(async () => {
+    if (!id) return; // Si no hay ID, no intentamos obtener datos del usuario
+    try {
+      const response = await fetch(`${API_URL}/auth/show/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
-
-    if (id) {
-      fetchUserData();
+      const data = await response.json();
+      setUserData(data.user);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error("Error al obtener datos del usuario");
     }
   }, [id, token]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   useEffect(() => {
     if (userData) {
@@ -412,63 +411,45 @@ const AgregarEmpleado = () => {
       const data = await response.json();
       console.log("Empleado creado:", data);
 
-      // Corregimos la verificación del ID del empleado
       if (!data.empleado || !data.empleado.id) {
         throw new Error("No se recibió un ID de empleado válido después de crear el empleado.");
       }
 
-      // Actualizar el usuario con el id_empleado
-      const updateUserData = {
-        name: userData.name,
-        email: userData.email,
-        role_id: userData.role_id,
-        id_empleado: data.empleado.id, 
-        status: 1
-      };
+      // Si hay un usuario asociado, actualizamos sus datos
+      if (userData && id) {
+        const updateUserData = {
+          name: userData.name,
+          email: userData.email,
+          role_id: userData.role_id,
+          id_empleado: data.empleado.id,
+          status: 1
+        };
 
-      console.log("Datos a enviar para actualizar usuario:", updateUserData);
+        const updateResponse = await fetch(`${API_URL}/auth/update/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateUserData),
+        });
 
-      const updateResponse = await fetch(`${API_URL}/auth/update/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateUserData),
-      });
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json();
+          console.error("Error al actualizar usuario:", errorData);
+          throw new Error(`Error al actualizar el usuario: ${JSON.stringify(errorData)}`);
+        }
 
-      if (!updateResponse.ok) {
-        const errorData = await updateResponse.json();
-        console.error("Error al actualizar usuario:", errorData);
-        throw new Error(`Error al actualizar el usuario: ${JSON.stringify(errorData)}`);
+        console.log("Usuario actualizado con éxito");
+        toast.success("¡Empleado agregado y usuario actualizado con éxito!");
+      } else {
+        toast.success("¡Empleado agregado con éxito!");
       }
-
-      const updatedUserData = await updateResponse.json();
-      console.log("Usuario actualizado con éxito:", updatedUserData);
-
-      toast.success("¡Empleado agregado y usuario actualizado con éxito!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
 
       setTimeout(() => {
         navigate("/GestionEmpleados");
-      }, 2000);
-  
-      setNombres("");
-      setApellidos("");
-      setDui("");
-      setTelefono("");
-      setFechaNacimiento("");
-      setFechaContratacion(getFechaContratacionPorDefecto());
-      setCargo("");
-      setDireccion("");
-      setDepartamento("");
-      setMunicipio("");
+      }, 1000);
+      
     } catch (error) {
       toast.error(`Error: ${error.message}`, {
         position: "bottom-right",
