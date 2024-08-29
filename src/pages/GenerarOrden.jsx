@@ -14,43 +14,41 @@ export default function GenerarOrden() {
   const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
+    id_cliente: idCliente,
+    nombre_contacto: '',
+    telefono: '',
+    id_direccion: '',
     id_tipo_pago: '1',
+    id_estado_paquete: '',
     total_pagar: '',
-    costo_adicional: '',
-    concept: '',
+    costo_adicional: '0.00',
+    concepto: '',
+    tipo_documento: 'consumidor_final',
+    detalles: []
   });
 
   useEffect(() => {
     const fetchClienteData = async () => {
-      console.log("Iniciando fetchClienteData");
-      console.log("idCliente:", idCliente);
-      console.log("API_URL:", API_URL);
       try {
         const token = localStorage.getItem('token');
-        console.log("Token:", token);
-        console.log("Haciendo solicitud a:", `${API_URL}/clientes/${idCliente}`);
         const response = await axios.get(`${API_URL}/clientes/${idCliente}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log("Respuesta recibida:", response.data);
         setCliente(response.data.cliente);
-        if (location.state && location.state.totalPrice) {
-          setFormData(prevState => ({
-            ...prevState,
-            total_pagar: location.state.totalPrice.toFixed(2)
-          }));
-        }
+        
+        const selectedAddress = JSON.parse(localStorage.getItem('selectedAddress') || '{}');
+        
+        setFormData(prevState => ({
+          ...prevState,
+          nombre_contacto: `${response.data.cliente.nombre} ${response.data.cliente.apellido}`,
+          telefono: response.data.cliente.telefono || '',
+          id_direccion: selectedAddress.id || '',
+          total_pagar: location.state?.totalPrice.toFixed(2) || '0.00',
+          detalles: location.state?.detalles || [],
+          ...location.state?.commonData
+        }));
       } catch (error) {
-        console.error("Error completo:", error);
-        if (error.response) {
-          console.error("Datos de la respuesta de error:", error.response.data);
-          console.error("Estado de la respuesta de error:", error.response.status);
-          console.error("Cabeceras de la respuesta de error:", error.response.headers);
-        } else if (error.request) {
-          console.error("La solicitud fue hecha pero no se recibió respuesta", error.request);
-        } else {
-          console.error("Error al configurar la solicitud", error.message);
-        }
+        console.error("Error al obtener datos del cliente:", error);
         toast.error("Error al obtener datos del cliente");
       } finally {
         setLoading(false);
@@ -72,23 +70,56 @@ export default function GenerarOrden() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
+      
+      // Format detalles
+      const formattedDetalles = formData.detalles.map(detalle => ({
+        id_tipo_paquete: Number(detalle.id_tipo_paquete),
+        id_empaque: Number(detalle.id_empaque),
+        peso: Number(detalle.peso),
+        id_estado_paquete: Number(detalle.id_estado_paquete),
+        fecha_envio: detalle.fecha_envio + "T00:00:00",
+        fecha_entrega_estimada: detalle.fecha_entrega_estimada + "T00:00:00",
+        fecha_entrega: detalle.fecha_entrega + "T00:00:00",
+        descripcion_contenido: detalle.descripcion, // Assuming 'descripcion' is used for 'descripcion_contenido'
+        id_tipo_entrega: Number(detalle.id_tipo_entrega),
+        id_direccion: Number(formData.id_direccion),
+        instrucciones_entrega: detalle.instrucciones_entrega,
+        descripcion: detalle.descripcion,
+        precio: Number(detalle.precio)
+      }));
+
       const orderData = {
-        ...formData,
-        id_cliente: idCliente,
-        detalles: location.state?.detalles || []
+        id_cliente: Number(formData.id_cliente),
+        nombre_contacto: formData.nombre_contacto,
+        telefono: formData.telefono,
+        id_direccion: Number(formData.id_direccion),
+        id_tipo_pago: Number(formData.id_tipo_pago),
+        id_estado_paquetes: Number(formData.id_estado_paquete),
+        total_pagar: Number(formData.total_pagar),
+        costo_adicional: Number(formData.costo_adicional),
+        concepto: formData.concepto || "Envío de paquetes",
+        tipo_documento: formData.tipo_documento,
+        detalles: formattedDetalles
       };
+
       console.log("Datos enviados a la API:", orderData);
+      
       await axios.post(`${API_URL}/ordenes`, orderData, {
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         }
       });
+      
       toast.success("Orden registrada con éxito");
       navigate('/GestionOrdenes');
     } catch (error) {
       console.error("Error al registrar la orden:", error);
-      toast.error("Error al registrar la orden");
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(`Error al registrar la orden: ${error.response.data.message}`);
+      } else {
+        toast.error("Error al registrar la orden");
+      }
     }
   };
 
@@ -109,10 +140,32 @@ export default function GenerarOrden() {
           <Col lg={12}>
             <Card>
               <CardBody>
-                <h4 className="card-title mb-4">Generando orden de: {cliente.nombre} {cliente.apellido}</h4>
+                <h4 className="card-title mb-4">Generando orden para: {cliente.nombre} {cliente.apellido}</h4>
                 <Form onSubmit={handleSubmit}>
                   <Row>
-                    <Col md="6">
+                    <Col md={6}>
+                      <FormGroup>
+                        <Label for="nombre_contacto">Nombre de Contacto</Label>
+                        <Input
+                          type="text"
+                          name="nombre_contacto"
+                          id="nombre_contacto"
+                          value={formData.nombre_contacto}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </FormGroup>
+                      <FormGroup>
+                        <Label for="telefono">Teléfono</Label>
+                        <Input
+                          type="text"
+                          name="telefono"
+                          id="telefono"
+                          value={formData.telefono}
+                          onChange={handleInputChange}
+                          required
+                        />
+                      </FormGroup>
                       <FormGroup>
                         <Label for="id_tipo_pago">Tipo de Pago</Label>
                         <Input
@@ -126,6 +179,8 @@ export default function GenerarOrden() {
                           <option value="2">Tarjeta</option>
                         </Input>
                       </FormGroup>
+                    </Col>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for="total_pagar">Total a Pagar</Label>
                         <Input
@@ -137,8 +192,6 @@ export default function GenerarOrden() {
                           required
                         />
                       </FormGroup>
-                    </Col>
-                    <Col md="6">
                       <FormGroup>
                         <Label for="costo_adicional">Costo Adicional</Label>
                         <Input
@@ -150,17 +203,30 @@ export default function GenerarOrden() {
                         />
                       </FormGroup>
                       <FormGroup>
-                        <Label for="concept">Concepto</Label>
+                        <Label for="concepto">Concepto</Label>
                         <Input
                           type="text"
-                          name="concept"
-                          id="concept"
-                          value={formData.concept}
+                          name="concepto"
+                          id="concepto"
+                          value={formData.concepto}
                           onChange={handleInputChange}
                         />
                       </FormGroup>
                     </Col>
                   </Row>
+                  <FormGroup>
+                    <Label for="tipo_documento">Tipo de Documento</Label>
+                    <Input
+                      type="select"
+                      name="tipo_documento"
+                      id="tipo_documento"
+                      value={formData.tipo_documento}
+                      onChange={handleInputChange}
+                    >
+                      <option value="consumidor_final">Consumidor Final</option>
+                      <option value="credito_fiscal">Crédito Fiscal</option>
+                    </Input>
+                  </FormGroup>
                   <Button color="primary" type="submit">
                     Registrar Orden
                   </Button>
@@ -172,4 +238,4 @@ export default function GenerarOrden() {
       </Container>
     </div>
   );
-};
+}

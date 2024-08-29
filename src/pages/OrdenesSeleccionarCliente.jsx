@@ -87,6 +87,11 @@ export default function OrdenesSeleccionarCliente() {
     navigate(`/OrdenesDirecciones/${clienteId}`);
   };
 
+  const handleSelectAddress = (address) => {
+    localStorage.setItem('selectedAddress', JSON.stringify(address));
+    navigate(`/DatosPaquete/${clienteId}`);
+  };
+
   return (
     <div className="page-content">
       <Container fluid>

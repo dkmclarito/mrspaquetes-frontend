@@ -36,7 +36,6 @@ import EmailVerification from './pages/EmailVerification';
 import ForgetPassword from './components/LoginClientes/ForgetPassword'; // Nuevo: Importación de ForgetPassword
 import ResetPassword from './components/LoginClientes/ResetPassword';   // Nuevo: Importación de ResetPassword
 import DataUsuario from './pages/DataUsuario';
-import GestionRutas from './pages/Rutas';
 import GestionBodegas from './pages/GestionBodega';
 import AgregarBodega from './pages/AgregarBodega';
 import AgregarOrden from './pages/AgregarOrden';
@@ -45,6 +44,8 @@ import DatosPaquete from './pages/DatosPaquete';
 import GenerarOrden from './pages/GenerarOrden';
 import OrdenesSeleccionarCliente from './pages/OrdenesSeleccionarCliente';
 import OrdenesDirecciones from './pages/OrdenesDirecciones';
+import DetallesOrden from './pages/DetallesOrden';
+import TrackingPage from './pages/Tracking';
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
@@ -89,7 +90,7 @@ const App = () => {
                 <Route path="/GestionModelos" element={<GestionModelos />} />
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
-                <Route path="/GestionRutas" element={<GestionRutas />} />
+                <Route path="/TrackingPage" element={<TrackingPage />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
                 <Route path="/AgregarOrden" element={<AgregarOrden />} />
@@ -98,6 +99,7 @@ const App = () => {
                 <Route path="/OrdenesDirecciones/:idCliente" element={<OrdenesDirecciones />} />
                 <Route path="/DatosPaquete/:idCliente" element={<DatosPaquete />} />
                 <Route path="/GenerarOrden/:idCliente" element={<GenerarOrden />} />
+                <Route path="/DetallesOrden/:idCliente" element={<DetallesOrden />} />
               </Route>
 
               {/* Rutas para 'conductor' */}

@@ -23,22 +23,24 @@ export default function DatosPaquete() {
   const [tiposPaquete, setTiposPaquete] = useState([]);
   const [empaques, setEmpaques] = useState([]);
   const [estadosPaquete, setEstadosPaquete] = useState([]);
-  const [detalles, setDetalles] = useState([{
-    id_tipo_paquete: '',
-    id_empaque: '',
-    peso: '',
+  const [commonData, setCommonData] = useState({
     id_estado_paquete: '',
     fecha_envio: '',
     fecha_entrega_estimada: '',
     fecha_entrega: '',
-    descripcion_contenido: '',
     id_tipo_entrega: '',
     instrucciones_entrega: '',
+  });
+  const [paquetes, setPaquetes] = useState([{
+    id_tipo_paquete: '',
+    id_empaque: '',
+    peso: '',
     descripcion: '',
     precio: '',
   }]);
   const [errors, setErrors] = useState({
-    detalles: []
+    commonData: {},
+    paquetes: []
   });
 
   const token = localStorage.getItem('token');
@@ -77,7 +79,7 @@ export default function DatosPaquete() {
     switch (name) {
       case 'peso':
       case 'precio':
-        if (isNaN(value) || value < 0) {
+        if (isNaN(value) || value <= 0) {
           error = 'El valor debe ser un número positivo.';
         }
         break;
@@ -91,9 +93,8 @@ export default function DatosPaquete() {
         }
         break;
 
-      case 'descripcion_contenido':
-      case 'instrucciones_entrega':
       case 'descripcion':
+      case 'instrucciones_entrega':
         if (!value.trim()) {
           error = 'Debe rellenar este campo.';
         }
@@ -114,87 +115,105 @@ export default function DatosPaquete() {
     return error;
   };
 
-  const handleChangeDetalle = (index, e) => {
+  const handleChangeCommonData = (e) => {
     const { name, value } = e.target;
-    const updatedDetalles = [...detalles];
-    updatedDetalles[index] = { ...updatedDetalles[index], [name]: value };
-    setDetalles(updatedDetalles);
+    setCommonData(prev => ({ ...prev, [name]: value }));
+    
+    const error = validateField(name, value);
+    setErrors(prev => ({
+      ...prev,
+      commonData: { ...prev.commonData, [name]: error }
+    }));
+  };
+
+  const handleChangePaquete = (index, e) => {
+    const { name, value } = e.target;
+    const updatedPaquetes = [...paquetes];
+    updatedPaquetes[index] = { ...updatedPaquetes[index], [name]: value };
+    setPaquetes(updatedPaquetes);
     
     const error = validateField(name, value);
     setErrors(prev => {
-      const newDetallesErrors = [...(prev.detalles || [])];
-      newDetallesErrors[index] = { ...newDetallesErrors[index], [name]: error };
-      return { ...prev, detalles: newDetallesErrors };
+      const newPaquetesErrors = [...(prev.paquetes || [])];
+      newPaquetesErrors[index] = { ...newPaquetesErrors[index], [name]: error };
+      return { ...prev, paquetes: newPaquetesErrors };
     });
   };
 
-  const agregarDetalle = () => {
-    setDetalles([...detalles, {
+  const agregarPaquete = () => {
+    setPaquetes([...paquetes, {
       id_tipo_paquete: '',
       id_empaque: '',
       peso: '',
-      id_estado_paquete: '',
-      fecha_envio: '',
-      fecha_entrega_estimada: '',
-      fecha_entrega: '',
-      descripcion_contenido: '',
-      id_tipo_entrega: '',
-      instrucciones_entrega: '',
       descripcion: '',
       precio: '',
     }]);
     setErrors(prev => ({
       ...prev,
-      detalles: [...prev.detalles, {}]
+      paquetes: [...prev.paquetes, {}]
     }));
   };
 
-  const removerDetalle = (index) => {
-    setDetalles(detalles.filter((_, idx) => idx !== index));
+  const removerPaquete = (index) => {
+    setPaquetes(paquetes.filter((_, idx) => idx !== index));
     setErrors(prev => ({
       ...prev,
-      detalles: prev.detalles.filter((_, idx) => idx !== index)
+      paquetes: prev.paquetes.filter((_, idx) => idx !== index)
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    let valid = true;
-    let errorsTemp = { ...errors };
-  
-    // Validate detalles fields
-    errorsTemp.detalles = detalles.map(detalle => {
-      const detalleErrors = {};
-      Object.keys(detalle).forEach(key => {
-        const error = validateField(key, detalle[key]);
+
+    // Validate all fields
+    let isValid = true;
+    let newErrors = {
+      commonData: {},
+      paquetes: paquetes.map(() => ({}))
+    };
+
+    // Validate common data
+    Object.keys(commonData).forEach(key => {
+      const error = validateField(key, commonData[key]);
+      if (error) {
+        newErrors.commonData[key] = error;
+        isValid = false;
+      }
+    });
+
+    // Validate paquetes
+    paquetes.forEach((paquete, index) => {
+      Object.keys(paquete).forEach(key => {
+        const error = validateField(key, paquete[key]);
         if (error) {
-          detalleErrors[key] = error;
-          valid = false;
-        } else {
-          detalleErrors[key] = '';
+          newErrors.paquetes[index][key] = error;
+          isValid = false;
         }
       });
-      return detalleErrors;
     });
-  
-    setErrors(errorsTemp);
-  
-    if (!valid) {
+
+    setErrors(newErrors);
+
+    if (!isValid) {
       toast.error("Por favor, corrija los errores en el formulario antes de enviar.");
       return;
     }
-  
-    // Calculate total price
+
+    const detalles = paquetes.map(paquete => ({
+      ...commonData,
+      ...paquete,
+      id_direccion: JSON.parse(localStorage.getItem('selectedAddress')).id
+    }));
+
     const totalPrice = detalles.reduce((sum, detalle) => sum + parseFloat(detalle.precio || 0), 0);
 
-    // Navigate to GenerarOrden page with data
     navigate(`/GenerarOrden/${idCliente}`, { 
-        state: { 
-          detalles: detalles,
-          totalPrice: totalPrice
-        } 
-      });
+      state: { 
+        detalles: detalles,
+        totalPrice: totalPrice,
+        commonData: commonData
+      } 
+    });
   };
 
   return (
@@ -209,9 +228,115 @@ export default function DatosPaquete() {
         </CardHeader>
         <CardBody>
           <Form onSubmit={handleSubmit}>
-            {detalles.map((detalle, index) => (
+            <Card className="mb-3">
+              <CardBody>
+                <h5>Datos Comunes para todos los Paquetes</h5>
+                <Row>
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="id_estado_paquete">Estado del Paquete</Label>
+                      <Input
+                        type="select"
+                        name="id_estado_paquete"
+                        id="id_estado_paquete"
+                        value={commonData.id_estado_paquete}
+                        onChange={handleChangeCommonData}
+                        invalid={!!errors.commonData.id_estado_paquete}
+                      >
+                        <option value="">Seleccione un estado</option>
+                        {estadosPaquete.map(estado => (
+                          <option key={estado.id} value={estado.id}>
+                            {estado.nombre}
+                          </option>
+                        ))}
+                      </Input>
+                      {errors.commonData.id_estado_paquete && <FormFeedback>{errors.commonData.id_estado_paquete}</FormFeedback>}
+                    </FormGroup>
+                  </Col>
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="fecha_envio">Fecha de Envío</Label>
+                      <Input
+                        type="date"
+                        name="fecha_envio"
+                        id="fecha_envio"
+                        value={commonData.fecha_envio}
+                        onChange={handleChangeCommonData}
+                        invalid={!!errors.commonData.fecha_envio}
+                      />
+                      {errors.commonData.fecha_envio && <FormFeedback>{errors.commonData.fecha_envio}</FormFeedback>}
+                    </FormGroup>
+                  </Col>
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="fecha_entrega_estimada">Fecha de Entrega Estimada</Label>
+                      <Input
+                        type="date"
+                        name="fecha_entrega_estimada"
+                        id="fecha_entrega_estimada"
+                        value={commonData.fecha_entrega_estimada}
+                        onChange={handleChangeCommonData}
+                        invalid={!!errors.commonData.fecha_entrega_estimada}
+                      />
+                      {errors.commonData.fecha_entrega_estimada && <FormFeedback>{errors.commonData.fecha_entrega_estimada}</FormFeedback>}
+                    </FormGroup>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="fecha_entrega">Fecha de Entrega</Label>
+                      <Input
+                        type="date"
+                        name="fecha_entrega"
+                        id="fecha_entrega"
+                        value={commonData.fecha_entrega}
+                        onChange={handleChangeCommonData}
+                        invalid={!!errors.commonData.fecha_entrega}
+                      />
+                      {errors.commonData.fecha_entrega && <FormFeedback>{errors.commonData.fecha_entrega}</FormFeedback>}
+                    </FormGroup>
+                  </Col>
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="id_tipo_entrega">Tipo de Entrega</Label>
+                      <Input
+                        type="select"
+                        name="id_tipo_entrega"
+                        id="id_tipo_entrega"
+                        value={commonData.id_tipo_entrega}
+                        onChange={handleChangeCommonData}
+                        invalid={!!errors.commonData.id_tipo_entrega}
+                      >
+                        <option value="">Seleccione un tipo de entrega</option>
+                        <option value="1">Entrega Normal</option>
+                        <option value="2">Entrega Express</option>
+                      </Input>
+                      {errors.commonData.id_tipo_entrega && <FormFeedback>{errors.commonData.id_tipo_entrega}</FormFeedback>}
+                    </FormGroup>
+                  </Col>
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="instrucciones_entrega">Instrucciones de Entrega</Label>
+                      <Input
+                        type="text"
+                        name="instrucciones_entrega"
+                        id="instrucciones_entrega"
+                        value={commonData.instrucciones_entrega}
+                        onChange={handleChangeCommonData}
+                        invalid={!!errors.commonData.instrucciones_entrega}
+                      />
+                      {errors.commonData.instrucciones_entrega && <FormFeedback>{errors.commonData.instrucciones_entrega}</FormFeedback>}
+                    </FormGroup>
+                  </Col>
+                </Row>
+              </CardBody>
+            </Card>
+
+            {paquetes.map((paquete, index) => (
               <Card key={index} className="mb-3">
                 <CardBody>
+                  <h5>Paquete {index + 1}</h5>
                   <Row>
                     <Col md={4}>
                       <FormGroup>
@@ -220,9 +345,9 @@ export default function DatosPaquete() {
                           type="select"
                           name="id_tipo_paquete"
                           id={`id_tipo_paquete_${index}`}
-                          value={detalle.id_tipo_paquete}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].id_tipo_paquete)}
+                          value={paquete.id_tipo_paquete}
+                          onChange={(e) => handleChangePaquete(index, e)}
+                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].id_tipo_paquete)}
                         >
                           <option value="">Seleccione un tipo de paquete</option>
                           {tiposPaquete.map(tipo => (
@@ -231,7 +356,7 @@ export default function DatosPaquete() {
                             </option>
                           ))}
                         </Input>
-                        {errors.detalles[index]?.id_tipo_paquete && <FormFeedback>{errors.detalles[index].id_tipo_paquete}</FormFeedback>}
+                        {errors.paquetes[index]?.id_tipo_paquete && <FormFeedback>{errors.paquetes[index].id_tipo_paquete}</FormFeedback>}
                       </FormGroup>
                     </Col>
                     <Col md={4}>
@@ -241,9 +366,9 @@ export default function DatosPaquete() {
                           type="select"
                           name="id_empaque"
                           id={`id_empaque_${index}`}
-                          value={detalle.id_empaque}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].id_empaque)}
+                          value={paquete.id_empaque}
+                          onChange={(e) => handleChangePaquete(index, e)}
+                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].id_empaque)}
                         >
                           <option value="">Seleccione un empaque</option>
                           {empaques.map(empaque => (
@@ -252,7 +377,7 @@ export default function DatosPaquete() {
                             </option>
                           ))}
                         </Input>
-                        {errors.detalles[index]?.id_empaque && <FormFeedback>{errors.detalles[index].id_empaque}</FormFeedback>}
+                        {errors.paquetes[index]?.id_empaque && <FormFeedback>{errors.paquetes[index].id_empaque}</FormFeedback>}
                       </FormGroup>
                     </Col>
                     <Col md={4}>
@@ -262,171 +387,60 @@ export default function DatosPaquete() {
                           type="number"
                           name="peso"
                           id={`peso_${index}`}
-                          value={detalle.peso}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].peso)}
+                          value={paquete.peso}
+                          onChange={(e) => handleChangePaquete(index, e)}
+                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].peso)}
                         />
-                        {errors.detalles[index]?.peso && <FormFeedback>{errors.detalles[index].peso}</FormFeedback>}
+                        {errors.paquetes[index]?.peso && <FormFeedback>{errors.paquetes[index].peso}</FormFeedback>}
                       </FormGroup>
                     </Col>
                   </Row>
                   <Row>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`id_estado_paquete_${index}`}>Estado del Paquete</Label>
-                        <Input
-                          type="select"
-                          name="id_estado_paquete"
-                          id={`id_estado_paquete_${index}`}
-                          value={detalle.id_estado_paquete}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].id_estado_paquete)}
-                        >
-                          <option value="">Seleccione un estado</option>
-                          {estadosPaquete.map(estado => (
-                            <option key={estado.id} value={estado.id}>
-                              {estado.nombre}
-                            </option>
-                          ))}
-                        </Input>
-                        {errors.detalles[index]?.id_estado_paquete && <FormFeedback>{errors.detalles[index].id_estado_paquete}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`fecha_envio_${index}`}>Fecha de Envío</Label>
-                        <Input
-                          type="date"
-                          name="fecha_envio"
-                          id={`fecha_envio_${index}`}
-                          value={detalle.fecha_envio}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].fecha_envio)}
-                        />
-                        {errors.detalles[index]?.fecha_envio && <FormFeedback>{errors.detalles[index].fecha_envio}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`fecha_entrega_estimada_${index}`}>Fecha de Entrega Estimada</Label>
-                        <Input
-                          type="date"
-                          name="fecha_entrega_estimada"
-                          id={`fecha_entrega_estimada_${index}`}
-                          value={detalle.fecha_entrega_estimada}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].fecha_entrega_estimada)}
-                        />
-                        {errors.detalles[index]?.fecha_entrega_estimada && <FormFeedback>{errors.detalles[index].fecha_entrega_estimada}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`fecha_entrega_${index}`}>Fecha de Entrega</Label>
-                        <Input
-                          type="date"
-                          name="fecha_entrega"
-                          id={`fecha_entrega_${index}`}
-                          value={detalle.fecha_entrega}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].fecha_entrega)}
-                        />
-                        {errors.detalles[index]?.fecha_entrega && <FormFeedback>{errors.detalles[index].fecha_entrega}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`descripcion_contenido_${index}`}>Descripción del Contenido</Label>
-                        <Input
-                          type="text"
-                          name="descripcion_contenido"
-                          id={`descripcion_contenido_${index}`}
-                          value={detalle.descripcion_contenido}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].descripcion_contenido)}
-                        />
-                        {errors.detalles[index]?.descripcion_contenido && <FormFeedback>{errors.detalles[index].descripcion_contenido}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`id_tipo_entrega_${index}`}>Tipo de Entrega</Label>
-                        <Input
-                          type="select"
-                          name="id_tipo_entrega"
-                          id={`id_tipo_entrega_${index}`}
-                          value={detalle.id_tipo_entrega}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].id_tipo_entrega)}
-                        >
-                          <option value="">Seleccione un tipo de entrega</option>
-                          <option value="1">Entrega Normal</option>
-                          <option value="2">Entrega Express</option>
-                        </Input>
-                        {errors.detalles[index]?.id_tipo_entrega && <FormFeedback>{errors.detalles[index].id_tipo_entrega}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col md={4}>
-                      <FormGroup>
-                        <Label for={`instrucciones_entrega_${index}`}>Instrucciones de Entrega</Label>
-                        <Input
-                          type="text"
-                          name="instrucciones_entrega"
-                          id={`instrucciones_entrega_${index}`}
-                          value={detalle.instrucciones_entrega}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].instrucciones_entrega)}
-                        />
-                        {errors.detalles[index]?.instrucciones_entrega && <FormFeedback>{errors.detalles[index].instrucciones_entrega}</FormFeedback>}
-                      </FormGroup>
-                    </Col>
-                    <Col md={4}>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for={`descripcion_${index}`}>Descripción</Label>
                         <Input
                           type="text"
                           name="descripcion"
                           id={`descripcion_${index}`}
-                          value={detalle.descripcion}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].descripcion)}
+                          value={paquete.descripcion}
+                          onChange={(e) => handleChangePaquete(index, e)}
+                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].descripcion)}
                         />
-                        {errors.detalles[index]?.descripcion && <FormFeedback>{errors.detalles[index].descripcion}</FormFeedback>}
+                        {errors.paquetes[index]?.descripcion && <FormFeedback>{errors.paquetes[index].descripcion}</FormFeedback>}
                       </FormGroup>
                     </Col>
-                    <Col md={4}>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for={`precio_${index}`}>Precio</Label>
                         <Input
                           type="number"
                           name="precio"
                           id={`precio_${index}`}
-                          value={detalle.precio}
-                          onChange={(e) => handleChangeDetalle(index, e)}
-                          invalid={!!(errors.detalles[index] && errors.detalles[index].precio)}
+                          value={paquete.precio}
+                          onChange={(e) => handleChangePaquete(index, e)}
+                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].precio)}
                         />
-                        {errors.detalles[index]?.precio && <FormFeedback>{errors.detalles[index].precio}</FormFeedback>}
+                        {errors.paquetes[index]?.precio && <FormFeedback>{errors.paquetes[index].precio}</FormFeedback>}
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Row className="mb-3">
-                    <Col className="d-flex justify-content-start">
-                      <Button color="danger" onClick={() => removerDetalle(index)}>
-                        Eliminar Detalle
-                      </Button>
-                    </Col>
-                  </Row>
+                  {index > 0 && (
+                    <Row className="mt-3">
+                      <Col>
+                        <Button color="danger" onClick={() => removerPaquete(index)}>
+                          Eliminar Paquete
+                        </Button>
+                      </Col>
+                    </Row>
+                  )}
                 </CardBody>
               </Card>
             ))}
             <Row className="mb-3">
               <Col className="d-flex justify-content-start">
-                <Button color="primary" onClick={agregarDetalle}>
-                  Agregar Detalle
+                <Button color="primary" onClick={agregarPaquete}>
+                  Agregar Paquete
                 </Button>
               </Col>
             </Row>

@@ -1,0 +1,114 @@
+.tracking-card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .timeline {
+    position: relative;
+    padding: 20px 0;
+    list-style: none;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .timeline:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    margin-left: -1px;
+    background-color: #e0e0e0;
+  }
+  
+  .timeline-item {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+  }
+  
+  .timeline-item:nth-child(odd) {
+    left: 0;
+  }
+  
+  .timeline-item:nth-child(even) {
+    left: 50%;
+  }
+  
+  .timeline-icon {
+    position: absolute;
+    top: 15px;
+    right: -13px;
+    background-color: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 50%;
+    z-index: 100;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+  }
+  
+  .timeline-item:nth-child(even) .timeline-icon {
+    left: -13px;
+  }
+  
+  .timeline-content {
+    padding: 20px 30px;
+    background-color: white;
+    position: relative;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .timeline-item.completed .timeline-icon {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+  }
+  
+  .timeline-item.current .timeline-icon {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+  }
+  
+  .timeline-item.future .timeline-icon {
+    background-color: #e0e0e0;
+    color: #6c757d;
+  }
+  
+  .details-card, .package-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .details-card .card-title, .package-card .card-title {
+    color: #007bff;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  
+  @media screen and (max-width: 600px) {
+    .timeline::before {
+      left: 31px;
+    }
+    
+    .timeline-item {
+      width: 100%;
+      padding-left: 70px;
+      padding-right: 25px;
+    }
+    
+    .timeline-item:nth-child(even) {
+      left: 0%;
+    }
+    
+    .timeline-icon {
+      left: 18px;
+      right: auto;
+    }
+  }

@@ -26,14 +26,38 @@ export default function OrdenesDirecciones() {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
+  const fetchDirecciones = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/direcciones`, {
+        params: { id_cliente: idCliente },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const direccionesData = response.data.direcciones || [];
+      const direccionesWithDetails = await Promise.all(
+        direccionesData.map(async (direccion) => {
+          const municipiosResponse = await axios.get(`${API_URL}/dropdown/get_municipio/${direccion.id_departamento}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const municipio = municipiosResponse.data.municipio.find(m => m.id === direccion.id_municipio);
+          const departamento = departamentos.find(d => d.id === direccion.id_departamento);
+          return {
+            ...direccion,
+            departamento_nombre: departamento ? departamento.nombre : 'No disponible',
+            municipio_nombre: municipio ? municipio.nombre : 'No disponible',
+          };
+        })
+      );
+      setDirecciones(direccionesWithDetails);
+    } catch (error) {
+      console.error('Error fetching direcciones:', error);
+      toast.error(`Error al cargar las direcciones: ${error.message}`);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [responseDirecciones, responseCliente, responseDepartamentos] = await Promise.all([
-          axios.get(`${API_URL}/direcciones`, {
-            params: { id_cliente: idCliente },
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+        const [responseCliente, responseDepartamentos] = await Promise.all([
           axios.get(`${API_URL}/clientes/${idCliente}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -42,32 +66,10 @@ export default function OrdenesDirecciones() {
           })
         ]);
 
-        const direccionesData = responseDirecciones.data.direcciones || [];
-        const departamentosData = responseDepartamentos.data || [];
-
-        // Fetch municipios for each direccion
-        const direccionesWithMunicipios = await Promise.all(
-          direccionesData.map(async (direccion) => {
-            const municipiosResponse = await axios.get(`${API_URL}/dropdown/get_municipio/${direccion.id_departamento}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            const municipio = municipiosResponse.data.municipio.find(m => m.id === direccion.id_municipio);
-            const departamento = departamentosData.find(d => d.id === direccion.id_departamento);
-            return {
-              ...direccion,
-              departamento_nombre: departamento ? departamento.nombre : 'No disponible',
-              municipio_nombre: municipio ? municipio.nombre : 'No disponible',
-            };
-          })
-        );
-
-        setDirecciones(direccionesWithMunicipios);
         setCliente(responseCliente.data.cliente || {});
-        setDepartamentos(departamentosData);
+        setDepartamentos(responseDepartamentos.data || []);
 
-        //console.log('Direcciones:', direccionesWithMunicipios);
-        //console.log('Cliente:', responseCliente.data.cliente);
-        //console.log('Departamentos:', departamentosData);
+        await fetchDirecciones();
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error(`Error al cargar los datos: ${error.message}`);
@@ -85,7 +87,6 @@ export default function OrdenesDirecciones() {
             headers: { Authorization: `Bearer ${token}` },
           });
           setMunicipios(response.data.municipio || []);
-          //console.log('Municipios:', response.data.municipio);
         } catch (error) {
           console.error('Error fetching municipios:', error);
           toast.error(`Error al cargar municipios: ${error.message}`);
@@ -104,25 +105,21 @@ export default function OrdenesDirecciones() {
     if (direccion.trim() && id_departamento && id_municipio && nombre_contacto && telefono) {
       try {
         const dataToSend = { 
-          id_cliente: idCliente, 
+          id_cliente: Number(idCliente), 
           direccion,
           referencia,
-          id_departamento,
-          id_municipio,
+          id_departamento: Number(id_departamento),
+          id_municipio: Number(id_municipio),
           nombre_contacto,
           telefono
         };
 
-        console.log('Data being sent:', dataToSend);
-
-        const response = await axios.post(`${API_URL}/direcciones`, dataToSend, {
+        await axios.post(`${API_URL}/direcciones`, dataToSend, {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
         });
-
-        console.log('Server response:', response.data);
 
         toast.success('Dirección agregada exitosamente');
         
@@ -136,42 +133,10 @@ export default function OrdenesDirecciones() {
         });
         setIsAdding(false);
 
-        // Fetch updated direcciones
-        const updatedDireccionesResponse = await axios.get(`${API_URL}/direcciones`, {
-          params: { id_cliente: idCliente },
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const updatedDirecciones = await Promise.all(
-          (updatedDireccionesResponse.data.direcciones || []).map(async (direccion) => {
-            const municipiosResponse = await axios.get(`${API_URL}/dropdown/get_municipio/${direccion.id_departamento}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            const municipio = municipiosResponse.data.municipio.find(m => m.id === direccion.id_municipio);
-            const departamento = departamentos.find(d => d.id === direccion.id_departamento);
-            return {
-              ...direccion,
-              departamento_nombre: departamento ? departamento.nombre : 'No disponible',
-              municipio_nombre: municipio ? municipio.nombre : 'No disponible',
-            };
-          })
-        );
-
-        setDirecciones(updatedDirecciones);
+        await fetchDirecciones();
       } catch (error) {
         console.error('Error adding new address:', error);
-        if (error.response) {
-          console.error('Response data:', error.response.data);
-          console.error('Response status:', error.response.status);
-          console.error('Response headers:', error.response.headers);
-          toast.error(`Error al agregar la dirección: ${error.response.data.message || 'Error desconocido'}`);
-        } else if (error.request) {
-          console.error('No response received:', error.request);
-          toast.error('Error de conexión al agregar la dirección');
-        } else {
-          console.error('Error message:', error.message);
-          toast.error(`Error al agregar la dirección: ${error.message}`);
-        }
+        toast.error(`Error al agregar la dirección: ${error.response?.data?.message || error.message || 'Error desconocido'}`);
       }
     } else {
       toast.warn('Todos los campos son requeridos');
@@ -212,6 +177,7 @@ export default function OrdenesDirecciones() {
                 color="primary" 
                 onClick={() => setIsAdding(!isAdding)} 
                 style={{ marginBottom: '10px' }}
+                aria-expanded={isAdding}
               >
                 {isAdding ? 'Cancelar Agregar Dirección' : 'Agregar Nueva Dirección'}
               </Button>
@@ -225,6 +191,7 @@ export default function OrdenesDirecciones() {
                       value={nuevaDireccion.direccion}
                       onChange={(e) => setNuevaDireccion(prev => ({ ...prev, direccion: e.target.value }))}
                       placeholder="Ingrese la dirección"
+                      aria-label="Dirección"
                     />
                   </FormGroup>
                   <FormGroup>
@@ -235,6 +202,7 @@ export default function OrdenesDirecciones() {
                       value={nuevaDireccion.referencia}
                       onChange={(e) => setNuevaDireccion(prev => ({ ...prev, referencia: e.target.value }))}
                       placeholder="Ingrese una referencia (opcional)"
+                      aria-label="Referencia"
                     />
                   </FormGroup>
                   <FormGroup>
@@ -248,6 +216,7 @@ export default function OrdenesDirecciones() {
                         id_departamento: e.target.value,
                         id_municipio: ""
                       }))}
+                      aria-label="Seleccione un departamento"
                     >
                       <option value="">Seleccione un departamento</option>
                       {departamentos.map(departamento => (
@@ -265,6 +234,7 @@ export default function OrdenesDirecciones() {
                       value={nuevaDireccion.id_municipio}
                       onChange={(e) => setNuevaDireccion(prev => ({ ...prev, id_municipio: e.target.value }))}
                       disabled={!nuevaDireccion.id_departamento}
+                      aria-label="Seleccione un municipio"
                     >
                       <option value="">Seleccione un municipio</option>
                       {municipios.map(municipio => (
@@ -282,6 +252,7 @@ export default function OrdenesDirecciones() {
                       value={nuevaDireccion.nombre_contacto}
                       onChange={(e) => setNuevaDireccion(prev => ({ ...prev, nombre_contacto: e.target.value }))}
                       placeholder="Ingrese el nombre de contacto"
+                      aria-label="Nombre de Contacto"
                     />
                   </FormGroup>
                   <FormGroup>
@@ -292,6 +263,7 @@ export default function OrdenesDirecciones() {
                       value={nuevaDireccion.telefono}
                       onChange={(e) => setNuevaDireccion(prev => ({ ...prev, telefono: e.target.value }))}
                       placeholder="Ingrese el teléfono"
+                      aria-label="Teléfono"
                     />
                   </FormGroup>
                   <Button 
@@ -329,6 +301,7 @@ export default function OrdenesDirecciones() {
                           <Button
                             color={selectedDireccion === direccion ? "success" : "primary"}
                             onClick={() => handleSeleccionarDireccion(direccion)}
+                            aria-pressed={selectedDireccion === direccion}
                           >
                             {selectedDireccion === direccion ? "Seleccionada" : "Seleccionar"}
                           </Button>
