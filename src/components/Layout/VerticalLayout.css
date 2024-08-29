@@ -638,6 +638,62 @@ body {
   color:white;
 }
 
+/* Estilos generales para la paginación en modo oscuro */
+.dark-mode .pagination2 {
+  background-color: #1e1e1e;
+  color: #fff;
+  border-radius: 5px;
+}
+
+/* Estilo para los ítems de la paginación */
+.dark-mode .pagination2 .page-item .page-link {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ffffff;
+  border-color: #444;
+  border-radius: 5px;
+}
+
+/* Estilo para los botones de paginación cuando están deshabilitados */
+.dark-mode .pagination2 .page-item.disabled .page-link {
+  background-color: #444;
+  color: #777;
+  border-color: #444;
+}
+
+/* Hover en el link de paginación */
+.dark-mode .pagination2 .page-item .page-link:hover {
+  background-color: #555;
+  color: #ffffff;
+  border-color: #555;
+}
+
+/* Estilo para el ítem activo */
+.dark-mode .pagination2 .page-item.active .page-link {
+  background-color: #ffffff;
+  border-color: #444;
+  color: #444;
+}
+
+/* Estilo para el ítem activo al hacer hover */
+.dark-mode .pagination2 .page-item.active .page-link:hover {
+  background-color: #ffffff9e;
+  border-color: #525252;
+}
+
+/* Estilo específico para los íconos de "Anterior" y "Siguiente" */
+.dark-mode .pagination2 .page-link[aria-label="Previous"],
+.dark-mode .pagination2 .page-link[aria-label="Next"] {
+  background-color: rgba(255, 0, 0, 0.1);
+  color: #ffffff;
+  border-color: #444;
+}
+
+.dark-mode .pagination2 .page-link[aria-label="Previous"]:hover,
+.dark-mode .pagination2 .page-link[aria-label="Next"]:hover {
+  background-color: #555;
+  color: #ffffff;
+  border-color: #555;
+}
 
 /* BUSACDOR */
 .dark-mode #busqueda {
@@ -743,7 +799,7 @@ body {
 .dark-mode .btn-direcciones{
   background-color: #1e1e1e26;
   color:rgb(56, 155, 255);
-  border-color: white;
+  border-color: rgb(154, 154, 154);
 }
 
 .dark-mode .btn-direcciones:hover{

@@ -190,11 +190,11 @@ const DetallesCliente = () => {
                     </tr>
                     <tr>
                       <th scope="row">Departamento:</th>
-                      <td>{cliente.id_departamento || 'N/A'}</td>
+                      <td>{cliente.departamento || 'N/A'}</td>
                     </tr>
                     <tr>
                       <th scope="row">Municipio:</th>
-                      <td>{cliente.id_municipio || 'N/A'}</td>
+                      <td>{cliente.municipio || 'N/A'}</td>
                     </tr>
                     {cliente.id_tipo_persona === 2 && (
                       <>
@@ -247,7 +247,7 @@ const DetallesCliente = () => {
                       <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.referencia}</td>
                       <td style={{ width: '5%' }}>
                         <div className="d-flex justify-content-between">
-                          <Button color="info" size="sm" className="me-1" onClick={() => editarDireccion(direccion)}>
+                          <Button color="info" size="sm" className="me-1 btn-direcciones" onClick={() => editarDireccion(direccion)}>
                             <FontAwesomeIcon icon={faEdit} />
                           </Button>
                           <Button color="danger" size="sm" className="me-1" onClick={() => confirmarEliminarDireccion(direccion.id)}>
@@ -276,7 +276,7 @@ const DetallesCliente = () => {
               </tbody>
             </Table>
           </div>
-          <Pagination className="mt-3 justify-content-center">
+          <Pagination className="mt-3 justify-content-center pagination2">
             <PaginationItem disabled={paginaActual === 1}>
               <PaginationLink previous onClick={() => setPaginaActual(paginaActual - 1)} />
             </PaginationItem>
