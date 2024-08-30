@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button,Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -14,6 +16,7 @@ export default function GenerarOrden() {
   const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
+    
     id_cliente: idCliente,
     nombre_contacto: '',
     telefono: '',
@@ -26,7 +29,7 @@ export default function GenerarOrden() {
     tipo_documento: 'consumidor_final',
     detalles: []
   });
-
+  const [currentStep, setCurrentStep] = useState(4);
   useEffect(() => {
     const fetchClienteData = async () => {
       try {
@@ -131,11 +134,43 @@ export default function GenerarOrden() {
     return <div>No se pudo cargar la información del cliente.</div>;
   }
 
+  const steps = [
+    { step: 1, label: '', icon: faSearch },
+    { step: 2, label: '', icon: faMapMarkerAlt },
+    { step: 3, label: '', icon: faBook },
+    { step: 4, label: '', icon: faDollarSign }
+  ];
   return (
     <div className="page-content">
       <Container fluid>
+      <h1 className='text-center'>Detalles de Pago</h1>        
+        <Row>
+          <Col lg={12}>
+            <Nav pills className="justify-content-center mb-4">
+              {steps.map(({ step, label, icon }) => (
+                <NavItem key={step}>
+                  <NavLink
+                    className={`stepperDark ${currentStep === step ? 'active' : ''}`}
+                    href="#"
+                    style={{
+                      borderRadius: '50%',
+                      padding: '10px 20px',
+                      margin: '0 5px',
+                    }}                    
+                  >
+                    <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
+                    {label}
+                  </NavLink>
+                </NavItem>
+              ))}
+            </Nav>         
+            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
+            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }
+            <Progress className="custom-progress" value={(1) * 100} />
+            <br></br>
+          </Col>
+        </Row>
         <ToastContainer />
-        <Breadcrumbs title="Generar Orden" breadcrumbItem="Detalles de Pago" />
         <Row>
           <Col lg={12}>
             <Card>

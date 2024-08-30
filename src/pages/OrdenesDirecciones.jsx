@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Card, CardBody, Row, Col, Button, Table, Input, Label, FormGroup } from 'reactstrap';
+import { Container, Card, CardBody, Row, Col, Button, Table, Input, Label, FormGroup,Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumbs from '../components/Empleados/Common/Breadcrumbs';
 import axios from 'axios';
 
@@ -157,12 +159,43 @@ export default function OrdenesDirecciones() {
     }
   };
 
+  const [currentStep, setCurrentStep] = useState(2);
+  const steps = [
+    { step: 1, label: '', icon: faSearch },
+    { step: 2, label: '', icon: faMapMarkerAlt },
+    { step: 3, label: '', icon: faBook },
+    { step: 4, label: '', icon: faDollarSign }
+  ];
+
   return (
     <Container fluid>
-      <Breadcrumbs 
-        title="Generando Orden" 
-        breadcrumbItem="Seleccionar Dirección" 
-      />
+      <h1 className='text-center'>Seleccionar Dirección</h1>        
+        <Row>
+          <Col lg={12}>
+            <Nav pills className="justify-content-center mb-4">
+              {steps.map(({ step, label, icon }) => (
+                <NavItem key={step}>
+                  <NavLink
+                    className={`stepperDark ${currentStep === step ? 'active' : ''}`}
+                    href="#"
+                    style={{
+                      borderRadius: '50%',
+                      padding: '10px 20px',
+                      margin: '0 5px',
+                    }}                    
+                  >
+                    <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
+                    {label}
+                  </NavLink>
+                </NavItem>
+              ))}
+            </Nav>         
+            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
+            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }
+            <Progress className="custom-progress" value={(0.50) * 100} />
+            <br></br>
+          </Col>
+        </Row>
       <Card>
         <CardBody>
           <Row>
@@ -319,7 +352,7 @@ export default function OrdenesDirecciones() {
                 <div>
                   <h5>Dirección Seleccionada:</h5>
                   <p>{selectedDireccion.direccion || 'Dirección no disponible'}</p>
-                  <Button color="success" onClick={handleContinuar}>
+                  <Button className="btnGuardarDatosPaquete" color="success" onClick={handleContinuar}>
                     Continuar con la Orden
                   </Button>
                 </div>
