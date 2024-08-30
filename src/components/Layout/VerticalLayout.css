@@ -422,6 +422,60 @@ body {
   color: rgba(255, 255, 255, 0.7);
 }
 
+
+/* Pasos (NavLink) */
+.stepperDark {
+  background-color: #e9ecef;
+  color: #000;
+  border-radius: 50%;
+  padding: 10px 20px;
+  margin: 0 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.stepperDark.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.custom-progress {
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.custom-progress .progress {
+  background-color: #e9ecef;
+  height: 8px;
+}
+
+.custom-progress .progress-bar {
+  background-color: #007bff;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.custom-progress .progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 25%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.2) 75%); /* Efecto de luz que se mueve */
+  animation: move 2s linear infinite;
+}
+
+@keyframes move {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /*-------------------------- Dark Mode Styles--------------------------- */
 .dark-mode {
   background-color: #121212;
@@ -826,6 +880,17 @@ span.btn-direcciones-text{
 .dark-mode .vertical-nav{
   background-color: #041118;
 }
+
+.dark-mode .btnGuardarDatosPaquete{
+  background-color: rgba(0, 128, 0, 0.481);
+  color: white;
+  border-color: green;
+}
+
+.dark-mode .btnGuardarDatosPaquete:hover{
+  border: none;
+  color: white;
+}
 /* Select de los filtrados*/
 
 .dark-mode select {
@@ -942,4 +1007,29 @@ span.btn-direcciones-text{
 
 .dark-mode .alert-success .btn-close {
   filter: invert(1);
+}
+
+/* Pasos (NavLink) */
+.dark-mode .stepperDark {
+  background-color: #dcdcdc;
+  color: #000;
+}
+
+.dark-mode .stepperDark.active {
+  background-color: #007bff80;
+  color: #fff;
+}
+
+.dark-mode .custom-progress .progress-bar {
+  background-color: #004b96;
+}
+
+.dark-mode .custom-progress .progress {
+  background-color: #e9ecef;
+}
+
+
+/*card de inicio en datos paquetes*/
+.dark-mode .CardHeaderDatosPAquetes{
+  background-color: #1e1e1e;
 }

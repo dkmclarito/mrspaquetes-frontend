@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Container, Row, Col, Card, CardBody, Input, Label } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Input, Label, Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Breadcrumbs from '../components/Empleados/Common/Breadcrumbs';
 import TablaSeleccionCliente from '../components/Ordenes/TablaSeleccionCliente';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -14,6 +16,7 @@ export default function OrdenesSeleccionarCliente() {
   const [busqueda, setBusqueda] = useState("");
   const [tipoPersona, setTipoPersona] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentStep, setCurrentStep] = useState(1); // Estado para el paso actual
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,10 +95,49 @@ export default function OrdenesSeleccionarCliente() {
     navigate(`/DatosPaquete/${clienteId}`);
   };
 
+  const steps = [
+    { step: 1, label: '', icon: faSearch },
+    { step: 2, label: '', icon: faMapMarkerAlt },
+    { step: 3, label: '', icon: faBook },
+    { step: 4, label: '', icon: faDollarSign }
+  ];
+
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Generar Orden" breadcrumbItem="Seleccionar Cliente" />
+        <h1 className='text-center'>Seleccionar Cliente</h1>        
+        <Row>
+          <Col lg={12}>
+            <Nav pills className="justify-content-center mb-4">
+              {steps.map(({ step, label, icon }) => (
+                <NavItem key={step}>
+                  <NavLink
+                    className={`stepperDark ${currentStep === step ? 'active' : ''}`}
+                    href="#"
+                    style={{
+                      borderRadius: '50%',
+                      padding: '10px 20px',
+                      margin: '0 5px'
+                      //display: 'flex',
+                      //alignItems: 'center',
+                      //justifyContent: 'space-between',
+                      //minWidth: '110px'
+                    }}                    
+                  >
+                    {/*<div style={{ flex: 1, textAlign: 'left' }}>{label}</div>*/}
+                    <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
+                    {label}                  
+                  </NavLink>
+                </NavItem>
+              ))}
+            </Nav>                     
+            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
+            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }            
+            <Progress className="custom-progress" value={(0.25) * 100} />
+            <br></br>
+          </Col>
+        </Row>
+
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
@@ -111,7 +153,9 @@ export default function OrdenesSeleccionarCliente() {
             </div>
           </Col>
         </Row>
+
         <br />
+
         <Row>
           <Col lg={12}>
             <Card>
@@ -125,6 +169,7 @@ export default function OrdenesSeleccionarCliente() {
             </Card>
           </Col>
         </Row>
+
         <Row>
           <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
             <Pagination

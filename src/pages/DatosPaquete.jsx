@@ -11,10 +11,13 @@ import {
   FormFeedback,
   Row,
   Col,
-  CardHeader
+  CardHeader,
+  Nav, NavItem, NavLink, Progress
 } from "reactstrap";
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate, useParams } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
 export default function DatosPaquete() {
@@ -320,15 +323,50 @@ export default function DatosPaquete() {
   const isExpressAvailable = selectedAddress && 
     selectedAddress.id_departamento === 12 && 
     selectedAddress.id_municipio === 200;
+  
+    const [currentStep, setCurrentStep] = useState(3);
+
+  const steps = [
+    { step: 1, label: '', icon: faSearch },
+    { step: 2, label: '', icon: faMapMarkerAlt },
+    { step: 3, label: '', icon: faBook },
+    { step: 4, label: '', icon: faDollarSign }
+  ];
 
   return (
     <Container fluid>
+      <h1 className='text-center'>Agregar datos de los Paquetes</h1>        
+        <Row>
+          <Col lg={12}>
+            <Nav pills className="justify-content-center mb-4">
+              {steps.map(({ step, label, icon }) => (
+                <NavItem key={step}>
+                  <NavLink
+                    className={`stepperDark ${currentStep === step ? 'active' : ''}`}
+                    href="#"
+                    style={{
+                      borderRadius: '50%',
+                      padding: '10px 20px',
+                      margin: '0 5px',
+                    }}                    
+                  >
+                    <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
+                    {label}
+                  </NavLink>
+                </NavItem>
+              ))}
+            </Nav>                     
+            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
+            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }
+            <Progress className="custom-progress" value={(0.75) * 100} />
+            <br></br>
+          </Col>
+        </Row>
       <ToastContainer />
       <Card>
-        <CardHeader>
-          <h4>Agregar datos de los Paquetes</h4>
+        <CardHeader className="CardHeaderDatosPAquetes">          
           {cliente && (
-            <h5>Cliente: {cliente.nombre} {cliente.apellido}</h5>
+            <h3>Cliente: {cliente.nombre} {cliente.apellido}</h3>
           )}
           {selectedAddress && (
             <h6>Dirección seleccionada: {selectedAddress.direccion}</h6>
@@ -371,6 +409,7 @@ export default function DatosPaquete() {
                         value={commonData.fecha_envio}
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.fecha_envio}
+                        className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_envio && <FormFeedback>{errors.commonData.fecha_envio}</FormFeedback>}
                     </FormGroup>
@@ -385,6 +424,7 @@ export default function DatosPaquete() {
                         value={commonData.fecha_entrega_estimada}
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.fecha_entrega_estimada}
+                        className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_entrega_estimada && <FormFeedback>{errors.commonData.fecha_entrega_estimada}</FormFeedback>}
                     </FormGroup>
@@ -401,6 +441,7 @@ export default function DatosPaquete() {
                         value={commonData.fecha_entrega}
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.fecha_entrega}
+                        className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_entrega && <FormFeedback>{errors.commonData.fecha_entrega}</FormFeedback>}
                     </FormGroup>
@@ -572,7 +613,7 @@ export default function DatosPaquete() {
             </Row>
             <Row className="mb-3">
               <Col className="d-flex justify-content-start">
-                <Button color="success" type="submit">
+                <Button className="btnGuardarDatosPaquete" color="success" type="submit">
                   Guardar Paquetes
                 </Button>
               </Col>

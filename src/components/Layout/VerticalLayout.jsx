@@ -191,7 +191,7 @@ const VerticalLayout = () => {
                 </li>
 
                 <li className="nav-item">
-                  <NavLink to="/TrackingPage" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+                  <NavLink to="/GestionRutas" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
                     <BiMap className="nav-icon" />
                     {!menuCollapsed && <span>Rutas</span>}
                   </NavLink>

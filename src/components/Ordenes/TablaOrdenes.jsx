@@ -14,7 +14,7 @@ const TablaOrdenes = ({ ordenes, eliminarOrden, toggleModalEditar }) => {
           <th>Teléfono</th>
           <th>Tipo de Pago</th>
           <th>Total a Pagar</th>
-          <th>Estado del Paquete</th>
+          <th>Estado de la Orden</th>
           <th>Número de Seguimiento</th>
           <th>Acciones</th>
         </tr>
