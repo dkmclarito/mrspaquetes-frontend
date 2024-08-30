@@ -5,10 +5,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/Vehiculos.css";
 
-const TablaRutas = ({ rutas, destinos, bodegas, eliminarRuta, toggleModalEditar }) => {
-  const getEstadoTexto = (estado) => {
-    return estado === 1 ? "Activo" : "Inactivo";
-  };
+const TablaRutas = ({ rutas, eliminarRuta, toggleModalEditar }) => {
+  // const getEstadoTexto = (estado) => {
+  //   return estado === 1 ? "Activo" : "Inactivo";
+  // };
 
   const formatFecha = (fecha) => {
     if (!fecha) return 'N/A';
@@ -38,15 +38,15 @@ const TablaRutas = ({ rutas, destinos, bodegas, eliminarRuta, toggleModalEditar 
         <tbody>
           {rutas.length > 0 ? (
             rutas.map(ruta => {
-              const destinoNombre = destinos.find(dest => dest.id === Number(ruta.id_destino))?.nombre;
-              const bodegaNombre = bodegas.find(bod => bod.id === Number(ruta.id_bodega))?.nombre;
+              // const destinoNombre = destinos.find(dest => dest.id === Number(ruta.id_destino))?.nombre;
+              // const bodegaNombre = bodegas.find(bod => bod.id === Number(ruta.id_bodega))?.nombre;
               return (
                 <tr key={ruta.id}>
                   <td className="text-center">{ruta.id}</td>
                   <td className="text-center">{ruta.nombre || 'N/A'}</td>
-                  <td className="text-center">{destinoNombre || 'N/A'}</td>
-                  <td className="text-center">{bodegaNombre || 'N/A'}</td>
-                  <td className="text-center">{getEstadoTexto(ruta.estado) || 'N/A'}</td>
+                  <td className="text-center">{ruta.destino || 'N/A'}</td>
+                  <td className="text-center">{ruta.bodega || 'N/A'}</td>
+                  <td className="text-center">{ruta.estado || 'N/A'}</td>
                   <td className="text-center">{ruta.distancia_km || 'N/A'}</td>
                   <td className="text-center">{ruta.duracion_aproximada || 'N/A'}</td>
                   <td className="text-center">{formatFecha(ruta.fecha_programada)}</td>
