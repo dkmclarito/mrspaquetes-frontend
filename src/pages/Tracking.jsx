@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, CardBody, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Input, Button, Table } from 'reactstrap';
 import { Package, Truck, Warehouse, Home, Calendar, RotateCcw, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import "../styles/Tracking.css";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const packageStates = [
@@ -25,6 +26,7 @@ const TrackingPage = () => {
   const [trackingData, setTrackingData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [historial, setHistorial] = useState([]);
 
   const handleInputChange = (e) => {
     setNumeroSeguimiento(e.target.value);
@@ -53,6 +55,7 @@ const TrackingPage = () => {
 
       if (response.data && response.data.id) {
         setTrackingData(response.data);
+        fetchHistorial(response.data.numero_seguimiento);
       } else {
         setError('No se encontraron datos de seguimiento para este número.');
       }
@@ -64,30 +67,58 @@ const TrackingPage = () => {
     }
   };
 
+  const fetchHistorial = async (numeroSeguimiento) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `${API_URL}/historial/${numeroSeguimiento}`,
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data) {
+        setHistorial(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching historial:', error);
+    }
+  };
+
   const renderTimeline = () => {
-    if (!trackingData || !trackingData.paquetes || trackingData.paquetes.length === 0) {
+    if (!historial || historial.length === 0) {
       return null;
     }
 
-    const currentStateId = trackingData.paquetes[0].id_estado_paquetes;
+    const uniqueStates = historial.map(item => item.estado_paquete).reduce((acc, state) => {
+      if (!acc.find(s => s.id === state.id)) {
+        acc.push(state);
+      }
+      return acc;
+    }, []);
 
     return (
       <div className="timeline mt-4">
-        {packageStates.map((state, index) => {
-          const isPast = state.id < currentStateId;
-          const isCurrent = state.id === currentStateId;
+        {uniqueStates.map((state, index) => {
+          const historialItem = historial.find(item => item.estado_paquete.id === state.id);
+          const isPast = historialItem && new Date(historialItem.fecha_hora) < new Date();
+          const isCurrent = state.id === trackingData?.orden?.id_estado_paquetes;
           const statusClass = isPast ? 'completed' : (isCurrent ? 'current' : 'future');
+          const packageState = packageStates.find(s => s.id === state.id);
           return (
             <div key={state.id} className={`timeline-item ${statusClass}`}>
-              <div className="timeline-icon">
-                {React.cloneElement(state.icon, { className: statusClass })}
+              <div className="timeline-badge">
+                {React.cloneElement(packageState?.icon || <Package size={24} />, { className: 'timeline-icon' })}
               </div>
-              <div className="timeline-content">
-                <h6 className="mb-0">{state.state}</h6>
-                <p className="text-muted small mb-0">{state.description}</p>
-                {isCurrent && (
-                  <small className="text-success">
-                    Actualizado: {new Date(trackingData.updated_at).toLocaleString()}
+              <div className={`timeline-content ${isCurrent ? 'current-state' : ''}`}>
+                <h5 className="timeline-title">{state.nombre}</h5>
+                <p className="timeline-description">{packageState?.description || state.descripcion}</p>
+                {historialItem && (
+                  <small className="timeline-date">
+                    {new Date(historialItem.fecha_hora).toLocaleString()}
                   </small>
                 )}
               </div>
@@ -99,8 +130,8 @@ const TrackingPage = () => {
   };
 
   return (
-    <div className="page-content">
-      <Container fluid>
+    <div className="tracking-page">
+      <Container>
         <Row className="justify-content-center">
           <Col xs={12} md={10} lg={8}>
             <Card className="tracking-card">
@@ -134,19 +165,34 @@ const TrackingPage = () => {
                     <Card className="mt-5 details-card">
                       <CardBody>
                         <h4 className="card-title mb-4">Detalles del Envío</h4>
-                        <Row>
-                          <Col md={6}>
-                            <p><strong>Cliente ID:</strong> {trackingData.id_cliente}</p>
-                            <p><strong>Dirección ID:</strong> {trackingData.id_direccion}</p>
-                            <p><strong>Tipo de Pago:</strong> {trackingData.id_tipo_pago}</p>
-                          </Col>
-                          <Col md={6}>
-                            <p><strong>Total a Pagar:</strong> ${trackingData.total_pagar}</p>
-                            <p><strong>Costo Adicional:</strong> ${trackingData.costo_adicional}</p>
-                            <p><strong>Tipo de Documento:</strong> {trackingData.tipo_documento}</p>
-                          </Col>
-                        </Row>
-                        <p><strong>Concepto:</strong> {trackingData.concepto}</p>
+                        {trackingData.orden && (
+                          <Table responsive bordered hover className="shipping-details">
+                            <tbody>
+                              <tr>
+                                <th>Cliente ID</th>
+                                <td>{trackingData.orden.id_cliente}</td>
+                                <th>Total a Pagar</th>
+                                <td>${trackingData.orden.total_pagar}</td>
+                              </tr>
+                              <tr>
+                                <th>Dirección ID</th>
+                                <td>{trackingData.orden.id_direccion}</td>
+                                <th>Costo Adicional</th>
+                                <td>${trackingData.orden.costo_adicional}</td>
+                              </tr>
+                              <tr>
+                                <th>Tipo de Pago</th>
+                                <td>{trackingData.orden.id_tipo_pago}</td>
+                                <th>Tipo de Documento</th>
+                                <td>{trackingData.orden.tipo_documento}</td>
+                              </tr>
+                              <tr>
+                                <th>Concepto</th>
+                                <td colSpan="3">{trackingData.orden?.concepto}</td>
+                              </tr>
+                            </tbody>
+                          </Table>
+                        )}
                       </CardBody>
                     </Card>
                     {trackingData.paquetes && trackingData.paquetes.length > 0 && (
@@ -155,20 +201,26 @@ const TrackingPage = () => {
                         {trackingData.paquetes.map((paquete, index) => (
                           <Card key={index} className="mb-3 package-card">
                             <CardBody>
-                              <h5 className="card-title">Paquete {index + 1}</h5>
-                              <Row>
-                                <Col md={4}>
-                                  <p><strong>Tipo de Paquete:</strong> {paquete.id_tipo_paquete}</p>
-                                  <p><strong>Empaque:</strong> {paquete.id_empaque}</p>
-                                </Col>
-                                <Col md={4}>
-                                  <p><strong>Peso:</strong> {paquete.peso} kg</p>
-                                  <p><strong>Precio:</strong> ${paquete.precio}</p>
-                                </Col>
-                                <Col md={4}>
-                                  <p><strong>Descripción:</strong> {paquete.descripcion || 'N/A'}</p>
-                                </Col>
-                              </Row>
+                              <Table responsive bordered hover className="package-details">
+                                <tbody>
+                                  <tr>
+                                    <th>Paquete ID</th>
+                                    <td>{paquete.id_paquete}</td>
+                                    <th>Descripción</th>
+                                    <td>{paquete.descripcion}</td>
+                                  </tr>
+                                  <tr>
+                                    <th>Referencia</th>
+                                    <td>{paquete.referencia}</td>
+                                    <th>Cantidad</th>
+                                    <td>{paquete.cantidad}</td>
+                                  </tr>
+                                  <tr>
+                                    <th>Peso</th>
+                                    <td colSpan="3">{paquete.peso} kg</td>
+                                  </tr>
+                                </tbody>
+                              </Table>
                             </CardBody>
                           </Card>
                         ))}

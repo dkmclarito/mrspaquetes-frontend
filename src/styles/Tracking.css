@@ -1,0 +1,195 @@
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --success-color: #1e6f31;
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --text-color: #333333;
+  --border-color: #dee2e6;
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Arial', sans-serif;
+}
+
+.tracking-page {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.tracking-card {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group .form-control {
+  border-radius: 4px 0 0 4px;
+}
+
+.input-group .btn {
+  border-radius: 0 4px 4px 0;
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: var(--border-color);
+  transform: translateX(-50%);
+}
+
+.timeline-item {
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.timeline-item:first-of-type .timeline-badge {
+  background-color: var(--success-color); /* Icono verde para la primera tarjeta */
+}
+
+.timeline-item:first-of-type .timeline-content {
+  background-color: var(--success-color); /* Fondo verde para la primera tarjeta */
+  color: white; /* Texto blanco para la primera tarjeta */
+  border-left: 3px solid var(--success-color); /* Borde izquierdo verde para la primera tarjeta */
+}
+
+.timeline-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.timeline-content {
+  width: calc(50% - 30px);
+  padding: 15px;
+  background-color: var(--card-background);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-item:nth-child(odd) .timeline-content {
+  margin-left: auto;
+}
+
+.timeline-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.timeline-description {
+  font-size: 0.9em;
+  color: var(--secondary-color);
+}
+
+.timeline-date {
+  font-size: 0.8em;
+  color: var(--secondary-color);
+  margin-top: 5px;
+}
+
+.timeline-item.current .timeline-badge {
+  background-color: var(--success-color);
+}
+
+.timeline-item.current .timeline-content {
+  border-left: 3px solid var(--success-color);
+}
+
+.details-card, .package-card {
+  background-color: var(--card-background);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  background-color: #f1f3f5;
+  font-weight: bold;
+}
+
+.table td, .table th {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #1a1a1a;
+    --card-background: #2a2a2a;
+    --text-color: #e0e0e0;
+    --border-color: #444444;
+  }
+
+  body {
+    color: var(--text-color);
+    background-color: var(--background-color);
+  }
+
+  .tracking-card {
+    background-color: var(--card-background);
+  }
+
+  .input-group .btn {
+    background-color: var(--primary-color);
+  }
+
+  .timeline::before {
+    background-color: #444444;
+  }
+
+  .timeline-content {
+    background-color: #2a2a2a;
+    color: var(--text-color); /* Color de texto adaptado al modo oscuro */
+  }
+
+  .timeline-description, .timeline-date {
+    color: #b0b0b0;
+  }
+
+  .table th {
+    background-color: #333333;
+  }
+
+  .details-card, .package-card {
+    background-color: var(--card-background);
+  }
+}
