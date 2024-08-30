@@ -23,6 +23,8 @@ export default function DatosPaquete() {
   const [tiposPaquete, setTiposPaquete] = useState([]);
   const [empaques, setEmpaques] = useState([]);
   const [estadosPaquete, setEstadosPaquete] = useState([]);
+  const [tarifas, setTarifas] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [commonData, setCommonData] = useState({
     id_estado_paquete: '',
     fecha_envio: '',
@@ -37,6 +39,7 @@ export default function DatosPaquete() {
     peso: '',
     descripcion: '',
     precio: '',
+    tamano_paquete: '',
   }]);
   const [errors, setErrors] = useState({
     commonData: {},
@@ -50,19 +53,34 @@ export default function DatosPaquete() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clienteRes, tiposPaqueteRes, empaquesRes, estadosPaqueteRes] = await Promise.all([
+        const [clienteRes, tiposPaqueteRes, empaquesRes, estadosPaqueteRes, tarifasRes] = await Promise.all([
           axios.get(`${API_URL}/clientes/${idCliente}`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get(`${API_URL}/dropdown/get_tipo_paquete`, { headers: { Authorization: `Bearer ${token}` } }),
           axios.get(`${API_URL}/dropdown/get_empaques`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/dropdown/get_estado_paquete`, { headers: { Authorization: `Bearer ${token}` } })
+          axios.get(`${API_URL}/dropdown/get_estado_paquete`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/tarifa-destinos`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         setCliente(clienteRes.data.cliente || {});
         setTiposPaquete(tiposPaqueteRes.data.tipo_paquete || []);
         setEmpaques(empaquesRes.data.empaques || []);
         setEstadosPaquete(estadosPaqueteRes.data.estado_paquetes || []);
+        setTarifas(tarifasRes.data || []);
+
+        const storedAddress = JSON.parse(localStorage.getItem('selectedAddress'));
+        setSelectedAddress(storedAddress);
+        console.log('Selected address:', storedAddress);
+
+        console.log('Fetched data:', {
+          cliente: clienteRes.data.cliente,
+          tiposPaquete: tiposPaqueteRes.data.tipo_paquete,
+          empaques: empaquesRes.data.empaques,
+          estadosPaquete: estadosPaqueteRes.data.estado_paquetes,
+          tarifas: tarifasRes.data,
+          storedAddress
+        });
 
       } catch (error) {
         console.error("Error al obtener los datos:", error);
@@ -88,6 +106,7 @@ export default function DatosPaquete() {
       case 'id_empaque':
       case 'id_estado_paquete':
       case 'id_tipo_entrega':
+      case 'tamano_paquete':
         if (!value) {
           error = 'Debe seleccionar una opción.';
         }
@@ -124,12 +143,89 @@ export default function DatosPaquete() {
       ...prev,
       commonData: { ...prev.commonData, [name]: error }
     }));
+
+    // If the delivery type changes, recalculate prices for all packages
+    if (name === 'id_tipo_entrega') {
+      const updatedPaquetes = paquetes.map(paquete => ({
+        ...paquete,
+        precio: calculatePrice(paquete.tamano_paquete, value)
+      }));
+      setPaquetes(updatedPaquetes);
+    }
+  };
+
+  const getTamanoPaqueteString = (tamanoPaquete) => {
+    switch (tamanoPaquete) {
+      case '1': return 'pequeno';
+      case '2': return 'mediano';
+      case '3': return 'grande';
+      default: return '';
+    }
+  };
+
+  const calculatePrice = (tamanoPaquete, tipoEntrega) => {
+    if (!selectedAddress || !tamanoPaquete) {
+      console.log('Missing selectedAddress or tamanoPaquete', { selectedAddress, tamanoPaquete });
+      return '';
+    }
+
+    const isExpress = tipoEntrega === '2';
+    const isSanMiguelUrban = selectedAddress.id_departamento === 12 && selectedAddress.id_municipio === 215;
+
+    console.log('Calculating price for:', { tamanoPaquete, tipoEntrega, selectedAddress, isExpress, isSanMiguelUrban });
+
+    let tarifaType;
+    if (isExpress && isSanMiguelUrban) {
+      tarifaType = 'tarifa urbana express';
+    } else if (isSanMiguelUrban) {
+      tarifaType = 'tarifa urbana';
+    } else {
+      tarifaType = 'tarifa rural';
+    }
+
+    const tarifa = tarifas.find(t => 
+      t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
+      t.departamento === selectedAddress.departamento_nombre &&
+      t.municipio === selectedAddress.municipio_nombre &&
+      t.tarifa === tarifaType
+    );
+
+    if (!tarifa) {
+      console.log('No exact match found, searching for a general tariff for the department');
+      const generalTarifa = tarifas.find(t => 
+        t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
+        t.departamento === selectedAddress.departamento_nombre &&
+        t.tarifa === tarifaType
+      );
+
+      if (generalTarifa) {
+        console.log('Found general tarifa:', generalTarifa);
+        return generalTarifa.monto;
+      }
+
+      console.log('No matching tarifa found');
+      return '';
+    }
+
+    console.log('Found tarifa:', tarifa);
+    return tarifa.monto;
   };
 
   const handleChangePaquete = (index, e) => {
     const { name, value } = e.target;
     const updatedPaquetes = [...paquetes];
     updatedPaquetes[index] = { ...updatedPaquetes[index], [name]: value };
+
+    if (name === 'tamano_paquete') {
+      if (selectedAddress) {
+        const calculatedPrice = calculatePrice(value, commonData.id_tipo_entrega);
+        updatedPaquetes[index].precio = calculatedPrice;
+        console.log(`Updated price for paquete ${index}:`, calculatedPrice);
+      } else {
+        console.log('No selectedAddress available, price calculation skipped');
+      }
+    }
+
     setPaquetes(updatedPaquetes);
     
     const error = validateField(name, value);
@@ -138,15 +234,18 @@ export default function DatosPaquete() {
       newPaquetesErrors[index] = { ...newPaquetesErrors[index], [name]: error };
       return { ...prev, paquetes: newPaquetesErrors };
     });
+
+    console.log('Updated paquete:', updatedPaquetes[index]);
   };
 
   const agregarPaquete = () => {
-    setPaquetes([...paquetes, {
+    setPaquetes(prev => [...prev, {
       id_tipo_paquete: '',
       id_empaque: '',
       peso: '',
       descripcion: '',
       precio: '',
+      tamano_paquete: '',
     }]);
     setErrors(prev => ({
       ...prev,
@@ -155,7 +254,7 @@ export default function DatosPaquete() {
   };
 
   const removerPaquete = (index) => {
-    setPaquetes(paquetes.filter((_, idx) => idx !== index));
+    setPaquetes(prev => prev.filter((_, idx) => idx !== index));
     setErrors(prev => ({
       ...prev,
       paquetes: prev.paquetes.filter((_, idx) => idx !== index)
@@ -202,10 +301,12 @@ export default function DatosPaquete() {
     const detalles = paquetes.map(paquete => ({
       ...commonData,
       ...paquete,
-      id_direccion: JSON.parse(localStorage.getItem('selectedAddress')).id
+      id_direccion: selectedAddress ? selectedAddress.id : null
     }));
 
     const totalPrice = detalles.reduce((sum, detalle) => sum + parseFloat(detalle.precio || 0), 0);
+
+    console.log('Submitting form:', { detalles, totalPrice, commonData });
 
     navigate(`/GenerarOrden/${idCliente}`, { 
       state: { 
@@ -216,6 +317,10 @@ export default function DatosPaquete() {
     });
   };
 
+  const isExpressAvailable = selectedAddress && 
+    selectedAddress.id_departamento === 12 && 
+    selectedAddress.id_municipio === 200;
+
   return (
     <Container fluid>
       <ToastContainer />
@@ -224,6 +329,9 @@ export default function DatosPaquete() {
           <h4>Agregar datos de los Paquetes</h4>
           {cliente && (
             <h5>Cliente: {cliente.nombre} {cliente.apellido}</h5>
+          )}
+          {selectedAddress && (
+            <h6>Dirección seleccionada: {selectedAddress.direccion}</h6>
           )}
         </CardHeader>
         <CardBody>
@@ -310,7 +418,7 @@ export default function DatosPaquete() {
                       >
                         <option value="">Seleccione un tipo de entrega</option>
                         <option value="1">Entrega Normal</option>
-                        <option value="2">Entrega Express</option>
+                        {isExpressAvailable && <option value="2">Entrega Express</option>}
                       </Input>
                       {errors.commonData.id_tipo_entrega && <FormFeedback>{errors.commonData.id_tipo_entrega}</FormFeedback>}
                     </FormGroup>
@@ -394,9 +502,7 @@ export default function DatosPaquete() {
                         {errors.paquetes[index]?.peso && <FormFeedback>{errors.paquetes[index].peso}</FormFeedback>}
                       </FormGroup>
                     </Col>
-                  </Row>
-                  <Row>
-                    <Col md={6}>
+                    <Col md={4}>
                       <FormGroup>
                         <Label for={`descripcion_${index}`}>Descripción</Label>
                         <Input
@@ -410,15 +516,35 @@ export default function DatosPaquete() {
                         {errors.paquetes[index]?.descripcion && <FormFeedback>{errors.paquetes[index].descripcion}</FormFeedback>}
                       </FormGroup>
                     </Col>
-                    <Col md={6}>
+                 
+                    <Col md={4}>
+                      <FormGroup>
+                        <Label for={`tamano_paquete_${index}`}>Tamaño del Paquete</Label>
+                        <Input
+                          type="select"
+                          name="tamano_paquete"
+                          id={`tamano_paquete_${index}`}
+                          value={paquete.tamano_paquete}
+                          onChange={(e) => handleChangePaquete(index, e)}
+                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].tamano_paquete)}
+                        >
+                          <option value="">Seleccione un tamaño</option>
+                          <option value="1">Pequeño</option>
+                          <option value="2">Mediano</option>
+                          {commonData.id_tipo_entrega !== '2' && <option value="3">Grande</option>}
+                        </Input>
+                        {errors.paquetes[index]?.tamano_paquete && <FormFeedback>{errors.paquetes[index].tamano_paquete}</FormFeedback>}
+                      </FormGroup>
+                    </Col>
+                    <Col md={4}>
                       <FormGroup>
                         <Label for={`precio_${index}`}>Precio</Label>
                         <Input
-                          type="number"
+                          type="text"
                           name="precio"
                           id={`precio_${index}`}
                           value={paquete.precio}
-                          onChange={(e) => handleChangePaquete(index, e)}
+                          readOnly
                           invalid={!!(errors.paquetes[index] && errors.paquetes[index].precio)}
                         />
                         {errors.paquetes[index]?.precio && <FormFeedback>{errors.paquetes[index].precio}</FormFeedback>}

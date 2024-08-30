@@ -69,6 +69,7 @@ export default function OrdenesDirecciones() {
         setCliente(responseCliente.data.cliente || {});
         setDepartamentos(responseDepartamentos.data || []);
 
+        // Fetch direcciones after setting departamentos
         await fetchDirecciones();
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -276,45 +277,45 @@ export default function OrdenesDirecciones() {
                 </div>
               )}
               <Table responsive>
-                <thead>
-                  <tr>
-                    <th>Dirección</th>
-                    <th>Referencia</th>
-                    <th>Departamento</th>
-                    <th>Municipio</th>
-                    <th>Nombre de Contacto</th>
-                    <th>Teléfono</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {direcciones.length > 0 ? (
-                    direcciones.map((direccion, index) => (
-                      <tr key={index}>
-                        <td>{direccion.direccion || 'Dirección no disponible'}</td>
-                        <td>{direccion.referencia || 'N/A'}</td>
-                        <td>{direccion.departamento_nombre || 'No disponible'}</td>
-                        <td>{direccion.municipio_nombre || 'No disponible'}</td>
-                        <td>{direccion.nombre_contacto || 'No disponible'}</td>
-                        <td>{direccion.telefono || 'No disponible'}</td>
-                        <td>
-                          <Button
-                            color={selectedDireccion === direccion ? "success" : "primary"}
-                            onClick={() => handleSeleccionarDireccion(direccion)}
-                            aria-pressed={selectedDireccion === direccion}
-                          >
-                            {selectedDireccion === direccion ? "Seleccionada" : "Seleccionar"}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="text-center">No hay direcciones disponibles</td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
+        <thead>
+          <tr>
+            <th>Dirección</th>
+            <th>Referencia</th>
+            <th>Departamento</th>
+            <th>Municipio</th>
+            <th>Nombre de Contacto</th>
+            <th>Teléfono</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {direcciones.length > 0 ? (
+            direcciones.map((direccion, index) => (
+              <tr key={index}>
+                <td>{direccion.direccion || 'Dirección no disponible'}</td>
+                <td>{direccion.referencia || 'N/A'}</td>
+                <td>{direccion.departamento_nombre}</td>
+                <td>{direccion.municipio_nombre}</td>
+                <td>{direccion.nombre_contacto || 'No disponible'}</td>
+                <td>{direccion.telefono || 'No disponible'}</td>
+                <td>
+                  <Button
+                    color={selectedDireccion === direccion ? "success" : "primary"}
+                    onClick={() => handleSeleccionarDireccion(direccion)}
+                    aria-pressed={selectedDireccion === direccion}
+                  >
+                    {selectedDireccion === direccion ? "Seleccionada" : "Seleccionar"}
+                  </Button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7" className="text-center">No hay direcciones disponibles</td>
+            </tr>
+          )}
+        </tbody>
+      </Table>
               {selectedDireccion && (
                 <div>
                   <h5>Dirección Seleccionada:</h5>
