@@ -300,6 +300,7 @@ export default function DatosPaquete() {
                         value={commonData.fecha_envio}
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.fecha_envio}
+                        className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_envio && <FormFeedback>{errors.commonData.fecha_envio}</FormFeedback>}
                     </FormGroup>
@@ -314,6 +315,7 @@ export default function DatosPaquete() {
                         value={commonData.fecha_entrega_estimada}
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.fecha_entrega_estimada}
+                        className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_entrega_estimada && <FormFeedback>{errors.commonData.fecha_entrega_estimada}</FormFeedback>}
                     </FormGroup>
@@ -330,6 +332,7 @@ export default function DatosPaquete() {
                         value={commonData.fecha_entrega}
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.fecha_entrega}
+                        className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_entrega && <FormFeedback>{errors.commonData.fecha_entrega}</FormFeedback>}
                     </FormGroup>
