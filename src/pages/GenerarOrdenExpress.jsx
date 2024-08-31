@@ -10,7 +10,7 @@ import AuthService from '../services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function GenerarOrden() {
+export default function GenerarOrdenExpress() {
   const location = useLocation();
   const navigate = useNavigate();
   const { idCliente } = useParams();
@@ -260,7 +260,7 @@ export default function GenerarOrden() {
       });
       
       // Navigate to the ProcesarPago page
-      navigate(`/procesarpago/${idCliente}`);
+      navigate(`/procesarpagoexpress/${idCliente}`);
     } catch (error) {
       console.error("Error al registrar la orden:", error);
       if (error.response && error.response.data && error.response.data.message) {
@@ -289,7 +289,7 @@ export default function GenerarOrden() {
   return (
     <div className="page-content">
       <Container fluid>
-        <h1 className='text-center'>Detalles de Pago</h1>        
+        <h1 className='text-center'>Detalles de Pago express</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">

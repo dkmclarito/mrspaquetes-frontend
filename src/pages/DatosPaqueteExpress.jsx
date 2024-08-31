@@ -20,7 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
-export default function DatosPaquete() {
+export default function DatosPaqueteExpress() {
   const { idCliente } = useParams();
   const [cliente, setCliente] = useState(null);
   const [tiposPaquete, setTiposPaquete] = useState([]);
@@ -295,7 +295,7 @@ export default function DatosPaquete() {
 
     console.log('Submitting form:', { detalles, totalPrice, commonData });
 
-    navigate(`/GenerarOrden/${idCliente}`, { 
+    navigate(`/GenerarOrdenExpress/${idCliente}`, { 
       state: { 
         detalles: detalles,
         totalPrice: totalPrice,
@@ -315,7 +315,7 @@ export default function DatosPaquete() {
 
   return (
     <Container fluid>
-      <h1 className='text-center'>Agregar datos de los Paquetes</h1>        
+      <h1 className='text-center'>Agregar datos de los Paquetes express</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
