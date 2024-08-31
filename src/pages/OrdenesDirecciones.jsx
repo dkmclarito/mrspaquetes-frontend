@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumbs from '../components/Empleados/Common/Breadcrumbs';
 import axios from 'axios';
+import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -27,6 +28,34 @@ export default function OrdenesDirecciones() {
   const [cliente, setCliente] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Verifica si el token es inválido
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+
+        // Si el token es válido y el usuario está activo, no se hace nada
+      }
+    } catch (error) {
+      console.error("Error 500 DKM:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, []);
 
   const fetchDirecciones = async () => {
     try {
@@ -78,8 +107,17 @@ export default function OrdenesDirecciones() {
       }
     };
 
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchData();
-  }, [idCliente, token]);
+  }, [idCliente, token, verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const fetchMunicipios = async () => {

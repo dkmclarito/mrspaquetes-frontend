@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, InputGroup, InputGroupText } from "reactstrap";
 import { BiShow, BiHide } from "react-icons/bi";
@@ -23,6 +23,41 @@ const AgregarUsuario = () => {
 
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const userId = localStorage.getItem("userId");
+      if (userId && token) {
+        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const responseData = await response.json();
+
+        if (responseData.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, []);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado();
+
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const fetchUsuarios = async () => {

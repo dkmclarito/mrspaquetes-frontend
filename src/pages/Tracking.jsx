@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, CardBody, Input, Button } from 'reactstrap';
 import { Package, Truck, Warehouse, Home, Calendar, RotateCcw, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import "../styles/Tracking.css";
+import AuthService from "../services/authService";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const packageStates = [
@@ -26,6 +28,45 @@ const TrackingPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const token = localStorage.getItem('token');
+
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Verifica si el token es inválido
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, [token]);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+  }, [verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
+
   const handleInputChange = (e) => {
     setNumeroSeguimiento(e.target.value);
   };
@@ -39,7 +80,6 @@ const TrackingPage = () => {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.get(
         `${API_URL}/seguimiento-orden`,
         {

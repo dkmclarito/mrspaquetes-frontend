@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Clientes/Common/Breadcrumbs";
 import TablaClientes from "../components/Clientes/TablaClientes";
@@ -35,6 +35,34 @@ const GestionClientes = () => {
 
   const navigate = useNavigate();
 
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Verifica si el token es inválido
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+
+        // Si el token es válido y el usuario está activo, no se hace nada
+      }
+    } catch (error) {
+      console.error("Error 500 DKM:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,8 +85,17 @@ const GestionClientes = () => {
       }
     };
 
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchData();
-  }, []);
+  }, [verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   const eliminarCliente = (idCliente) => {
     setConfirmarEliminar(true);

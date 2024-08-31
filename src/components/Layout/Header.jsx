@@ -28,7 +28,7 @@ const Header = ({ toggleDarkMode, darkMode, menuCollapsed }) => {
   
     AuthService.logout();
   
-    if (role === "admin" || role === "empleado" || role === "basico") {
+    if (role === "admin" || role === "empleado" || role === "basico" || role === "conductor") {
       navigate("/login");
     } else {
       navigate("/clientelogin");

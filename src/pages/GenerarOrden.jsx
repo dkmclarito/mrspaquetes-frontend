@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button,Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import axios from 'axios';
@@ -6,6 +6,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
+import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -29,11 +30,37 @@ export default function GenerarOrden() {
     tipo_documento: 'consumidor_final',
     detalles: []
   });
-  const [currentStep, setCurrentStep] = useState(4);
+
+  const token = localStorage.getItem('token');
+
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Verifica si el token es inválido
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, [token]);
+
   useEffect(() => {
     const fetchClienteData = async () => {
       try {
-        const token = localStorage.getItem('token');
         const response = await axios.get(`${API_URL}/clientes/${idCliente}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -58,8 +85,17 @@ export default function GenerarOrden() {
       }
     };
 
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchClienteData();
-  }, [idCliente, location.state]);
+  }, [idCliente, location.state, verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -72,9 +108,6 @@ export default function GenerarOrden() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      
-      // Format detalles
       const formattedDetalles = formData.detalles.map(detalle => ({
         id_tipo_paquete: Number(detalle.id_tipo_paquete),
         id_empaque: Number(detalle.id_empaque),
@@ -83,7 +116,7 @@ export default function GenerarOrden() {
         fecha_envio: detalle.fecha_envio + "T00:00:00",
         fecha_entrega_estimada: detalle.fecha_entrega_estimada + "T00:00:00",
         fecha_entrega: detalle.fecha_entrega + "T00:00:00",
-        descripcion_contenido: detalle.descripcion, // Assuming 'descripcion' is used for 'descripcion_contenido'
+        descripcion_contenido: detalle.descripcion,
         id_tipo_entrega: Number(detalle.id_tipo_entrega),
         id_direccion: Number(formData.id_direccion),
         instrucciones_entrega: detalle.instrucciones_entrega,

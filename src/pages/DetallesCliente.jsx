@@ -27,10 +27,45 @@ const DetallesCliente = () => {
   const [paginaActual, setPaginaActual] = useState(1);
   const [cargando, setCargando] = useState(true);
 
+  const token = AuthService.getCurrentUser();
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (userId && token) {
+        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const responseData = await response.json();
+
+        if (responseData.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, [token]);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado();
+
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [verificarEstadoUsuarioLogueado]);
+
   const cargarDatos = useCallback(async () => {
     try {
       setCargando(true);
-      const token = AuthService.getCurrentUser();
       const [clienteResponse, direccionesResponse, detallesResponse] = await Promise.all([
         axios.get(`${API_URL}/clientes/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -61,7 +96,7 @@ const DetallesCliente = () => {
     } finally {
       setCargando(false);
     }
-  }, [id]);
+  }, [id, token]);
 
   useEffect(() => {
     cargarDatos();
@@ -102,11 +137,10 @@ const DetallesCliente = () => {
 
   const eliminarDireccion = async () => {
     try {
-      const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/direcciones/${direccionAEliminar}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      await cargarDirecciones();
+      await cargarDatos();
       toast.success('Dirección eliminada correctamente');
     } catch (error) {
       console.error('Error al eliminar dirección:', error);

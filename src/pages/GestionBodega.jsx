@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Container,
@@ -43,6 +43,45 @@ const GestionBodega = () => {
     {}
   );
   const [filtro, setFiltro] = useState("");
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
+
+      if (userId && token) {
+        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const responseData = await response.json();
+
+        // Verifica si el token es inválido
+        if (responseData.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      AuthService.logout();
+      window.location.href = "/login";
+    }
+  }, [API_URL]);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+  }, [verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -180,15 +219,6 @@ const GestionBodega = () => {
   };
 
   const bodegasFiltradas = filtrarBodegas(bodegas);
-  // Filtrar bodegas según el filtro actual
-  const bodegasFiltrados = bodegas.filter((bodega) =>
-    bodega.nombre.toLowerCase().includes(filtro.toLowerCase())
-  );
-
-  if (!Array.isArray(bodegasFiltrados)) {
-    console.error("bodegasFiltrados no es un arreglo:", bodegasFiltrados);
-    return null; // O maneja el error de alguna manera
-  }
   const bodegasConIdsNumericos = bodegas.map(bodega => ({
     ...bodega,
     id_departamento: Number(bodega.id_departamento),
