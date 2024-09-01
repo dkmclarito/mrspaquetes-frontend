@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback} from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,6 +28,35 @@ const GestionEmpleados = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
+
+// Nueva función para verificar el estado del usuario logueado
+const verificarEstadoUsuarioLogueado = useCallback(async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+   
+    const token = AuthService.getCurrentUser();
+
+    if (userId && token) {
+      const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+    //  console.log("Response Data:", response.data); 
+
+      // Verifica si el token es inválido
+      if (response.data.status === "Token is Invalid") {
+        console.error("Token is invalid. Logging out...");
+        AuthService.logout();
+        window.location.href = "/login"; // Redirige a login si el token es inválido
+        return;
+      }
+      // Si el token es válido y el usuario está activo, no se hace nada
+    }
+  } catch (error) {
+    console.error("Error 500 DKM:", );
+    
+  }
+}, []);
 
   const navigate = useNavigate();
   const verDetallesEmpleado = (idEmpleado) => {
@@ -76,15 +105,26 @@ const GestionEmpleados = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    verificarEstadoUsuarioLogueado();
+  }, [fetchData, verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
+
+ 
+
     if (departamentoSeleccionado) {
       fetchMunicipios(departamentoSeleccionado);
     } else {
       setMunicipios([]);
     }
-  }, [departamentoSeleccionado]);
+
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+
+  }, [departamentoSeleccionado, verificarEstadoUsuarioLogueado]);
 
   const guardarCambiosEmpleado = async () => {
     try {

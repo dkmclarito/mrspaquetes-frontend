@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, FormFeedback } from "reactstrap";
 import Breadcrumbs from "../components/Clientes/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -14,7 +14,7 @@ const AgregarCliente = () => {
     const [emailError, setEmailError] = useState("");
     const [isPasswordValid, setIsPasswordValid] = useState(true);
     const [passwordError, setPasswordError] = useState("");
-    const [nitErrorMessage, setNitErrorMessage] = useState(""); // Estado para el mensaje de error del NIT
+    const [nitErrorMessage, setNitErrorMessage] = useState("");
     const [formData, setFormData] = useState({ nit: '', });
     const [isDuiValid, setIsDuiValid] = useState(true);
     const [isTelefonoValid, setIsTelefonoValid] = useState(true);
@@ -46,8 +46,42 @@ const AgregarCliente = () => {
     const [errorMensaje, setErrorMensaje] = useState("");
 
     const navigate = useNavigate();
-
     const token = AuthService.getCurrentUser();
+
+    const verificarEstadoUsuarioLogueado = useCallback(async () => {
+        try {
+            const token = AuthService.getCurrentUser();
+            const userId = localStorage.getItem("userId");
+            if (userId && token) {
+                const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                const responseData = await response.json();
+
+                if (responseData.status === "Token is Invalid") {
+                    console.error("Token is invalid. Logging out...");
+                    AuthService.logout();
+                    window.location.href = "/login";
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Error al verificar el estado del usuario:", error);
+           // AuthService.logout();
+           // window.location.href = "/login";
+        }
+    }, []);
+
+    useEffect(() => {
+        verificarEstadoUsuarioLogueado();
+
+        const interval = setInterval(() => {
+            verificarEstadoUsuarioLogueado();
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
         const fetchTiposPersonas = async () => {
@@ -118,7 +152,6 @@ const AgregarCliente = () => {
 
     const handleEmailChange = (e) => {
         const email = e.target.value;
-        // Simple email pattern for validation
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (emailPattern.test(email)) {
@@ -134,7 +167,6 @@ const AgregarCliente = () => {
 
     const handlePasswordChange = (e) => {
         const password = e.target.value;
-        // Pattern for validating password (at least 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character)
         const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
         if (passwordPattern.test(password)) {
@@ -148,9 +180,8 @@ const AgregarCliente = () => {
         setPassword(password);
     };
 
-
     const handleDuiChange = (e) => {
-        let value = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
+        let value = e.target.value.replace(/[^\d]/g, "");
 
         if (value.length > 0 && value[0] !== "0") {
             value = "0" + value;
@@ -168,17 +199,14 @@ const AgregarCliente = () => {
     const handleTelefonoChange = (e) => {
         let telefonoValue = e.target.value.replace(/[^\d]/g, "");
 
-        // Verificar si el primer dígito es 6 o 7
         if (telefonoValue.length > 0 && !["6", "7", "2"].includes(telefonoValue[0])) {
             setTelefonoError("El número de teléfono debe comenzar con 6, 7 o 2");
             setIsTelefonoValid(false);
-            // Prevent further input by not updating state by default
             return;
         } else {
             setTelefonoError("");
         }
 
-        // Limit to 8 digits
         if (telefonoValue.length > 8) {
             telefonoValue = telefonoValue.slice(0, 8);
         }
@@ -219,25 +247,19 @@ const AgregarCliente = () => {
         return errorMessage;
     };
 
-
-
     const handleNitChange = (event) => {
-        const value = event.target.value || ""; // Asegúrate de que el valor no sea undefined
+        const value = event.target.value || "";
 
-        // Eliminar caracteres no numéricos
         let nitSanitized = value.replace(/[^\d]/g, "");
 
-        // Limitar la longitud máxima a 14 caracteres
         if (nitSanitized.length > 14) {
             nitSanitized = nitSanitized.slice(0, 14);
         }
 
-        // Validar longitud y formato del NIT
         let errorMessage = "";
         if (nitSanitized.length !== 14 && nitSanitized.length > 0) {
             errorMessage = "El NIT debe tener 14 dígitos.";
         } else {
-            // Validar los primeros 4 dígitos
             const primerosDosDigitos = parseInt(nitSanitized.substring(0, 2), 10);
             const segundosDosDigitos = parseInt(nitSanitized.substring(2, 4), 10);
             const dia = parseInt(nitSanitized.substring(4, 6), 10);
@@ -252,7 +274,6 @@ const AgregarCliente = () => {
             }
         }
 
-        // Formatear el NIT con guiones
         let nitFormatted = nitSanitized;
         if (nitSanitized.length > 4) {
             nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4)}`;
@@ -264,31 +285,24 @@ const AgregarCliente = () => {
             nitFormatted = `${nitSanitized.substring(0, 4)}-${nitSanitized.substring(4, 10)}-${nitSanitized.substring(10, 13)}-${nitSanitized.charAt(13)}`;
         }
 
-        console.log('Sanitized NIT:', nitSanitized); // Verifica el NIT sanitizado
-        console.log('Formatted NIT:', nitFormatted); // Verifica el NIT formateado
-
-        // Actualizar el estado y el mensaje de error
-        setNit(value); // Mantener el valor ingresado
+        setNit(value);
         setIsNitValid(errorMessage === "");
-        setFormData(prevData => ({ ...prevData, nit: nitFormatted })); // Actualizar el NIT en formData
-        setNitErrorMessage(errorMessage); // Actualizar el mensaje de error del NIT
+        setFormData(prevData => ({ ...prevData, nit: nitFormatted }));
+        setNitErrorMessage(errorMessage);
     };
 
-
     const handleNrcChange = (e) => {
-        let nrcValue = e.target.value.replace(/[^\d]/g, ""); // Eliminar caracteres no numéricos
+        let nrcValue = e.target.value.replace(/[^\d]/g, "");
         if (nrcValue.length > 7) {
             nrcValue = nrcValue.slice(0, 7);
         }
 
-        // Formatear NRC según el patrón ######-#
         if (nrcValue.length > 6) {
             nrcValue = nrcValue.slice(0, 6) + "-" + nrcValue.slice(6);
         }
 
         setNrc(nrcValue);
 
-        // Validación del NRC
         const isValid = nrcValue.length === 8 && /^\d{6}-\d{1}$/.test(nrcValue);
         setIsNrcValid(isValid);
     };
@@ -296,14 +310,12 @@ const AgregarCliente = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validaciones de campos
         if (!isDuiValid || !isTelefonoValid || !isEmailValid || !isPasswordValid || tipoPersona === "") {
             setAlertaError(true);
             setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
         }
 
-        // Datos del cliente
         const clienteData = {
             nombre: nombres,
             apellido: apellidos,
@@ -346,8 +358,6 @@ const AgregarCliente = () => {
         }
     };
 
-
-
     const resetForm = () => {
         setEmail("");
         setPassword("");
@@ -373,9 +383,8 @@ const AgregarCliente = () => {
 
         if (error.response && error.response.data) {
             const errorData = error.response.data.error || error.response.data.message;
-            console.error("Error data:", errorData); // Forzar visualización en consola
+            console.error("Error data:", errorData);
 
-            // Detectar errores de duplicación
             if (errorData && Array.isArray(errorData)) {
                 if (errorData.includes("El DUI ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
                     errorMessage = "El DUI y el teléfono ya están registrados.";
@@ -390,7 +399,7 @@ const AgregarCliente = () => {
                 }
             } else if (error.response.data.errors) {
                 const errorKeys = Object.keys(error.response.data.errors);
-                console.error("Error keys:", errorKeys); // Forzar visualización en consola
+                console.error("Error keys:", errorKeys);
 
                 if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
                     errorMessage = "El DUI y el teléfono ya están registrados.";
@@ -408,12 +417,11 @@ const AgregarCliente = () => {
             }
         }
 
-        console.error("Error message:", errorMessage); // Forzar visualización del mensaje final
+        console.error("Error message:", errorMessage);
         setAlertaExito(false);
         setAlertaError(true);
         setErrorMensaje(errorMessage);
     };
-
 
     const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
@@ -434,7 +442,6 @@ const AgregarCliente = () => {
         }
     };
 
-
     const isJuridicalPerson = tipoPersona === "2";
 
     const toggleAlertas = () => {
@@ -442,10 +449,11 @@ const AgregarCliente = () => {
         setAlertaError(false);
         setErrorMensaje("");
     };
+
     const currentYear = new Date().getFullYear();
-    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
     const minDate = `${currentYear}-${currentMonth}-01`;
-    const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
+    const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0];
 
     return (
         <React.Fragment>
@@ -512,7 +520,7 @@ const AgregarCliente = () => {
                                                 </FormGroup>
                                             </Col>
                                             <Col md={6}>
-                                            <Label for="password">Contraseña</Label>
+                                                <Label for="password">Contraseña</Label>
                                                 <FormGroup className="password-group">
                                                     <Input
                                                         type="password"
@@ -525,8 +533,8 @@ const AgregarCliente = () => {
                                                     <FormFeedback>{passwordError}</FormFeedback>
                                                 </FormGroup>
                                             </Col>
-
                                         </Row>
+
                                         <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
@@ -548,6 +556,7 @@ const AgregarCliente = () => {
                                                 </FormGroup>
                                             </Col>
                                         </Row>
+
                                         <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
@@ -586,8 +595,8 @@ const AgregarCliente = () => {
                                                     )}
                                                 </FormGroup>
                                             </Col>
-
                                         </Row>
+
                                         <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
@@ -598,7 +607,7 @@ const AgregarCliente = () => {
                                                         value={fechaRegistro}
                                                         onChange={(e) => setFechaRegistro(e.target.value)}
                                                         required
-                                                        min={minDate} // Set min date
+                                                        min={minDate}
                                                         max={maxDate}
                                                         className="dark-mode-input-date"
                                                     />
@@ -617,6 +626,7 @@ const AgregarCliente = () => {
                                                 </FormGroup>
                                             </Col>
                                         </Row>
+
                                         <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
@@ -657,7 +667,8 @@ const AgregarCliente = () => {
                                                 </FormGroup>
                                             </Col>
                                         </Row>
-                                        {tipoPersona === "2" && ( // Si es persona jurídica
+
+                                        {tipoPersona === "2" && (
                                             <>
                                                 <Row>
                                                     <Col md={6}>
@@ -701,7 +712,6 @@ const AgregarCliente = () => {
                                                             )}
                                                         </FormGroup>
                                                     </Col>
-
                                                 </Row>
                                                 <Row>
                                                     <Col md={6}>
@@ -748,6 +758,7 @@ const AgregarCliente = () => {
                                                 </Row>
                                             </>
                                         )}
+
                                         <Row>
                                             <Col md={12}>
                                                 <Button type="submit" color="primary">Guardar</Button>

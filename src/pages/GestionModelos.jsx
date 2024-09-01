@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
 import { Link } from "react-router-dom";
@@ -23,11 +23,45 @@ const GestionModelos = () => {
   const [modeloAEliminar, setModeloAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const token = AuthService.getCurrentUser();
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (userId && token) {
+        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const responseData = await response.json();
+
+        if (responseData.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      //AuthService.logout();
+     // window.location.href = "/login";
+    }
+  }, [token]);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = AuthService.getCurrentUser();
         const response = await axios.get(`${API_URL}/modeloVehiculo`, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -47,7 +81,7 @@ const GestionModelos = () => {
     };
 
     fetchData();
-  }, []);
+  }, [token]);
 
   const eliminarModelo = (idModelo) => {
     setConfirmarEliminar(true);
@@ -56,7 +90,6 @@ const GestionModelos = () => {
 
   const confirmarEliminarModelo = async () => {
     try {
-      const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/modeloVehiculo/${modeloAEliminar}`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -79,7 +112,6 @@ const GestionModelos = () => {
 
   const guardarCambiosModelo = async () => {
     try {
-      const token = AuthService.getCurrentUser();
       await axios.put(`${API_URL}/modeloVehiculo/${modeloEditado.id}`, modeloEditado, {
         headers: {
           "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Card, CardBody, Button, FormGroup, Label, Input } from 'reactstrap';
@@ -93,7 +93,12 @@ const permisosEspañol = {
     "incidencias-create": "Crear incidencias",
     "incidencias-show": "Mostrar incidencias",
     "incidencias-update": "Actualizar incidencias",
-    "incidencias-destroy": "Eliminar incidencias"
+    "incidencias-destroy": "Eliminar incidencias",
+    "orden-view": "Vista de órdenes",
+    "orden-show": "Mostrar órden",
+    "orden-create": "Crear órden",
+    "orden-update": "Actulizar órden",
+    "orden-destroy": "Eliminar órden"
 };
 
 const AgregarRolesPermisos = () => {
@@ -103,6 +108,41 @@ const AgregarRolesPermisos = () => {
     const [permisos, setPermisos] = useState([]);
     const [permisosAsignados, setPermisosAsignados] = useState([]);
     const [roleName, setRoleName] = useState(state?.name || ''); 
+
+    const verificarEstadoUsuarioLogueado = useCallback(async () => {
+        try {
+            const token = AuthService.getCurrentUser();
+            const userId = localStorage.getItem("userId");
+            if (userId && token) {
+                const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                const responseData = await response.json();
+
+                if (responseData.status === "Token is Invalid") {
+                    console.error("Token is invalid. Logging out...");
+                    AuthService.logout();
+                    window.location.href = "/login";
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Error al verificar el estado del usuario:", error);
+           // AuthService.logout();
+           // window.location.href = "/login";
+        }
+    }, []);
+
+    useEffect(() => {
+        verificarEstadoUsuarioLogueado();
+
+        const interval = setInterval(() => {
+            verificarEstadoUsuarioLogueado();
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
         const fetchPermisosAsignados = async () => {
@@ -188,8 +228,8 @@ const AgregarRolesPermisos = () => {
                 <Col lg={12}>
                     <Card>
                         <CardBody>
-                        <h3>Asignación de permisos al rol de {roleName}</h3>
-                        <br />
+                            <h3>Asignación de permisos al rol de {roleName}</h3>
+                            <br />
                             {Array.isArray(permisos) ? permisos.map(permiso => (
                                 <FormGroup key={permiso.id}>
                                     <Label check>

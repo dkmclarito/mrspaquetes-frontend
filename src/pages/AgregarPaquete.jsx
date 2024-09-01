@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardBody, Container, Form, FormGroup, Label, Input, Button, FormFeedback, Row, Col } from "reactstrap";
 import Breadcrumbs from "../components/Paquetes/Common/Breadcrumbs";
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 import "../styles/Paquetes.css";
+import AuthService from "../services/authService";
 
 const AgregarPaquete = () => {
   const [tiposPaquete, setTiposPaquete] = useState([]);
@@ -42,6 +43,45 @@ const AgregarPaquete = () => {
   };
 
   const { year: currentYear, month: currentMonth, day: currentDay } = getCurrentDate();
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
+
+      if (userId && token) {
+        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const responseData = await response.json();
+
+        // Verifica si el token es inválido
+        if (responseData.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+     // AuthService.logout();
+      //window.location.href = "/login";
+    }
+  }, [API_URL]);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+  }, [verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     setNuevoPaquete(prev => ({
@@ -408,3 +448,4 @@ const AgregarPaquete = () => {
 };
 
 export default AgregarPaquete;
+

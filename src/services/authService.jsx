@@ -10,6 +10,7 @@ const login = async (email, password) => {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       localStorage.setItem("role", JSON.stringify({ role: response.data.role }));
+      localStorage.setItem("userId", response.data.user.id); // Almacena el id del usuario
       return response.data.token;
     }
     return null;
@@ -26,6 +27,7 @@ const loginClient = async (email, password) => {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
       localStorage.setItem("role", JSON.stringify({ role: response.data.role }));
+      localStorage.setItem("userId", response.data.user.id); // Almacena el id del usuario
       return response.data.token;
     }
     return null;
@@ -39,7 +41,32 @@ const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   localStorage.removeItem("role");
+  localStorage.removeItem("userId"); // Elimina el id del usuario del localStorage
   //localStorage.clear(); // Alternativamente, puedes usar esto para limpiar todos los datos del almacenamiento local.
+};
+
+// Método para verificar el estado del usuario y cerrar sesión si es inactivo
+const checkUserStatus = async () => {
+  try {
+    const userId = localStorage.getItem("userId");
+    const token = getCurrentUser();
+    if (userId && token) {
+      const response = await axios.get(`${API_URL}/auth/get_user/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const status = response.data.status; // Suponiendo que la respuesta incluye el status del usuario
+      if (status === "inactive") {
+        logout();
+        window.location.href = "/login"; // O '/login-cliente' dependiendo del rol
+      }
+    }
+  } catch (error) {
+    console.error("Error al verificar el estado del usuario:", error);
+    // Puedes manejar errores aquí, como cerrar sesión si la solicitud falla
+    // logout();
+    // window.location.href = "/login";
+  }
 };
 
 // Método para obtener el token del usuario actual
@@ -60,6 +87,7 @@ const AuthService = {
   logout,
   getCurrentUser,
   getUserDetails,
+  checkUserStatus,
 };
 
 export default AuthService;
