@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaOrdenes from "../components/Ordenes/TablaOrdenes";
 import Pagination from 'react-js-pagination';
+import { toast } from "react-toastify";
+import ModalConfirmarEliminar from "../components/Ordenes/ModalConfirmarEliminar";
+
 import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -14,6 +17,10 @@ export default function GestionOrdenes() {
   const [ordenes, setOrdenes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalEliminar, setModalEliminar] = useState(false);
+  const [ordenAEliminar, setOrdenAEliminar] = useState(null);
+
+  const navigate = useNavigate();
 
   // Nueva función para verificar el estado del usuario logueado
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -42,17 +49,17 @@ export default function GestionOrdenes() {
       //window.location.href = "/login";
     }
   }, []);
-
   const fetchOrdenes = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.get(`${API_URL}/ordenes`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Ordenes recibidas desde API:", response.data);
       setOrdenes(response.data.data || []);
     } catch (error) {
       console.error("Error al obtener órdenes:", error);
+      toast.error("Error al cargar las órdenes");
     }
   };
 
@@ -69,14 +76,36 @@ export default function GestionOrdenes() {
     return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
   }, [verificarEstadoUsuarioLogueado]);
 
-  const eliminarOrden = (id) => {
-    console.log("Eliminar orden", id);
-    // Implement deletion logic here
+  const toggleModalEliminar = () => {
+    setModalEliminar(!modalEliminar);
   };
 
-  const toggleModalEditar = (orden) => {
-    console.log("Editar orden", orden);
-    // Implement edit logic here
+  const iniciarEliminarOrden = (id) => {
+    setOrdenAEliminar(id);
+    toggleModalEliminar();
+  };
+
+  const confirmarEliminarOrden = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/ordenes/${ordenAEliminar}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success("Orden eliminada con éxito");
+      fetchOrdenes(); // Recargar las órdenes
+      toggleModalEliminar();
+    } catch (error) {
+      console.error("Error al eliminar la orden:", error);
+      toast.error("Error al eliminar la orden");
+    }
+  };
+
+  const verDetallesOrden = (idOrden) => {
+    navigate(`/VerDetallesOrden/${idOrden}`);
+  };
+
+  const navegarAEditar = (idOrden) => {
+    navigate(`/editar-orden/${idOrden}`);
   };
 
   const handleSearchChange = (e) => {
@@ -86,9 +115,10 @@ export default function GestionOrdenes() {
 
   const filtrarOrdenes = (ordenes) => {
     if (!busqueda) return ordenes;
-    return ordenes.filter(orden =>
-      orden.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      orden.numero_seguimiento.toLowerCase().includes(busqueda.toLowerCase())
+    return ordenes.filter(
+      (orden) =>
+        orden.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+        orden.numero_seguimiento.toLowerCase().includes(busqueda.toLowerCase())
     );
   };
 
@@ -105,11 +135,22 @@ export default function GestionOrdenes() {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Órdenes" breadcrumbItem="Listado de Órdenes" />
+        <Breadcrumbs
+          title="Gestión de Órdenes"
+          breadcrumbItem="Listado de Órdenes"
+        />
         <Row>
           <Col lg={12}>
-            <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
-              <Label for="busqueda" style={{ marginRight: "10px" }}>Buscar:</Label>
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Label for="busqueda" style={{ marginRight: "10px" }}>
+                Buscar:
+              </Label>
               <Input
                 type="text"
                 id="busqueda"
@@ -119,7 +160,10 @@ export default function GestionOrdenes() {
                 style={{ width: "500px" }}
               />
               <div style={{ marginLeft: "auto" }}>
-                <Link to="/OrdenesSeleccionarCliente" className="btn btn-primary custom-button">
+                <Link
+                  to="/OrdenesSeleccionarCliente"
+                  className="btn btn-primary custom-button"
+                >
                   <i className="fas fa-plus"></i> Agregar Orden
                 </Link>
               </div>
@@ -133,15 +177,23 @@ export default function GestionOrdenes() {
               <CardBody>
                 <TablaOrdenes
                   ordenes={paginatedOrdenes}
-                  eliminarOrden={eliminarOrden}
-                  toggleModalEditar={toggleModalEditar}
+                  eliminarOrden={iniciarEliminarOrden}
+                  navegarAEditar={navegarAEditar}
+                  verDetallesOrden={verDetallesOrden}
                 />
               </CardBody>
             </Card>
           </Col>
         </Row>
         <Row>
-          <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
+          <Col
+            lg={12}
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
@@ -155,6 +207,12 @@ export default function GestionOrdenes() {
           </Col>
         </Row>
       </Container>
+      <ModalConfirmarEliminar
+        isOpen={modalEliminar}
+        toggle={toggleModalEliminar}
+        ordenId={ordenAEliminar}
+        confirmarEliminar={confirmarEliminarOrden}
+      />
     </div>
   );
 }
