@@ -11,7 +11,7 @@ import "../styles/Empleados.css";
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 7;
+const ITEMS_PER_PAGE = 10;
 
 const GestionEmpleados = () => {
   document.title = "Empleados | Mr. Paquetes";

@@ -18,7 +18,7 @@ const TIPO_PERSONA = {
   2: 'Persona Jurídica'
 };
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionClientes = () => {
   document.title = "Clientes | Mr. Paquetes";
@@ -38,11 +38,14 @@ const GestionClientes = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = AuthService.getCurrentUser();
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(`${API_URL}/clientes`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          params: {
+            page: 1,
+            per_page: 1000,
+          },
+          ...config,
         });
 
         if (response.data && Array.isArray(response.data)) {
@@ -123,6 +126,11 @@ const GestionClientes = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleSearchChange = (e) => {
+    setBusqueda(e.target.value);
+    setCurrentPage(1); // Resetear la página actual a 1 al cambiar la búsqueda
+  };
+
   const verDirecciones = (idCliente) => {
     setClienteSeleccionado(idCliente);
     setModalDirecciones(true);
@@ -150,7 +158,7 @@ const GestionClientes = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Buscar por nombre o apellido"
                 style={{ width: "300px" }}
               />
