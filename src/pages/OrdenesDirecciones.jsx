@@ -35,13 +35,25 @@ export default function OrdenesDirecciones() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const direccionesData = response.data.direcciones || [];
+      
       const direccionesWithDetails = await Promise.all(
         direccionesData.map(async (direccion) => {
+          // Obtener los municipios relacionados con el departamento
           const municipiosResponse = await axios.get(`${API_URL}/dropdown/get_municipio/${direccion.id_departamento}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const municipio = municipiosResponse.data.municipio.find(m => m.id === direccion.id_municipio);
-          const departamento = departamentos.find(d => d.id === direccion.id_departamento);
+          
+          // Obtener el nombre del departamento desde el endpoint
+          const departamentoResponse = await axios.get(`${API_URL}/dropdown/get_departamentos`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const departamento = departamentoResponse.data.find(d => d.id === direccion.id_departamento);
+          
+          // Log para verificar
+          console.log('Municipio encontrado:', municipio);
+          console.log('Departamento encontrado:', departamento);
+          
           return {
             ...direccion,
             departamento_nombre: departamento ? departamento.nombre : 'No disponible',
@@ -49,6 +61,7 @@ export default function OrdenesDirecciones() {
           };
         })
       );
+      
       setDirecciones(direccionesWithDetails);
     } catch (error) {
       console.error('Error fetching direcciones:', error);
