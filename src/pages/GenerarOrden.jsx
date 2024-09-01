@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button,Nav, NavItem, NavLink, Progress } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, FormFeedback, Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -16,17 +16,18 @@ export default function GenerarOrden() {
   const { idCliente } = useParams();
   const [cliente, setCliente] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [estadosPaquete, setEstadosPaquete] = useState([]);
   const [formData, setFormData] = useState({
-    
     id_cliente: idCliente,
     nombre_contacto: '',
     telefono: '',
     id_direccion: '',
-    id_tipo_pago: '1',
+    id_tipo_pago: 1,
     id_estado_paquete: '',
-    total_pagar: '',
-    costo_adicional: '0.00',
-    concepto: '',
+    id_estado_paquetes: 1,
+    total_pagar: 0,
+    costo_adicional: 0,
+    concepto: 'Envío de paquetes',
     tipo_documento: 'consumidor_final',
     detalles: []
   });
@@ -53,13 +54,13 @@ export default function GenerarOrden() {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      AuthService.logout();
-      window.location.href = "/login";
+      //AuthService.logout();
+      //window.location.href = "/login";
     }
   }, [token]);
 
   useEffect(() => {
-    const fetchClienteData = async () => {
+    const fetchData = async () => {
       try {
         const response = await axios.get(`${API_URL}/clientes/${idCliente}`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -70,16 +71,33 @@ export default function GenerarOrden() {
         
         setFormData(prevState => ({
           ...prevState,
-          nombre_contacto: `${response.data.cliente.nombre} ${response.data.cliente.apellido}`,
-          telefono: response.data.cliente.telefono || '',
-          id_direccion: selectedAddress.id || '',
-          total_pagar: location.state?.totalPrice.toFixed(2) || '0.00',
-          detalles: location.state?.detalles || [],
+          nombre_contacto: `${clienteResponse.data.cliente.nombre} ${clienteResponse.data.cliente.apellido}`,
+          telefono: clienteResponse.data.cliente.telefono || '',
+          id_direccion: Number(selectedAddress.id) || '',
+          total_pagar: location.state?.totalPrice || 0,
+          detalles: location.state?.detalles.map(detalle => ({
+            ...detalle,
+            id_tipo_paquete: Number(detalle.id_tipo_paquete),
+            id_empaque: Number(detalle.id_empaque),
+            peso: Number(detalle.peso),
+            id_estado_paquete: Number(detalle.id_estado_paquete),
+            id_tamano_paquete: Number(detalle.tamano_paquete),
+            id_tipo_entrega: Number(detalle.id_tipo_entrega),
+            id_direccion: Number(selectedAddress.id),
+            precio: Number(detalle.precio),
+            fecha_envio: detalle.fecha_envio ? new Date(detalle.fecha_envio).toISOString().split('T')[0] + 'T00:00:00' : null,
+            fecha_entrega_estimada: detalle.fecha_entrega_estimada ? new Date(detalle.fecha_entrega_estimada).toISOString().split('T')[0] + 'T00:00:00' : null,
+            fecha_entrega: detalle.fecha_entrega ? new Date(detalle.fecha_entrega).toISOString().split('T')[0] + 'T00:00:00' : null,
+            descripcion_contenido: detalle.descripcion || '',
+          })) || [],
           ...location.state?.commonData
         }));
+
+        console.log('Estados de Paquete:', estadosPaqueteResponse.data.estado_paquetes);
+        console.log('Datos iniciales del formulario:', formData);
       } catch (error) {
-        console.error("Error al obtener datos del cliente:", error);
-        toast.error("Error al obtener datos del cliente");
+        console.error("Error al obtener datos:", error);
+        toast.error("Error al obtener datos");
       } finally {
         setLoading(false);
       }
@@ -103,10 +121,32 @@ export default function GenerarOrden() {
       ...prevState,
       [name]: value
     }));
+    
+    const error = validateField(name, value);
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: error
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    let newErrors = {};
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key]);
+      if (error) {
+        newErrors[key] = error;
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      toast.error("Por favor, corrija los errores en el formulario antes de enviar.");
+      return;
+    }
+
     try {
       const formattedDetalles = formData.detalles.map(detalle => ({
         id_tipo_paquete: Number(detalle.id_tipo_paquete),
@@ -130,22 +170,40 @@ export default function GenerarOrden() {
         telefono: formData.telefono,
         id_direccion: Number(formData.id_direccion),
         id_tipo_pago: Number(formData.id_tipo_pago),
-        id_estado_paquetes: Number(formData.id_estado_paquete),
+        id_estado_paquete: Number(formData.id_estado_paquete),
+        id_estado_paquetes: Number(formData.id_estado_paquetes),
         total_pagar: Number(formData.total_pagar),
         costo_adicional: Number(formData.costo_adicional),
-        concepto: formData.concepto || "Envío de paquetes",
+        concepto: formData.concepto,
         tipo_documento: formData.tipo_documento,
-        detalles: formattedDetalles
+        detalles: formData.detalles.map(detalle => ({
+          id_tipo_paquete: Number(detalle.id_tipo_paquete),
+          id_empaque: Number(detalle.id_empaque),
+          peso: Number(detalle.peso),
+          id_estado_paquete: Number(detalle.id_estado_paquete),
+          id_tamano_paquete: Number(detalle.id_tamano_paquete),
+          fecha_envio: detalle.fecha_envio,
+          fecha_entrega_estimada: detalle.fecha_entrega_estimada,
+          fecha_entrega: detalle.fecha_entrega,
+          descripcion_contenido: detalle.descripcion_contenido,
+          id_tipo_entrega: Number(detalle.id_tipo_entrega),
+          id_direccion: Number(detalle.id_direccion),
+          instrucciones_entrega: detalle.instrucciones_entrega,
+          descripcion: detalle.descripcion,
+          precio: Number(detalle.precio)
+        }))
       };
 
       console.log("Datos enviados a la API:", orderData);
       
-      await axios.post(`${API_URL}/ordenes`, orderData, {
+      const response = await axios.post(`${API_URL}/ordenes`, orderData, {
         headers: { 
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}` 
         }
       });
+      
+      console.log("Respuesta de la API:", response.data);
       
       toast.success("Orden registrada con éxito");
       navigate('/GestionOrdenes');
@@ -173,10 +231,11 @@ export default function GenerarOrden() {
     { step: 3, label: '', icon: faBook },
     { step: 4, label: '', icon: faDollarSign }
   ];
+
   return (
     <div className="page-content">
       <Container fluid>
-      <h1 className='text-center'>Detalles de Pago</h1>        
+        <h1 className='text-center'>Detalles de Pago</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
@@ -197,8 +256,6 @@ export default function GenerarOrden() {
                 </NavItem>
               ))}
             </Nav>         
-            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
-            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }
             <Progress className="custom-progress" value={(1) * 100} />
             <br></br>
           </Col>
@@ -220,9 +277,13 @@ export default function GenerarOrden() {
                           id="nombre_contacto"
                           value={formData.nombre_contacto}
                           onChange={handleInputChange}
+                          invalid={!!errors.nombre_contacto}
                           required
                         />
+                        <FormFeedback>{errors.nombre_contacto}</FormFeedback>
                       </FormGroup>
+                    </Col>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for="telefono">Teléfono</Label>
                         <Input
@@ -231,9 +292,15 @@ export default function GenerarOrden() {
                           id="telefono"
                           value={formData.telefono}
                           onChange={handleInputChange}
+                          invalid={!!errors.telefono}
                           required
                         />
+                        <FormFeedback>{errors.telefono}</FormFeedback>
                       </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for="id_tipo_pago">Tipo de Pago</Label>
                         <Input
@@ -242,12 +309,38 @@ export default function GenerarOrden() {
                           id="id_tipo_pago"
                           value={formData.id_tipo_pago}
                           onChange={handleInputChange}
+                          invalid={!!errors.id_tipo_pago}
                         >
-                          <option value="1">Efectivo</option>
-                          <option value="2">Tarjeta</option>
+                          <option value={1}>Efectivo</option>
+                          <option value={2}>Tarjeta</option>
                         </Input>
+                        <FormFeedback>{errors.id_tipo_pago}</FormFeedback>
                       </FormGroup>
                     </Col>
+                    <Col md={6}>
+                      <FormGroup>
+                        <Label for="id_estado_paquete">Estado de la Orden</Label>
+                        <Input
+                          type="select"
+                          name="id_estado_paquete"
+                          id="id_estado_paquete"
+                          value={formData.id_estado_paquete}
+                          onChange={handleInputChange}
+                          invalid={!!errors.id_estado_paquete}
+                          required
+                        >
+                          <option value="">Seleccione un estado</option>
+                          {estadosPaquete.map((estado) => (
+                            <option key={estado.id} value={estado.id}>
+                              {estado.nombre}
+                            </option>
+                          ))}
+                        </Input>
+                        <FormFeedback>{errors.id_estado_paquete}</FormFeedback>
+                      </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
                     <Col md={6}>
                       <FormGroup>
                         <Label for="total_pagar">Total a Pagar</Label>
@@ -257,9 +350,13 @@ export default function GenerarOrden() {
                           id="total_pagar"
                           value={formData.total_pagar}
                           onChange={handleInputChange}
+                          invalid={!!errors.total_pagar}
                           required
                         />
+                        <FormFeedback>{errors.total_pagar}</FormFeedback>
                       </FormGroup>
+                    </Col>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for="costo_adicional">Costo Adicional</Label>
                         <Input
@@ -268,8 +365,14 @@ export default function GenerarOrden() {
                           id="costo_adicional"
                           value={formData.costo_adicional}
                           onChange={handleInputChange}
+                          invalid={!!errors.costo_adicional}
                         />
+                        <FormFeedback>{errors.costo_adicional}</FormFeedback>
                       </FormGroup>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md={6}>
                       <FormGroup>
                         <Label for="concepto">Concepto</Label>
                         <Input
@@ -278,23 +381,29 @@ export default function GenerarOrden() {
                           id="concepto"
                           value={formData.concepto}
                           onChange={handleInputChange}
+                          invalid={!!errors.concepto}
                         />
+                        <FormFeedback>{errors.concepto}</FormFeedback>
+                      </FormGroup>
+                    </Col>
+                    <Col md={6}>
+                      <FormGroup>
+                        <Label for="tipo_documento">Tipo de Documento</Label>
+                        <Input
+                          type="select"
+                          name="tipo_documento"
+                          id="tipo_documento"
+                          value={formData.tipo_documento}
+                          onChange={handleInputChange}
+                          invalid={!!errors.tipo_documento}
+                        >
+                          <option value="consumidor_final">Consumidor Final</option>
+                          <option value="credito_fiscal">Crédito Fiscal</option>
+                        </Input>
+                        <FormFeedback>{errors.tipo_documento}</FormFeedback>
                       </FormGroup>
                     </Col>
                   </Row>
-                  <FormGroup>
-                    <Label for="tipo_documento">Tipo de Documento</Label>
-                    <Input
-                      type="select"
-                      name="tipo_documento"
-                      id="tipo_documento"
-                      value={formData.tipo_documento}
-                      onChange={handleInputChange}
-                    >
-                      <option value="consumidor_final">Consumidor Final</option>
-                      <option value="credito_fiscal">Crédito Fiscal</option>
-                    </Input>
-                  </FormGroup>
                   <Button color="primary" type="submit">
                     Registrar Orden
                   </Button>

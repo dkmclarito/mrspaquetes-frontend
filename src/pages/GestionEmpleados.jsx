@@ -54,8 +54,7 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
     }
   } catch (error) {
     console.error("Error 500 DKM:", );
-    //AuthService.logout();
-    //window.location.href = "/login";
+    
   }
 }, []);
 

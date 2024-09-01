@@ -45,8 +45,8 @@ const GestionMarcas = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      AuthService.logout();
-      window.location.href = "/login";
+      //AuthService.logout();
+     // window.location.href = "/login";
     }
   }, []);
 

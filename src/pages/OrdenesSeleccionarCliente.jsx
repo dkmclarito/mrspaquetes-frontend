@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Container, Row, Col, Card, CardBody, Input, Label, Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Container, Row, Col, Card, CardBody, Input, Label } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Input, Label, Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Breadcrumbs from '../components/Empleados/Common/Breadcrumbs';
@@ -45,8 +43,8 @@ export default function OrdenesSeleccionarCliente() {
       }
     } catch (error) {
       console.error("Error 500 DKM:", error);
-      AuthService.logout();
-      window.location.href = "/login";
+     // AuthService.logout();
+      //window.location.href = "/login";
     }
   }, []);
 
@@ -158,21 +156,14 @@ export default function OrdenesSeleccionarCliente() {
                       borderRadius: '50%',
                       padding: '10px 20px',
                       margin: '0 5px'
-                      //display: 'flex',
-                      //alignItems: 'center',
-                      //justifyContent: 'space-between',
-                      //minWidth: '110px'
                     }}                    
                   >
-                    {/*<div style={{ flex: 1, textAlign: 'left' }}>{label}</div>*/}
                     <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
                     {label}                  
                   </NavLink>
                 </NavItem>
               ))}
             </Nav>                     
-            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
-            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }            
             <Progress className="custom-progress" value={(0.25) * 100} />
             <br></br>
           </Col>
@@ -228,4 +219,5 @@ export default function OrdenesSeleccionarCliente() {
     </div>
   );
 }
+
 

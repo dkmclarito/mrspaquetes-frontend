@@ -58,8 +58,8 @@ const GestionClientes = () => {
       }
     } catch (error) {
       console.error("Error 500 DKM:", error);
-      AuthService.logout();
-      window.location.href = "/login";
+      //AuthService.logout();
+      //window.location.href = "/login";
     }
   }, []);
 

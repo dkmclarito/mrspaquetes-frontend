@@ -46,6 +46,9 @@ import OrdenesSeleccionarCliente from './pages/OrdenesSeleccionarCliente';
 import OrdenesDirecciones from './pages/OrdenesDirecciones';
 import DetallesOrden from './pages/DetallesOrden';
 import TrackingPage from './pages/Tracking';
+import GestionRutas from './pages/GestionRutas';
+import AgregarRuta from './pages/AgregarRuta';
+
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
 
@@ -100,6 +103,8 @@ const App = () => {
                 <Route path="/DatosPaquete/:idCliente" element={<DatosPaquete />} />
                 <Route path="/GenerarOrden/:idCliente" element={<GenerarOrden />} />
                 <Route path="/DetallesOrden/:idCliente" element={<DetallesOrden />} />
+                <Route path="/GestionRutas" element={<GestionRutas />} />
+                <Route path="/AgregarRuta" element={<AgregarRuta />} />
               </Route>
 
               {/* Rutas para 'conductor' */}
