@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, FormFeedback } from "reactstrap";
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -20,6 +20,40 @@ const AgregarModelo = () => {
 
     const navigate = useNavigate();
     const token = AuthService.getCurrentUser();
+
+    const verificarEstadoUsuarioLogueado = useCallback(async () => {
+        try {
+            const userId = localStorage.getItem("userId");
+            if (userId && token) {
+                const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                const responseData = await response.json();
+
+                if (responseData.status === "Token is Invalid") {
+                    console.error("Token is invalid. Logging out...");
+                    AuthService.logout();
+                    window.location.href = "/login";
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Error al verificar el estado del usuario:", error);
+           // AuthService.logout();
+           // window.location.href = "/login";
+        }
+    }, [token]);
+
+    useEffect(() => {
+        verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+
+        const interval = setInterval(() => {
+            verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+        }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+        return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
         const fetchMarcas = async () => {

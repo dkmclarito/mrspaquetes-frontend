@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Card, CardBody, Input, Button, Table } from 'reactstrap';
 import { Package, Truck, Warehouse, Home, Calendar, RotateCcw, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import "../styles/Tracking.css";
+import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -26,7 +27,42 @@ const TrackingPage = () => {
   const [trackingData, setTrackingData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [historial, setHistorial] = useState([]);
+  const [historial, setHistorial] = useState([]); // Definir historial y setHistorial en el estado
+
+  const token = localStorage.getItem('token');
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado();
+  }, [verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [verificarEstadoUsuarioLogueado]);
 
   const handleInputChange = (e) => {
     setNumeroSeguimiento(e.target.value);
@@ -41,7 +77,6 @@ const TrackingPage = () => {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.get(
         `${API_URL}/seguimiento-orden`,
         {
@@ -81,7 +116,7 @@ const TrackingPage = () => {
       );
 
       if (response.data) {
-        setHistorial(response.data);
+        setHistorial(response.data); // Usar setHistorial para actualizar el estado
       }
     } catch (error) {
       console.error('Error fetching historial:', error);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Card,
@@ -26,11 +26,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import axios from "axios";
-import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function OrdenesDirecciones() {
+export default function OrdenesDireccionesExpress() {
   const { idCliente } = useParams();
   const [direcciones, setDirecciones] = useState([]);
   const [nuevaDireccion, setNuevaDireccion] = useState({
@@ -48,34 +47,6 @@ export default function OrdenesDirecciones() {
   const [cliente, setCliente] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
-  // Nueva función para verificar el estado del usuario logueado
-  const verificarEstadoUsuarioLogueado = useCallback(async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const token = AuthService.getCurrentUser();
-
-      if (userId && token) {
-        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        // Verifica si el token es inválido
-        if (response.data.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
-          AuthService.logout();
-          window.location.href = "/login"; // Redirige a login si el token es inválido
-          return;
-        }
-
-        // Si el token es válido y el usuario está activo, no se hace nada
-      }
-    } catch (error) {
-      console.error("Error 500 DKM:", error);
-     // AuthService.logout();
-      //window.location.href = "/login";
-    }
-  }, []);
 
   const fetchDirecciones = async () => {
     try {
@@ -153,17 +124,8 @@ export default function OrdenesDirecciones() {
       }
     };
 
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchData();
-  }, [idCliente, token, verificarEstadoUsuarioLogueado]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
-
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
-  }, [verificarEstadoUsuarioLogueado]);
+  }, [idCliente, token]);
 
   useEffect(() => {
     const fetchMunicipios = async () => {
@@ -258,7 +220,7 @@ export default function OrdenesDirecciones() {
         JSON.stringify(selectedDireccion)
       );
       localStorage.setItem("clienteData", JSON.stringify(cliente));
-      navigate(`/DatosPaquete/${idCliente}`);
+      navigate(`/DatosPaqueteExpress/${idCliente}`);
     } else {
       toast.warn("Por favor, seleccione una dirección antes de continuar");
     }
@@ -274,7 +236,7 @@ export default function OrdenesDirecciones() {
 
   return (
     <Container fluid>
-      <h1 className="text-center">Seleccionar Dirección</h1>
+      <h1 className="text-center">Seleccionar Dirección Express</h1>
       <Row>
         <Col lg={12}>
           <Nav pills className="justify-content-center mb-4">
@@ -377,7 +339,7 @@ export default function OrdenesDirecciones() {
                     >
                       <option value="">Seleccione un departamento</option>
                       {departamentos
-                        .filter((d) => [11, 12, 13, 14].includes(d.id)) // Filtra los departamentos para incluir solo los IDs deseados
+                        .filter((d) => [12].includes(d.id)) // Filtra los departamentos para incluir solo los IDs deseados
                         .map((departamento) => (
                           <option key={departamento.id} value={departamento.id}>
                             {departamento.nombre}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, CardBody } from "reactstrap";
@@ -19,6 +19,41 @@ const roleAliases = {
 const GestionRolesPermisos = () => {
     const [roles, setRoles] = useState([]);
     const navigate = useNavigate();
+
+    const verificarEstadoUsuarioLogueado = useCallback(async () => {
+        try {
+            const token = AuthService.getCurrentUser();
+            const userId = localStorage.getItem("userId");
+            if (userId && token) {
+                const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                const responseData = await response.json();
+
+                if (responseData.status === "Token is Invalid") {
+                    console.error("Token is invalid. Logging out...");
+                    AuthService.logout();
+                    window.location.href = "/login";
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Error al verificar el estado del usuario:", error);
+           // AuthService.logout();
+           // window.location.href = "/login";
+        }
+    }, []);
+
+    useEffect(() => {
+        verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+
+        const interval = setInterval(() => {
+            verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+        }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+        return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
         const fetchRoles = async () => {

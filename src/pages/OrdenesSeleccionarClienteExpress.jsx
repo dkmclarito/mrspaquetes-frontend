@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Container, Row, Col, Card, CardBody, Input, Label, Nav, NavItem, NavLink, Progress } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -7,46 +7,17 @@ import TablaSeleccionCliente from '../components/Ordenes/TablaSeleccionCliente';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
 import Pagination from 'react-js-pagination';
-import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
-export default function OrdenesSeleccionarCliente() {
+export default function OrdenesSeleccionarClienteExpress() {
   const [clientes, setClientes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [tipoPersona, setTipoPersona] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [currentStep, setCurrentStep] = useState(1); // Estado para el paso actual
   const navigate = useNavigate();
-
-  // Nueva función para verificar el estado del usuario logueado
-  const verificarEstadoUsuarioLogueado = useCallback(async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const token = AuthService.getCurrentUser();
-
-      if (userId && token) {
-        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        // Verifica si el token es inválido
-        if (response.data.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
-          AuthService.logout();
-          window.location.href = "/login"; // Redirige a login si el token es inválido
-          return;
-        }
-
-        // Si el token es válido y el usuario está activo, no se hace nada
-      }
-    } catch (error) {
-      console.error("Error 500 DKM:", error);
-     // AuthService.logout();
-      //window.location.href = "/login";
-    }
-  }, []);
 
   useEffect(() => {
     const fetchClientes = async () => {
@@ -88,18 +59,9 @@ export default function OrdenesSeleccionarCliente() {
       }
     };
 
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchClientes();
     fetchTipoPersona();
-  }, [verificarEstadoUsuarioLogueado]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
-
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
-  }, [verificarEstadoUsuarioLogueado]);
+  }, []);
 
   const filteredClientes = useMemo(() => {
     return clientes.filter(cliente => {
@@ -130,7 +92,7 @@ export default function OrdenesSeleccionarCliente() {
   };
 
   const generarOrden = (clienteId) => {
-    navigate(`/OrdenesDirecciones/${clienteId}`);
+    navigate(`/OrdenesDireccionesExpress/${clienteId}`);
   };
 
   const handleSelectAddress = (address) => {
@@ -148,7 +110,7 @@ export default function OrdenesSeleccionarCliente() {
   return (
     <div className="page-content">
       <Container fluid>
-        <h1 className='text-center'>Seleccionar Cliente</h1>        
+        <h1 className='text-center'>Seleccionar Cliente express</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
@@ -161,14 +123,21 @@ export default function OrdenesSeleccionarCliente() {
                       borderRadius: '50%',
                       padding: '10px 20px',
                       margin: '0 5px'
+                      //display: 'flex',
+                      //alignItems: 'center',
+                      //justifyContent: 'space-between',
+                      //minWidth: '110px'
                     }}                    
                   >
+                    {/*<div style={{ flex: 1, textAlign: 'left' }}>{label}</div>*/}
                     <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
                     {label}                  
                   </NavLink>
                 </NavItem>
               ))}
             </Nav>                     
+            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
+            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }            
             <Progress className="custom-progress" value={(0.25) * 100} />
             <br></br>
           </Col>
@@ -224,5 +193,3 @@ export default function OrdenesSeleccionarCliente() {
     </div>
   );
 }
-
-

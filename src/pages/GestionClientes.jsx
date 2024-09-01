@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Clientes/Common/Breadcrumbs";
 import TablaClientes from "../components/Clientes/TablaClientes";
@@ -18,7 +18,7 @@ const TIPO_PERSONA = {
   2: 'Persona Jurídica'
 };
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionClientes = () => {
   document.title = "Clientes | Mr. Paquetes";
@@ -35,14 +35,45 @@ const GestionClientes = () => {
 
   const navigate = useNavigate();
 
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Verifica si el token es inválido
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+
+        // Si el token es válido y el usuario está activo, no se hace nada
+      }
+    } catch (error) {
+      console.error("Error 500 DKM:", error);
+      //AuthService.logout();
+      //window.location.href = "/login";
+    }
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = AuthService.getCurrentUser();
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(`${API_URL}/clientes`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          params: {
+            page: 1,
+            per_page: 1000,
+          },
+          ...config,
         });
 
         if (response.data && Array.isArray(response.data)) {
@@ -57,8 +88,17 @@ const GestionClientes = () => {
       }
     };
 
+    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchData();
-  }, []);
+  }, [verificarEstadoUsuarioLogueado]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   const eliminarCliente = (idCliente) => {
     setConfirmarEliminar(true);
@@ -123,6 +163,11 @@ const GestionClientes = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleSearchChange = (e) => {
+    setBusqueda(e.target.value);
+    setCurrentPage(1); // Resetear la página actual a 1 al cambiar la búsqueda
+  };
+
   const verDirecciones = (idCliente) => {
     setClienteSeleccionado(idCliente);
     setModalDirecciones(true);
@@ -150,7 +195,7 @@ const GestionClientes = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={handleSearchChange}
                 placeholder="Buscar por nombre o apellido"
                 style={{ width: "300px" }}
               />

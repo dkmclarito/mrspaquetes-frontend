@@ -1,19 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardBody, Col, Row, Button, Badge } from "reactstrap";
 import { Link, useParams } from "react-router-dom";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
 import axios from "axios";
 import AuthService from "../services/authService";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const DetallesEmpleado = () => {
   const { id } = useParams(); // Obtiene el ID de la URL
   const [empleado, setEmpleado] = useState(null);
+
+  // Verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const userId = localStorage.getItem("userId");
+      if (userId && token) {
+        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const responseData = await response.json();
+
+        if (responseData.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      //AuthService.logout();
+      //window.location.href = "/login";
+    }
+  }, []);
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado();
+
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const fetchEmpleado = async () => {
       try {
         const token = AuthService.getCurrentUser();
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/empleados/${id}`, {
+        const response = await axios.get(`${API_URL}/empleados/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -107,9 +145,6 @@ const DetallesEmpleado = () => {
             <Link to="/GestionEmpleados" className="btn btn-secondary btn-regresar">
               <i className="fas fa-arrow-left"></i> Regresar
             </Link>
-            {/*<Button color="primary">*/}
-              {/*<i className="fas fa-edit"></i> Editar*/}
-            {/*</Button>*/}
           </div>
         </CardBody>
       </Card>
