@@ -9,7 +9,7 @@ import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/fre
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10;
 
 export default function OrdenesSeleccionarClienteExpress() {
   const [clientes, setClientes] = useState([]);
@@ -22,9 +22,14 @@ export default function OrdenesSeleccionarClienteExpress() {
   useEffect(() => {
     const fetchClientes = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(`${API_URL}/clientes`, {
-          headers: { Authorization: `Bearer ${token}` }
+          params: {
+            page: 1,
+            per_page: 1000,
+          },
+          ...config,
         });
         setClientes(response.data.data || []);
       } catch (error) {
