@@ -42,12 +42,19 @@ import AgregarOrden from './pages/AgregarOrden';
 import GestionOrdenes from './pages/GestionOrdenes';
 import DatosPaquete from './pages/DatosPaquete';
 import GenerarOrden from './pages/GenerarOrden';
+import ProcesarPago from './pages/ProcesarPago';
 import OrdenesSeleccionarCliente from './pages/OrdenesSeleccionarCliente';
 import OrdenesDirecciones from './pages/OrdenesDirecciones';
 import DetallesOrden from './pages/DetallesOrden';
 import TrackingPage from './pages/Tracking';
 import GestionRutas from './pages/GestionRutas';
 import AgregarRuta from './pages/AgregarRuta';
+import GestionOrdenesExpress from './pages/GestionOrdenesExpress';
+import OrdenesSeleccionarClienteExpress from './pages/OrdenesSeleccionarClienteExpress';
+import OrdenesDireccionesExpress from './pages/OrdenesDireccionesExpress';
+import DatosPaqueteExpress from './pages/DatosPaqueteExpress';
+import GenerarOrdenExpress from './pages/GenerarOrdenExpress';
+import ProcesarPagoExpress from './pages/ProcesarPagoExpress';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -98,11 +105,18 @@ const App = () => {
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
                 <Route path="/AgregarOrden" element={<AgregarOrden />} />
                 <Route path="/OrdenesSeleccionarCliente" element={<OrdenesSeleccionarCliente />} />
+                <Route path="/OrdenesSeleccionarClienteExpress" element={<OrdenesSeleccionarClienteExpress />} />
                 <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
+                <Route path="/GestionOrdenesExpress" element={<GestionOrdenesExpress />} />
                 <Route path="/OrdenesDirecciones/:idCliente" element={<OrdenesDirecciones />} />
+                <Route path="/OrdenesDireccionesExpress/:idCliente" element={<OrdenesDireccionesExpress />} />
                 <Route path="/DatosPaquete/:idCliente" element={<DatosPaquete />} />
+                <Route path="/DatosPaqueteExpress/:idCliente" element={<DatosPaqueteExpress />} />
                 <Route path="/GenerarOrden/:idCliente" element={<GenerarOrden />} />
+                <Route path="/GenerarOrdenExpress/:idCliente" element={<GenerarOrdenExpress  />} />
                 <Route path="/DetallesOrden/:idCliente" element={<DetallesOrden />} />
+                <Route path="/ProcesarPago/:idCliente" element={<ProcesarPago />} />
+                <Route path="/ProcesarPagoExpress/:idCliente" element={<ProcesarPagoExpress />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/AgregarRuta" element={<AgregarRuta />} />
               </Route>

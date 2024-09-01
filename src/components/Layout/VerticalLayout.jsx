@@ -156,7 +156,16 @@ const VerticalLayout = () => {
                         className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
                       >
                         <BiPlus className="nav-icon sub-icon" />
-                        Ordenes
+                        Normal
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionOrdenesExpress"
+                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Express
                       </NavLink>
                     </li>
                     <li>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Card, CardBody, Input, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Input, Button, Table } from 'reactstrap';
 import { Package, Truck, Warehouse, Home, Calendar, RotateCcw, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import "../styles/Tracking.css";
@@ -27,10 +27,10 @@ const TrackingPage = () => {
   const [trackingData, setTrackingData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [historial, setHistorial] = useState([]); // Definir historial y setHistorial en el estado
 
   const token = localStorage.getItem('token');
 
-  // Nueva función para verificar el estado del usuario logueado
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -40,31 +40,28 @@ const TrackingPage = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Verifica si el token es inválido
         if (response.data.status === "Token is Invalid") {
           console.error("Token is invalid. Logging out...");
           AuthService.logout();
-          window.location.href = "/login"; // Redirige a login si el token es inválido
+          window.location.href = "/login";
           return;
         }
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-     // AuthService.logout();
-     // window.location.href = "/login";
     }
   }, [token]);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+    verificarEstadoUsuarioLogueado();
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   const handleInputChange = (e) => {
@@ -119,7 +116,7 @@ const TrackingPage = () => {
       );
 
       if (response.data) {
-        setHistorial(response.data);
+        setHistorial(response.data); // Usar setHistorial para actualizar el estado
       }
     } catch (error) {
       console.error('Error fetching historial:', error);
