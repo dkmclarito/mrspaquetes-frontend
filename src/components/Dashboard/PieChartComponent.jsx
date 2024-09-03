@@ -8,7 +8,6 @@ const defaultData = [
 ];
 
 const PieChartComponent = ({ data = defaultData }) => {
-  // Asegúrate de que `data` es un array y tiene elementos
   const formattedData = Array.isArray(data) && data.length > 0 ? data : defaultData;
 
   const COLORS = ['#FFBB28', '#0088FE', '#FFBB28'];
@@ -25,13 +24,13 @@ const PieChartComponent = ({ data = defaultData }) => {
               nameKey="estado"
               outerRadius={100}
               fill="#8884d8"
-              label
+              label              
             >
               {formattedData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip/>
             <Legend />
           </PieChart>
         </ResponsiveContainer>
