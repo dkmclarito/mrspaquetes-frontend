@@ -19,7 +19,7 @@ const TablaRolesPermisos = ({ roles, onAssignPermissions }) => {
               <td>{rol.id}</td>
               <td>{rol.alias} {/* Usa el alias en lugar del nombre técnico */}</td>
               <td>
-                <Button onClick={() => onAssignPermissions(rol.id, rol.alias)}>Asignar Permisos</Button>
+                <Button className="btn-asignarRP" onClick={() => onAssignPermissions(rol.id, rol.alias)}>Asignar Permisos</Button>
               </td>
             </tr>
           ))}

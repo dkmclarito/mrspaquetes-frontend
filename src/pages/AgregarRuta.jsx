@@ -275,6 +275,7 @@ const AgregarRuta = () => {
                     onChange={handleFechaChange}
                     invalid={!isFechaValida}
                     required
+                    className="dark-mode-input-date"
                   />
                   <FormFeedback>La fecha debe ser válida.</FormFeedback>
                 </FormGroup>

@@ -1,10 +1,10 @@
 import React from "react";
+import Dashboard from "../components/Dashboard/Dashboard";
 
 const HomePage = () => {
   return (
     <div>
-      <h1>Pagina de Inicio</h1>
-      <p>Bienvenido a MrsPaquetes!</p>
+      <Dashboard />
     </div>
   );
 };

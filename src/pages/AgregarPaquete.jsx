@@ -392,6 +392,7 @@ const AgregarPaquete = () => {
                     min={`${currentYear}-01-01`}
                     max={`${currentYear}-12-31`}
                     invalid={!!errors.fecha_envio}
+                    className="dark-mode-input-date"
                   />
                   <FormFeedback>{errors.fecha_envio}</FormFeedback>
                 </FormGroup>
@@ -408,6 +409,7 @@ const AgregarPaquete = () => {
                     min={`${currentYear}-01-01`}
                     max={`${currentYear}-12-31`}
                     invalid={!!errors.fecha_entrega_estimada}
+                    className="dark-mode-input-date"
                   />
                   <FormFeedback>{errors.fecha_entrega_estimada}</FormFeedback>
                 </FormGroup>

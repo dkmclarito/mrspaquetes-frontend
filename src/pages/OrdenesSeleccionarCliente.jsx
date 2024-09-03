@@ -148,7 +148,7 @@ export default function OrdenesSeleccionarCliente() {
   return (
     <div className="page-content">
       <Container fluid>
-        <h1 className='text-center'>Seleccionar Cliente</h1>        
+        <h1 className='text-center titulo-pasos'>Seleccionar Cliente</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
@@ -169,7 +169,9 @@ export default function OrdenesSeleccionarCliente() {
                 </NavItem>
               ))}
             </Nav>                     
-            <Progress className="custom-progress" value={(0.25) * 100} />
+            {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/                     }
+            {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/                     }            
+            <Progress className="custom-progress barra-pasos" value={(0.25) * 100} />
             <br></br>
           </Col>
         </Row>
