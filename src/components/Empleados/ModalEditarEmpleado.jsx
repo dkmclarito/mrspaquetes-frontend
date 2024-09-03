@@ -171,15 +171,15 @@ const ModalEditarEmpleado = ({
       return;
     }
 
-    guardarCambiosEmpleado(empleadoEditado);
-    toast.success('Cambios guardados con éxito.', {
-      position: "bottom-right",
-      autoClose: 2000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-    });
+    guardarCambiosEmpleado();
+    // toast.success('Cambios guardados con éxito.', {
+    //   position: "bottom-right",
+    //   autoClose: 2000,
+    //   hideProgressBar: true,
+    //   closeOnClick: true,
+    //   pauseOnHover: false,
+    //   draggable: false,
+    // });
     setModalEditar(false);
   };
 
