@@ -46,14 +46,26 @@ const ModalVerDireccion = ({ isOpen, toggle, direccion }) => {
         <Modal isOpen={isOpen} toggle={toggle}>
             <ModalHeader toggle={toggle}>Detalles de la Dirección</ModalHeader>
             <ModalBody>
-                <ListGroup>
-                    <ListGroupItem>Contacto: {direccionCompleta.nombre_contacto}</ListGroupItem>
-                    <ListGroupItem>Teléfono: {direccionCompleta.telefono}</ListGroupItem>
-                    <ListGroupItem>Departamento: {direccionCompleta.departamento || direccionCompleta.id_departamento}</ListGroupItem>
-                    <ListGroupItem>Municipio: {direccionCompleta.municipio || direccionCompleta.id_municipio}</ListGroupItem>
-                    <ListGroupItem>Dirección: {direccionCompleta.direccion}</ListGroupItem>
-                    <ListGroupItem>Referencia: {direccionCompleta.referencia || 'No especificada'}</ListGroupItem>
-                </ListGroup>
+            <ListGroup>
+            <ListGroupItem style={{ backgroundColor: 'gray', color: 'white' }}>
+                Contacto: {direccionCompleta.nombre_contacto}
+            </ListGroupItem>
+            <ListGroupItem style={{ backgroundColor: 'gray', color: 'white' }}>
+                Teléfono: {direccionCompleta.telefono}
+            </ListGroupItem>
+            <ListGroupItem style={{ backgroundColor: 'gray', color: 'white' }}>
+                Departamento: {direccionCompleta.departamento || direccionCompleta.id_departamento}
+            </ListGroupItem>
+            <ListGroupItem style={{ backgroundColor: 'gray', color: 'white' }}>
+                Municipio: {direccionCompleta.municipio || direccionCompleta.id_municipio}
+            </ListGroupItem>
+            <ListGroupItem style={{ backgroundColor: 'gray', color: 'white' }}>
+                Dirección: {direccionCompleta.direccion}
+            </ListGroupItem>
+            <ListGroupItem style={{ backgroundColor: 'gray', color: 'white' }}>
+                Referencia: {direccionCompleta.referencia || 'No especificada'}
+            </ListGroupItem>
+            </ListGroup>
             </ModalBody>
         </Modal>
     );

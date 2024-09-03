@@ -128,18 +128,36 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
                                     <tbody>
                                         {direccionesActuales.map((direccion) => (
                                             <tr key={direccion.id}>
-                                                <td>{direccion.nombre_contacto}</td>
-                                                <td style={{ whiteSpace: 'nowrap' }}>{direccion.telefono}</td>
-                                                <td>{direccion.direccion}</td>
-                                                <td>
+                                                <td style={{backgroundColor:'#636363',color:'white'}}>{direccion.nombre_contacto}</td>
+                                                <td style={{ whiteSpace: 'nowrap', backgroundColor:'#636363',color:'white' }}>{direccion.telefono}</td>
+                                                <td style={{backgroundColor:'#636363',color:'white'}}>{direccion.direccion}</td>
+                                                <td style={{backgroundColor:'#636363',color:'white'}}>
                                                     <div className="d-flex justify-content-around">
-                                                        <Button color="info" size="sm" onClick={() => verDireccion(direccion)} className="me-2">
-                                                            <FontAwesomeIcon icon={faEye} />
-                                                        </Button>
-                                                        <Button color="warning" size="sm" onClick={() => editarDireccion(direccion)} className="me-2">
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() => verDireccion(direccion)}
+                                                        className="me-2"
+                                                        style={{
+                                                            backgroundColor: 'rgba(22, 36, 190, 0.546)',
+                                                            color: 'rgb(255, 255, 255)',
+                                                        }}
+                                                        >
+                                                        <FontAwesomeIcon icon={faEye} />
+                                                    </Button>
+                                                        <Button color="warning" size="sm" onClick={() => editarDireccion(direccion)} className="me-2"
+                                                            style={{
+                                                                backgroundColor: '#ba7703c3',
+                                                                color: 'rgb(255, 255, 255)',
+                                                            }}
+                                                            >
                                                             <FontAwesomeIcon icon={faEdit} />
                                                         </Button>
-                                                        <Button color="danger" size="sm" onClick={() => confirmarEliminarDireccion(direccion.id)}>
+                                                        <Button color="danger" size="sm" onClick={() => confirmarEliminarDireccion(direccion.id)}
+                                                            style={{
+                                                                backgroundColor: 'rgba(255, 0, 0, 0.59)',
+                                                                color: 'rgb(255, 255, 255)',
+                                                            }}
+                                                            >
                                                             <FontAwesomeIcon icon={faTrash} />
                                                         </Button>
                                                     </div>
@@ -151,17 +169,20 @@ const ModalDirecciones = ({ isOpen, toggle, clienteId }) => {
                             </div>
                             <Pagination className="justify-content-center">
                                 <PaginationItem disabled={paginaActual === 1}>
-                                    <PaginationLink previous onClick={() => setPaginaActual(paginaActual - 1)} />
+                                    <PaginationLink previous onClick={() => setPaginaActual(paginaActual - 1)}
+                                    style={{ background:'gray',color: 'white', fontWeight: 'bold' }} />
                                 </PaginationItem>
                                 {[...Array(totalPaginas).keys()].map(numero => (
                                     <PaginationItem key={numero + 1} active={paginaActual === numero + 1}>
-                                        <PaginationLink onClick={() => setPaginaActual(numero + 1)}>
+                                        <PaginationLink onClick={() => setPaginaActual(numero + 1)}
+                                            style={{ borderColor:'white',color: paginaActual === numero + 1 ? '#ffffff' : '#007bff', backgroundColor: paginaActual === numero + 1 ? '#444' : 'transparent' }}>
                                             {numero + 1}
                                         </PaginationLink>
                                     </PaginationItem>
                                 ))}
                                 <PaginationItem disabled={paginaActual === totalPaginas}>
-                                    <PaginationLink next onClick={() => setPaginaActual(paginaActual + 1)} />
+                                    <PaginationLink next onClick={() => setPaginaActual(paginaActual + 1)} 
+                                        style={{ background:'gray' ,color: 'white', fontWeight: 'bold' }}/>
                                 </PaginationItem>
                             </Pagination>
                         </>

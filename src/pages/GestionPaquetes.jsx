@@ -45,6 +45,7 @@ const GestionPaquetes = () => {
         ...config
       });
       setPaquetes(response.data.data || []);
+      console.log('Respuesta de la API:', response.data.data);
     } catch (error) {
       console.error('Error fetching paquetes:', error);
     }
@@ -209,7 +210,7 @@ const GestionPaquetes = () => {
                 value={searchTerm}
                 onChange={handleSearch}
                 placeholder="Buscar por tipo, fecha de envío, fecha de entrega"
-                style={{ width: "475px" }}
+                style={{ width: "475px" }}                
               />
               <Label for="estadoPaquete" style={{ marginRight: "10px", marginLeft: "20px" }}>Estado:</Label>
               <Input
