@@ -340,7 +340,7 @@ export default function GenerarOrden() {
   return (
     <div className="page-content">
       <Container fluid>
-        <h1 className='text-center'>Detalles de Pago</h1>        
+        <h1 className='text-center titulo-pasos'>Detalles de Pago</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
@@ -361,7 +361,7 @@ export default function GenerarOrden() {
                 </NavItem>
               ))}
             </Nav>         
-            <Progress className="custom-progress" value={(1) * 100} />
+            <Progress className="custom-progress barra-pasos" value={(1) * 100} />
             <br></br>
           </Col>
         </Row>

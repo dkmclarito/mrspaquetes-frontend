@@ -236,7 +236,7 @@ export default function OrdenesDireccionesExpress() {
 
   return (
     <Container fluid>
-      <h1 className="text-center">Seleccionar Dirección Express</h1>
+      <h1 className="text-center titulo-pasos">Seleccionar Dirección Express</h1>
       <Row>
         <Col lg={12}>
           <Nav pills className="justify-content-center mb-4">
@@ -262,7 +262,7 @@ export default function OrdenesDireccionesExpress() {
           </Nav>
           {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/}
           {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/}
-          <Progress className="custom-progress" value={0.5 * 100} />
+          <Progress className="custom-progress barra-pasos" value={0.5 * 100} />
           <br></br>
         </Col>
       </Row>
