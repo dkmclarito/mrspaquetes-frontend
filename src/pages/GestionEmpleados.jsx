@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
@@ -9,6 +9,8 @@ import ModalConfirmarEliminar from "../components/Empleados/ModalConfirmarElimin
 import AuthService from "../services/authService";
 import "../styles/Empleados.css";
 import Pagination from 'react-js-pagination';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
@@ -29,69 +31,55 @@ const GestionEmpleados = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
 
-// Nueva función para verificar el estado del usuario logueado
-const verificarEstadoUsuarioLogueado = useCallback(async () => {
-  try {
-    const userId = localStorage.getItem("userId");
-   
-    const token = AuthService.getCurrentUser();
-
-    if (userId && token) {
-      const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-    //  console.log("Response Data:", response.data); 
-
-      // Verifica si el token es inválido
-      if (response.data.status === "Token is Invalid") {
-        console.error("Token is invalid. Logging out...");
-        AuthService.logout();
-        window.location.href = "/login"; // Redirige a login si el token es inválido
-        return;
-      }
-      // Si el token es válido y el usuario está activo, no se hace nada
-    }
-  } catch (error) {
-    console.error("Error 500 DKM:", );
-    
-  }
-}, []);
-
   const navigate = useNavigate();
-  const verDetallesEmpleado = (idEmpleado) => {
-    navigate(`/DetallesEmpleado/${idEmpleado}`);
-  };
 
-  // Fetch initial data
-  const fetchData = async () => {
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          navigate("/login");
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar estado del usuario:", error.response?.data || error.message);
+      if (error.response?.status === 500) {
+        console.error("Error 500: Problema en el servidor. Reintentando en 1 minuto...");
+        // Implement exponential backoff here if needed
+      }
+    }
+  }, [navigate]);
+
+  const fetchData = useCallback(async () => {
     try {
       const token = AuthService.getCurrentUser();
-      const empleadosResponse = await axios.get(`${API_URL}/empleados`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const [empleadosResponse, cargosResponse, estadosResponse, departamentosResponse] = await Promise.all([
+        axios.get(`${API_URL}/empleados`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/dropdown/get_cargos`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/dropdown/get_estado_empleados`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/dropdown/get_departamentos`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+
       setEmpleados(empleadosResponse.data.empleados || []);
-
-      const cargosResponse = await axios.get(`${API_URL}/dropdown/get_cargos`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
       setCargos(cargosResponse.data.cargos || []);
-
-      const estadosResponse = await axios.get(`${API_URL}/dropdown/get_estado_empleados`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
       setEstados(estadosResponse.data.estado_empleados || []);
-
-      const departamentosResponse = await axios.get(`${API_URL}/dropdown/get_departamentos`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
       setDepartamentos(departamentosResponse.data || []);
     } catch (error) {
-      console.error("Error al obtener datos:", error);
+      console.error("Error al obtener datos:", error.response?.data || error.message);
+      toast.error("Error al cargar los datos. Por favor, intente de nuevo.");
     }
-  };
+  }, []);
 
-  const fetchMunicipios = async (idDepartamento) => {
+  const fetchMunicipios = useCallback(async (idDepartamento) => {
     try {
       const token = AuthService.getCurrentUser();
       const response = await axios.get(`${API_URL}/dropdown/get_municipio/${idDepartamento}`, {
@@ -99,32 +87,31 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
       });
       setMunicipios(response.data.municipio || []);
     } catch (error) {
-      console.error("Error al obtener municipios:", error);
+      console.error("Error al obtener municipios:", error.response?.data || error.message);
+      toast.error("Error al cargar los municipios. Por favor, intente de nuevo.");
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
     verificarEstadoUsuarioLogueado();
+
+    const interval = setInterval(verificarEstadoUsuarioLogueado, 60000); // Check every minute
+
+    return () => clearInterval(interval);
   }, [fetchData, verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
-
- 
-
     if (departamentoSeleccionado) {
       fetchMunicipios(departamentoSeleccionado);
     } else {
       setMunicipios([]);
     }
+  }, [departamentoSeleccionado, fetchMunicipios]);
 
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
-
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
-
-  }, [departamentoSeleccionado, verificarEstadoUsuarioLogueado]);
+  const verDetallesEmpleado = (idEmpleado) => {
+    navigate(`/DetallesEmpleado/${idEmpleado}`);
+  };
 
   const guardarCambiosEmpleado = async () => {
     try {
@@ -144,10 +131,12 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
           }
         }
       );
-      fetchData();
+      await fetchData();
       setModalEditar(false);
+      toast.success("Empleado actualizado con éxito");
     } catch (error) {
       console.error('Error al actualizar empleado:', error);
+      toast.error("Error al actualizar el empleado. Por favor, intente de nuevo.");
     }
   };
 
@@ -165,8 +154,10 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
 
       const nuevosEmpleados = empleados.filter(empleado => empleado.id !== empleadoAEliminar);
       setEmpleados(nuevosEmpleados);
+      toast.success("Empleado eliminado con éxito");
     } catch (error) {
       console.error("Error al eliminar empleado:", error);
+      toast.error("No se puede eliminar un empleado, que tiene un usuario asignado.");
     } finally {
       setConfirmarEliminar(false);
     }
@@ -204,7 +195,7 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
 
   const handleSearchChange = (e) => {
     setBusqueda(e.target.value);
-    setCurrentPage(1); // Resetear la página actual a 1 al cambiar la búsqueda
+    setCurrentPage(1);
   };
 
   const empleadosFiltrados = filtrarEmpleados(empleados);
@@ -229,7 +220,6 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
                 placeholder="Buscar por nombre, apellido o cargo"
                 style={{ width: "400px" }}
               />
-     
             </div>
           </Col>
         </Row>
@@ -283,6 +273,7 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
         confirmarEliminarEmpleado={confirmarEliminarEmpleado}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+      <ToastContainer />
     </div>
   );
 };

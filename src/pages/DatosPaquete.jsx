@@ -350,7 +350,7 @@ export default function DatosPaquete() {
 
   return (
     <Container fluid>
-      <h1 className='text-center'>Agregar datos de los Paquetes</h1>        
+      <h1 className='text-center titulo-pasos'>Agregar datos de los Paquetes</h1>        
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
@@ -371,7 +371,7 @@ export default function DatosPaquete() {
                 </NavItem>
               ))}
             </Nav>                     
-            <Progress className="custom-progress" value={(0.75) * 100} />
+            <Progress className="custom-progress barra-pasos" value={(0.75) * 100} />
             <br></br>
           </Col>
         </Row>
