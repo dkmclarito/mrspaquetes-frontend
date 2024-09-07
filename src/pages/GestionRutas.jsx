@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Container,
@@ -44,6 +45,16 @@ const GestionRutas = () => {
   const [bodegas, setBodegas] = useState([]);
   const [activeTab, setActiveTab] = useState("1");
   const [error, setError] = useState(null);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab) {
+      setActiveTab(tab);
+    }
+  }, [location]);
 
   const fetchData = useCallback(
     async (page = currentPage) => {
@@ -180,7 +191,11 @@ const GestionRutas = () => {
   };
 
   const toggle = (tab) => {
-    if (activeTab !== tab) setActiveTab(tab);
+    if (activeTab !== tab) {
+      setActiveTab(tab);
+      // Actualizar la URL sin recargar la página
+      window.history.pushState({}, "", `/GestionRutas?tab=${tab}`);
+    }
   };
 
   return (

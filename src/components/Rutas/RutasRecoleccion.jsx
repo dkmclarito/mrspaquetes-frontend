@@ -141,11 +141,12 @@ const RutasRecoleccion = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      cargarRutasRecoleccion();
-      toggle();
+      toast.success("Ruta de recolección creada con éxito");
+      // Recargar la página y redirigir a la pestaña de rutas de recolección
+      window.location.href = "/GestionRutas?tab=2";
     } catch (error) {
       console.error("Error al crear ruta de recolección:", error);
-      setError(
+      toast.error(
         "Error al crear ruta de recolección. Por favor, intente de nuevo."
       );
     }
