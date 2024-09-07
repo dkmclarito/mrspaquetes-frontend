@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardBody,
@@ -12,323 +12,278 @@ import {
   Button,
   FormFeedback,
 } from "reactstrap";
-import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
+import Breadcrumbs from "../components/Rutas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AgregarRuta = () => {
+  const [formData, setFormData] = useState({
+    id_destino: "",
+    nombre: "",
+    id_bodega: "",
+    fecha_programada: "",
+    estado: "1" 
+  });
+  const [errors, setErrors] = useState({});
   const [destinos, setDestinos] = useState([]);
   const [bodegas, setBodegas] = useState([]);
-  const [nombre, setNombre] = useState("");
-  const [distancia, setDistancia] = useState("");
-  const [duracion, setDuracion] = useState("");
-  const [fecha, setFecha] = useState("");
-  const [destino, setDestino] = useState("");
-  const [bodega, setBodega] = useState("");
-  const [isNombreValido, setIsNombreValido] = useState(true);
-  const [isDistanciaValida, setIsDistanciaValida] = useState(true);
-  const [isDuracionValida, setIsDuracionValida] = useState(true);
-  const [isFechaValida, setIsFechaValida] = useState(true);
-  const token = AuthService.getCurrentUser();
+  const [existingRoutes, setExistingRoutes] = useState([]);
   const navigate = useNavigate();
+  
+  const token = localStorage.getItem('token') || AuthService.getToken?.() || '';
 
-  useEffect(() => {
-    const fetchDestinos = async () => {
-      try {
-        const response = await fetch(`${API_URL}/destinos`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        const data = await response.json();
-        if (data.destinos && Array.isArray(data.destinos)) {
-          setDestinos(data.destinos);
-        } else {
-          console.error("Respuesta no válida para destinos:", data);
-          setDestinos([]);
-        }
-      } catch (error) {
-        console.error("Error al obtener las destinos:", error);
-        setDestinos([]);
-      }
-    };
+  const fetchDestinosYBodegas = useCallback(async () => {
+    try {
+      const [destinosResponse, bodegasResponse] = await Promise.all([
+        axios.get(`${API_URL}/destinos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/bodegas`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      ]);
 
-    const fetchBodegas = async () => {
-      try {
-        const response = await fetch(`${API_URL}/bodegas`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        const data = await response.json();
-        if (data.bodegas && Array.isArray(data.bodegas)) {
-          setBodegas(data.bodegas);
-        } else {
-          console.error("Respuesta no válida para bodegas:", data);
-          setBodegas([]);
-        }
-      } catch (error) {
-        console.error("Error al obtener las bodegas:", error);
-        setBodegas([]);
-      }
-    };
-
-    fetchDestinos();
-    fetchBodegas();
+      setDestinos(destinosResponse.data.destinos || []);
+      setBodegas(bodegasResponse.data.bodegas || []);
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+      toast.error("Error al cargar los datos necesarios");
+    }
   }, [token]);
 
-  const validateNombre = (nombre) => nombre.length > 0 && nombre.length <= 100;
-  const validateDistancia = (distancia) => !isNaN(distancia) && distancia > 0;
-  const validateDuracion = (duracion) => !isNaN(duracion) && duracion > 0;
-  const validateFecha = (fecha) => !isNaN(Date.parse(fecha));
+  useEffect(() => {
+    fetchDestinosYBodegas();
+  }, [fetchDestinosYBodegas]);
 
-  const handleNombreChange = (e) => {
-    const value = e.target.value;
-    setNombre(value);
-    setIsNombreValido(validateNombre(value));
+  useEffect(() => {
+    const fetchExistingRoutes = async () => {
+      try {
+        let allRoutes = [];
+        let page = 1;
+        let totalPages;
+
+        do {
+          const response = await axios.get(`${API_URL}/rutas?page=${page}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          //console.log(`Rutas existentes obtenidas - Página ${page}:`, response.data);
+          allRoutes = allRoutes.concat(response.data.data || []);
+          totalPages = response.data.last_page;
+          page++;
+        } while (page <= totalPages);
+
+        setExistingRoutes(allRoutes);
+      } catch (error) {
+        console.error("Error al obtener rutas existentes:", error);
+        toast.error("Error al cargar las rutas existentes");
+      }
+    };
+
+    fetchExistingRoutes();
+  }, [token]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Validación en tiempo real para la fecha
+    if (name === 'fecha_programada') {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0); // Resetear la hora a 00:00:00
+      const [year, month, day] = value.split('-').map(Number);
+      const programmedDate = new Date(year, month - 1, day);
+      
+      let dateError = null;
+
+      if (programmedDate < currentDate) {
+        dateError = "La fecha programada no puede ser menor a la fecha actual";
+      } else if (year > currentDate.getFullYear()) {
+        dateError = "El año no puede ser mayor al año actual";
+      } else if (year.toString().length !== 4) {
+        dateError = "El año debe tener exactamente 4 dígitos";
+      } else if (month > 12) {
+        dateError = "El mes no puede ser mayor a 12";
+      } else if (day > 31) {
+        dateError = "El día no puede ser mayor a 31";
+      }
+
+      setErrors({
+        ...errors,
+        fecha_programada: dateError
+      });
+    } else if (errors[name]) {
+      setErrors({ ...errors, [name]: null });
+    }
   };
 
-  const handleDistanciaChange = (e) => {
-    const value = e.target.value;
-    setDistancia(value);
-    setIsDistanciaValida(validateDistancia(value));
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.id_destino) newErrors.id_destino = "El destino es requerido";
+    if (!formData.nombre) newErrors.nombre = "El nombre de la ruta es requerido";
+    if (!formData.id_bodega) newErrors.id_bodega = "La bodega es requerida";
+    if (!formData.fecha_programada) {
+      newErrors.fecha_programada = "La fecha programada es requerida";
+    }
+    return newErrors;
   };
 
-  const handleDuracionChange = (e) => {
-    const value = e.target.value;
-    setDuracion(value);
-    setIsDuracionValida(validateDuracion(value));
-  };
-
-  const handleFechaChange = (e) => {
-    const value = e.target.value;
-    setFecha(value);
-    setIsFechaValida(validateFecha(value));
-  };
-
-  const handleDestinoChange = (e) => {
-    setDestino(e.target.value);
-  };
-
-  const handleBodegaChange = (e) => {
-    setBodega(e.target.value);
+  const checkRouteNameExists = async (name) => {
+    // Verificar si el nombre de la ruta ya existe en el conjunto de rutas existentes
+    const exists = existingRoutes.some(route => route.nombre.toLowerCase() === name.toLowerCase());
+    //console.log("Verificación de nombre de ruta:", name, "Existe:", exists);
+    return exists;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (
-      !isNombreValido ||
-      !isDistanciaValida ||
-      !isDuracionValida ||
-      !isFechaValida
-    ) {
-      toast.error(
-        "Por favor, corrija los errores en el formulario antes de enviar.",
-        {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-        }
-      );
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    const rutaData = {
-      nombre,
-      distancia_km: distancia,
-      duracion_aproximada: duracion,
-      fecha_programada: fecha,
-      id_destino: destino,
-      id_bodega: bodega,
-      estado: 1, // Asignar valor fijo de 1 al campo estado
-    };
+    // Verifica si el nombre de la ruta ya existe
+    const routeExists = await checkRouteNameExists(formData.nombre);
+    if (routeExists) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        nombre: "Ya existe una ruta con este nombre"
+      }));
+      
+      return;
+    }
 
     try {
-      const response = await fetch(`${API_URL}/rutas`, {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/rutas`, formData, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(rutaData),
       });
-
-      if (!response.ok) {
-        let errorMessage = "Error al agregar la ruta.";
-        toast.error(errorMessage, {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-        });
-        throw new Error(errorMessage);
+      if (response.status === 201) {
+        toast.success('Ruta agregada con éxito');
+        navigate('/GestionRutas');
       }
-
-      toast.success("¡Ruta agregada con éxito!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-
-      setTimeout(() => {
-        navigate("/GestionRutas");
-      }, 2000);
-
-      // Limpiar campos
-      setNombre("");
-      setDistancia("");
-      setDuracion("");
-      setFecha("");
-      setDestino("");
-      setBodega("");
     } catch (error) {
-      toast.error(`Error al agregar la ruta: ${error.message}`, {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
+      console.error("Error al crear la ruta:", error);
+      toast.error('Error del servidor al crear la ruta');
     }
   };
 
+  const handleSalir = () => {
+    navigate('/GestionRutas'); // Redirige a la página de Gestión de Rutas
+  };
+
   return (
-    <Container>
-      <Breadcrumbs
-        title="Formulario de Registro de Rutas"
-        breadcrumbItem="Ingrese la información"
-      />
-      <Card>
-        <CardBody>
-          <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="nombre">Nombre</Label>
-                  <Input
-                    type="text"
-                    id="nombre"
-                    value={nombre}
-                    onChange={handleNombreChange}
-                    invalid={!isNombreValido}
-                    required
-                  />
-                  <FormFeedback>
-                    El nombre es requerido y debe tener hasta 100 caracteres.
-                  </FormFeedback>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="distancia">Distancia (km)</Label>
-                  <Input
-                    type="number"
-                    id="distancia"
-                    value={distancia}
-                    onChange={handleDistanciaChange}
-                    invalid={!isDistanciaValida}
-                    required
-                  />
-                  <FormFeedback>
-                    La distancia debe ser un número positivo.
-                  </FormFeedback>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="duracion">Duración (minutos)</Label>
-                  <Input
-                    type="number"
-                    id="duracion"
-                    value={duracion}
-                    onChange={handleDuracionChange}
-                    invalid={!isDuracionValida}
-                    required
-                  />
-                  <FormFeedback>
-                    La duración debe ser un número positivo.
-                  </FormFeedback>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="fecha">Fecha Programada</Label>
-                  <Input
-                    type="date"
-                    id="fecha"
-                    value={fecha}
-                    onChange={handleFechaChange}
-                    invalid={!isFechaValida}
-                    required
-                    className="dark-mode-input-date"
-                  />
-                  <FormFeedback>La fecha debe ser válida.</FormFeedback>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="destino">Destino</Label>
-                  <Input
-                    type="select"
-                    id="destino"
-                    value={destino}
-                    onChange={handleDestinoChange}
-                    required
-                  >
-                    <option value="">Seleccione un Destino</option>
-                    {Array.isArray(destinos) &&
-                      destinos.map((dest) => (
-                        <option key={dest.id} value={dest.id}>
-                          {dest.nombre}
-                        </option>
-                      ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="bodega">Bodega</Label>
-                  <Input
-                    type="select"
-                    id="bodega"
-                    value={bodega}
-                    onChange={handleBodegaChange}
-                    required
-                  >
-                    <option value="">Seleccione una Bodega</option>
-                    {Array.isArray(bodegas) &&
-                      bodegas.map((bodega) => (
-                        <option key={bodega.id} value={bodega.id}>
-                          {bodega.nombre}
-                        </option>
-                      ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-            </Row>
-            <Button color="primary" type="submit">
-              Guardar
-            </Button>
-          </Form>
-        </CardBody>
-      </Card>
-    </Container>
+    <React.Fragment>
+      <div className="page-content">
+        <Container fluid>
+          <Breadcrumbs title="Crear Ruta" breadcrumbItem="Crear Ruta" />
+          <Row>
+            <Col lg={12}>
+              <Card>
+                <CardBody>
+                  <Form onSubmit={handleSubmit}>
+                    <Row>
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="nombre">Nombre de la Ruta</Label>
+                          <Input
+                            type="text"
+                            name="nombre"
+                            id="nombre"
+                            value={formData.nombre}
+                            onChange={handleInputChange}
+                            invalid={!!errors.nombre}
+                          />
+                          {errors.nombre && <FormFeedback>{errors.nombre}</FormFeedback>}
+                        </FormGroup>
+                      </Col>
+
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="id_destino">Destino</Label>
+                          <Input
+                            type="select"
+                            name="id_destino"
+                            id="id_destino"
+                            value={formData.id_destino}
+                            onChange={handleInputChange}
+                            invalid={!!errors.id_destino}
+                          >
+                            <option value="">Seleccione un destino</option>
+                            {destinos.map((destino) => (
+                              <option key={destino.id} value={destino.id}>
+                                {destino.nombre}
+                              </option>
+                            ))}
+                          </Input>
+                          {errors.id_destino && <FormFeedback>{errors.id_destino}</FormFeedback>}
+                        </FormGroup>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="id_bodega">Bodega</Label>
+                          <Input
+                            type="select"
+                            name="id_bodega"
+                            id="id_bodega"
+                            value={formData.id_bodega}
+                            onChange={handleInputChange}
+                            invalid={!!errors.id_bodega}
+                          >
+                            <option value="">Seleccione una bodega</option>
+                            {bodegas.map((bodega) => (
+                              <option key={bodega.id} value={bodega.id}>
+                                {bodega.nombre}
+                              </option>
+                            ))}
+                          </Input>
+                          {errors.id_bodega && <FormFeedback>{errors.id_bodega}</FormFeedback>}
+                        </FormGroup>
+                      </Col>
+
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="fecha_programada">Fecha Programada</Label>
+                          <Input
+                            type="date"
+                            name="fecha_programada"
+                            id="fecha_programada"
+                            value={formData.fecha_programada}
+                            onChange={handleInputChange}
+                            invalid={!!errors.fecha_programada}
+                            min={new Date().toISOString().split('T')[0]}
+                            max={`${new Date().getFullYear()}-12-31`}
+                          />
+                          {errors.fecha_programada && <FormFeedback>{errors.fecha_programada}</FormFeedback>}
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Col md="12">
+                      <Button color="primary" type="submit">
+                        Registrar
+                      </Button>
+                      <Button className="ms-2 btn-custom-red" onClick={handleSalir}>
+                        Salir
+                      </Button>
+                    </Col>
+                  </Form>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </React.Fragment>
   );
 };
 
 export default AgregarRuta;
+
