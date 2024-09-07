@@ -10,7 +10,7 @@ import {
   Label,
   Button,
 } from "reactstrap";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import Pagination from "react-js-pagination";
@@ -26,7 +26,7 @@ const ITEMS_PER_PAGE = 10;
 
 const GestionBodega = () => {
   document.title = "Bodegas | Vehículos";
-
+  const navigate = useNavigate();
   const [bodegas, setBodegas] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
   const [bodegaEditado, setBodegaEditado] = useState({
@@ -84,6 +84,10 @@ const GestionBodega = () => {
 
     return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
   }, [verificarEstadoUsuarioLogueado]);
+
+  const verDetallesBodega = (idBodega) => {
+    navigate(`/DetallesBodega/${idBodega}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -319,6 +323,7 @@ const GestionBodega = () => {
                   municipios={Object.values(municipiosPorDepartamento).flat()}
                   eliminarBodega={eliminarBodega}
                   toggleModalEditar={toggleModalEditar}
+                  verDetallesBodega={verDetallesBodega}
                 />
               </CardBody>
             </Card>

@@ -43,6 +43,7 @@ import ResetPassword from "./components/LoginClientes/ResetPassword"; // Nuevo: 
 import DataUsuario from "./pages/DataUsuario";
 import GestionBodegas from "./pages/GestionBodega";
 import AgregarBodega from "./pages/AgregarBodega";
+import DetallesBodega from "./pages/DetallesBodega";
 import AgregarOrden from "./pages/AgregarOrden";
 import GestionOrdenes from "./pages/GestionOrdenes";
 import DatosPaquete from "./pages/DatosPaquete";
@@ -134,6 +135,10 @@ const App = () => {
                 <Route path="/TrackingPage" element={<TrackingPage />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
+                <Route
+                  path="/DetallesBodega/:id"
+                  element={<DetallesBodega />}
+                />
                 <Route path="/AgregarOrden" element={<AgregarOrden />} />
                 <Route
                   path="/OrdenesSeleccionarCliente"

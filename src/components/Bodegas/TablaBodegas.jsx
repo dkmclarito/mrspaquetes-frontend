@@ -2,10 +2,10 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/Vehiculos.css";
 
-const TablaBodegas = ({ bodegas, departamentos, municipios, eliminarBodega, toggleModalEditar }) => {
+const TablaBodegas = ({ bodegas, departamentos, municipios, verDetallesBodega, eliminarBodega, toggleModalEditar }) => {
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <Table striped className="table-centered table-nowrap mb-0">
@@ -50,6 +50,12 @@ const TablaBodegas = ({ bodegas, departamentos, municipios, eliminarBodega, togg
                       >
                         <FontAwesomeIcon icon={faPencilAlt} />
                       </Button>
+                      <Button
+                      className="btn-icon btn-success"
+                      onClick={() => verDetallesBodega(bodega.id)}                      
+                    >
+                      <FontAwesomeIcon icon={faEye}  />
+                    </Button>
                     </div>
                   </td>
                 </tr>
@@ -93,6 +99,7 @@ TablaBodegas.propTypes = {
     })
   ).isRequired,
   eliminarBodega: PropTypes.func.isRequired,
+  verDetallesBodega: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
 };
 
