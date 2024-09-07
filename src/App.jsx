@@ -64,6 +64,8 @@ import OrdenesDireccionesExpress from "./pages/OrdenesDireccionesExpress";
 import DatosPaqueteExpress from "./pages/DatosPaqueteExpress";
 import GenerarOrdenExpress from "./pages/GenerarOrdenExpress";
 import ProcesarPagoExpress from "./pages/ProcesarPagoExpress";
+import RutasRecoleccion from "./pages/RutasRecoleccion";
+import OrdenesRecoleccion from "./pages/OrdenesRecoleccion";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -117,10 +119,7 @@ const App = () => {
                   path="/DetallesEmpleado/:id"
                   element={<DetallesEmpleado />}
                 />
-                <Route
-                  path="/DetallesRutas/:id"
-                  element={<DetallesRutas />}
-                />
+                <Route path="/DetallesRutas/:id" element={<DetallesRutas />} />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
                 <Route
@@ -222,6 +221,14 @@ const App = () => {
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/AgregarRuta" element={<AgregarRuta />} />
+                <Route
+                  path="/RutasRecoleccion"
+                  element={<RutasRecoleccion />}
+                />
+                <Route
+                  path="/OrdenesRecoleccion"
+                  element={<OrdenesRecoleccion />}
+                />
               </Route>
 
               {/* Rutas para 'conductor' */}

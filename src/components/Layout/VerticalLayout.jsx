@@ -18,6 +18,7 @@ import {
   BiMenu,
   BiPlus,
   BiMap,
+  BiNavigation,
 } from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
@@ -65,6 +66,13 @@ const VerticalLayout = () => {
       location.pathname.includes("/GestionVehiculos")
     ) {
       setActiveSubMenu("vehicles");
+      setVisibleSubMenu(null);
+    } else if (
+      location.pathname.includes("/GestionRutas") ||
+      location.pathname.includes("/RutasRecoleccion") ||
+      location.pathname.includes("/OrdenesRecoleccion")
+    ) {
+      setActiveSubMenu("rutas");
       setVisibleSubMenu(null);
     } else {
       setActiveSubMenu(null);
@@ -271,16 +279,59 @@ const VerticalLayout = () => {
                   </ul>
                 </li>
 
+                {/* Nuevo submenú para Rutas */}
                 <li className="nav-item">
-                  <NavLink
-                    to="/GestionRutas"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "rutas" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("rutas")}
                   >
                     <BiMap className="nav-icon" />
-                    {!menuCollapsed && <span>Rutas</span>}
-                  </NavLink>
+                    {(!menuCollapsed || visibleSubMenu === "rutas") && (
+                      <span>Rutas</span>
+                    )}
+                    {visibleSubMenu === "rutas" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "rutas" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionRutas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiMap className="nav-icon sub-icon" />
+                        Rutas
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/RutasRecoleccion"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiNavigation className="nav-icon sub-icon" />
+                        Rutas de Recolección
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/OrdenesRecoleccion"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiReceipt className="nav-icon sub-icon" />
+                        Órdenes de Recolección
+                      </NavLink>
+                    </li>
+                  </ul>
                 </li>
 
                 <li className="nav-item">
