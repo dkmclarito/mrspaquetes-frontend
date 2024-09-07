@@ -2,16 +2,23 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 import "../../styles/Vehiculos.css";
 
 const TablaRutas = ({ rutas, eliminarRuta, toggleModalEditar }) => {
+  const navigate = useNavigate();
+
+  const verDetallesRutas = (id) => {
+    navigate(`/DetallesRutas/${id}`);
+  };
+
   // Formatea la fecha como Día-Mes-Año
   const formatFecha = (fecha) => {
     if (!fecha) return 'N/A';
     const date = new Date(fecha);
     const year = date.getFullYear();
-    const month = (`0${date.getMonth() + 1}`).slice(-2); // getMonth() is zero-based
+    const month = (`0${date.getMonth() + 1}`).slice(-2);
     const day = (`0${date.getDate()}`).slice(-2);
     return `${day}-${month}-${year}`;
   };
@@ -56,6 +63,12 @@ const TablaRutas = ({ rutas, eliminarRuta, toggleModalEditar }) => {
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
+                    <Button
+                      className="btn-icon btn-success"
+                      onClick={() => verDetallesRutas(ruta.id)}                      
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -80,7 +93,7 @@ TablaRutas.propTypes = {
       id_destino: PropTypes.number,
       nombre: PropTypes.string,
       id_bodega: PropTypes.number,
-      estado: PropTypes.string,  // Cambiado a string
+      estado: PropTypes.string,
       distancia_km: PropTypes.number,
       duracion_aproximada: PropTypes.string,
       fecha_programada: PropTypes.string,

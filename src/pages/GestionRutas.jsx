@@ -1,15 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  CardBody,
-  Input,
-  Label,
-  Button,
-} from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
 import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Rutas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -18,24 +9,15 @@ import "../styles/Vehiculos.css";
 import TablaRutas from "../components/Rutas/TablaRutas";
 import ModalEditarRuta from "../components/Rutas/ModalEditarRuta";
 import ModalConfirmarEliminarRuta from "../components/Rutas/ModalConfirmarEliminarRuta";
+import { toast } from 'react-toastify';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
 const GestionRutas = () => {
-  document.title = "Rutas | Mr. Paquetes";
-
   const [rutas, setRutas] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
-  const [rutaEditada, setRutaEditada] = useState({
-    id: null,
-    nombre: "",
-    distancia_km: "",
-    duracion_aproximada: "",
-    fecha_programada: "",
-    id_destino: "",
-    id_bodega: "",
-  });
+  const [rutaEditada, setRutaEditada] = useState(null);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [rutaAEliminar, setRutaAEliminar] = useState(null);
   const [busquedaNombre, setBusquedaNombre] = useState("");
@@ -45,78 +27,68 @@ const GestionRutas = () => {
   const [destinos, setDestinos] = useState([]);
   const [bodegas, setBodegas] = useState([]);
 
+  const fetchData = useCallback(async (page = currentPage) => {
+    try {
+      const token = AuthService.getCurrentUser();
+
+      const [responseRutas, responseDestinos, responseBodegas] = await Promise.all([
+        axios.get(`${API_URL}/rutas`, {
+          params: {
+            page: page,
+            per_page: ITEMS_PER_PAGE,
+            nombre: busquedaNombre,
+            id_bodega: busquedaBodega,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/destinos`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/bodegas`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      setRutas(responseRutas.data.data);
+      setTotalItems(responseRutas.data.total || 0);
+      setDestinos(responseDestinos.data.destinos || []);
+      setBodegas(responseBodegas.data.bodegas || []);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+      toast.error("Error al cargar los datos. Por favor, intente de nuevo.");
+    }
+  }, [busquedaNombre, busquedaBodega]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
-
-        const [responseRutas, responseDestinos, responseBodegas] =
-          await Promise.all([
-            axios.get(`${API_URL}/rutas`, {
-              params: {
-                page: currentPage,
-                per_page: ITEMS_PER_PAGE,
-                nombre: busquedaNombre,
-                id_bodega: busquedaBodega,
-              },
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }),
-            axios.get(`${API_URL}/destinos`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }),
-            axios.get(`${API_URL}/bodegas`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }),
-          ]);
-
-        setRutas(responseRutas.data.data || []);
-        setTotalItems(responseRutas.data.total || 0);
-        setDestinos(responseDestinos.data.destinos || []);
-        setBodegas(responseBodegas.data.bodegas || []);
-      } catch (error) {
-        console.error("Error al obtener datos:", error);
-      }
-    };
-
     fetchData();
-  }, [currentPage, busquedaNombre, busquedaBodega]);
+  }, [fetchData]);
 
   const confirmarEliminarRuta = async () => {
     try {
       const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/rutas/${rutaAEliminar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      setRutas(rutas.filter((ruta) => ruta.id !== rutaAEliminar));
+      toast.success("Ruta eliminada con éxito");
+
+      // Verificar si la página actual queda vacía
+      if (rutas.length === 1 && currentPage > 1) {
+        // Si es la última ruta de la página y no es la primera página,
+        // cargar la página anterior
+        await fetchData(currentPage - 1);
+      } else {
+        // Si no, simplemente recargar la página actual
+        await fetchData(currentPage);
+      }
+
       setConfirmarEliminar(false);
       setRutaAEliminar(null);
     } catch (error) {
       console.error("Error al eliminar ruta:", error);
-      setConfirmarEliminar(false);
+      toast.error("Error al eliminar la ruta. Por favor, intente de nuevo.");
     }
   };
 
   const toggleModalEditar = (ruta) => {
-    setRutaEditada(
-      ruta || {
-        id: null,
-        nombre: "",
-        distancia_km: "",
-        duracion_aproximada: "",
-        fecha_programada: "",
-        id_destino: "",
-        id_bodega: "",
-      }
-    );
+    setRutaEditada(ruta);
     setModalEditar(!modalEditar);
   };
 
@@ -125,31 +97,38 @@ const GestionRutas = () => {
     setConfirmarEliminar(true);
   };
 
-  const guardarCambiosRuta = async () => {
+  const guardarCambiosRuta = async (rutaActualizada) => {
     try {
       const token = AuthService.getCurrentUser();
-      await axios.put(`${API_URL}/rutas/${rutaEditada.id}`, rutaEditada, {
+      
+      const dataToSend = {
+        ...rutaActualizada,
+        estado: rutaActualizada.estado === 'Activo' ? 1 : 0,
+        id_bodega: rutaActualizada.id_bodega.toString(),
+        id_destino: parseInt(rutaActualizada.id_destino, 10),
+      };
+  
+      const response = await axios.put(`${API_URL}/rutas/${rutaActualizada.id}`, dataToSend, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-
-      setRutas(
-        rutas.map((ruta) => (ruta.id === rutaEditada.id ? rutaEditada : ruta))
-      );
-      setModalEditar(false);
-      setRutaEditada({
-        id: null,
-        nombre: "",
-        distancia_km: "",
-        duracion_aproximada: "",
-        fecha_programada: "",
-        id_destino: "",
-        id_bodega: "",
-      });
+  
+      if (response.data && response.data.ruta) {
+        setModalEditar(false);
+        setRutaEditada(null);
+        toast.success("Cambios guardados con éxito");
+        await fetchData(currentPage);
+      } else {
+        throw new Error('Respuesta inesperada del servidor');
+      }
     } catch (error) {
       console.error("Error al actualizar ruta:", error);
+      if (error.response && error.response.data && error.response.data.errors) {
+        console.error("Errores de validación:", error.response.data.errors);
+      }
+      toast.error("Error al guardar los cambios. Por favor, intente de nuevo.");
     }
   };
 
@@ -164,23 +143,18 @@ const GestionRutas = () => {
   };
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+    fetchData(pageNumber);
   };
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs
-          title="Gestión de Rutas"
-          breadcrumbItem="Listado de Rutas"
-        />
+        <Breadcrumbs title="Gestión de Rutas" breadcrumbItem="Listado de Rutas" />
         <Row>
           <Col lg={12}>
-            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-              <div style={{ display: "flex", alignItems: "center", marginRight: "10px" }}>
-                <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
-                  Nombre:
-                </Label>
+            <div className="mb-4 d-flex flex-wrap align-items-center">
+              <div className="me-3 mb-2">
+                <Label for="busquedaNombre" className="me-2">Nombre:</Label>
                 <Input
                   type="text"
                   id="busquedaNombre"
@@ -190,10 +164,8 @@ const GestionRutas = () => {
                   style={{ width: "200px" }}
                 />
               </div>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Label for="busquedaBodega" style={{ marginRight: "10px" }}>
-                  Bodega:
-                </Label>
+              <div className="me-3 mb-2">
+                <Label for="busquedaBodega" className="me-2">Bodega:</Label>
                 <Input
                   type="select"
                   id="busquedaBodega"
@@ -209,18 +181,14 @@ const GestionRutas = () => {
                   ))}
                 </Input>
               </div>
-              <div style={{ marginLeft: "auto" }}>
-                <Link
-                  to="/AgregarRuta"
-                  className="btn btn-primary custom-button"
-                >
-                  <i className="fas fa-plus"></i> Agregar Ruta
+              <div className="ms-auto mb-2">
+                <Link to="/AgregarRuta" className="btn btn-primary">
+                  <i className="fas fa-plus me-2"></i>Agregar Ruta
                 </Link>
               </div>
             </div>
           </Col>
         </Row>
-        <br />
         <Row>
           <Col lg={12}>
             <Card>
@@ -237,14 +205,7 @@ const GestionRutas = () => {
           </Col>
         </Row>
         <Row>
-          <Col
-            lg={12}
-            style={{
-              marginTop: "20px",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
+          <Col lg={12} className="d-flex justify-content-center mt-4">
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
@@ -253,7 +214,6 @@ const GestionRutas = () => {
               onChange={handlePageChange}
               itemClass="page-item"
               linkClass="page-link"
-              innerClass="pagination"
             />
           </Col>
         </Row>
@@ -267,7 +227,6 @@ const GestionRutas = () => {
         destinos={destinos}
         bodegas={bodegas}
       />
-
       <ModalConfirmarEliminarRuta
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarRuta={confirmarEliminarRuta}
