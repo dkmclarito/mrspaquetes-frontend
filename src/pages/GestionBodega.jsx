@@ -284,7 +284,7 @@ const GestionBodega = () => {
                 style={{ width: "300px" }}
               />
               <Label for="filtroTipo" style={{ marginLeft: "10px", marginRight: "10px" }}>
-                Filtrar por tipo:
+                Tipo:
               </Label>
               <Input
                 type="select"
