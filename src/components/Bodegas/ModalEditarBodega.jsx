@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
-//import "../../styles/Bodegas.css";
 
 const ModalEditarBodega = ({
   modalEditar,
@@ -33,7 +32,7 @@ const ModalEditarBodega = ({
     setBodegaEditado({
       ...bodegaEditado,
       id_departamento: value,
-      id_municipio: "", // Resetea el municipio al cambiar de departamento
+      id_municipio: "",
     });
   };
 
@@ -65,6 +64,21 @@ const ModalEditarBodega = ({
               </Col>
             </Form.Group>
 
+            <Form.Group as={Row} controlId="nombre">
+              <Form.Label column sm={12}>Tipo de bodega</Form.Label>
+              <Col sm={12}>
+                <Form.Control
+                  as="select"
+                  name="tipo_bodega"
+                  value={bodegaEditado.tipo_bodega || ""}
+                  onChange={handleChange}
+                >
+                  <option value="fisica">Física</option>
+                  <option value="movil">Móvil</option>
+                </Form.Control>
+              </Col>
+            </Form.Group>
+
             <Form.Group as={Row} controlId="direccion">
               <Form.Label column sm={12}>Dirección</Form.Label>
               <Col sm={12}>
@@ -90,12 +104,13 @@ const ModalEditarBodega = ({
                   value={bodegaEditado.id_departamento || ""}
                   onChange={handleDepartamentoChange}
                 >
-                  <option value="">Seleccione un departamento</option>
-                  {departamentos.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.nombre}
-                    </option>
-                  ))}
+                      {departamentos
+                        .filter((d) => [11, 12, 13, 14].includes(d.id)) // Filtra los departamentos para incluir solo los IDs deseados
+                        .map((departamento) => (
+                          <option key={departamento.id} value={departamento.id}>
+                            {departamento.nombre}
+                          </option>
+                        ))}
                 </Form.Control>
               </Col>
             </Form.Group>

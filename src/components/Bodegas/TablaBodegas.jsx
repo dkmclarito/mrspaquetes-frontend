@@ -13,6 +13,7 @@ const TablaBodegas = ({ bodegas, departamentos, municipios, eliminarBodega, togg
           <tr>
             <th className="text-center">ID</th>
             <th className="text-center">Nombre</th>
+            <th className="text-center">Tipo de bodega</th>
             <th className="text-center">Departamento</th>
             <th className="text-center">Municipio</th>
             <th className="text-center">Dirección</th>
@@ -27,11 +28,12 @@ const TablaBodegas = ({ bodegas, departamentos, municipios, eliminarBodega, togg
 
               return (
                 <tr key={bodega.id}>
-                  <td className="text-center">{bodega.id}</td>
-                  <td className="text-center">{bodega.nombre || 'N/A'}</td>
-                  <td className="text-center">{departamentoNombre || 'N/A'}</td>
-                  <td className="text-center">{municipioNombre || 'N/A'}</td>
-                  <td className="text-center">{bodega.direccion || 'N/A'}</td>
+                  <td>{bodega.id}</td>
+                  <td>{bodega.nombre || 'N/A'}</td>
+                  <td>{bodega.tipo_bodega || 'N/A'}</td>
+                  <td>{departamentoNombre || 'N/A'}</td>
+                  <td>{municipioNombre || 'N/A'}</td>
+                  <td>{bodega.direccion || 'N/A'}</td>
                   <td className="text-center">
                     <div className="button-container">
                       <Button
@@ -55,7 +57,7 @@ const TablaBodegas = ({ bodegas, departamentos, municipios, eliminarBodega, togg
             })
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="7" className="text-center">
                 No hay bodegas disponibles
               </td>
             </tr>
