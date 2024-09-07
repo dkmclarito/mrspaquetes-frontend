@@ -20,7 +20,7 @@ import ModalEditarRuta from "../components/Rutas/ModalEditarRuta";
 import ModalConfirmarEliminarRuta from "../components/Rutas/ModalConfirmarEliminarRuta";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionRutas = () => {
   document.title = "Rutas | Mr. Paquetes";
@@ -38,8 +38,10 @@ const GestionRutas = () => {
   });
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [rutaAEliminar, setRutaAEliminar] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
+  const [busquedaNombre, setBusquedaNombre] = useState("");
+  const [busquedaBodega, setBusquedaBodega] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [destinos, setDestinos] = useState([]);
   const [bodegas, setBodegas] = useState([]);
 
@@ -47,10 +49,16 @@ const GestionRutas = () => {
     const fetchData = async () => {
       try {
         const token = AuthService.getCurrentUser();
-    
+
         const [responseRutas, responseDestinos, responseBodegas] =
           await Promise.all([
             axios.get(`${API_URL}/rutas`, {
+              params: {
+                page: currentPage,
+                per_page: ITEMS_PER_PAGE,
+                nombre: busquedaNombre,
+                id_bodega: busquedaBodega,
+              },
               headers: {
                 Authorization: `Bearer ${token}`,
               },
@@ -66,24 +74,19 @@ const GestionRutas = () => {
               },
             }),
           ]);
-    
-        // Verifica la estructura de las respuestas
-        // console.log("Response Rutas:", responseRutas.data);
-        // console.log("Response Destinos:", responseDestinos.data);
-        // console.log("Response Bodegas:", responseBodegas.data);
-    
+
         setRutas(responseRutas.data.data || []);
+        setTotalItems(responseRutas.data.total || 0);
         setDestinos(responseDestinos.data.destinos || []);
         setBodegas(responseBodegas.data.bodegas || []);
       } catch (error) {
         console.error("Error al obtener datos:", error);
       }
     };
-    
-  
+
     fetchData();
-  }, []);
-  
+  }, [currentPage, busquedaNombre, busquedaBodega]);
+
   const confirmarEliminarRuta = async () => {
     try {
       const token = AuthService.getCurrentUser();
@@ -150,23 +153,19 @@ const GestionRutas = () => {
     }
   };
 
-  const filtrarRutas = (rutas) => {
-    if (!Array.isArray(rutas)) return [];
-    if (!busqueda) return rutas;
-    return rutas.filter((ruta) =>
-      ruta.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
+  const handleBusquedaNombreChange = (e) => {
+    setBusquedaNombre(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleBusquedaBodegaChange = (e) => {
+    setBusquedaBodega(e.target.value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
-  const rutasFiltradas = filtrarRutas(rutas);
-  const paginatedRutas = rutasFiltradas.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="page-content">
@@ -177,24 +176,39 @@ const GestionRutas = () => {
         />
         <Row>
           <Col lg={12}>
-            <div
-              style={{
-                marginTop: "10px",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Label for="busqueda" style={{ marginRight: "10px" }}>
-                Buscar:
-              </Label>
-              <Input
-                type="text"
-                id="busqueda"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre de ruta"
-                style={{ width: "300px" }}
-              />
+            <div style={{ marginTop: "10px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", marginRight: "10px" }}>
+                <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
+                  Nombre:
+                </Label>
+                <Input
+                  type="text"
+                  id="busquedaNombre"
+                  value={busquedaNombre}
+                  onChange={handleBusquedaNombreChange}
+                  placeholder="Buscar por nombre"
+                  style={{ width: "200px" }}
+                />
+              </div>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Label for="busquedaBodega" style={{ marginRight: "10px" }}>
+                  Bodega:
+                </Label>
+                <Input
+                  type="select"
+                  id="busquedaBodega"
+                  value={busquedaBodega}
+                  onChange={handleBusquedaBodegaChange}
+                  style={{ width: "200px" }}
+                >
+                  <option value="">Todas las bodegas</option>
+                  {bodegas.map((bodega) => (
+                    <option key={bodega.id} value={bodega.id}>
+                      {bodega.nombre}
+                    </option>
+                  ))}
+                </Input>
+              </div>
               <div style={{ marginLeft: "auto" }}>
                 <Link
                   to="/AgregarRuta"
@@ -212,7 +226,7 @@ const GestionRutas = () => {
             <Card>
               <CardBody>
                 <TablaRutas
-                  rutas={paginatedRutas}
+                  rutas={rutas}
                   destinos={destinos}
                   bodegas={bodegas}
                   eliminarRuta={eliminarRuta}
@@ -234,7 +248,7 @@ const GestionRutas = () => {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={rutasFiltradas.length}
+              totalItemsCount={totalItems}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"
