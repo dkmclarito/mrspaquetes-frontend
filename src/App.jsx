@@ -17,6 +17,7 @@ import GestionEmpleados from "./pages/GestionEmpleados";
 import AgregarEmpleado from "./pages/AgregarEmpleado";
 import AgregarEmpleadoUser from "./pages/AgregarEmpleado";
 import DetallesEmpleado from "./pages/DetallesEmpleado";
+import DetallesRutas from "./pages/DetallesRutas";
 import GestionClientes from "./pages/GestionClientes";
 import AgregarCliente from "./pages/AgregarCliente";
 import DetallesCliente from "./pages/DetallesCliente";
@@ -114,6 +115,10 @@ const App = () => {
                 <Route
                   path="/DetallesEmpleado/:id"
                   element={<DetallesEmpleado />}
+                />
+                <Route
+                  path="/DetallesRutas/:id"
+                  element={<DetallesRutas />}
                 />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
