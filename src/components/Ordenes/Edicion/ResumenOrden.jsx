@@ -6,6 +6,17 @@ const ResumenOrden = ({ orden }) => {
     return <div>Cargando...</div>;
   }
 
+  const calcularTotalPaquetes = () => {
+    return orden.detalles.reduce(
+      (total, detalle) => total + parseFloat(detalle.precio || 0),
+      0
+    );
+  };
+
+  const totalPaquetes = calcularTotalPaquetes();
+  const costoAdicional = parseFloat(orden.costo_adicional || 0);
+  const totalOrden = totalPaquetes + costoAdicional;
+
   return (
     <Card>
       <CardBody>
@@ -18,10 +29,13 @@ const ResumenOrden = ({ orden }) => {
             <strong>Cliente:</strong> {orden.id_cliente}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Total a Pagar:</strong> ${orden.total_pagar}
+            <strong>Total Paquetes:</strong> ${totalPaquetes.toFixed(2)}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Costo Adicional:</strong> ${orden.costo_adicional}
+            <strong>Costo Adicional:</strong> ${costoAdicional.toFixed(2)}
+          </ListGroupItem>
+          <ListGroupItem>
+            <strong>Total a Pagar:</strong> ${totalOrden.toFixed(2)}
           </ListGroupItem>
           <ListGroupItem>
             <strong>Estado:</strong> {orden.id_estado_paquetes}
@@ -45,12 +59,26 @@ const ResumenOrden = ({ orden }) => {
           <tbody>
             {orden.detalles.map((detalle, index) => (
               <tr key={index}>
-                <td>{detalle.id_tipo_paquete}</td>
-                <td>{detalle.peso}</td>
-                <td>{detalle.id_estado_paquete}</td>
-                <td>{detalle.fecha_envio}</td>
-                <td>{detalle.fecha_entrega_estimada}</td>
-                <td>${detalle.precio}</td>
+                <td>
+                  {detalle.tipo_paquete ||
+                    detalle.paquete?.tipo_paquete ||
+                    "N/A"}
+                </td>
+                <td>{detalle.peso || detalle.paquete?.peso || "N/A"}</td>
+                <td>
+                  {detalle.estado_paquete ||
+                    detalle.paquete?.estado_paquete ||
+                    "N/A"}
+                </td>
+                <td>
+                  {detalle.fecha_envio || detalle.paquete?.fecha_envio || "N/A"}
+                </td>
+                <td>
+                  {detalle.fecha_entrega_estimada ||
+                    detalle.paquete?.fecha_entrega_estimada ||
+                    "N/A"}
+                </td>
+                <td>${parseFloat(detalle.precio || 0).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

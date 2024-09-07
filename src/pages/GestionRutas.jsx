@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Input,
+  Label,
+  Button,
+  Nav,
+  NavItem,
+  NavLink,
+  TabContent,
+  TabPane,
+} from "reactstrap";
 import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Rutas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -9,7 +23,9 @@ import "../styles/Vehiculos.css";
 import TablaRutas from "../components/Rutas/TablaRutas";
 import ModalEditarRuta from "../components/Rutas/ModalEditarRuta";
 import ModalConfirmarEliminarRuta from "../components/Rutas/ModalConfirmarEliminarRuta";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import RutasRecoleccion from "../components/Rutas/RutasRecoleccion";
+import OrdenesRecoleccion from "../components/Rutas/OrdenesRecoleccion";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
@@ -26,35 +42,48 @@ const GestionRutas = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [destinos, setDestinos] = useState([]);
   const [bodegas, setBodegas] = useState([]);
+  const [activeTab, setActiveTab] = useState("1");
+  const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async (page = currentPage) => {
-    try {
-      const token = AuthService.getCurrentUser();
+  const fetchData = useCallback(
+    async (page = currentPage) => {
+      try {
+        const token = AuthService.getCurrentUser();
 
-      const [responseRutas, responseDestinos, responseBodegas] = await Promise.all([
-        axios.get(`${API_URL}/rutas`, {
-          params: {
-            page: page,
-            per_page: ITEMS_PER_PAGE,
-            nombre: busquedaNombre,
-            id_bodega: busquedaBodega,
-          },
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get(`${API_URL}/destinos`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/bodegas`, { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
+        const [responseRutas, responseDestinos, responseBodegas] =
+          await Promise.all([
+            axios.get(`${API_URL}/rutas`, {
+              params: {
+                page: page,
+                per_page: ITEMS_PER_PAGE,
+                nombre: busquedaNombre,
+                id_bodega: busquedaBodega,
+              },
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/destinos`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/bodegas`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
-      setRutas(responseRutas.data.data);
-      setTotalItems(responseRutas.data.total || 0);
-      setDestinos(responseDestinos.data.destinos || []);
-      setBodegas(responseBodegas.data.bodegas || []);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error("Error al obtener datos:", error);
-      toast.error("Error al cargar los datos. Por favor, intente de nuevo.");
-    }
-  }, [busquedaNombre, busquedaBodega]);
+        setRutas(responseRutas.data.data);
+        setTotalItems(responseRutas.data.total || 0);
+        setDestinos(responseDestinos.data.destinos || []);
+        setBodegas(responseBodegas.data.bodegas || []);
+        setCurrentPage(page);
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+        toast.error("Error al cargar los datos. Por favor, intente de nuevo.");
+        setError(
+          "Hubo un problema al cargar los datos. Por favor, intente de nuevo."
+        );
+      }
+    },
+    [busquedaNombre, busquedaBodega]
+  );
 
   useEffect(() => {
     fetchData();
@@ -100,28 +129,32 @@ const GestionRutas = () => {
   const guardarCambiosRuta = async (rutaActualizada) => {
     try {
       const token = AuthService.getCurrentUser();
-      
+
       const dataToSend = {
         ...rutaActualizada,
-        estado: rutaActualizada.estado === 'Activo' ? 1 : 0,
+        estado: rutaActualizada.estado === "Activo" ? 1 : 0,
         id_bodega: rutaActualizada.id_bodega.toString(),
         id_destino: parseInt(rutaActualizada.id_destino, 10),
       };
-  
-      const response = await axios.put(`${API_URL}/rutas/${rutaActualizada.id}`, dataToSend, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
+
+      const response = await axios.put(
+        `${API_URL}/rutas/${rutaActualizada.id}`,
+        dataToSend,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (response.data && response.data.ruta) {
         setModalEditar(false);
         setRutaEditada(null);
         toast.success("Cambios guardados con éxito");
         await fetchData(currentPage);
       } else {
-        throw new Error('Respuesta inesperada del servidor');
+        throw new Error("Respuesta inesperada del servidor");
       }
     } catch (error) {
       console.error("Error al actualizar ruta:", error);
@@ -146,84 +179,128 @@ const GestionRutas = () => {
     fetchData(pageNumber);
   };
 
+  const toggle = (tab) => {
+    if (activeTab !== tab) setActiveTab(tab);
+  };
+
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Rutas" breadcrumbItem="Listado de Rutas" />
-        <Row>
-        <Col lg={12}>
-          <div
-              style={{
-                marginTop: "10px",
-                display: "flex",
-                alignItems: "center",
+        <Breadcrumbs
+          title="Gestión de Rutas"
+          breadcrumbItem="Listado de Rutas"
+        />
+        {error && <div className="alert alert-danger">{error}</div>}
+        <Nav tabs>
+          <NavItem>
+            <NavLink
+              className={activeTab === "1" ? "active" : ""}
+              onClick={() => {
+                toggle("1");
               }}
             >
-                <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
-                  Buscar:
-                </Label>
-                <Input
-                  type="text"
-                  id="busqueda"
-                  value={busquedaNombre}
-                  onChange={handleBusquedaNombreChange}
-                  placeholder="Buscar por nombre"
-                  style={{ width: "300px" }}
-                />
-      
-                <Label for="busquedaBodega" style={{ marginLeft: "10px", marginRight: "10px" }}>
-                  Bodega:
-                </Label>
-                <Input
-                  type="select"
-                  id="busquedaBodega"
-                  value={busquedaBodega}
-                  onChange={handleBusquedaBodegaChange}
-                  style={{ width: "200px" }}
+              Rutas
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={activeTab === "2" ? "active" : ""}
+              onClick={() => {
+                toggle("2");
+              }}
+            >
+              Rutas de Recolección
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={activeTab === "3" ? "active" : ""}
+              onClick={() => {
+                toggle("3");
+              }}
+            >
+              Órdenes de Recolección
+            </NavLink>
+          </NavItem>
+        </Nav>
+        <TabContent activeTab={activeTab}>
+          <TabPane tabId="1">
+            <Row>
+              <Col lg={12}>
+                <div
+                  style={{
+                    marginTop: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
                 >
-                  <option value="">Todas</option>
-                  {bodegas.map((bodega) => (
-                    <option key={bodega.id} value={bodega.id}>
-                      {bodega.nombre}
-                    </option>
-                  ))}
-                </Input>
-              <div className="ms-auto mb-2">
-                <Link to="/AgregarRuta" className="btn btn-primary">
-                  <i className="fas fa-plus me-2"></i>Agregar Ruta
-                </Link>
-              </div>
-            </div>
-          </Col>
-        </Row>
-        <Row>
-          <Col lg={12}>
-            <Card>
-              <CardBody>
-                <TablaRutas
-                  rutas={rutas}
-                  destinos={destinos}
-                  bodegas={bodegas}
-                  eliminarRuta={eliminarRuta}
-                  toggleModalEditar={toggleModalEditar}
+                  <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
+                    Buscar:
+                  </Label>
+                  <Input
+                    type="text"
+                    id="busquedaNombre"
+                    value={busquedaNombre}
+                    onChange={handleBusquedaNombreChange}
+                    placeholder="Buscar por nombre de ruta"
+                    style={{ width: "300px" }}
+                  />
+                  <div style={{ marginLeft: "auto" }}>
+                    <Link
+                      to="/AgregarRuta"
+                      className="btn btn-primary custom-button"
+                    >
+                      <i className="fas fa-plus"></i> Agregar Ruta
+                    </Link>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            <br />
+            <Row>
+              <Col lg={12}>
+                <Card>
+                  <CardBody>
+                    <TablaRutas
+                      rutas={rutas}
+                      destinos={destinos}
+                      bodegas={bodegas}
+                      eliminarRuta={eliminarRuta}
+                      toggleModalEditar={toggleModalEditar}
+                    />
+                  </CardBody>
+                </Card>
+              </Col>
+            </Row>
+            <Row>
+              <Col
+                lg={12}
+                style={{
+                  marginTop: "20px",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                <Pagination
+                  activePage={currentPage}
+                  itemsCountPerPage={ITEMS_PER_PAGE}
+                  totalItemsCount={totalItems}
+                  pageRangeDisplayed={5}
+                  onChange={handlePageChange}
+                  itemClass="page-item"
+                  linkClass="page-link"
+                  innerClass="pagination"
                 />
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-        <Row>
-          <Col lg={12} className="d-flex justify-content-center mt-4">
-            <Pagination
-              activePage={currentPage}
-              itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={totalItems}
-              pageRangeDisplayed={5}
-              onChange={handlePageChange}
-              itemClass="page-item"
-              linkClass="page-link"
-            />
-          </Col>
-        </Row>
+              </Col>
+            </Row>
+          </TabPane>
+          <TabPane tabId="2">
+            <RutasRecoleccion />
+          </TabPane>
+          <TabPane tabId="3">
+            <OrdenesRecoleccion />
+          </TabPane>
+        </TabContent>
       </Container>
       <ModalEditarRuta
         modalEditar={modalEditar}

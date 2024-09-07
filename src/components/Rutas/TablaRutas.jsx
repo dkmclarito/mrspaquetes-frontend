@@ -15,11 +15,11 @@ const TablaRutas = ({ rutas, eliminarRuta, toggleModalEditar }) => {
 
   // Formatea la fecha como Día-Mes-Año
   const formatFecha = (fecha) => {
-    if (!fecha) return 'N/A';
+    if (!fecha) return "N/A";
     const date = new Date(fecha);
     const year = date.getFullYear();
-    const month = (`0${date.getMonth() + 1}`).slice(-2);
-    const day = (`0${date.getDate()}`).slice(-2);
+    const month = `0${date.getMonth() + 1}`.slice(-2);
+    const day = `0${date.getDate()}`.slice(-2);
     return `${day}-${month}-${year}`;
   };
 
@@ -39,14 +39,16 @@ const TablaRutas = ({ rutas, eliminarRuta, toggleModalEditar }) => {
         </thead>
         <tbody>
           {rutas.length > 0 ? (
-            rutas.map(ruta => (
+            rutas.map((ruta) => (
               <tr key={ruta.id}>
-                <td className="text-start">{ruta.id || 'N/A'}</td>
-                <td className="text-start">{ruta.nombre || 'N/A'}</td>
-                <td className="text-start">{ruta.destino || 'N/A'}</td>
-                <td className="text-start">{ruta.bodega || 'N/A'}</td>
-                <td className="text-start">{ruta.estado || 'N/A'}</td>
-                <td className="text-start">{formatFecha(ruta.fecha_programada)}</td>
+                <td className="text-start">{ruta.id || "N/A"}</td>
+                <td className="text-start">{ruta.nombre || "N/A"}</td>
+                <td className="text-start">{ruta.destino || "N/A"}</td>
+                <td className="text-start">{ruta.bodega || "N/A"}</td>
+                <td className="text-start">{ruta.estado || "N/A"}</td>
+                <td className="text-start">
+                  {formatFecha(ruta.fecha_programada)}
+                </td>
                 <td className="text-start">
                   <div className="button-container">
                     <Button
@@ -65,7 +67,7 @@ const TablaRutas = ({ rutas, eliminarRuta, toggleModalEditar }) => {
                     </Button>
                     <Button
                       className="btn-icon btn-success"
-                      onClick={() => verDetallesRutas(ruta.id)}                      
+                      onClick={() => verDetallesRutas(ruta.id)}
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </Button>

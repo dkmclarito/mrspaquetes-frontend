@@ -13,6 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const EditarOrden = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [ordenOriginal, setOrdenOriginal] = useState(null);
   const [ordenActualizada, setOrdenActualizada] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +28,7 @@ const EditarOrden = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Datos recibidos de la API:", response.data);
+        setOrdenOriginal(response.data);
         setOrdenActualizada(response.data);
         localStorage.setItem("ordenEnEdicion", JSON.stringify(response.data));
       } catch (error) {
@@ -53,34 +55,12 @@ const EditarOrden = () => {
     });
   };
 
-  const actualizarCliente = (nuevoCliente, nuevaDireccion) => {
-    actualizarOrden({
-      id_cliente: nuevoCliente.id,
-      id_direccion: nuevaDireccion ? nuevaDireccion.id : null,
-      direccion_emisor: nuevaDireccion || null,
-    });
-
-    if (nuevoCliente.id !== ordenActualizada.id_cliente) {
-      setSeccionActual("direccion");
-      toast.info("Por favor, seleccione una nueva dirección para el cliente.");
-    }
-  };
-
-  const actualizarDireccion = (nuevaDireccion) => {
-    actualizarOrden({
-      id_direccion: nuevaDireccion.id,
-      direccion_emisor: nuevaDireccion,
-    });
-  };
-
-  const actualizarDetalles = (nuevosDetalles) => {
-    actualizarOrden({ detalles: nuevosDetalles });
-  };
-
   const guardarCambios = async () => {
     try {
       const token = localStorage.getItem("token");
-      const ordenGuardada = JSON.parse(localStorage.getItem("ordenEnEdicion"));
+      const ordenGuardada = JSON.parse(
+        localStorage.getItem("ordenEnEdicion") || "{}"
+      );
 
       if (!ordenGuardada.id_direccion) {
         toast.error(
@@ -90,12 +70,48 @@ const EditarOrden = () => {
       }
 
       const datosParaEnviar = {
-        ...ordenGuardada,
-        detalles: ordenGuardada.detalles.map((detalle) => ({
-          ...detalle,
-          id_empaque: detalle.id_empaque || detalle.tipo_caja,
-          id_direccion: detalle.id_direccion_entrega || detalle.id_direccion,
-        })),
+        id_cliente: parseInt(ordenGuardada.id_cliente),
+        id_direccion: parseInt(ordenGuardada.id_direccion),
+        id_tipo_pago: parseInt(ordenGuardada.id_tipo_pago),
+        total_pagar: parseFloat(ordenGuardada.total_pagar),
+        id_estado_paquetes: parseInt(ordenGuardada.id_estado_paquetes),
+        costo_adicional: parseFloat(ordenGuardada.costo_adicional) || 0,
+        concepto: ordenGuardada.concepto,
+        tipo_documento: ordenGuardada.tipo_documento,
+        detalles: ordenGuardada.detalles.map((detalle) => {
+          const detalleFormateado = {
+            id_tipo_entrega: parseInt(detalle.id_tipo_entrega),
+            id_estado_paquetes: parseInt(ordenGuardada.id_estado_paquetes),
+            id_direccion_entrega:
+              parseInt(detalle.id_direccion_entrega) ||
+              parseInt(ordenGuardada.id_direccion),
+            validacion_entrega: detalle.validacion_entrega || "",
+            instrucciones_entrega: detalle.instrucciones_entrega || "",
+            descripcion: detalle.descripcion || "",
+            precio: parseFloat(detalle.precio) || 0,
+            fecha_entrega: detalle.fecha_entrega || null,
+            id_tipo_paquete: parseInt(detalle.id_tipo_paquete),
+            id_tamano_paquete: parseInt(detalle.id_tamano_paquete),
+            tipo_caja: parseInt(detalle.tipo_caja),
+            peso: parseFloat(detalle.peso) || 0,
+            fecha_envio: detalle.fecha_envio || null,
+            fecha_entrega_estimada: detalle.fecha_entrega_estimada || null,
+            descripcion_contenido: detalle.descripcion_contenido || "",
+            id_estado_paquete:
+              parseInt(detalle.id_estado_paquete) ||
+              parseInt(ordenGuardada.id_estado_paquetes),
+          };
+
+          // Si el detalle ya existe, incluir su ID
+          if (detalle.id) {
+            detalleFormateado.id = parseInt(detalle.id);
+          }
+          if (detalle.id_paquete) {
+            detalleFormateado.id_paquete = parseInt(detalle.id_paquete);
+          }
+
+          return detalleFormateado;
+        }),
       };
 
       console.log("Datos a enviar al servidor:", datosParaEnviar);
@@ -141,14 +157,14 @@ const EditarOrden = () => {
         return (
           <EditarCliente
             orden={ordenActualizada}
-            actualizarCliente={actualizarCliente}
+            actualizarOrden={actualizarOrden}
           />
         );
       case "direccion":
         return (
           <EditarDireccion
             orden={ordenActualizada}
-            actualizarDireccion={actualizarDireccion}
+            actualizarOrden={actualizarOrden}
           />
         );
       case "detalles":
