@@ -64,6 +64,7 @@ import OrdenesDireccionesExpress from "./pages/OrdenesDireccionesExpress";
 import DatosPaqueteExpress from "./pages/DatosPaqueteExpress";
 import GenerarOrdenExpress from "./pages/GenerarOrdenExpress";
 import ProcesarPagoExpress from "./pages/ProcesarPagoExpress";
+import GestionAsignarRutas from "./pages/GestionAsignarRutas";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -106,6 +107,10 @@ const App = () => {
                 <Route
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
+                />
+                <Route
+                  path="/GestionAsignarRutas"
+                  element={<GestionAsignarRutas />}
                 />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route
