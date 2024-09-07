@@ -151,21 +151,29 @@ const GestionRutas = () => {
       <Container fluid>
         <Breadcrumbs title="Gestión de Rutas" breadcrumbItem="Listado de Rutas" />
         <Row>
-          <Col lg={12}>
-            <div className="mb-4 d-flex flex-wrap align-items-center">
-              <div className="me-3 mb-2">
-                <Label for="busquedaNombre" className="me-2">Nombre:</Label>
+        <Col lg={12}>
+          <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+                <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
+                  Buscar:
+                </Label>
                 <Input
                   type="text"
-                  id="busquedaNombre"
+                  id="busqueda"
                   value={busquedaNombre}
                   onChange={handleBusquedaNombreChange}
                   placeholder="Buscar por nombre"
-                  style={{ width: "200px" }}
+                  style={{ width: "300px" }}
                 />
-              </div>
-              <div className="me-3 mb-2">
-                <Label for="busquedaBodega" className="me-2">Bodega:</Label>
+      
+                <Label for="busquedaBodega" style={{ marginLeft: "10px", marginRight: "10px" }}>
+                  Bodega:
+                </Label>
                 <Input
                   type="select"
                   id="busquedaBodega"
@@ -173,14 +181,13 @@ const GestionRutas = () => {
                   onChange={handleBusquedaBodegaChange}
                   style={{ width: "200px" }}
                 >
-                  <option value="">Todas las bodegas</option>
+                  <option value="">Todas</option>
                   {bodegas.map((bodega) => (
                     <option key={bodega.id} value={bodega.id}>
                       {bodega.nombre}
                     </option>
                   ))}
                 </Input>
-              </div>
               <div className="ms-auto mb-2">
                 <Link to="/AgregarRuta" className="btn btn-primary">
                   <i className="fas fa-plus me-2"></i>Agregar Ruta
