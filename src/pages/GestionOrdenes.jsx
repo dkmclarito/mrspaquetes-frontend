@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaOrdenes from "../components/Ordenes/TablaOrdenes";
-import Pagination from 'react-js-pagination';
+import Pagination from "react-js-pagination";
 import { toast } from "react-toastify";
 import ModalConfirmarEliminar from "../components/Ordenes/ModalConfirmarEliminar";
 
@@ -30,7 +30,7 @@ export default function GestionOrdenes() {
 
       if (userId && token) {
         const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         // Verifica si el token es inválido
@@ -56,7 +56,15 @@ export default function GestionOrdenes() {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log("Ordenes recibidas desde API:", response.data);
-      setOrdenes(response.data.data || []);
+
+      // Filtrar las órdenes para mostrar solo las de tipo entrega normal
+      const ordenesNormales = response.data.data.filter((orden) =>
+        orden.detalles.every(
+          (detalle) => detalle.tipo_entrega === "Entrega Normal"
+        )
+      );
+
+      setOrdenes(ordenesNormales);
     } catch (error) {
       console.error("Error al obtener órdenes:", error);
       toast.error("Error al cargar las órdenes");

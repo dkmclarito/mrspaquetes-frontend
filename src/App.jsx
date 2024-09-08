@@ -69,8 +69,16 @@ import RutasRecoleccion from "./pages/RutasRecoleccion";
 import OrdenesRecoleccion from "./pages/OrdenesRecoleccion";
 import AgregarAsignacionRuta from "./pages/AgregarAsignacionRuta";
 import DetallesAsignacionRutas from "./pages/DetallesAsignacionRutas";
-import AgregarUbicacion from "./pages/AgregarUbicacion";
-import GestionUbicacion from "./pages/GestionUbicacion";
+import GestionPreOrdenes from "./pages/GestionPreOrdenes";
+import GestionPreOrdenesExpress from "./pages/GestionPreOrdenesExpress";
+import GenerarPreOrden from "./pages/GenerarPreOrden";
+import GenerarPreOrdenExpress from "./pages/GenerarPreOrdenExpress";
+import PreOrdenesSeleccionarCliente from "./pages/PreOrdenesSeleccionarCliente";
+import PreOrdenesSeleccionarClienteExpress from "./pages/PreOrdenesSeleccionarClienteExpress";
+import PreOrdenesDirecciones from "./pages/PreOrdenesDirecciones";
+import PreOrdenesDireccionesExpress from "./pages/PreOrdenesDireccionesExpress";
+import DatosPreOrden from "./pages/DatosPreOrden";
+import DatosPreOrdenExpress from "./pages/DatosPreOrdenExpress";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -122,7 +130,7 @@ const App = () => {
                   path="/AgregarAsignacionRuta"
                   element={<AgregarAsignacionRuta />}
                 />
-                  <Route
+                <Route
                   path="/DetallesAsignacionRutas/:id"
                   element={<DetallesAsignacionRutas />}
                 />
@@ -154,8 +162,6 @@ const App = () => {
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
                 <Route path="/TrackingPage" element={<TrackingPage />} />
-                <Route path="/GestionUbicacion" element={<GestionUbicacion />} />
-                <Route path="/AgregarUbicacion" element={<AgregarUbicacion />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
                 <Route
@@ -177,39 +183,27 @@ const App = () => {
                   element={<GestionOrdenesExpress />}
                 />
                 <Route
-                  path="/OrdenesDirecciones/:idCliente"
+                  path="/OrdenesDirecciones"
                   element={<OrdenesDirecciones />}
                 />
                 <Route
-                  path="/OrdenesDireccionesExpress/:idCliente"
+                  path="/OrdenesDireccionesExpress"
                   element={<OrdenesDireccionesExpress />}
                 />
+                <Route path="/DatosPaquete" element={<DatosPaquete />} />
                 <Route
-                  path="/DatosPaquete/:idCliente"
-                  element={<DatosPaquete />}
-                />
-                <Route
-                  path="/DatosPaqueteExpress/:idCliente"
+                  path="/DatosPaqueteExpress"
                   element={<DatosPaqueteExpress />}
                 />
+                <Route path="/GenerarOrden" element={<GenerarOrden />} />
                 <Route
-                  path="/GenerarOrden/:idCliente"
-                  element={<GenerarOrden />}
-                />
-                <Route
-                  path="/GenerarOrdenExpress/:idCliente"
+                  path="/GenerarOrdenExpress"
                   element={<GenerarOrdenExpress />}
                 />
+                <Route path="/DetallesOrden" element={<DetallesOrden />} />
+                <Route path="/ProcesarPago" element={<ProcesarPago />} />
                 <Route
-                  path="/DetallesOrden/:idCliente"
-                  element={<DetallesOrden />}
-                />
-                <Route
-                  path="/ProcesarPago/:idCliente"
-                  element={<ProcesarPago />}
-                />
-                <Route
-                  path="/ProcesarPagoExpress/:idCliente"
+                  path="/ProcesarPagoExpress"
                   element={<ProcesarPagoExpress />}
                 />
                 <Route
@@ -218,21 +212,12 @@ const App = () => {
                 />
                 <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
                 <Route
-                  path="/OrdenesDirecciones/:idCliente"
+                  path="/OrdenesDirecciones"
                   element={<OrdenesDirecciones />}
                 />
-                <Route
-                  path="/DatosPaquete/:idCliente"
-                  element={<DatosPaquete />}
-                />
-                <Route
-                  path="/GenerarOrden/:idCliente"
-                  element={<GenerarOrden />}
-                />
-                <Route
-                  path="/DetallesOrden/:idCliente"
-                  element={<DetallesOrden />}
-                />
+                <Route path="/DatosPaquete" element={<DatosPaquete />} />
+                <Route path="/GenerarOrden" element={<GenerarOrden />} />
+                <Route path="/DetallesOrden" element={<DetallesOrden />} />
                 <Route
                   path="/VerDetallesOrden/:id"
                   element={<VerDetallesOrden />}
@@ -249,6 +234,43 @@ const App = () => {
                   element={<OrdenesRecoleccion />}
                 />
               </Route>
+
+              <Route
+                path="/GestionPreOrdenes"
+                element={<GestionPreOrdenes />}
+              />
+              <Route
+                path="/GestionPreOrdenesExpress"
+                element={<GestionPreOrdenesExpress />}
+              />
+              <Route path="/GenerarPreOrden" element={<GenerarPreOrden />} />
+              <Route
+                path="/GenerarPreOrdenExpress"
+                element={<GenerarPreOrdenExpress />}
+              />
+
+              <Route
+                path="/PreOrdenesSeleccionarCliente"
+                element={<PreOrdenesSeleccionarCliente />}
+              />
+              <Route
+                path="/PreOrdenesDirecciones"
+                element={<PreOrdenesDirecciones />}
+              />
+              <Route path="/DatosPreOrden" element={<DatosPreOrden />} />
+
+              <Route
+                path="/PreOrdenesSeleccionarClienteExpress"
+                element={<PreOrdenesSeleccionarClienteExpress />}
+              />
+              <Route
+                path="/PreOrdenesDireccionesExpress"
+                element={<PreOrdenesDireccionesExpress />}
+              />
+              <Route
+                path="/DatosPreOrdenExpress"
+                element={<DatosPreOrdenExpress />}
+              />
 
               {/* Rutas para 'conductor' */}
               <Route
