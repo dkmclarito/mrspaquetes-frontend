@@ -9,6 +9,7 @@ import ModalConfirmarEliminar from "../components/Clientes/ModalConfirmarElimina
 import ModalDirecciones from "../components/Clientes/ModalDirecciones";
 import AuthService from "../services/authService";
 import "../styles/Clientes.css";
+import { toast } from 'react-toastify';
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -30,6 +31,7 @@ const GestionClientes = () => {
   const [clienteAEliminar, setClienteAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalClientes, setTotalClientes] = useState(0);
   const [modalDirecciones, setModalDirecciones] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
@@ -46,58 +48,49 @@ const GestionClientes = () => {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Verifica si el token es inválido
         if (response.data.status === "Token is Invalid") {
           console.error("Token is invalid. Logging out...");
           AuthService.logout();
-          window.location.href = "/login"; // Redirige a login si el token es inválido
+          window.location.href = "/login";
           return;
         }
-
-        // Si el token es válido y el usuario está activo, no se hace nada
       }
     } catch (error) {
       console.error("Error 500 DKM:", error);
-      //AuthService.logout();
-      //window.location.href = "/login";
     }
   }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        const response = await axios.get(`${API_URL}/clientes`, {
-          params: {
-            page: 1,
-            per_page: 1000,
-          },
-          ...config,
-        });
-
-        if (response.data && Array.isArray(response.data)) {
-          setClientes(response.data);
-        } else if (response.data && Array.isArray(response.data.data)) {
-          setClientes(response.data.data);
-        } else {
-          console.error("Respuesta no válida para clientes:", response.data);
+  const fetchData = async (pageNumber = 1) => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/clientes?page=${pageNumber}&limit=${ITEMS_PER_PAGE}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      } catch (error) {
-        console.error("Error al obtener datos:", error);
-      }
-    };
+      });
 
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
-    fetchData();
-  }, [verificarEstadoUsuarioLogueado]);
+      if (response.data && response.data.data) {
+        setClientes(response.data.data);
+        setTotalClientes(response.data.total);
+      } else {
+        console.error("Respuesta no válida para clientes:", response.data);
+      }
+    } catch (error) {
+      console.error("Error al obtener datos:", error);
+    }
+  };
+
+  useEffect(() => {
+    verificarEstadoUsuarioLogueado();
+    fetchData(currentPage);
+  }, [verificarEstadoUsuarioLogueado, currentPage]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   const eliminarCliente = (idCliente) => {
@@ -114,10 +107,11 @@ const GestionClientes = () => {
         }
       });
 
-      const nuevosClientes = clientes.filter(cliente => cliente.id !== clienteAEliminar);
-      setClientes(nuevosClientes);
+      fetchData(currentPage);
+      toast.success("Cliente eliminado correctamente.");
     } catch (error) {
       console.error("Error al eliminar cliente:", error);
+      toast.error("Error al eliminar el cliente.");
     } finally {
       setConfirmarEliminar(false);
       setClienteAEliminar(null);
@@ -139,14 +133,13 @@ const GestionClientes = () => {
         }
       });
 
-      const nuevosClientes = clientes.map(cliente =>
-        cliente.id === clienteEditado.id ? clienteEditado : cliente
-      );
-      setClientes(nuevosClientes);
+      fetchData(currentPage);
       setModalEditar(false);
       setClienteEditado(null);
+      toast.success("Cliente actualizado correctamente.");
     } catch (error) {
       console.error("Error al actualizar cliente:", error);
+      toast.error("Error al actualizar el cliente.");
     }
   };
 
@@ -165,7 +158,7 @@ const GestionClientes = () => {
 
   const handleSearchChange = (e) => {
     setBusqueda(e.target.value);
-    setCurrentPage(1); // Resetear la página actual a 1 al cambiar la búsqueda
+    setCurrentPage(1);
   };
 
   const verDirecciones = (idCliente) => {
@@ -178,10 +171,6 @@ const GestionClientes = () => {
   };
 
   const clientesFiltrados = filtrarClientes(clientes);
-  const paginatedClientes = clientesFiltrados.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="page-content">
@@ -213,7 +202,7 @@ const GestionClientes = () => {
             <Card>
               <CardBody>
                 <TablaClientes
-                  clientes={paginatedClientes}
+                  clientes={clientesFiltrados}
                   eliminarCliente={eliminarCliente}
                   toggleModalEditar={toggleModalEditar}
                   verDetallesCliente={verDetallesCliente}
@@ -229,7 +218,7 @@ const GestionClientes = () => {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={clientesFiltrados.length}
+              totalItemsCount={totalClientes}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"

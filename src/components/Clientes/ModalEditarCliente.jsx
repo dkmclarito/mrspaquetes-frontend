@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, FormFeedback, Row, Col } from "reactstrap";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import AuthService from "../../services/authService";  // Servicio de autenticación para obtener el token
 import "/src/styles/Clientes.css";
+
+const API_URL = import.meta.env.VITE_API_URL;  // Definir la URL de la API
 
 const formatDate = (date) => {
   if (!date) return "";
@@ -42,6 +46,7 @@ const generateErrorMessage = (errorData) => {
 
   return errorMessage;
 };
+
 const ModalEditarCliente = ({
   modalEditar,
   clienteEditado,
@@ -55,6 +60,12 @@ const ModalEditarCliente = ({
   const [isTelefonoValid, setIsTelefonoValid] = useState(true);
   const [isNitValid, setIsNitValid] = useState(true);
 
+  // Estados relacionados con el giro
+  const [giros, setGiros] = useState([]);
+  const [filteredGiros, setFilteredGiros] = useState([]);
+  const [searchGiro, setSearchGiro] = useState(clienteEditado?.giro || ""); // Mostrar el giro seleccionado inicialmente
+  const [selectedGiro, setSelectedGiro] = useState(clienteEditado?.giro || "");
+
   useEffect(() => {
     if (clienteEditado) {
       const esPersonaJuridica = clienteEditado.id_tipo_persona === 2;
@@ -65,6 +76,62 @@ const ModalEditarCliente = ({
     }
   }, [clienteEditado]);
 
+  // Cargar giros desde la API usando el token de autenticación
+  useEffect(() => {
+    const cargarGiros = async () => {
+      try {
+        const token = AuthService.getCurrentUser();  // Obtener el token desde el servicio de autenticación
+        const response = await axios.get(`${API_URL}/dropdown/giros`, {
+          headers: {
+            Authorization: `Bearer ${token}`,  // Añadir el token en los headers
+          },
+        });
+
+        console.log("Datos recibidos de giros:", response.data);
+
+        if (Array.isArray(response.data.actividadEconomica)) {
+          setGiros(response.data.actividadEconomica);
+        } else {
+          console.error("Formato inesperado de la respuesta de giros:", response.data);
+          setGiros([]);  // En caso de error, asignar un array vacío
+        }
+      } catch (error) {
+        console.error("Error al cargar los giros", error);
+        setGiros([]);  // Asignar un array vacío en caso de error
+      }
+    };
+
+    cargarGiros();
+  }, []);
+
+  const handleGiroSelect = (giro) => {
+    setSelectedGiro(`${giro.st_codigo} - ${giro.st_descripcion}`);
+    setSearchGiro(giro.st_descripcion);
+    setClienteEditado((prev) => ({ ...prev, giro: giro.st_descripcion }));
+    setFilteredGiros([]);  // Limpiar los giros después de la selección
+  };
+
+  const handleSearchGiro = (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    setSearchGiro(searchTerm);
+
+    if (Array.isArray(giros) && searchTerm.length > 0) {
+      const filtered = giros.filter((giro) =>
+        giro.st_codigo.toString().toLowerCase().includes(searchTerm) ||  // Convertir st_codigo a string antes de usar toLowerCase
+        giro.st_descripcion.toLowerCase().includes(searchTerm)
+      );
+      setFilteredGiros(filtered);
+    } else {
+      setFilteredGiros([]);
+    }
+  };
+
+  const clearGiroSelection = () => {
+    setSearchGiro("");
+    setSelectedGiro("");
+    setClienteEditado((prev) => ({ ...prev, giro: "" }));
+  };
+
   const handleDuiChange = (e) => {
     if (clienteEditado?.id_tipo_persona === 2) return; // No permitir cambios en el DUI si es persona jurídica
 
@@ -73,7 +140,7 @@ const ModalEditarCliente = ({
       duiValue = duiValue.slice(0, 8) + "-" + duiValue.slice(8, 9);
     }
     duiValue = duiValue.startsWith('0') ? duiValue : '0' + duiValue;
-    setClienteEditado(prev => ({ ...prev, dui: duiValue }));
+    setClienteEditado((prev) => ({ ...prev, dui: duiValue }));
 
     const isValid = isValidDUI(duiValue);
     setIsDuiValid(isValid);
@@ -99,7 +166,7 @@ const ModalEditarCliente = ({
       nitValue = `${nitValue.slice(0, 4)}-${nitValue.slice(4, 10)}-${nitValue.slice(10, 13)}-${nitValue.slice(13, 14)}`;
     }
 
-    setClienteEditado(prev => ({ ...prev, nit: nitValue }));
+    setClienteEditado((prev) => ({ ...prev, nit: nitValue }));
 
     const isValid = isValidNIT(nitValue);
     setIsNitValid(isValid);
@@ -124,7 +191,7 @@ const ModalEditarCliente = ({
         telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
       }
 
-      setClienteEditado(prev => ({ ...prev, telefono: telefonoValue }));
+      setClienteEditado((prev) => ({ ...prev, telefono: telefonoValue }));
     }
   };
 
@@ -137,28 +204,24 @@ const ModalEditarCliente = ({
       nrcValue = nrcValue.slice(0, 6) + "-" + nrcValue.slice(6);
     }
 
-    setClienteEditado(prev => ({ ...prev, nrc: nrcValue }));
+    setClienteEditado((prev) => ({ ...prev, nrc: nrcValue }));
   };
 
   const handleNombreEmpresaChange = (e) => {
-    setClienteEditado(prev => ({ ...prev, nombre_empresa: e.target.value }));
+    setClienteEditado((prev) => ({ ...prev, nombre_empresa: e.target.value }));
   };
 
   const handleNombreComercialChange = (e) => {
-    setClienteEditado(prev => ({ ...prev, nombre_comercial: e.target.value }));
-  };
-
-  const handleGiroChange = (e) => {
-    setClienteEditado(prev => ({ ...prev, giro: e.target.value }));
+    setClienteEditado((prev) => ({ ...prev, nombre_comercial: e.target.value }));
   };
 
   const handleDireccionChange = (e) => {
-    setClienteEditado(prev => ({ ...prev, direccion: e.target.value }));
+    setClienteEditado((prev) => ({ ...prev, direccion: e.target.value }));
   };
 
   const handleFechaRegistroChange = (e) => {
     const fechaRegistro = e.target.value;
-    setClienteEditado(prev => ({ ...prev, fecha_registro: fechaRegistro }));
+    setClienteEditado((prev) => ({ ...prev, fecha_registro: fechaRegistro }));
   };
 
   const handleSubmit = async (e) => {
@@ -184,7 +247,7 @@ const ModalEditarCliente = ({
     setError("");
     try {
       await guardarCambiosCliente();
-      toast.success("Cliente actualizado exitosamente.");
+      //toast.success("Cliente actualizado exitosamente.");
       setModalEditar(false);
     } catch (err) {
       const errorMessage = generateErrorMessage(err.response?.data || {});
@@ -198,6 +261,7 @@ const ModalEditarCliente = ({
   const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Months are 0-based
   const minDate = `${currentYear}-${currentMonth}-01`;
   const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
+
   return (
     <Modal
       isOpen={modalEditar}
@@ -314,27 +378,52 @@ const ModalEditarCliente = ({
                 <Col md={6}>
                   <FormGroup>
                     <Label for="giro">Giro</Label>
-                    <Input
-                      type="text"
-                      id="giro"
-                      value={clienteEditado ? clienteEditado.giro : ""}
-                      onChange={handleGiroChange}
-                    />
+                    <div className="position-relative">
+                      <Input
+                        type="text"
+                        id="searchGiro"
+                        value={searchGiro}
+                        onChange={handleSearchGiro}
+                        placeholder="Buscar giro por código o descripción"
+                      />
+                      {searchGiro && (
+                        <Button
+                          className="position-absolute top-0 end-0 btn-sm"
+                          style={{ marginTop: '5px' }}
+                          onClick={clearGiroSelection}
+                        >
+                          X
+                        </Button>
+                      )}
+                      {filteredGiros.length > 0 && (
+                        <div className="dropdown-menu show" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                          {filteredGiros.map((giro) => (
+                            <Button
+                              key={giro.sk_actividadeco}
+                              className="dropdown-item"
+                              onClick={() => handleGiroSelect(giro)}
+                            >
+                              {giro.st_codigo} - {giro.st_descripcion}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </FormGroup>
                 </Col>
               </>
             )}
             <Col md={6}>
-                  <FormGroup>
-                    <Label for="direccion">Dirección</Label>
-                    <Input
-                      type="text"
-                      id="direccion"
-                      value={clienteEditado ? clienteEditado.direccion : ""}
-                      onChange={handleDireccionChange}
-                    />
-                  </FormGroup>
-                </Col>
+              <FormGroup>
+                <Label for="direccion">Dirección</Label>
+                <Input
+                  type="text"
+                  id="direccion"
+                  value={clienteEditado ? clienteEditado.direccion : ""}
+                  onChange={handleDireccionChange}
+                />
+              </FormGroup>
+            </Col>
             <Col md={6}>
               <FormGroup>
                 <Label for="fecha_registro">Fecha de Registro</Label>

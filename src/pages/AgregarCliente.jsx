@@ -39,7 +39,10 @@ const AgregarCliente = () => {
     const [nombreComercial, setNombreComercial] = useState("");
     const [nit, setNit] = useState("");
     const [nrc, setNrc] = useState("");
-    const [giro, setGiro] = useState("");
+    const [giro, setGiro] = useState(""); // Guardar la descripción seleccionada
+    const [giros, setGiros] = useState([]); // Lista de giros desde la API
+    const [filteredGiros, setFilteredGiros] = useState([]); // Lista filtrada
+    const [searchGiro, setSearchGiro] = useState(""); // Término de búsqueda para giro
     const [nombreEmpresa, setNombreEmpresa] = useState("");
     const [alertaExito, setAlertaExito] = useState(false);
     const [alertaError, setAlertaError] = useState(false);
@@ -68,8 +71,6 @@ const AgregarCliente = () => {
             }
         } catch (error) {
             console.error("Error al verificar el estado del usuario:", error);
-           // AuthService.logout();
-           // window.location.href = "/login";
         }
     }, []);
 
@@ -150,6 +151,48 @@ const AgregarCliente = () => {
         fetchMunicipios();
     }, [departamento, token]);
 
+    useEffect(() => {
+        const fetchGiros = async () => {
+            try {
+                const response = await axios.get(`${API_URL}/dropdown/giros`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                
+                if (response.data.actividadEconomica) {
+                    setGiros(response.data.actividadEconomica); // Guardamos los giros correctamente
+                    setFilteredGiros([]); // Iniciamos con la lista vacía
+                } else {
+                    console.error("Error en la respuesta de giros", response.data);
+                }
+            } catch (error) {
+                console.error("Error al obtener los giros:", error);
+            }
+        };
+        fetchGiros();
+    }, [token]);
+
+    const handleSearchGiro = (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        setSearchGiro(searchTerm);
+
+        if (searchTerm.length > 0) {
+            const filtered = giros.filter((g) => {
+                const codigo = g.st_codigo ? String(g.st_codigo) : "";
+                const descripcion = g.st_descripcion ? g.st_descripcion.toLowerCase() : "";
+                return codigo.includes(searchTerm) || descripcion.includes(searchTerm);
+            });
+            setFilteredGiros(filtered);
+        } else {
+            setFilteredGiros([]);
+        }
+    };
+
+    const handleGiroSelect = (giro) => {
+        setGiro(giro.st_descripcion); // Guardamos la descripción del giro seleccionada
+        setSearchGiro(giro.st_descripcion); // Mostrar la descripción en el campo de búsqueda
+        setFilteredGiros([]); // Limpiar la lista después de la selección
+    };
+
     const handleEmailChange = (e) => {
         const email = e.target.value;
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -221,32 +264,6 @@ const AgregarCliente = () => {
         setIsTelefonoValid(isValid);
     };
 
-    const generateErrorMessage = (errorData) => {
-        let errorMessage = "Error al agregar el cliente.";
-
-        if (errorData.errors) {
-            const errorKeys = Object.keys(errorData.errors);
-
-            if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
-                errorMessage = "El DUI y el teléfono ya están registrados.";
-            } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
-                errorMessage = "El NIT y el teléfono ya están registrados.";
-            } else if (errorKeys.includes("dui") && errorKeys.includes("email")) {
-                errorMessage = "El DUI y el correo electrónico ya están registrados.";
-            } else if (errorKeys.includes("dui")) {
-                errorMessage = "El DUI ya está registrado.";
-            } else if (errorKeys.includes("nit")) {
-                errorMessage = "El NIT ya está registrado.";
-            } else if (errorKeys.includes("telefono")) {
-                errorMessage = "El teléfono ya está registrado.";
-            } else {
-                errorMessage = errorData.message || "Error al agregar el cliente.";
-            }
-        }
-
-        return errorMessage;
-    };
-
     const handleNitChange = (event) => {
         const value = event.target.value || "";
 
@@ -259,19 +276,6 @@ const AgregarCliente = () => {
         let errorMessage = "";
         if (nitSanitized.length !== 14 && nitSanitized.length > 0) {
             errorMessage = "El NIT debe tener 14 dígitos.";
-        } else {
-            const primerosDosDigitos = parseInt(nitSanitized.substring(0, 2), 10);
-            const segundosDosDigitos = parseInt(nitSanitized.substring(2, 4), 10);
-            const dia = parseInt(nitSanitized.substring(4, 6), 10);
-            const mes = parseInt(nitSanitized.substring(6, 8), 10);
-
-            if (primerosDosDigitos < 1 || primerosDosDigitos > 14) {
-                errorMessage = "Los primeros dos dígitos deben estar entre 01 y 14.";
-            } else if (segundosDosDigitos < 1 || segundosDosDigitos > 35) {
-                errorMessage = "Los segundos dos dígitos deben estar entre 01 y 35.";
-            } else if (dia < 1 || dia > 31 || mes < 1 || mes > 12) {
-                errorMessage = "La fecha en el NIT no es válida.";
-            }
         }
 
         let nitFormatted = nitSanitized;
@@ -309,13 +313,16 @@ const AgregarCliente = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!isDuiValid || !isTelefonoValid || !isEmailValid || !isPasswordValid || tipoPersona === "") {
             setAlertaError(true);
             setErrorMensaje("Por favor, revisa los campos requeridos.");
             return;
         }
-
+    
+        // Asegurarse de que el giro sea un string y su descripción
+        const giroValue = tipoPersona === "2" ? giro : null;
+    
         const clienteData = {
             nombre: nombres,
             apellido: apellidos,
@@ -332,13 +339,13 @@ const AgregarCliente = () => {
             nombre_empresa: tipoPersona === "1" ? null : nombreEmpresa,
             nit: tipoPersona === "1" ? null : nit,
             nrc: tipoPersona === "1" ? null : nrc,
-            giro: tipoPersona === "1" ? null : giro,
+            giro: giroValue, // Usamos la descripción del giro como valor
             fecha_registro: fechaRegistro.replace(/-/g, "/"),
             id_estado: 1
         };
-
+    
         console.log("Datos a enviar:", clienteData);
-
+    
         try {
             const response = await axios.post(`${API_URL}/admin-registrar-cliente`, clienteData, {
                 headers: {
@@ -346,7 +353,7 @@ const AgregarCliente = () => {
                     Authorization: `Bearer ${token}`,
                 }
             });
-
+    
             console.log("Cliente registrado:", response.data);
             setAlertaExito(true);
             setTimeout(() => navigate('/GestionClientes'), 2000);
@@ -555,9 +562,6 @@ const AgregarCliente = () => {
                                                     </Input>
                                                 </FormGroup>
                                             </Col>
-                                        </Row>
-
-                                        <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="dui">DUI</Label>
@@ -578,6 +582,9 @@ const AgregarCliente = () => {
                                                     )}
                                                 </FormGroup>
                                             </Col>
+                                        </Row>
+
+                                        <Row form>
                                             <Col md={6}>
                                                 <FormGroup className="form-group-custom">
                                                     <Label for="telefono">Teléfono</Label>
@@ -593,24 +600,6 @@ const AgregarCliente = () => {
                                                     {telefonoError && (
                                                         <FormFeedback className="text-danger">{telefonoError}</FormFeedback>
                                                     )}
-                                                </FormGroup>
-                                            </Col>
-                                        </Row>
-
-                                        <Row form>
-                                            <Col md={6}>
-                                                <FormGroup className="form-group-custom">
-                                                    <Label for="fechaRegistro">Fecha de Registro</Label>
-                                                    <Input
-                                                        type="date"
-                                                        id="fechaRegistro"
-                                                        value={fechaRegistro}
-                                                        onChange={(e) => setFechaRegistro(e.target.value)}
-                                                        required
-                                                        min={minDate}
-                                                        max={maxDate}
-                                                        className="dark-mode-input-date"
-                                                    />
                                                 </FormGroup>
                                             </Col>
                                             <Col md={6}>
@@ -736,10 +725,24 @@ const AgregarCliente = () => {
                                                             <Label htmlFor="giro">Giro</Label>
                                                             <Input
                                                                 type="text"
-                                                                id="giro"
-                                                                value={giro}
-                                                                onChange={(e) => setGiro(e.target.value)}
+                                                                id="searchGiro"
+                                                                value={searchGiro}
+                                                                onChange={handleSearchGiro}
+                                                                placeholder="Buscar giro por código o descripción"
                                                             />
+                                                            {filteredGiros.length > 0 && (
+                                                                <div className="dropdown-menu show">
+                                                                    {filteredGiros.map((g) => (
+                                                                        <Button
+                                                                            key={g.sk_actividadeco}
+                                                                            className="dropdown-item"
+                                                                            onClick={() => handleGiroSelect(g)}
+                                                                        >
+                                                                            {g.st_codigo} - {g.st_descripcion}
+                                                                        </Button>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </FormGroup>
                                                     </Col>
                                                 </Row>
