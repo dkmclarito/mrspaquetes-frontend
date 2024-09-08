@@ -25,7 +25,7 @@ const ModalEditarAsignacionRuta = ({ isOpen, toggle, asignacion, guardarCambios 
     if (asignacion) {
       setFormData({
         ...asignacion,
-        fecha: asignacion.fecha.split('T')[0] // Formatear la fecha
+        fecha: asignacion.fecha ? asignacion.fecha.split('T')[0] : ""
       });
     }
   }, [asignacion]);
@@ -34,24 +34,30 @@ const ModalEditarAsignacionRuta = ({ isOpen, toggle, asignacion, guardarCambios 
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const [rutasRes, vehiculosRes, paquetesRes, estadosRes] = await Promise.all([
-          axios.get(`${API_URL}/rutas`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/paquetes`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/estados`, { headers: { Authorization: `Bearer ${token}` } })
+        const [rutasRes, vehiculosRes, estadosRes] = await Promise.all([
+          axios.get(`${API_URL}/dropdown/get_rutas`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/dropdown/get_estado_rutas`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         setRutas(rutasRes.data.rutas || []);
         setVehiculos(vehiculosRes.data.vehiculos || []);
-        setPaquetes(paquetesRes.data.paquetes || []);
-        setEstados(estadosRes.data.estados || []);
+        setEstados(estadosRes.data.estado_rutas || []);
+
+        // Fetch packages only if we have an asignacion_ruta id
+        if (asignacion && asignacion.id) {
+          const paquetesRes = await axios.get(`${API_URL}/dropdown/get_paquetes_sin_asignar?id_asignacion_ruta=${asignacion.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setPaquetes(paquetesRes.data.paquetes || []);
+        }
       } catch (error) {
         console.error("Error al obtener datos:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [asignacion]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -163,7 +169,7 @@ const ModalEditarAsignacionRuta = ({ isOpen, toggle, asignacion, guardarCambios 
                   <option value="">Seleccione un paquete</option>
                   {paquetes.map((paquete) => (
                     <option key={paquete.id} value={paquete.id}>
-                      {paquete.codigo_unico}
+                      {paquete.asignacion}
                     </option>
                   ))}
                 </Form.Control>
@@ -198,21 +204,22 @@ const ModalEditarAsignacionRuta = ({ isOpen, toggle, asignacion, guardarCambios 
                   value={formData.id_estado}
                   onChange={handleInputChange}
                 >
+                  <option value="">Seleccione un estado</option>
                   {estados.map((estado) => (
                     <option key={estado.id} value={estado.id}>
-                      {estado.nombre}
+                      {estado.estado}
                     </option>
                   ))}
                 </Form.Control>
               </Form.Group>
             </Col>
           </Row>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={toggle}>Cancelar</Button>
+            <Button variant="primary" type="submit">Guardar Cambios</Button>
+          </Modal.Footer>
         </Form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={toggle}>Cancelar</Button>
-        <Button variant="primary" onClick={handleSubmit}>Guardar Cambios</Button>
-      </Modal.Footer>
     </Modal>
   );
 };

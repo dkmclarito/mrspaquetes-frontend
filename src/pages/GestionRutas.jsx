@@ -10,11 +10,6 @@ import {
   Input,
   Label,
   Button,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
-  TabPane,
 } from "reactstrap";
 import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Rutas/Common/Breadcrumbs";
@@ -25,8 +20,6 @@ import TablaRutas from "../components/Rutas/TablaRutas";
 import ModalEditarRuta from "../components/Rutas/ModalEditarRuta";
 import ModalConfirmarEliminarRuta from "../components/Rutas/ModalConfirmarEliminarRuta";
 import { toast } from "react-toastify";
-import RutasRecoleccion from "../components/Rutas/RutasRecoleccion";
-import OrdenesRecoleccion from "../components/Rutas/OrdenesRecoleccion";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
@@ -43,18 +36,9 @@ const GestionRutas = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [destinos, setDestinos] = useState([]);
   const [bodegas, setBodegas] = useState([]);
-  const [activeTab, setActiveTab] = useState("1");
   const [error, setError] = useState(null);
 
   const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const tab = params.get("tab");
-    if (tab) {
-      setActiveTab(tab);
-    }
-  }, [location]);
 
   const fetchData = useCallback(
     async (page = currentPage) => {
@@ -109,13 +93,9 @@ const GestionRutas = () => {
 
       toast.success("Ruta eliminada con éxito");
 
-      // Verificar si la página actual queda vacía
       if (rutas.length === 1 && currentPage > 1) {
-        // Si es la última ruta de la página y no es la primera página,
-        // cargar la página anterior
         await fetchData(currentPage - 1);
       } else {
-        // Si no, simplemente recargar la página actual
         await fetchData(currentPage);
       }
 
@@ -169,9 +149,6 @@ const GestionRutas = () => {
       }
     } catch (error) {
       console.error("Error al actualizar ruta:", error);
-      if (error.response && error.response.data && error.response.data.errors) {
-        console.error("Errores de validación:", error.response.data.errors);
-      }
       toast.error("Error al guardar los cambios. Por favor, intente de nuevo.");
     }
   };
@@ -190,14 +167,6 @@ const GestionRutas = () => {
     fetchData(pageNumber);
   };
 
-  const toggle = (tab) => {
-    if (activeTab !== tab) {
-      setActiveTab(tab);
-      // Actualizar la URL sin recargar la página
-      window.history.pushState({}, "", `/GestionRutas?tab=${tab}`);
-    }
-  };
-
   return (
     <div className="page-content">
       <Container fluid>
@@ -206,116 +175,74 @@ const GestionRutas = () => {
           breadcrumbItem="Listado de Rutas"
         />
         {error && <div className="alert alert-danger">{error}</div>}
-        <Nav tabs>
-          <NavItem>
-            <NavLink
-              className={activeTab === "1" ? "active" : ""}
-              onClick={() => {
-                toggle("1");
+        <Row>
+          <Col lg={12}>
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                alignItems: "center",
               }}
             >
-              Rutas
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink
-              className={activeTab === "2" ? "active" : ""}
-              onClick={() => {
-                toggle("2");
-              }}
-            >
-              Rutas de Recolección
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink
-              className={activeTab === "3" ? "active" : ""}
-              onClick={() => {
-                toggle("3");
-              }}
-            >
-              Órdenes de Recolección
-            </NavLink>
-          </NavItem>
-        </Nav>
-        <TabContent activeTab={activeTab}>
-          <TabPane tabId="1">
-            <Row>
-              <Col lg={12}>
-                <div
-                  style={{
-                    marginTop: "10px",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
+              <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
+                Buscar:
+              </Label>
+              <Input
+                type="text"
+                id="busquedaNombre"
+                value={busquedaNombre}
+                onChange={handleBusquedaNombreChange}
+                placeholder="Buscar por nombre de ruta"
+                style={{ width: "300px" }}
+              />
+              <div style={{ marginLeft: "auto" }}>
+                <Link
+                  to="/AgregarRuta"
+                  className="btn btn-primary custom-button"
                 >
-                  <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
-                    Buscar:
-                  </Label>
-                  <Input
-                    type="text"
-                    id="busquedaNombre"
-                    value={busquedaNombre}
-                    onChange={handleBusquedaNombreChange}
-                    placeholder="Buscar por nombre de ruta"
-                    style={{ width: "300px" }}
-                  />
-                  <div style={{ marginLeft: "auto" }}>
-                    <Link
-                      to="/AgregarRuta"
-                      className="btn btn-primary custom-button"
-                    >
-                      <i className="fas fa-plus"></i> Agregar Ruta
-                    </Link>
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <br />
-            <Row>
-              <Col lg={12}>
-                <Card>
-                  <CardBody>
-                    <TablaRutas
-                      rutas={rutas}
-                      destinos={destinos}
-                      bodegas={bodegas}
-                      eliminarRuta={eliminarRuta}
-                      toggleModalEditar={toggleModalEditar}
-                    />
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-            <Row>
-              <Col
-                lg={12}
-                style={{
-                  marginTop: "20px",
-                  display: "flex",
-                  justifyContent: "center",
-                }}
-              >
-                <Pagination
-                  activePage={currentPage}
-                  itemsCountPerPage={ITEMS_PER_PAGE}
-                  totalItemsCount={totalItems}
-                  pageRangeDisplayed={5}
-                  onChange={handlePageChange}
-                  itemClass="page-item"
-                  linkClass="page-link"
-                  innerClass="pagination"
+                  <i className="fas fa-plus"></i> Agregar Ruta
+                </Link>
+              </div>
+            </div>
+          </Col>
+        </Row>
+        <br />
+        <Row>
+          <Col lg={12}>
+            <Card>
+              <CardBody>
+                <TablaRutas
+                  rutas={rutas}
+                  destinos={destinos}
+                  bodegas={bodegas}
+                  eliminarRuta={eliminarRuta}
+                  toggleModalEditar={toggleModalEditar}
                 />
-              </Col>
-            </Row>
-          </TabPane>
-          <TabPane tabId="2">
-            <RutasRecoleccion />
-          </TabPane>
-          <TabPane tabId="3">
-            <OrdenesRecoleccion />
-          </TabPane>
-        </TabContent>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col
+            lg={12}
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Pagination
+              activePage={currentPage}
+              itemsCountPerPage={ITEMS_PER_PAGE}
+              totalItemsCount={totalItems}
+              pageRangeDisplayed={5}
+              onChange={handlePageChange}
+              itemClass="page-item"
+              linkClass="page-link"
+              innerClass="pagination"
+            />
+          </Col>
+        </Row>
       </Container>
       <ModalEditarRuta
         modalEditar={modalEditar}

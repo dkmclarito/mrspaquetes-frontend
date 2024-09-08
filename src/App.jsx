@@ -65,6 +65,10 @@ import DatosPaqueteExpress from "./pages/DatosPaqueteExpress";
 import GenerarOrdenExpress from "./pages/GenerarOrdenExpress";
 import ProcesarPagoExpress from "./pages/ProcesarPagoExpress";
 import GestionAsignarRutas from "./pages/GestionAsignarRutas";
+import RutasRecoleccion from "./pages/RutasRecoleccion";
+import OrdenesRecoleccion from "./pages/OrdenesRecoleccion";
+import AgregarAsignacionRuta from "./pages/AgregarAsignacionRuta";
+import DetallesAsignacionRutas from "./pages/DetallesAsignacionRutas";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -112,6 +116,14 @@ const App = () => {
                   path="/GestionAsignarRutas"
                   element={<GestionAsignarRutas />}
                 />
+                <Route
+                  path="/AgregarAsignacionRuta"
+                  element={<AgregarAsignacionRuta />}
+                />
+                  <Route
+                  path="/DetallesAsignacionRutas/:id"
+                  element={<DetallesAsignacionRutas />}
+                />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route
                   path="/AgregarEmpleado/:id"
@@ -122,10 +134,7 @@ const App = () => {
                   path="/DetallesEmpleado/:id"
                   element={<DetallesEmpleado />}
                 />
-                <Route
-                  path="/DetallesRutas/:id"
-                  element={<DetallesRutas />}
-                />
+                <Route path="/DetallesRutas/:id" element={<DetallesRutas />} />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
                 <Route
@@ -227,6 +236,14 @@ const App = () => {
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/AgregarRuta" element={<AgregarRuta />} />
+                <Route
+                  path="/RutasRecoleccion"
+                  element={<RutasRecoleccion />}
+                />
+                <Route
+                  path="/OrdenesRecoleccion"
+                  element={<OrdenesRecoleccion />}
+                />
               </Route>
 
               {/* Rutas para 'conductor' */}

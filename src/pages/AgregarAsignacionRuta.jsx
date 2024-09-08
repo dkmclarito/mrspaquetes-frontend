@@ -12,7 +12,7 @@ import {
   Button,
   FormFeedback,
 } from "reactstrap";
-import Breadcrumbs from "../components/Common/Breadcrumbs";
+import Breadcrumbs from "../components/AsignacionRutas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +22,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const AsignarRutas = () => {
   const [formData, setFormData] = useState({
-    codigo_unico_asignacion: "",
+    codigo_unico_asignacion: "ASG",
     id_ruta: "",
     id_vehiculo: "",
     id_paquete: "",
@@ -35,25 +35,30 @@ const AsignarRutas = () => {
   const [paquetes, setPaquetes] = useState([]);
   const [estados, setEstados] = useState([]);
   const navigate = useNavigate();
-  
+
   const token = localStorage.getItem('token') || AuthService.getToken?.() || '';
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!token) {
+        toast.error("No se encontró token de autenticación");
+        return;
+      }
+      
       try {
         const [rutasRes, vehiculosRes, paquetesRes, estadosRes] = await Promise.all([
-          axios.get(`${API_URL}/rutas`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/paquetes`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/estados`, { headers: { Authorization: `Bearer ${token}` } })
+          axios.get(`${API_URL}/dropdown/get_rutas`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/dropdown/get_paquetes_sin_asignar`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/dropdown/get_estado_rutas`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         setRutas(rutasRes.data.rutas || []);
         setVehiculos(vehiculosRes.data.vehiculos || []);
         setPaquetes(paquetesRes.data.paquetes || []);
-        setEstados(estadosRes.data.estados || []);
+        setEstados(estadosRes.data.estado_rutas || []);
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        console.error("Error al obtener datos:", error.response ? error.response.data : error.message);
         toast.error("Error al cargar los datos necesarios");
       }
     };
@@ -63,7 +68,29 @@ const AsignarRutas = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    if (name === "codigo_unico_asignacion") {
+      const prefix = "ASG";
+      const numericPart = value.replace(/\D/g, '').slice(0, 25);
+      const newValue = prefix + numericPart;
+      setFormData({ ...formData, [name]: newValue });
+    } else if (name === "fecha") {
+      const currentDate = new Date();
+      const selectedDate = new Date(value);
+      if (selectedDate < currentDate) {
+        setErrors({ ...errors, fecha: "La fecha no puede ser inferior a la actual" });
+      } else if (selectedDate.getFullYear() !== currentDate.getFullYear()) {
+        setErrors({ ...errors, fecha: "El año no puede ser modificado" });
+      } else if (selectedDate.getMonth() + 1 > 12) {
+        setErrors({ ...errors, fecha: "El mes no puede ser mayor a 12" });
+      } else if (selectedDate.getDate() > 31) {
+        setErrors({ ...errors, fecha: "El día no puede ser mayor a 31" });
+      } else {
+        setFormData({ ...formData, [name]: value });
+        setErrors({ ...errors, fecha: null });
+      }
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
     }
@@ -71,7 +98,9 @@ const AsignarRutas = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.codigo_unico_asignacion) newErrors.codigo_unico_asignacion = "El código es requerido";
+    if (!formData.codigo_unico_asignacion || formData.codigo_unico_asignacion.length <= 3) {
+      newErrors.codigo_unico_asignacion = "El código debe tener al menos un número";
+    }
     if (!formData.id_ruta) newErrors.id_ruta = "La ruta es requerida";
     if (!formData.id_vehiculo) newErrors.id_vehiculo = "El vehículo es requerido";
     if (!formData.id_paquete) newErrors.id_paquete = "El paquete es requerido";
@@ -98,7 +127,7 @@ const AsignarRutas = () => {
         navigate('/GestionAsignarRutas');
       }
     } catch (error) {
-      console.error("Error al crear la asignación de ruta:", error);
+      console.error("Error al crear la asignación de ruta:", error.response ? error.response.data : error.message);
       toast.error('Error del servidor al crear la asignación de ruta');
     }
   };
@@ -186,7 +215,7 @@ const AsignarRutas = () => {
                             <option value="">Seleccione un paquete</option>
                             {paquetes.map((paquete) => (
                               <option key={paquete.id} value={paquete.id}>
-                                {paquete.codigo_unico}
+                                {paquete.asignacion}
                               </option>
                             ))}
                           </Input>
@@ -205,6 +234,8 @@ const AsignarRutas = () => {
                             value={formData.fecha}
                             onChange={handleInputChange}
                             invalid={!!errors.fecha}
+                            min={new Date().toISOString().split('T')[0]}
+                            max={`${new Date().getFullYear()}-12-31`}
                           />
                           <FormFeedback>{errors.fecha}</FormFeedback>
                         </FormGroup>
@@ -221,7 +252,7 @@ const AsignarRutas = () => {
                           >
                             {estados.map((estado) => (
                               <option key={estado.id} value={estado.id}>
-                                {estado.nombre}
+                                {estado.estado}
                               </option>
                             ))}
                           </Input>
