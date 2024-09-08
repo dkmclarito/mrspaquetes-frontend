@@ -9,10 +9,11 @@ import {
   Row,
   Col,
   Alert,
+  Button,
 } from "reactstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
-import EditarPaquetes from "./EditarPaquetes";
+import EditarPaquete from "./EditarPaquete";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -25,6 +26,7 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
     id_tipo_entrega: "",
     instrucciones_entrega: "",
   });
+  const [paquetes, setPaquetes] = useState([]);
   const [errors, setErrors] = useState({});
   const [estadosPaquete, setEstadosPaquete] = useState([]);
   const [tarifas, setTarifas] = useState([]);
@@ -68,14 +70,26 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
       const primerDetalle = orden.detalles[0];
       setDatosComunes({
         id_estado_paquetes: orden.id_estado_paquetes || "",
-        fecha_envio: formatearFecha(primerDetalle.paquete?.fecha_envio),
+        fecha_envio: formatearFecha(primerDetalle.fecha_envio),
         fecha_entrega_estimada: formatearFecha(
-          primerDetalle.paquete?.fecha_entrega_estimada
+          primerDetalle.fecha_entrega_estimada
         ),
         fecha_entrega: formatearFecha(primerDetalle.fecha_entrega),
         id_tipo_entrega: primerDetalle.id_tipo_entrega || "",
         instrucciones_entrega: primerDetalle.instrucciones_entrega || "",
       });
+
+      setPaquetes(
+        orden.detalles.map((detalle) => ({
+          ...detalle,
+          id_tipo_paquete: detalle.id_tipo_paquete || "",
+          id_empaque: detalle.id_empaque || "",
+          peso: detalle.peso || "",
+          id_tamano_paquete: detalle.id_tamano_paquete || "",
+          descripcion_contenido: detalle.descripcion_contenido || "",
+          precio: detalle.precio || "",
+        }))
+      );
     }
   };
 
@@ -108,23 +122,52 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
     const { name, value } = e.target;
     setDatosComunes((prev) => {
       const nuevoDatosComunes = { ...prev, [name]: value };
-      actualizarOrdenCompleta({
-        ...ordenInicial,
-        ...nuevoDatosComunes,
-      });
       return nuevoDatosComunes;
     });
     const error = validateField(name, value);
     setErrors((prev) => ({ ...prev, [name]: error }));
+
+    // Actualizar todos los paquetes con los nuevos datos comunes
+    const paquetesActualizados = paquetes.map((paquete) => ({
+      ...paquete,
+      [name]: value,
+    }));
+    setPaquetes(paquetesActualizados);
   };
 
-  const actualizarOrdenCompleta = (nuevaOrden) => {
-    const ordenEnEdicion = JSON.parse(
-      localStorage.getItem("ordenEnEdicion") || "{}"
-    );
-    const ordenActualizada = { ...ordenEnEdicion, ...nuevaOrden };
-    localStorage.setItem("ordenEnEdicion", JSON.stringify(ordenActualizada));
+  const actualizarPaquete = (index, paqueteActualizado) => {
+    const nuevosPaquetes = [...paquetes];
+    nuevosPaquetes[index] = { ...nuevosPaquetes[index], ...paqueteActualizado };
+    setPaquetes(nuevosPaquetes);
+  };
+
+  const agregarNuevoPaquete = () => {
+    const nuevoPaquete = {
+      id_tipo_paquete: "",
+      id_empaque: "",
+      peso: "",
+      id_tamano_paquete: "",
+      descripcion_contenido: "",
+      precio: "",
+      ...datosComunes,
+    };
+    setPaquetes([...paquetes, nuevoPaquete]);
+  };
+
+  const eliminarPaquete = (index) => {
+    const nuevosPaquetes = paquetes.filter((_, i) => i !== index);
+    setPaquetes(nuevosPaquetes);
+  };
+
+  const guardarPaquetes = () => {
+    const ordenActualizada = {
+      ...ordenInicial,
+      ...datosComunes,
+      detalles: paquetes,
+    };
+
     actualizarOrden(ordenActualizada);
+    toast.success("Paquetes guardados exitosamente");
   };
 
   return (
@@ -246,12 +289,32 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
         </CardBody>
       </Card>
 
-      <EditarPaquetes
-        ordenId={ordenInicial.id}
-        actualizarOrden={actualizarOrdenCompleta}
-        tarifas={tarifas}
-        selectedAddress={selectedAddress}
-      />
+      <h4>Paquetes</h4>
+      {paquetes.map((paquete, index) => (
+        <Card key={index} className="mb-3">
+          <CardBody>
+            <h5>Paquete {index + 1}</h5>
+            <EditarPaquete
+              paquete={paquete}
+              actualizarPaquete={(paqueteActualizado) =>
+                actualizarPaquete(index, paqueteActualizado)
+              }
+              tarifas={tarifas}
+              selectedAddress={selectedAddress}
+              index={index}
+            />
+            <Button color="danger" onClick={() => eliminarPaquete(index)}>
+              Eliminar Paquete
+            </Button>
+          </CardBody>
+        </Card>
+      ))}
+      <Button color="primary" onClick={agregarNuevoPaquete} className="mb-3">
+        Agregar Nuevo Paquete
+      </Button>
+      <Button color="success" onClick={guardarPaquetes} className="ml-2 mb-3">
+        Guardar Paquetes
+      </Button>
     </Form>
   );
 };
