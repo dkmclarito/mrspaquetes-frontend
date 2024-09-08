@@ -70,7 +70,7 @@ const VerticalLayout = () => {
     } else if (
       location.pathname.includes("/GestionRutas") ||
       location.pathname.includes("/RutasRecoleccion") ||
-      location.pathname.includes("/OrdenesRecoleccion")||
+      location.pathname.includes("/OrdenesRecoleccion") ||
       location.pathname.includes("/GestionAsignarRutas")
     ) {
       setActiveSubMenu("rutas");
@@ -225,6 +225,28 @@ const VerticalLayout = () => {
                   >
                     <li>
                       <NavLink
+                        to="/GestionPreOrdenes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Pre-Orden Normal
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionPreOrdenesExpress"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Pre-Orden Express
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
                         to="/GestionOrdenes"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
@@ -343,7 +365,6 @@ const VerticalLayout = () => {
                         Órdenes de Recolección
                       </NavLink>
                     </li>
-                    
                   </ul>
                 </li>
 

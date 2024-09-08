@@ -11,7 +11,7 @@ import ModalConfirmarEliminar from "../components/Ordenes/ModalConfirmarEliminar
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 7;
 
-export default function GestionOrdenesExpress() {
+export default function GestionPreOrdenesExpress() {
   const [ordenes, setOrdenes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,17 +28,19 @@ export default function GestionOrdenesExpress() {
       });
       console.log("Ordenes recibidas desde API:", response.data);
 
-      // Filtrar las órdenes para mostrar solo las de tipo entrega express
-      const ordenesExpress = response.data.data.filter((orden) =>
-        orden.detalles.some(
-          (detalle) => detalle.tipo_entrega === "Entrega Express"
-        )
+      // Filtrar las órdenes para mostrar solo las pre-órdenes express
+      const preOrdenesExpress = response.data.data.filter(
+        (orden) =>
+          orden.tipo_orden === "preorden" &&
+          orden.detalles.some(
+            (detalle) => detalle.tipo_entrega === "Entrega Express"
+          )
       );
 
-      setOrdenes(ordenesExpress);
+      setOrdenes(preOrdenesExpress);
     } catch (error) {
       console.error("Error al obtener órdenes:", error);
-      toast.error("Error al cargar las órdenes");
+      toast.error("Error al cargar las pre-órdenes express");
     }
   };
 
@@ -61,12 +63,12 @@ export default function GestionOrdenesExpress() {
       await axios.delete(`${API_URL}/ordenes/${ordenAEliminar}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success("Orden eliminada con éxito");
-      fetchOrdenes(); // Recargar las órdenes
+      toast.success("Pre-orden express eliminada con éxito");
+      fetchOrdenes();
       toggleModalEliminar();
     } catch (error) {
-      console.error("Error al eliminar la orden:", error);
-      toast.error("Error al eliminar la orden");
+      console.error("Error al eliminar la pre-orden express:", error);
+      toast.error("Error al eliminar la pre-orden express");
     }
   };
 
@@ -106,8 +108,8 @@ export default function GestionOrdenesExpress() {
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs
-          title="Gestión de Órdenes Express"
-          breadcrumbItem="Listado de Órdenes"
+          title="Gestión de Pre-Órdenes Express"
+          breadcrumbItem="Listado de Pre-Órdenes Express"
         />
         <Row>
           <Col lg={12}>

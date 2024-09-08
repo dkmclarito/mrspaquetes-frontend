@@ -31,7 +31,7 @@ import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function GenerarOrdenExpress() {
+export default function GenerarPreOrdenExpress() {
   const location = useLocation();
   const navigate = useNavigate();
   const { idCliente } = useParams();
@@ -49,6 +49,7 @@ export default function GenerarOrdenExpress() {
     costo_adicional: "",
     concepto: "Envío de paquetes",
     tipo_documento: "consumidor_final",
+    tipo_orden: "preorden", // Cambiado a preorden
     detalles: [],
   });
   const [errors, setErrors] = useState({});
@@ -87,8 +88,8 @@ export default function GenerarOrdenExpress() {
               id_empaque: Number(detalle.id_empaque),
               peso: Number(detalle.peso),
               id_estado_paquete: 1,
-              id_tamano_paquete: Number(detalle.tamano_paquete),
-              id_tipo_entrega: 1,
+              id_tamano_paquete: Number(detalle.id_tamano_paquete),
+              id_tipo_entrega: 2, // Cambiado a 2 para express
               id_direccion: Number(storedAddress.id),
               precio: Number(detalle.precio),
               fecha_envio: detalle.fecha_envio
@@ -258,33 +259,8 @@ export default function GenerarOrdenExpress() {
       await updateAddress();
 
       const orderData = {
-        id_cliente: Number(formData.id_cliente),
-        nombre_contacto: formData.nombre_contacto,
-        telefono: formData.telefono,
-        id_direccion: Number(formData.id_direccion),
-        id_tipo_pago: Number(formData.id_tipo_pago),
-        total_pagar: Number(formData.total_pagar),
-        costo_adicional: Number(formData.costo_adicional) || 0,
-        concepto: formData.concepto,
-        tipo_documento: formData.tipo_documento,
-        tipo_orden: "orden", // Configuramos como 'orden' por defecto
-        id_ubicacion_paquete: null, // Puedes ajustar esto según tus necesidades
-        detalles: formData.detalles.map((detalle) => ({
-          id_tipo_paquete: Number(detalle.id_tipo_paquete),
-          id_empaque: Number(detalle.id_empaque),
-          peso: Number(detalle.peso),
-          id_estado_paquete: Number(detalle.id_estado_paquete),
-          id_tamano_paquete: Number(detalle.id_tamano_paquete),
-          fecha_envio: detalle.fecha_envio,
-          fecha_entrega_estimada: detalle.fecha_entrega_estimada,
-          fecha_entrega: detalle.fecha_entrega,
-          descripcion_contenido: detalle.descripcion_contenido,
-          id_tipo_entrega: 2, // Mantenemos 2 para express
-          id_direccion: Number(detalle.id_direccion),
-          instrucciones_entrega: detalle.instrucciones_entrega,
-          descripcion: detalle.descripcion,
-          precio: Number(detalle.precio),
-        })),
+        ...formData,
+        tipo_orden: "preorden", // Aseguramos que se envía como preorden
       };
 
       console.log("Datos enviados a la API:", orderData);
@@ -298,7 +274,7 @@ export default function GenerarOrdenExpress() {
 
       console.log("Respuesta de la API:", response.data);
 
-      toast.success("Orden express registrada con éxito", {
+      toast.success("Pre-orden express registrada con éxito", {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -308,22 +284,13 @@ export default function GenerarOrdenExpress() {
         progress: undefined,
       });
 
-      navigate(`/procesarpagoexpress/${idCliente}`);
+      navigate(`/GestionPreOrdenesExpress`);
     } catch (error) {
-      console.error("Error al registrar la orden:", error);
-      if (error.response && error.response.data && error.response.data.errors) {
-        console.log("Errores de validación:", error.response.data.errors);
-        Object.keys(error.response.data.errors).forEach((key) => {
-          toast.error(
-            `Error en ${key}: ${error.response.data.errors[key].join(", ")}`
-          );
-        });
-      } else {
-        toast.error(
-          "Error al registrar la orden: " +
-            (error.response?.data?.message || error.message)
-        );
-      }
+      console.error("Error al registrar la pre-orden express:", error);
+      toast.error(
+        "Error al registrar la pre-orden express: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 

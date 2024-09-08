@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import AuthService from "../services/authService";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
-import { faCheck, faTimes, faEye, faEdit, faTrash, faPlus, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes, faEdit, faTrash, faPlus, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import FormularioDireccion from "../pages/FormularioDireccion";
 import ModalEditarDireccion from "../components/Clientes/ModalEditarDireccion";
 
@@ -48,8 +48,6 @@ const DetallesCliente = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-     // AuthService.logout();
-      //window.location.href = "/login";
     }
   }, [token]);
 
@@ -66,30 +64,38 @@ const DetallesCliente = () => {
   const cargarDatos = useCallback(async () => {
     try {
       setCargando(true);
-      const [clienteResponse, direccionesResponse, detallesResponse] = await Promise.all([
-        axios.get(`${API_URL}/clientes/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API_URL}/dropdown/get_direcciones/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
 
-      setCliente(clienteResponse.data.cliente);
-
-      const direccionesConDetalles = direccionesResponse.data.direcciones.map(dir => {
-        const detalles = detallesResponse.data.find(d => d.id === dir.id);
-        return {
-          ...dir,
-          departamento: detalles?.departamento || dir.id_departamento,
-          municipio: detalles?.municipio || dir.id_municipio
-        };
+      const clienteResponse = await axios.get(`${API_URL}/clientes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      setDirecciones(direccionesConDetalles);
+      // Validar si existe el cliente antes de procesar más datos
+      if (clienteResponse.data && clienteResponse.data.cliente) {
+        setCliente(clienteResponse.data.cliente);
+
+        const direccionesResponse = await axios.get(`${API_URL}/direcciones?id_cliente=${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const detallesResponse = await axios.get(`${API_URL}/dropdown/get_direcciones/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const direccionesConDetalles = direccionesResponse.data.direcciones.map(dir => {
+          const detalles = detallesResponse.data.find(d => d.id === dir.id);
+          return {
+            ...dir,
+            departamento: detalles?.departamento || "N/A", // Mostrar "N/A" si no hay detalles
+            municipio: detalles?.municipio || "N/A"
+          };
+        });
+
+        setDirecciones(direccionesConDetalles);
+      } else {
+        // Manejo si no se encontró el cliente
+        setCliente({});
+      }
+
     } catch (error) {
       console.error("Error al cargar datos:", error);
       toast.error("Error al cargar los datos del cliente y direcciones");
@@ -137,26 +143,34 @@ const DetallesCliente = () => {
 
   const eliminarDireccion = async () => {
     try {
-      await axios.delete(`${API_URL}/direcciones/${direccionAEliminar}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      await cargarDatos();
-      toast.success('Dirección eliminada correctamente');
+        await axios.delete(`${API_URL}/direcciones/${direccionAEliminar}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Filtrar la dirección eliminada del estado local
+        setDirecciones((prevDirecciones) => 
+            prevDirecciones.filter((direccion) => direccion.id !== direccionAEliminar)
+        );
+
+        // Actualizar el estado de direcciones expandidas en caso de que estuviera expandida
+        setDireccionesExpandidas((prevExpandidas) => {
+            const nuevasExpandidas = { ...prevExpandidas };
+            delete nuevasExpandidas[direccionAEliminar];
+            return nuevasExpandidas;
+        });
+
+        toast.success('Dirección eliminada correctamente');
     } catch (error) {
-      console.error('Error al eliminar dirección:', error);
-      toast.error('Esta dirección no puede ser eliminada porque podría estar asociada a una orden u otros registros.');
+        console.error('Error al eliminar dirección:', error);
+        toast.error('Esta dirección no puede ser eliminada porque podría estar asociada a una orden u otros registros.');
     } finally {
-      setModalConfirmacion(false);
-      setDireccionAEliminar(null);
+        setModalConfirmacion(false);
+        setDireccionAEliminar(null);
     }
-  };
+};
 
   if (cargando) {
     return <p>Cargando...</p>;
-  }
-
-  if (!cliente) {
-    return <p>No se encontró información del cliente.</p>;
   }
 
   return (
@@ -170,91 +184,100 @@ const DetallesCliente = () => {
               <div className="table-responsive">
                 <table className="table table-bordered">
                   <tbody>
-                    <tr>
-                      <th scope="row" style={{ width: '150px', whiteSpace: 'nowrap' }}>ID:</th>
-                      <td>
-                      <Badge color="primary"> {cliente.id} </Badge>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Nombre:</th>
-                      <td>{cliente.nombre || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Apellido:</th>
-                      <td>{cliente.apellido || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Nombre Comercial:</th>
-                      <td>{cliente.nombre_comercial || 'N/A'}</td>
-                    </tr>                    
-                    <tr>
-                      <th scope="row">DUI/NIT:</th>
-                      <td>{cliente.id_tipo_persona === 1 ? cliente.dui || 'N/A' : cliente.nit || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Teléfono:</th>
-                      <td>{cliente.telefono || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Tipo de Persona:</th>
-                      <td>{cliente.id_tipo_persona === 1 ? 'Persona Natural' : 'Persona Jurídica'}</td>
-                    </tr>
-                    <tr>
-                    <th scope="row">Contribuyente:</th>
-                    <td>
-                      {cliente.es_contribuyente === 0 ? (
-                        <FontAwesomeIcon icon={faCheck} style={{ color: 'green' }} />
-                      ) : (
-                        <FontAwesomeIcon icon={faTimes} style={{ color: 'red' }} />
-                      )}
-                    </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Fecha de Registro:</th>
-                      <td>{new Date(cliente.fecha_registro).toLocaleDateString('es-ES')}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Estado:</th>
-                      <td>
-                        <Badge color={cliente.id_estado === 1 ? "success" : "danger"}>
-                          {cliente.id_estado === 1 ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Departamento:</th>
-                      <td>{cliente.departamento || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Municipio:</th>
-                      <td>{cliente.municipio || 'N/A'}</td>
-                    </tr>
-                    {cliente.id_tipo_persona === 2 && (
+                    {cliente ? (
                       <>
                         <tr>
-                          <th scope="row">Nombre de la Empresa:</th>
-                          <td>{cliente.nombre_empresa || 'N/A'}</td>
+                          <th scope="row" style={{ width: '150px', whiteSpace: 'nowrap' }}>ID:</th>
+                          <td>
+                            <Badge color="primary"> {cliente.id || 'N/A'} </Badge>
+                          </td>
                         </tr>
                         <tr>
-                          <th scope="row">NRC:</th>
-                          <td>{cliente.nrc || 'N/A'}</td>
+                          <th scope="row">Nombre:</th>
+                          <td>{cliente.nombre || 'N/A'}</td>
                         </tr>
                         <tr>
-                          <th scope="row">Giro:</th>
-                          <td>{cliente.giro || 'N/A'}</td>
+                          <th scope="row">Apellido:</th>
+                          <td>{cliente.apellido || 'N/A'}</td>
                         </tr>
                         <tr>
-                          <th scope="row">Direccion:</th>
-                          <td>{cliente.direccion || 'N/A'}</td>
+                          <th scope="row">Nombre Comercial:</th>
+                          <td>{cliente.nombre_comercial || 'N/A'}</td>
                         </tr>
+                        <tr>
+                          <th scope="row">DUI/NIT:</th>
+                          <td>{cliente.id_tipo_persona === 1 ? cliente.dui || 'N/A' : cliente.nit || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Teléfono:</th>
+                          <td>{cliente.telefono || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Tipo de Persona:</th>
+                          <td>{cliente.id_tipo_persona === 1 ? 'Persona Natural' : 'Persona Jurídica'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Contribuyente:</th>
+                          <td>
+                            {cliente.es_contribuyente === 0 ? (
+                              <FontAwesomeIcon icon={faCheck} style={{ color: 'green' }} />
+                            ) : (
+                              <FontAwesomeIcon icon={faTimes} style={{ color: 'red' }} />
+                            )}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Fecha de Registro:</th>
+                          <td>{new Date(cliente.fecha_registro).toLocaleDateString('es-ES')}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Estado:</th>
+                          <td>
+                            <Badge color={cliente.id_estado === 1 ? "success" : "danger"}>
+                              {cliente.id_estado === 1 ? "Activo" : "Inactivo"}
+                            </Badge>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Departamento:</th>
+                          <td>{cliente.departamento || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                          <th scope="row">Municipio:</th>
+                          <td>{cliente.municipio || 'N/A'}</td>
+                        </tr>
+                        {cliente.id_tipo_persona === 2 && (
+                          <>
+                            <tr>
+                              <th scope="row">Nombre de la Empresa:</th>
+                              <td>{cliente.nombre_empresa || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">NRC:</th>
+                              <td>{cliente.nrc || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Giro:</th>
+                              <td>{cliente.giro || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <th scope="row">Dirección:</th>
+                              <td>{cliente.direccion || 'N/A'}</td>
+                            </tr>
+                          </>
+                        )}
                       </>
+                    ) : (
+                      <tr>
+                        <td colSpan="7">No se encontró información del cliente.</td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
               </div>
             </Col>
           </Row>
+
           <h5 className="mt-4">Direcciones del Cliente</h5>
           <div className="table-responsive">
             <Table className="table-hover" style={{ minWidth: '800px' }}>
@@ -270,46 +293,54 @@ const DetallesCliente = () => {
                 </tr>
               </thead>
               <tbody>
-                {direccionesActuales.map((direccion) => (
-                  <React.Fragment key={direccion.id}>
-                    <tr>
-                      <td style={{ width: '15%' }}>{direccion.nombre_contacto}</td>
-                      <td style={{ width: '10%' }}>{direccion.telefono}</td>
-                      <td className="d-none d-md-table-cell" style={{ width: '10%' }}>{direccion.departamento}</td>
-                      <td className="d-none d-md-table-cell" style={{ width: '10%' }}>{direccion.municipio}</td>
-                      <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.direccion}</td>
-                      <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.referencia}</td>
-                      <td style={{ width: '5%' }}>
-                        <div className="d-flex justify-content-between">
-                          <Button color="info" size="sm" className="me-1 btn-direcciones" onClick={() => editarDireccion(direccion)}>
-                            <FontAwesomeIcon icon={faEdit} />
-                          </Button>
-                          <Button color="danger" size="sm" className="me-1" onClick={() => confirmarEliminarDireccion(direccion.id)}>
-                            <FontAwesomeIcon icon={faTrash} />
-                          </Button>
-                          <Button color="secondary" size="sm" className="d-md-none" onClick={() => toggleDireccion(direccion.id)}>
-                            <FontAwesomeIcon icon={direccionesExpandidas[direccion.id] ? faChevronUp : faChevronDown} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr className="d-md-none">
-                      <td colSpan="3">
-                        <Collapse isOpen={direccionesExpandidas[direccion.id]}>
-                          <div className="p-2">
-                            <strong>Departamento:</strong> {direccion.departamento}<br />
-                            <strong>Municipio:</strong> {direccion.municipio}<br />
-                            <strong>Dirección:</strong> {direccion.direccion}<br />
-                            <strong>Referencia:</strong> {direccion.referencia}
+                {direccionesActuales.length > 0 ? (
+                  direccionesActuales.map((direccion) => (
+                    <React.Fragment key={direccion.id}>
+                      <tr>
+                        <td style={{ width: '15%' }}>{direccion.nombre_contacto}</td>
+                        <td style={{ width: '10%' }}>{direccion.telefono}</td>
+                        <td className="d-none d-md-table-cell" style={{ width: '10%' }}>{direccion.departamento}</td>
+                        <td className="d-none d-md-table-cell" style={{ width: '10%' }}>{direccion.municipio}</td>
+                        <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.direccion}</td>
+                        <td className="d-none d-lg-table-cell" style={{ width: '25%' }}>{direccion.referencia}</td>
+                        <td style={{ width: '5%' }}>
+                          <div className="d-flex justify-content-between">
+                            <Button color="info" size="sm" className="me-1 btn-direcciones" onClick={() => editarDireccion(direccion)}>
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button color="danger" size="sm" className="me-1" onClick={() => confirmarEliminarDireccion(direccion.id)}>
+                              <FontAwesomeIcon icon={faTrash} />
+                            </Button>
+                            <Button color="secondary" size="sm" className="d-md-none" onClick={() => toggleDireccion(direccion.id)}>
+                              <FontAwesomeIcon icon={direccionesExpandidas[direccion.id] ? faChevronUp : faChevronDown} />
+                            </Button>
                           </div>
-                        </Collapse>
-                      </td>
-                    </tr>
-                  </React.Fragment>
-                ))}
+                        </td>
+                      </tr>
+                      <tr className="d-md-none">
+                        <td colSpan="3">
+                          <Collapse isOpen={direccionesExpandidas[direccion.id]}>
+                            <div className="p-2">
+                              <strong>Departamento:</strong> {direccion.departamento}<br />
+                              <strong>Municipio:</strong> {direccion.municipio}<br />
+                              <strong>Dirección:</strong> {direccion.direccion}<br />
+                              <strong>Referencia:</strong> {direccion.referencia}
+                            </div>
+                          </Collapse>
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7">No hay direcciones registradas para este cliente.</td>
+                  </tr>
+                )}
               </tbody>
             </Table>
           </div>
+          
+          {/* Agregar paginación y botones de acción */}
           <Pagination className="mt-3 justify-content-center pagination2">
             <PaginationItem disabled={paginaActual === 1}>
               <PaginationLink previous onClick={() => setPaginaActual(paginaActual - 1)} />
@@ -325,6 +356,7 @@ const DetallesCliente = () => {
               <PaginationLink next onClick={() => setPaginaActual(paginaActual + 1)} />
             </PaginationItem>
           </Pagination>
+
           <Button color="primary" onClick={toggleModalDireccion} className="mt-3">
             <FontAwesomeIcon icon={faPlus} /> Agregar Dirección
           </Button>
