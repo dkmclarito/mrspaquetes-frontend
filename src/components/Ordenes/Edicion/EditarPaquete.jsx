@@ -1,183 +1,288 @@
 import React, { useState, useEffect } from "react";
-import {
-  Form,
-  FormGroup,
-  Label,
-  Input,
-  Button,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "reactstrap";
+import { FormGroup, Label, Input, FormFeedback, Row, Col } from "reactstrap";
 import axios from "axios";
-import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const EditarPaquete = ({ paquete, guardarPaquete, cancelarEdicion }) => {
-  const [paqueteEditado, setPaqueteEditado] = useState(paquete);
+const EditarPaquete = ({
+  paquete,
+  actualizarPaquete,
+  tarifas,
+  selectedAddress,
+  index,
+}) => {
   const [tiposPaquete, setTiposPaquete] = useState([]);
-  const [empaques, setEmpaques] = useState([]);
-  const [estadosPaquete, setEstadosPaquete] = useState([]);
+  const [tiposCaja, setTiposCaja] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [paqueteLocal, setPaqueteLocal] = useState({
+    id_tipo_paquete: "",
+    tipo_caja: "",
+    peso: "",
+    id_tamano_paquete: "",
+    descripcion_contenido: "",
+    precio: "",
+    ...paquete,
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDropdownData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const [tiposRes, empaquesRes, estadosRes] = await Promise.all([
+        const [tiposPaqueteRes, tiposCajaRes] = await Promise.all([
           axios.get(`${API_URL}/dropdown/get_tipo_paquete`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get(`${API_URL}/dropdown/get_empaques`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${API_URL}/dropdown/get_estado_paquete`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
         ]);
 
-        setTiposPaquete(tiposRes.data.tipo_paquete || []);
-        setEmpaques(empaquesRes.data.empaques || []);
-        setEstadosPaquete(estadosRes.data.estado_paquetes || []);
+        setTiposPaquete(tiposPaqueteRes.data.tipo_paquete || []);
+        setTiposCaja(tiposCajaRes.data.empaques || []);
       } catch (error) {
-        console.error("Error al cargar datos:", error);
-        toast.error("Error al cargar datos del paquete");
+        console.error("Error al obtener los datos del dropdown:", error);
       }
     };
 
-    fetchData();
+    fetchDropdownData();
   }, []);
+
+  useEffect(() => {
+    setPaqueteLocal((prevState) => ({
+      ...prevState,
+      ...paquete,
+      id_tipo_paquete: paquete.id_tipo_paquete || "",
+      tipo_caja: paquete.tipo_caja || "",
+    }));
+  }, [paquete]);
+
+  const validateField = (name, value) => {
+    let error = "";
+
+    switch (name) {
+      case "peso":
+        const pesoPattern = /^\d{1,6}(,\d{3})*(\.\d{0,2})?$/;
+        if (!pesoPattern.test(value)) {
+          error = "Formato de peso inválido.";
+        }
+        break;
+      case "id_tipo_paquete":
+      case "tipo_caja":
+      case "id_tamano_paquete":
+        if (!value) {
+          error = "Debe seleccionar una opción.";
+        }
+        break;
+      case "descripcion_contenido":
+        if (!value.trim()) {
+          error = "Debe rellenar este campo.";
+        }
+        break;
+      default:
+        break;
+    }
+
+    return error;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPaqueteEditado({ ...paqueteEditado, [name]: value });
+    let updatedPaquete = { ...paqueteLocal, [name]: value };
+
+    if (name === "id_tamano_paquete") {
+      updatedPaquete.precio = calculatePrice(value);
+    }
+
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+
+    setPaqueteLocal(updatedPaquete);
+    actualizarPaquete(index, updatedPaquete);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    guardarPaquete(paqueteEditado);
+  const handlePesoChange = (e) => {
+    const { value } = e.target;
+    const validChars = value.replace(/[^0-9.,]/g, "");
+    let [integerPart, decimalPart] = validChars.split(".");
+
+    integerPart = integerPart.slice(0, 7);
+
+    if (decimalPart) {
+      decimalPart = decimalPart.slice(0, 2);
+    }
+
+    const formattedPeso = formatPeso(
+      integerPart + (decimalPart !== undefined ? "." + decimalPart : "")
+    );
+
+    handleChange({ target: { name: "peso", value: formattedPeso } });
+  };
+
+  const formatPeso = (value) => {
+    let [integerPart, decimalPart] = value.replace(/,/g, "").split(".");
+
+    if (integerPart.length > 3) {
+      integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    return decimalPart !== undefined
+      ? `${integerPart}.${decimalPart}`
+      : integerPart;
+  };
+
+  const calculatePrice = (tamanoPaquete) => {
+    if (!selectedAddress || !tamanoPaquete) return "";
+
+    const isSanMiguelUrban =
+      selectedAddress.id_departamento === 12 &&
+      selectedAddress.id_municipio === 215;
+    let tarifaType = isSanMiguelUrban ? "tarifa urbana" : "tarifa rural";
+
+    const tarifa = tarifas.find(
+      (t) =>
+        t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
+        t.departamento === selectedAddress.departamento_nombre &&
+        t.municipio === selectedAddress.municipio_nombre &&
+        t.tarifa === tarifaType
+    );
+
+    if (!tarifa) {
+      const generalTarifa = tarifas.find(
+        (t) =>
+          t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
+          t.departamento === selectedAddress.departamento_nombre &&
+          t.tarifa === tarifaType
+      );
+
+      return generalTarifa ? generalTarifa.monto : "";
+    }
+
+    return tarifa.monto;
+  };
+
+  const getTamanoPaqueteString = (tamanoPaquete) => {
+    switch (tamanoPaquete) {
+      case "1":
+        return "pequeno";
+      case "2":
+        return "mediano";
+      case "3":
+        return "grande";
+      default:
+        return "";
+    }
   };
 
   return (
-    <Modal isOpen={true} toggle={cancelarEdicion}>
-      <ModalHeader toggle={cancelarEdicion}>Editar Paquete</ModalHeader>
-      <ModalBody>
-        <Form onSubmit={handleSubmit}>
+    <div>
+      <Row>
+        <Col md={6}>
           <FormGroup>
             <Label for="id_tipo_paquete">Tipo de Paquete</Label>
             <Input
               type="select"
               name="id_tipo_paquete"
               id="id_tipo_paquete"
-              value={paqueteEditado.id_tipo_paquete}
+              value={paqueteLocal.id_tipo_paquete}
               onChange={handleChange}
+              invalid={!!errors.id_tipo_paquete}
             >
-              <option value="">Seleccione un tipo</option>
+              <option value="">Seleccione</option>
               {tiposPaquete.map((tipo) => (
                 <option key={tipo.id} value={tipo.id}>
                   {tipo.nombre}
                 </option>
               ))}
             </Input>
+            <FormFeedback>{errors.id_tipo_paquete}</FormFeedback>
           </FormGroup>
+        </Col>
+        <Col md={6}>
           <FormGroup>
-            <Label for="id_empaque">Empaque</Label>
+            <Label for="tipo_caja">Tipo de Caja</Label>
             <Input
               type="select"
-              name="id_empaque"
-              id="id_empaque"
-              value={paqueteEditado.id_empaque}
+              name="tipo_caja"
+              id="tipo_caja"
+              value={paqueteLocal.tipo_caja}
               onChange={handleChange}
+              invalid={!!errors.tipo_caja}
             >
-              <option value="">Seleccione un empaque</option>
-              {empaques.map((empaque) => (
-                <option key={empaque.id} value={empaque.id}>
-                  {empaque.empaquetado}
+              <option value="">Seleccione</option>
+              {tiposCaja.map((caja) => (
+                <option key={caja.id} value={caja.id}>
+                  {caja.empaquetado}
                 </option>
               ))}
             </Input>
+            <FormFeedback>{errors.tipo_caja}</FormFeedback>
           </FormGroup>
+        </Col>
+      </Row>
+      <Row>
+        <Col md={6}>
           <FormGroup>
-            <Label for="peso">Peso</Label>
+            <Label for="peso">Peso (Libras)</Label>
             <Input
-              type="number"
+              type="text"
               name="peso"
               id="peso"
-              value={paqueteEditado.peso}
-              onChange={handleChange}
+              value={paqueteLocal.peso}
+              onChange={handlePesoChange}
+              invalid={!!errors.peso}
             />
+            <FormFeedback>{errors.peso}</FormFeedback>
           </FormGroup>
+        </Col>
+        <Col md={6}>
           <FormGroup>
-            <Label for="id_estado_paquete">Estado del Paquete</Label>
+            <Label for="id_tamano_paquete">Tamaño del Paquete</Label>
             <Input
               type="select"
-              name="id_estado_paquete"
-              id="id_estado_paquete"
-              value={paqueteEditado.id_estado_paquete}
+              name="id_tamano_paquete"
+              id="id_tamano_paquete"
+              value={paqueteLocal.id_tamano_paquete}
               onChange={handleChange}
+              invalid={!!errors.id_tamano_paquete}
             >
-              <option value="">Seleccione un estado</option>
-              {estadosPaquete.map((estado) => (
-                <option key={estado.id} value={estado.id}>
-                  {estado.nombre}
-                </option>
-              ))}
+              <option value="">Seleccione</option>
+              <option value="1">Pequeño</option>
+              <option value="2">Mediano</option>
+              <option value="3">Grande</option>
             </Input>
+            <FormFeedback>{errors.id_tamano_paquete}</FormFeedback>
           </FormGroup>
-          <FormGroup>
-            <Label for="fecha_envio">Fecha de Envío</Label>
-            <Input
-              type="date"
-              name="fecha_envio"
-              id="fecha_envio"
-              value={paqueteEditado.fecha_envio}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label for="fecha_entrega_estimada">
-              Fecha de Entrega Estimada
-            </Label>
-            <Input
-              type="date"
-              name="fecha_entrega_estimada"
-              id="fecha_entrega_estimada"
-              value={paqueteEditado.fecha_entrega_estimada}
-              onChange={handleChange}
-            />
-          </FormGroup>
+        </Col>
+      </Row>
+      <Row>
+        <Col md={9}>
           <FormGroup>
             <Label for="descripcion_contenido">Descripción del Contenido</Label>
             <Input
               type="textarea"
               name="descripcion_contenido"
               id="descripcion_contenido"
-              value={paqueteEditado.descripcion_contenido}
+              value={paqueteLocal.descripcion_contenido}
               onChange={handleChange}
+              invalid={!!errors.descripcion_contenido}
             />
+            <FormFeedback>{errors.descripcion_contenido}</FormFeedback>
           </FormGroup>
+        </Col>
+        <Col md={3}>
           <FormGroup>
             <Label for="precio">Precio</Label>
             <Input
-              type="number"
+              type="text"
               name="precio"
               id="precio"
-              value={paqueteEditado.precio}
-              onChange={handleChange}
+              value={paqueteLocal.precio}
+              readOnly
             />
           </FormGroup>
-        </Form>
-      </ModalBody>
-      <ModalFooter>
-        <Button color="primary" onClick={handleSubmit}>
-          Guardar Cambios
-        </Button>
-        <Button color="secondary" onClick={cancelarEdicion}>
-          Cancelar
-        </Button>
-      </ModalFooter>
-    </Modal>
+        </Col>
+      </Row>
+    </div>
   );
 };
 

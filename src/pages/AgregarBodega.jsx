@@ -26,11 +26,13 @@ const AgregarBodega = () => {
     {}
   );
   const [nombre, setNombre] = useState("");
+  const [tipoBodega, setTipoBodega] = useState(""); 
   const [direccion, setDireccion] = useState("");
   const [departamento, setDepartamento] = useState("");
   const [municipio, setMunicipio] = useState("");
   const [isNombreValido, setIsNombreValido] = useState(true);
   const [isDireccionValida, setIsDireccionValida] = useState(true);
+  const [existingBodegas, setExistingBodegas] = useState([]);
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
@@ -53,8 +55,6 @@ const AgregarBodega = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-     // AuthService.logout();
-      //window.location.href = "/login";
     }
   }, [token]);
 
@@ -67,7 +67,7 @@ const AgregarBodega = () => {
       verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
     }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval); 
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
@@ -128,8 +128,29 @@ const AgregarBodega = () => {
     fetchMunicipios();
   }, [departamento, token]);
 
+  const fetchExistingBodegas = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_URL}/bodegas`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 200) {
+        setExistingBodegas(response.data.bodegas);
+      }
+    } catch (error) {
+      console.error("Error al obtener las bodegas existentes:", error);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchExistingBodegas();
+  }, [fetchExistingBodegas]);
+
   const validateNombre = (nombre) => {
-    return nombre.length > 0 && nombre.length <= 100;
+    return (
+      nombre.length > 0 &&
+      nombre.length <= 100 &&
+      !existingBodegas.some((bodega) => bodega.nombre === nombre)
+    );
   };
 
   const validateDireccion = (direccion) => {
@@ -146,6 +167,10 @@ const AgregarBodega = () => {
     const value = e.target.value;
     setDireccion(value);
     setIsDireccionValida(validateDireccion(value));
+  };
+
+  const handleTipoBodegaChange = (e) => {
+    setTipoBodega(e.target.value);
   };
 
   const handleDepartamentoChange = (e) => {
@@ -179,6 +204,7 @@ const AgregarBodega = () => {
     const bodegaData = {
       nombre,
       direccion,
+      tipo_bodega: tipoBodega, 
       id_departamento: departamento,
       id_municipio: municipio,
     };
@@ -220,6 +246,7 @@ const AgregarBodega = () => {
       }, 2000);
 
       setNombre("");
+      setTipoBodega("");
       setDireccion("");
       setDepartamento("");
       setMunicipio("");
@@ -258,11 +285,31 @@ const AgregarBodega = () => {
                   />
                   {!isNombreValido && (
                     <FormFeedback className="text-danger">
-                      El nombre debe contener entre 1 y 100 caracteres.
+                      Ya existe una bodega con ese nombre.
                     </FormFeedback>
                   )}
                 </FormGroup>
               </Col>
+
+              <Col md="6">
+                <FormGroup>
+                  <Label for="tipo_bodega">Tipo de Bodega</Label>
+                  <Input
+                    type="select"
+                    id="tipo_bodega"
+                    value={tipoBodega}
+                    onChange={handleTipoBodegaChange} 
+                    required
+                  >
+                    <option value="">Seleccione un tipo</option>
+                    <option value="fisica">Física</option>
+                    <option value="movil">Móvil</option>
+                  </Input>
+                </FormGroup>
+              </Col>
+            </Row>
+
+            <Row>
               <Col md="6">
                 <FormGroup>
                   <Label for="direccion">Dirección</Label>
@@ -281,6 +328,7 @@ const AgregarBodega = () => {
                   )}
                 </FormGroup>
               </Col>
+
               <Col md="6">
                 <FormGroup>
                   <Label for="departamento">Departamento</Label>
@@ -292,11 +340,13 @@ const AgregarBodega = () => {
                     required
                   >
                     <option value="">Seleccione un departamento</option>
-                    {departamentos.map((dept) => (
-                      <option key={dept.id} value={dept.id}>
-                        {dept.nombre}
-                      </option>
-                    ))}
+                      {departamentos
+                        .filter((d) => [11, 12, 13, 14].includes(d.id))
+                        .map((departamento) => (
+                          <option key={departamento.id} value={departamento.id}>
+                            {departamento.nombre}
+                          </option>
+                        ))}
                   </Input>
                 </FormGroup>
               </Col>
@@ -308,21 +358,25 @@ const AgregarBodega = () => {
                     id="municipio"
                     value={municipio}
                     onChange={handleMunicipioChange}
-                    disabled={!departamento}
                     required
                   >
                     <option value="">Seleccione un municipio</option>
-                    {municipiosPorDepartamento[departamento]?.map((mun) => (
-                      <option key={mun.id} value={mun.id}>
-                        {mun.nombre}
-                      </option>
-                    ))}
+                    {municipiosPorDepartamento[departamento] &&
+                      municipiosPorDepartamento[departamento].map((mun) => (
+                        <option key={mun.id} value={mun.id}>
+                          {mun.nombre}
+                        </option>
+                      ))}
                   </Input>
                 </FormGroup>
               </Col>
             </Row>
-            <Button color="primary" type="submit">
-              Guardar
+
+            <Button type="submit" color="primary">
+              Agregar Bodega
+            </Button>
+            <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionBodegas'}>
+              Salir
             </Button>
           </Form>
         </CardBody>
@@ -332,4 +386,3 @@ const AgregarBodega = () => {
 };
 
 export default AgregarBodega;
-

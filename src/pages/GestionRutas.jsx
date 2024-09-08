@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Container,
@@ -18,102 +19,96 @@ import "../styles/Vehiculos.css";
 import TablaRutas from "../components/Rutas/TablaRutas";
 import ModalEditarRuta from "../components/Rutas/ModalEditarRuta";
 import ModalConfirmarEliminarRuta from "../components/Rutas/ModalConfirmarEliminarRuta";
+import { toast } from "react-toastify";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionRutas = () => {
-  document.title = "Rutas | Mr. Paquetes";
-
   const [rutas, setRutas] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
-  const [rutaEditada, setRutaEditada] = useState({
-    id: null,
-    nombre: "",
-    distancia_km: "",
-    duracion_aproximada: "",
-    fecha_programada: "",
-    id_destino: "",
-    id_bodega: "",
-  });
+  const [rutaEditada, setRutaEditada] = useState(null);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [rutaAEliminar, setRutaAEliminar] = useState(null);
-  const [busqueda, setBusqueda] = useState("");
+  const [busquedaNombre, setBusquedaNombre] = useState("");
+  const [busquedaBodega, setBusquedaBodega] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [destinos, setDestinos] = useState([]);
   const [bodegas, setBodegas] = useState([]);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const location = useLocation();
+
+  const fetchData = useCallback(
+    async (page = currentPage) => {
       try {
         const token = AuthService.getCurrentUser();
-    
+
         const [responseRutas, responseDestinos, responseBodegas] =
           await Promise.all([
             axios.get(`${API_URL}/rutas`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
+              params: {
+                page: page,
+                per_page: ITEMS_PER_PAGE,
+                nombre: busquedaNombre,
+                id_bodega: busquedaBodega,
               },
+              headers: { Authorization: `Bearer ${token}` },
             }),
             axios.get(`${API_URL}/destinos`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
             }),
             axios.get(`${API_URL}/bodegas`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
+              headers: { Authorization: `Bearer ${token}` },
             }),
           ]);
-    
-        // Verifica la estructura de las respuestas
-        // console.log("Response Rutas:", responseRutas.data);
-        // console.log("Response Destinos:", responseDestinos.data);
-        // console.log("Response Bodegas:", responseBodegas.data);
-    
-        setRutas(responseRutas.data.data || []);
+
+        setRutas(responseRutas.data.data);
+        setTotalItems(responseRutas.data.total || 0);
         setDestinos(responseDestinos.data.destinos || []);
         setBodegas(responseBodegas.data.bodegas || []);
+        setCurrentPage(page);
       } catch (error) {
         console.error("Error al obtener datos:", error);
+        toast.error("Error al cargar los datos. Por favor, intente de nuevo.");
+        setError(
+          "Hubo un problema al cargar los datos. Por favor, intente de nuevo."
+        );
       }
-    };
-    
-  
+    },
+    [busquedaNombre, busquedaBodega]
+  );
+
+  useEffect(() => {
     fetchData();
-  }, []);
-  
+  }, [fetchData]);
+
   const confirmarEliminarRuta = async () => {
     try {
       const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/rutas/${rutaAEliminar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      setRutas(rutas.filter((ruta) => ruta.id !== rutaAEliminar));
+      toast.success("Ruta eliminada con éxito");
+
+      if (rutas.length === 1 && currentPage > 1) {
+        await fetchData(currentPage - 1);
+      } else {
+        await fetchData(currentPage);
+      }
+
       setConfirmarEliminar(false);
       setRutaAEliminar(null);
     } catch (error) {
       console.error("Error al eliminar ruta:", error);
-      setConfirmarEliminar(false);
+      toast.error("Error al eliminar la ruta. Por favor, intente de nuevo.");
     }
   };
 
   const toggleModalEditar = (ruta) => {
-    setRutaEditada(
-      ruta || {
-        id: null,
-        nombre: "",
-        distancia_km: "",
-        duracion_aproximada: "",
-        fecha_programada: "",
-        id_destino: "",
-        id_bodega: "",
-      }
-    );
+    setRutaEditada(ruta);
     setModalEditar(!modalEditar);
   };
 
@@ -122,51 +117,55 @@ const GestionRutas = () => {
     setConfirmarEliminar(true);
   };
 
-  const guardarCambiosRuta = async () => {
+  const guardarCambiosRuta = async (rutaActualizada) => {
     try {
       const token = AuthService.getCurrentUser();
-      await axios.put(`${API_URL}/rutas/${rutaEditada.id}`, rutaEditada, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      setRutas(
-        rutas.map((ruta) => (ruta.id === rutaEditada.id ? rutaEditada : ruta))
+      const dataToSend = {
+        ...rutaActualizada,
+        estado: rutaActualizada.estado === "Activo" ? 1 : 0,
+        id_bodega: rutaActualizada.id_bodega.toString(),
+        id_destino: parseInt(rutaActualizada.id_destino, 10),
+      };
+
+      const response = await axios.put(
+        `${API_URL}/rutas/${rutaActualizada.id}`,
+        dataToSend,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      setModalEditar(false);
-      setRutaEditada({
-        id: null,
-        nombre: "",
-        distancia_km: "",
-        duracion_aproximada: "",
-        fecha_programada: "",
-        id_destino: "",
-        id_bodega: "",
-      });
+
+      if (response.data && response.data.ruta) {
+        setModalEditar(false);
+        setRutaEditada(null);
+        toast.success("Cambios guardados con éxito");
+        await fetchData(currentPage);
+      } else {
+        throw new Error("Respuesta inesperada del servidor");
+      }
     } catch (error) {
       console.error("Error al actualizar ruta:", error);
+      toast.error("Error al guardar los cambios. Por favor, intente de nuevo.");
     }
   };
 
-  const filtrarRutas = (rutas) => {
-    if (!Array.isArray(rutas)) return [];
-    if (!busqueda) return rutas;
-    return rutas.filter((ruta) =>
-      ruta.nombre.toLowerCase().includes(busqueda.toLowerCase())
-    );
+  const handleBusquedaNombreChange = (e) => {
+    setBusquedaNombre(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleBusquedaBodegaChange = (e) => {
+    setBusquedaBodega(e.target.value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+    fetchData(pageNumber);
   };
-
-  const rutasFiltradas = filtrarRutas(rutas);
-  const paginatedRutas = rutasFiltradas.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="page-content">
@@ -175,26 +174,45 @@ const GestionRutas = () => {
           title="Gestión de Rutas"
           breadcrumbItem="Listado de Rutas"
         />
+        {error && <div className="alert alert-danger">{error}</div>}
         <Row>
-          <Col lg={12}>
-            <div
+        <Col lg={12}>
+          <div
               style={{
                 marginTop: "10px",
                 display: "flex",
                 alignItems: "center",
               }}
             >
-              <Label for="busqueda" style={{ marginRight: "10px" }}>
-                Buscar:
-              </Label>
-              <Input
-                type="text"
-                id="busqueda"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre de ruta"
-                style={{ width: "300px" }}
-              />
+                <Label for="busquedaNombre" style={{ marginRight: "10px" }}>
+                  Buscar:
+                </Label>
+                <Input
+                  type="text"
+                  id="busqueda"
+                  value={busquedaNombre}
+                  onChange={handleBusquedaNombreChange}
+                  placeholder="Buscar por nombre"
+                  style={{ width: "300px" }}
+                />
+      
+                <Label for="busquedaBodega" style={{ marginLeft: "10px", marginRight: "10px" }}>
+                  Bodega:
+                </Label>
+                <Input
+                  type="select"
+                  id="busquedaBodega"
+                  value={busquedaBodega}
+                  onChange={handleBusquedaBodegaChange}
+                  style={{ width: "200px" }}
+                >
+                  <option value="">Todas</option>
+                  {bodegas.map((bodega) => (
+                    <option key={bodega.id} value={bodega.id}>
+                      {bodega.nombre}
+                    </option>
+                  ))}
+                </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link
                   to="/AgregarRuta"
@@ -212,7 +230,7 @@ const GestionRutas = () => {
             <Card>
               <CardBody>
                 <TablaRutas
-                  rutas={paginatedRutas}
+                  rutas={rutas}
                   destinos={destinos}
                   bodegas={bodegas}
                   eliminarRuta={eliminarRuta}
@@ -234,7 +252,7 @@ const GestionRutas = () => {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={rutasFiltradas.length}
+              totalItemsCount={totalItems}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"
@@ -253,7 +271,6 @@ const GestionRutas = () => {
         destinos={destinos}
         bodegas={bodegas}
       />
-
       <ModalConfirmarEliminarRuta
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarRuta={confirmarEliminarRuta}

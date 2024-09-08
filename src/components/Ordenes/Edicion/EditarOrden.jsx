@@ -13,6 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const EditarOrden = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [ordenOriginal, setOrdenOriginal] = useState(null);
   const [ordenActualizada, setOrdenActualizada] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +28,7 @@ const EditarOrden = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log("Datos recibidos de la API:", response.data);
+        setOrdenOriginal(response.data);
         setOrdenActualizada(response.data);
         localStorage.setItem("ordenEnEdicion", JSON.stringify(response.data));
       } catch (error) {
@@ -53,34 +55,12 @@ const EditarOrden = () => {
     });
   };
 
-  const actualizarCliente = (nuevoCliente, nuevaDireccion) => {
-    actualizarOrden({
-      id_cliente: nuevoCliente.id,
-      id_direccion: nuevaDireccion ? nuevaDireccion.id : null,
-      direccion_emisor: nuevaDireccion || null,
-    });
-
-    if (nuevoCliente.id !== ordenActualizada.id_cliente) {
-      setSeccionActual("direccion");
-      toast.info("Por favor, seleccione una nueva dirección para el cliente.");
-    }
-  };
-
-  const actualizarDireccion = (nuevaDireccion) => {
-    actualizarOrden({
-      id_direccion: nuevaDireccion.id,
-      direccion_emisor: nuevaDireccion,
-    });
-  };
-
-  const actualizarDetalles = (nuevosDetalles) => {
-    actualizarOrden({ detalles: nuevosDetalles });
-  };
-
   const guardarCambios = async () => {
     try {
       const token = localStorage.getItem("token");
-      const ordenGuardada = JSON.parse(localStorage.getItem("ordenEnEdicion"));
+      const ordenGuardada = JSON.parse(
+        localStorage.getItem("ordenEnEdicion") || "{}"
+      );
 
       if (!ordenGuardada.id_direccion) {
         toast.error(
@@ -90,11 +70,36 @@ const EditarOrden = () => {
       }
 
       const datosParaEnviar = {
-        ...ordenGuardada,
+        id_cliente: parseInt(ordenGuardada.id_cliente),
+        id_direccion: parseInt(ordenGuardada.id_direccion),
+        id_tipo_pago: parseInt(ordenGuardada.id_tipo_pago),
+        id_ubicacion_paquete: ordenGuardada.id_ubicacion_paquete
+          ? parseInt(ordenGuardada.id_ubicacion_paquete)
+          : null,
+        total_pagar: parseFloat(ordenGuardada.total_pagar),
+        costo_adicional: parseFloat(ordenGuardada.costo_adicional) || 0,
+        concepto: ordenGuardada.concepto,
+        tipo_documento: ordenGuardada.tipo_documento,
+        tipo_orden: ordenGuardada.tipo_orden || "orden",
         detalles: ordenGuardada.detalles.map((detalle) => ({
-          ...detalle,
-          id_empaque: detalle.id_empaque || detalle.tipo_caja,
-          id_direccion: detalle.id_direccion_entrega || detalle.id_direccion,
+          id_tipo_paquete: parseInt(detalle.id_tipo_paquete),
+          id_tamano_paquete: parseInt(detalle.id_tamano_paquete),
+          id_empaque: parseInt(detalle.id_empaque),
+          peso: parseFloat(detalle.peso),
+          descripcion_contenido: detalle.descripcion_contenido || "",
+          id_estado_paquete: parseInt(detalle.id_estado_paquete),
+          fecha_envio: detalle.fecha_envio,
+          fecha_entrega_estimada: detalle.fecha_entrega_estimada,
+          id_tipo_entrega: parseInt(detalle.id_tipo_entrega),
+          instrucciones_entrega: detalle.instrucciones_entrega || "",
+          descripcion: detalle.descripcion || "",
+          precio: parseFloat(detalle.precio),
+          fecha_entrega: detalle.fecha_entrega || null,
+          id_direccion: parseInt(detalle.id_direccion),
+          id_paquete: detalle.id_paquete
+            ? parseInt(detalle.id_paquete)
+            : undefined,
+          validacion_entrega: detalle.validacion_entrega || "0",
         })),
       };
 
@@ -120,9 +125,15 @@ const EditarOrden = () => {
       console.error("Error al actualizar la orden:", error);
       if (error.response) {
         console.error("Respuesta del servidor:", error.response.data);
-        toast.error(
-          `Error al actualizar la orden: ${error.response.data.message || JSON.stringify(error.response.data)}`
-        );
+        if (error.response.data.errors) {
+          Object.entries(error.response.data.errors).forEach(([key, value]) => {
+            toast.error(`Error en ${key}: ${value.join(", ")}`);
+          });
+        } else {
+          toast.error(
+            `Error al actualizar la orden: ${error.response.data.message || JSON.stringify(error.response.data)}`
+          );
+        }
       } else {
         toast.error("Error al actualizar la orden: " + error.message);
       }
@@ -137,18 +148,11 @@ const EditarOrden = () => {
     switch (seccionActual) {
       case "resumen":
         return <ResumenOrden orden={ordenActualizada} />;
-      case "cliente":
-        return (
-          <EditarCliente
-            orden={ordenActualizada}
-            actualizarCliente={actualizarCliente}
-          />
-        );
       case "direccion":
         return (
           <EditarDireccion
             orden={ordenActualizada}
-            actualizarDireccion={actualizarDireccion}
+            actualizarOrden={actualizarOrden}
           />
         );
       case "detalles":
@@ -170,9 +174,6 @@ const EditarOrden = () => {
         <Col>
           <Button color="primary" onClick={() => setSeccionActual("resumen")}>
             Resumen
-          </Button>{" "}
-          <Button color="primary" onClick={() => setSeccionActual("cliente")}>
-            Editar Cliente
           </Button>{" "}
           <Button color="primary" onClick={() => setSeccionActual("direccion")}>
             Editar Dirección

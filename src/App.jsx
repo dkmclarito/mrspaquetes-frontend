@@ -17,6 +17,7 @@ import GestionEmpleados from "./pages/GestionEmpleados";
 import AgregarEmpleado from "./pages/AgregarEmpleado";
 import AgregarEmpleadoUser from "./pages/AgregarEmpleado";
 import DetallesEmpleado from "./pages/DetallesEmpleado";
+import DetallesRutas from "./pages/DetallesRutas";
 import GestionClientes from "./pages/GestionClientes";
 import AgregarCliente from "./pages/AgregarCliente";
 import DetallesCliente from "./pages/DetallesCliente";
@@ -43,6 +44,7 @@ import ResetPassword from "./components/LoginClientes/ResetPassword"; // Nuevo: 
 import DataUsuario from "./pages/DataUsuario";
 import GestionBodegas from "./pages/GestionBodega";
 import AgregarBodega from "./pages/AgregarBodega";
+import DetallesBodega from "./pages/DetallesBodega";
 import AgregarOrden from "./pages/AgregarOrden";
 import GestionOrdenes from "./pages/GestionOrdenes";
 import DatosPaquete from "./pages/DatosPaquete";
@@ -62,6 +64,13 @@ import OrdenesDireccionesExpress from "./pages/OrdenesDireccionesExpress";
 import DatosPaqueteExpress from "./pages/DatosPaqueteExpress";
 import GenerarOrdenExpress from "./pages/GenerarOrdenExpress";
 import ProcesarPagoExpress from "./pages/ProcesarPagoExpress";
+import GestionAsignarRutas from "./pages/GestionAsignarRutas";
+import RutasRecoleccion from "./pages/RutasRecoleccion";
+import OrdenesRecoleccion from "./pages/OrdenesRecoleccion";
+import AgregarAsignacionRuta from "./pages/AgregarAsignacionRuta";
+import DetallesAsignacionRutas from "./pages/DetallesAsignacionRutas";
+import AgregarUbicacion from "./pages/AgregarUbicacion";
+import GestionUbicacion from "./pages/GestionUbicacion";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -105,6 +114,18 @@ const App = () => {
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
                 />
+                <Route
+                  path="/GestionAsignarRutas"
+                  element={<GestionAsignarRutas />}
+                />
+                <Route
+                  path="/AgregarAsignacionRuta"
+                  element={<AgregarAsignacionRuta />}
+                />
+                  <Route
+                  path="/DetallesAsignacionRutas/:id"
+                  element={<DetallesAsignacionRutas />}
+                />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route
                   path="/AgregarEmpleado/:id"
@@ -115,6 +136,7 @@ const App = () => {
                   path="/DetallesEmpleado/:id"
                   element={<DetallesEmpleado />}
                 />
+                <Route path="/DetallesRutas/:id" element={<DetallesRutas />} />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
                 <Route
@@ -132,8 +154,14 @@ const App = () => {
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
                 <Route path="/TrackingPage" element={<TrackingPage />} />
+                <Route path="/GestionUbicacion" element={<GestionUbicacion />} />
+                <Route path="/AgregarUbicacion" element={<AgregarUbicacion />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
+                <Route
+                  path="/DetallesBodega/:id"
+                  element={<DetallesBodega />}
+                />
                 <Route path="/AgregarOrden" element={<AgregarOrden />} />
                 <Route
                   path="/OrdenesSeleccionarCliente"
@@ -212,6 +240,14 @@ const App = () => {
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/AgregarRuta" element={<AgregarRuta />} />
+                <Route
+                  path="/RutasRecoleccion"
+                  element={<RutasRecoleccion />}
+                />
+                <Route
+                  path="/OrdenesRecoleccion"
+                  element={<OrdenesRecoleccion />}
+                />
               </Route>
 
               {/* Rutas para 'conductor' */}

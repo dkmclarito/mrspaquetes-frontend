@@ -6,25 +6,40 @@ const ResumenOrden = ({ orden }) => {
     return <div>Cargando...</div>;
   }
 
+  const calcularTotalPaquetes = () => {
+    return orden.detalles.reduce(
+      (total, detalle) => total + parseFloat(detalle.precio || 0),
+      0
+    );
+  };
+
+  const totalPaquetes = calcularTotalPaquetes();
+  const costoAdicional = parseFloat(orden.costo_adicional || 0);
+  const totalOrden = parseFloat(orden.total_pagar);
+
   return (
     <Card>
       <CardBody>
         <h2>Resumen de la Orden</h2>
         <ListGroup>
           <ListGroupItem>
-            <strong>ID de la Orden:</strong> {orden.id}
+            <strong>Número de Seguimiento:</strong> {orden.numero_seguimiento}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Cliente:</strong> {orden.id_cliente}
+            <strong>Cliente:</strong> {orden.direccion_emisor.nombre_cliente}{" "}
+            {orden.direccion_emisor.apellido_cliente}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Total a Pagar:</strong> ${orden.total_pagar}
+            <strong>Total Paquetes:</strong> ${totalPaquetes.toFixed(2)}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Costo Adicional:</strong> ${orden.costo_adicional}
+            <strong>Costo Adicional:</strong> ${costoAdicional.toFixed(2)}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Estado:</strong> {orden.id_estado_paquetes}
+            <strong>Total a Pagar:</strong> ${totalOrden.toFixed(2)}
+          </ListGroupItem>
+          <ListGroupItem>
+            <strong>Estado de Pago:</strong> {orden.estado_pago}
           </ListGroupItem>
           <ListGroupItem>
             <strong>Concepto:</strong> {orden.concepto}
@@ -45,12 +60,16 @@ const ResumenOrden = ({ orden }) => {
           <tbody>
             {orden.detalles.map((detalle, index) => (
               <tr key={index}>
-                <td>{detalle.id_tipo_paquete}</td>
-                <td>{detalle.peso}</td>
-                <td>{detalle.id_estado_paquete}</td>
-                <td>{detalle.fecha_envio}</td>
-                <td>{detalle.fecha_entrega_estimada}</td>
-                <td>${detalle.precio}</td>
+                <td>{detalle.descripcion_contenido || "N/A"}</td>
+                <td>{detalle.peso ? `${detalle.peso} lb` : "N/A"}</td>
+                <td>{detalle.id_estado_paquete === 2 ? "En Bodega" : "N/A"}</td>
+                <td>{new Date(detalle.fecha_envio).toLocaleDateString()}</td>
+                <td>
+                  {new Date(
+                    detalle.fecha_entrega_estimada
+                  ).toLocaleDateString()}
+                </td>
+                <td>${parseFloat(detalle.precio || 0).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>

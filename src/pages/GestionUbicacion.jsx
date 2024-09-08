@@ -24,8 +24,8 @@ import 'react-toastify/dist/ReactToastify.css';
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
-const GestionBodega = () => {
-  document.title = "Bodegas | Vehículos";
+const GestionUbicacion = () => {
+  document.title = "Bodegas | Ubicación";
   const navigate = useNavigate();
   const [bodegas, setBodegas] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
@@ -264,8 +264,8 @@ const GestionBodega = () => {
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs
-          title="Gestión de Bodega"
-          breadcrumbItem="Listado de Bodegas"
+          title="Gestión de Ubicaciones"
+          breadcrumbItem="Listado de Ubicaciones"
         />
         <Row>
           <Col lg={12}>
@@ -303,10 +303,10 @@ const GestionBodega = () => {
               </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link
-                  to="/AgregarBodega"
+                  to="/AgregarUbicacion"
                   className="btn btn-primary custom-button"
                 >
-                  <i className="fas fa-plus"></i> Agregar Bodega
+                  <i className="fas fa-plus"></i> Agregar Ubicacion
                 </Link>
               </div>
             </div>
@@ -370,4 +370,4 @@ const GestionBodega = () => {
   );
 };
 
-export default GestionBodega;
+export default GestionUbicacion;
