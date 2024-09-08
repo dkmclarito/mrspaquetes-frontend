@@ -73,45 +73,34 @@ const EditarOrden = () => {
         id_cliente: parseInt(ordenGuardada.id_cliente),
         id_direccion: parseInt(ordenGuardada.id_direccion),
         id_tipo_pago: parseInt(ordenGuardada.id_tipo_pago),
+        id_ubicacion_paquete: ordenGuardada.id_ubicacion_paquete
+          ? parseInt(ordenGuardada.id_ubicacion_paquete)
+          : null,
         total_pagar: parseFloat(ordenGuardada.total_pagar),
-        id_estado_paquetes: parseInt(ordenGuardada.id_estado_paquetes),
         costo_adicional: parseFloat(ordenGuardada.costo_adicional) || 0,
         concepto: ordenGuardada.concepto,
         tipo_documento: ordenGuardada.tipo_documento,
-        detalles: ordenGuardada.detalles.map((detalle) => {
-          const detalleFormateado = {
-            id_tipo_entrega: parseInt(detalle.id_tipo_entrega),
-            id_estado_paquetes: parseInt(ordenGuardada.id_estado_paquetes),
-            id_direccion_entrega:
-              parseInt(detalle.id_direccion_entrega) ||
-              parseInt(ordenGuardada.id_direccion),
-            validacion_entrega: detalle.validacion_entrega || "",
-            instrucciones_entrega: detalle.instrucciones_entrega || "",
-            descripcion: detalle.descripcion || "",
-            precio: parseFloat(detalle.precio) || 0,
-            fecha_entrega: detalle.fecha_entrega || null,
-            id_tipo_paquete: parseInt(detalle.id_tipo_paquete),
-            id_tamano_paquete: parseInt(detalle.id_tamano_paquete),
-            tipo_caja: parseInt(detalle.tipo_caja),
-            peso: parseFloat(detalle.peso) || 0,
-            fecha_envio: detalle.fecha_envio || null,
-            fecha_entrega_estimada: detalle.fecha_entrega_estimada || null,
-            descripcion_contenido: detalle.descripcion_contenido || "",
-            id_estado_paquete:
-              parseInt(detalle.id_estado_paquete) ||
-              parseInt(ordenGuardada.id_estado_paquetes),
-          };
-
-          // Si el detalle ya existe, incluir su ID
-          if (detalle.id) {
-            detalleFormateado.id = parseInt(detalle.id);
-          }
-          if (detalle.id_paquete) {
-            detalleFormateado.id_paquete = parseInt(detalle.id_paquete);
-          }
-
-          return detalleFormateado;
-        }),
+        tipo_orden: ordenGuardada.tipo_orden || "orden",
+        detalles: ordenGuardada.detalles.map((detalle) => ({
+          id_tipo_paquete: parseInt(detalle.id_tipo_paquete),
+          id_tamano_paquete: parseInt(detalle.id_tamano_paquete),
+          id_empaque: parseInt(detalle.id_empaque),
+          peso: parseFloat(detalle.peso),
+          descripcion_contenido: detalle.descripcion_contenido || "",
+          id_estado_paquete: parseInt(detalle.id_estado_paquete),
+          fecha_envio: detalle.fecha_envio,
+          fecha_entrega_estimada: detalle.fecha_entrega_estimada,
+          id_tipo_entrega: parseInt(detalle.id_tipo_entrega),
+          instrucciones_entrega: detalle.instrucciones_entrega || "",
+          descripcion: detalle.descripcion || "",
+          precio: parseFloat(detalle.precio),
+          fecha_entrega: detalle.fecha_entrega || null,
+          id_direccion: parseInt(detalle.id_direccion),
+          id_paquete: detalle.id_paquete
+            ? parseInt(detalle.id_paquete)
+            : undefined,
+          validacion_entrega: detalle.validacion_entrega || "0",
+        })),
       };
 
       console.log("Datos a enviar al servidor:", datosParaEnviar);
@@ -136,9 +125,15 @@ const EditarOrden = () => {
       console.error("Error al actualizar la orden:", error);
       if (error.response) {
         console.error("Respuesta del servidor:", error.response.data);
-        toast.error(
-          `Error al actualizar la orden: ${error.response.data.message || JSON.stringify(error.response.data)}`
-        );
+        if (error.response.data.errors) {
+          Object.entries(error.response.data.errors).forEach(([key, value]) => {
+            toast.error(`Error en ${key}: ${value.join(", ")}`);
+          });
+        } else {
+          toast.error(
+            `Error al actualizar la orden: ${error.response.data.message || JSON.stringify(error.response.data)}`
+          );
+        }
       } else {
         toast.error("Error al actualizar la orden: " + error.message);
       }
@@ -153,13 +148,6 @@ const EditarOrden = () => {
     switch (seccionActual) {
       case "resumen":
         return <ResumenOrden orden={ordenActualizada} />;
-      case "cliente":
-        return (
-          <EditarCliente
-            orden={ordenActualizada}
-            actualizarOrden={actualizarOrden}
-          />
-        );
       case "direccion":
         return (
           <EditarDireccion
@@ -186,9 +174,6 @@ const EditarOrden = () => {
         <Col>
           <Button color="primary" onClick={() => setSeccionActual("resumen")}>
             Resumen
-          </Button>{" "}
-          <Button color="primary" onClick={() => setSeccionActual("cliente")}>
-            Editar Cliente
           </Button>{" "}
           <Button color="primary" onClick={() => setSeccionActual("direccion")}>
             Editar Dirección

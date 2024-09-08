@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  Table,
   Button,
   Modal,
   ModalHeader,
   ModalBody,
-  ModalFooter,
-  Form,
-  FormGroup,
-  Label,
   Input,
   Row,
   Col,
@@ -21,13 +16,13 @@ import {
   PaginationLink,
 } from "reactstrap";
 import { toast } from "react-toastify";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
 import AuthService from "../services/authService";
 import Breadcrumbs from "../components/Rutas/Common/Breadcrumbs";
+import OrdenForm from "../components/Rutas/OrdenForm";
+import OrdenTable from "../components/Rutas/OrdenTable";
+import ConfirmModal from "../components/Rutas/ConfirmModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 7;
 
 const OrdenesRecoleccion = () => {
   const [ordenesRecoleccion, setOrdenesRecoleccion] = useState([]);
@@ -84,27 +79,6 @@ const OrdenesRecoleccion = () => {
     }
   };
 
-  const getEstadoTexto = (estado) => {
-    switch (estado) {
-      case 1:
-        return "Pendiente";
-      case 2:
-        return "En Proceso";
-      case 3:
-        return "Completada";
-      default:
-        return "Desconocido";
-    }
-  };
-
-  const getOrdenInfo = (idOrden) => {
-    const orden = ordenes.find((o) => o.id === idOrden);
-    if (orden) {
-      return `${orden.numero_seguimiento || "N/A"} - ${orden.cliente?.nombre || "N/A"} ${orden.cliente?.apellido || ""}`;
-    }
-    return "Información no disponible";
-  };
-
   const cargarRutasRecoleccion = async () => {
     try {
       const token = AuthService.getCurrentUser();
@@ -129,6 +103,27 @@ const OrdenesRecoleccion = () => {
     }
   };
 
+  const getEstadoTexto = (estado) => {
+    switch (estado) {
+      case 1:
+        return "Pendiente";
+      case 2:
+        return "En Proceso";
+      case 3:
+        return "Completada";
+      default:
+        return "Desconocido";
+    }
+  };
+
+  const getOrdenInfo = (idOrden) => {
+    const orden = ordenes.find((o) => o.id === idOrden);
+    if (orden) {
+      return `${orden.numero_seguimiento || "N/A"} - ${orden.cliente?.nombre || "N/A"} ${orden.cliente?.apellido || ""}`;
+    }
+    return "Información no disponible";
+  };
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -150,13 +145,12 @@ const OrdenesRecoleccion = () => {
     }
   };
 
-  const toggle = () => setModal(!modal);
-
   const handleInputChange = (e) => {
-    setNuevaOrden({ ...nuevaOrden, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNuevaOrden((prev) => ({ ...prev, [name]: value }));
   };
 
-  const crearOrdenRecoleccion = async () => {
+  const handleSubmit = async () => {
     try {
       const token = AuthService.getCurrentUser();
       const ordenData = {
@@ -164,29 +158,47 @@ const OrdenesRecoleccion = () => {
         id_orden: parseInt(nuevaOrden.id_orden),
         estado: parseInt(nuevaOrden.estado),
       };
-      await axios.post(`${API_URL}/orden-recoleccion`, ordenData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+
+      if (ordenEditando) {
+        await axios.put(
+          `${API_URL}/orden-recoleccion/${ordenEditando.id}`,
+          ordenData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        toast.success("Orden de recolección actualizada con éxito");
+      } else {
+        await axios.post(`${API_URL}/orden-recoleccion`, ordenData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        toast.success("Orden de recolección creada con éxito");
+      }
+
       cargarOrdenesRecoleccion();
-      toggle();
+      setModal(false);
+      setEditModal(false);
       setNuevaOrden({
         id_ruta_recoleccion: "",
         id_orden: "",
         estado: "",
       });
     } catch (error) {
-      console.error("Error al crear orden de recolección:", error);
+      console.error("Error al procesar orden de recolección:", error);
       if (error.response && error.response.data && error.response.data.errors) {
         const errorMessages = Object.values(error.response.data.errors)
           .flat()
           .join(", ");
-        setError(`Error al crear orden de recolección: ${errorMessages}`);
+        setError(`Error al procesar orden de recolección: ${errorMessages}`);
       } else {
         setError(
-          "Error al crear orden de recolección. Por favor, intente de nuevo."
+          "Error al procesar orden de recolección. Por favor, intente de nuevo."
         );
       }
     }
@@ -199,6 +211,7 @@ const OrdenesRecoleccion = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrdenEditando(response.data);
+      setNuevaOrden(response.data);
       setEditModal(true);
     } catch (error) {
       console.error("Error al cargar los datos de la orden:", error);
@@ -208,7 +221,7 @@ const OrdenesRecoleccion = () => {
     }
   };
 
-  const eliminarOrden = (id) => {
+  const handleDelete = (id) => {
     setOrdenAEliminar(id);
     setConfirmarEliminar(true);
   };
@@ -222,7 +235,6 @@ const OrdenesRecoleccion = () => {
 
       toast.success("Orden de recolección eliminada con éxito");
 
-      // Verificar si la página actual queda vacía
       if (ordenesRecoleccion.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       } else {
@@ -235,38 +247,6 @@ const OrdenesRecoleccion = () => {
       console.error("Error al eliminar orden de recolección:", error);
       toast.error(
         "Error al eliminar la orden de recolección. Por favor, intente de nuevo."
-      );
-    }
-  };
-
-  const handleEditInputChange = (e) => {
-    setOrdenEditando({ ...ordenEditando, [e.target.name]: e.target.value });
-  };
-
-  const actualizarOrdenRecoleccion = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      const ordenData = {
-        id_ruta_recoleccion: parseInt(ordenEditando.id_ruta_recoleccion),
-        id_orden: parseInt(ordenEditando.id_orden),
-        estado: parseInt(ordenEditando.estado),
-      };
-      await axios.put(
-        `${API_URL}/orden-recoleccion/${ordenEditando.id}`,
-        ordenData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      cargarOrdenesRecoleccion();
-      setEditModal(false);
-    } catch (error) {
-      console.error("Error al actualizar orden de recolección:", error);
-      setError(
-        "Error al actualizar orden de recolección. Por favor, intente de nuevo."
       );
     }
   };
@@ -301,7 +281,7 @@ const OrdenesRecoleccion = () => {
               />
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <Button color="primary" onClick={toggle}>
+              <Button color="primary" onClick={() => setModal(true)}>
                 <i className="fas fa-plus"></i> Crear Orden de Recolección
               </Button>
             </div>
@@ -312,45 +292,13 @@ const OrdenesRecoleccion = () => {
           <Col lg={12}>
             <Card>
               <CardBody>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Ruta de Recolección</th>
-                      <th>Orden</th>
-                      <th>Estado</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ordenesRecoleccionFiltradas.map((orden) => (
-                      <tr key={orden.id}>
-                        <td>{orden.id}</td>
-                        <td>{orden.id_ruta_recoleccion}</td>
-                        <td>{getOrdenInfo(orden.id_orden)}</td>
-                        <td>{getEstadoTexto(orden.estado)}</td>
-                        <td>
-                          <div className="button-container">
-                            <Button
-                              className="me-2 btn-icon btn-danger"
-                              onClick={() => eliminarOrden(orden.id)}
-                              aria-label="Eliminar Orden de Recolección"
-                            >
-                              <FontAwesomeIcon icon={faTimes} />
-                            </Button>
-                            <Button
-                              className="me-2 btn-icon btn-editar"
-                              onClick={() => handleEdit(orden.id)}
-                              aria-label="Editar Orden de Recolección"
-                            >
-                              <FontAwesomeIcon icon={faPencilAlt} />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                <OrdenTable
+                  ordenes={ordenesRecoleccionFiltradas}
+                  getOrdenInfo={getOrdenInfo}
+                  getEstadoTexto={getEstadoTexto}
+                  handleEdit={handleEdit}
+                  handleDelete={handleDelete}
+                />
                 <Pagination>
                   <PaginationItem disabled={currentPage === 1}>
                     <PaginationLink
@@ -377,161 +325,31 @@ const OrdenesRecoleccion = () => {
           </Col>
         </Row>
 
-        <Modal isOpen={modal} toggle={toggle}>
-          <ModalHeader toggle={toggle}>
-            Crear Nueva Orden de Recolección
+        <Modal isOpen={modal || editModal} toggle={() => setModal(false)}>
+          <ModalHeader toggle={() => setModal(false)}>
+            {editModal
+              ? "Editar Orden de Recolección"
+              : "Crear Nueva Orden de Recolección"}
           </ModalHeader>
           <ModalBody>
-            <Form>
-              <FormGroup>
-                <Label for="id_ruta_recoleccion">Ruta de Recolección</Label>
-                <Input
-                  type="select"
-                  name="id_ruta_recoleccion"
-                  id="id_ruta_recoleccion"
-                  onChange={handleInputChange}
-                  value={nuevaOrden.id_ruta_recoleccion}
-                >
-                  <option value="">Seleccione una ruta de recolección</option>
-                  {rutasRecoleccion.map((ruta) => (
-                    <option key={ruta.id} value={ruta.id}>
-                      {ruta.ruta ? ruta.ruta.nombre : `Ruta ${ruta.id}`}
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-              <FormGroup>
-                <Label for="id_orden">Orden</Label>
-                <Input
-                  type="select"
-                  name="id_orden"
-                  id="id_orden"
-                  onChange={handleInputChange}
-                  value={nuevaOrden.id_orden}
-                >
-                  <option value="">Seleccione una orden</option>
-                  {ordenes.map((orden) => (
-                    <option key={orden.id} value={orden.id}>
-                      {`${orden.numero_seguimiento || "N/A"} - ${orden.cliente?.nombre || "N/A"} ${orden.cliente?.apellido || ""}`}
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-              <FormGroup>
-                <Label for="estado">Estado</Label>
-                <Input
-                  type="select"
-                  name="estado"
-                  id="estado"
-                  onChange={handleInputChange}
-                  value={nuevaOrden.estado}
-                >
-                  <option value="">Seleccione un estado</option>
-                  <option value="1">Pendiente</option>
-                  <option value="2">En Proceso</option>
-                  <option value="3">Completada</option>
-                </Input>
-              </FormGroup>
-            </Form>
+            <OrdenForm
+              orden={nuevaOrden}
+              rutasRecoleccion={rutasRecoleccion}
+              ordenes={ordenes}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              isEditing={!!ordenEditando}
+            />
           </ModalBody>
-          <ModalFooter>
-            <Button color="primary" onClick={crearOrdenRecoleccion}>
-              Crear
-            </Button>
-            <Button color="secondary" onClick={toggle}>
-              Cancelar
-            </Button>
-          </ModalFooter>
         </Modal>
 
-        <Modal isOpen={editModal} toggle={() => setEditModal(!editModal)}>
-          <ModalHeader toggle={() => setEditModal(!editModal)}>
-            Editar Orden de Recolección
-          </ModalHeader>
-          <ModalBody>
-            <Form>
-              <FormGroup>
-                <Label for="id_ruta_recoleccion">Ruta de Recolección</Label>
-                <Input
-                  type="select"
-                  name="id_ruta_recoleccion"
-                  id="id_ruta_recoleccion"
-                  onChange={handleEditInputChange}
-                  value={ordenEditando?.id_ruta_recoleccion || ""}
-                >
-                  <option value="">Seleccione una ruta de recolección</option>
-                  {rutasRecoleccion.map((ruta) => (
-                    <option key={ruta.id} value={ruta.id}>
-                      {ruta.ruta ? ruta.ruta.nombre : `Ruta ${ruta.id}`}
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-              <FormGroup>
-                <Label for="id_orden">Orden</Label>
-                <Input
-                  type="select"
-                  name="id_orden"
-                  id="id_orden"
-                  onChange={handleEditInputChange}
-                  value={ordenEditando?.id_orden || ""}
-                >
-                  <option value="">Seleccione una orden</option>
-                  {ordenes.map((orden) => (
-                    <option key={orden.id} value={orden.id}>
-                      {`${orden.numero_seguimiento || "N/A"} - ${orden.cliente?.nombre || "N/A"} ${orden.cliente?.apellido || ""}`}
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-              <FormGroup>
-                <Label for="estado">Estado</Label>
-                <Input
-                  type="select"
-                  name="estado"
-                  id="estado"
-                  onChange={handleEditInputChange}
-                  value={ordenEditando?.estado || ""}
-                >
-                  <option value="">Seleccione un estado</option>
-                  <option value="1">Pendiente</option>
-                  <option value="2">En Proceso</option>
-                  <option value="3">Completada</option>
-                </Input>
-              </FormGroup>
-            </Form>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="primary" onClick={actualizarOrdenRecoleccion}>
-              Actualizar
-            </Button>
-            <Button color="secondary" onClick={() => setEditModal(!editModal)}>
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Modal>
-        <Modal
+        <ConfirmModal
           isOpen={confirmarEliminar}
-          toggle={() => setConfirmarEliminar(!confirmarEliminar)}
-        >
-          <ModalHeader toggle={() => setConfirmarEliminar(!confirmarEliminar)}>
-            Confirmar Eliminación
-          </ModalHeader>
-          <ModalBody>
-            ¿Está seguro de que desea eliminar esta orden de recolección?
-          </ModalBody>
-          <ModalFooter>
-            <Button color="danger" onClick={confirmarEliminarOrden}>
-              Eliminar
-            </Button>{" "}
-            <Button
-              color="secondary"
-              onClick={() => setConfirmarEliminar(!confirmarEliminar)}
-            >
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Modal>
+          toggle={() => setConfirmarEliminar(false)}
+          onConfirm={confirmarEliminarOrden}
+          title="Confirmar Eliminación"
+          body="¿Está seguro de que desea eliminar esta orden de recolección?"
+        />
       </Container>
     </div>
   );

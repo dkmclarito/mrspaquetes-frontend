@@ -1,13 +1,34 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Container, Row, Col, Card, CardBody, Form, FormGroup, Label, Input, Button, FormFeedback, Nav, NavItem, NavLink, Progress } from 'reactstrap';
-import axios from 'axios';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Button,
+  FormFeedback,
+  Nav,
+  NavItem,
+  NavLink,
+  Progress,
+} from "reactstrap";
+import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faMapMarkerAlt,
+  faBook,
+  faDollarSign,
+} from "@fortawesome/free-solid-svg-icons";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
-import AuthService from '../services/authService';
+import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -19,20 +40,20 @@ export default function GenerarOrden() {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     id_cliente: idCliente,
-    nombre_contacto: '',
-    telefono: '',
-    id_direccion: '',
+    nombre_contacto: "",
+    telefono: "",
+    id_direccion: "",
     id_tipo_pago: 1,
     id_estado_paquete: 1,
     id_estado_paquetes: 1,
     total_pagar: 0,
-    costo_adicional: '',
-    concepto: 'Envío de paquetes',
-    tipo_documento: 'consumidor_final',
-    detalles: []
+    costo_adicional: "",
+    concepto: "Envío de paquetes",
+    tipo_documento: "consumidor_final",
+    detalles: [],
   });
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
 
   // Nueva función para verificar el estado del usuario logueado
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -41,7 +62,7 @@ export default function GenerarOrden() {
 
       if (userId && token) {
         const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         // Verifica si el token es inválido
@@ -67,38 +88,51 @@ export default function GenerarOrden() {
     const fetchData = async () => {
       try {
         const response = await axios.get(`${API_URL}/clientes/${idCliente}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setCliente(response.data.cliente);
-        
-        const storedAddress = JSON.parse(localStorage.getItem('selectedAddress') || '{}');
+
+        const storedAddress = JSON.parse(
+          localStorage.getItem("selectedAddress") || "{}"
+        );
         setSelectedAddress(storedAddress);
-        
-        setFormData(prevState => ({
+
+        setFormData((prevState) => ({
           ...prevState,
-          nombre_contacto: storedAddress.nombre_contacto || '',
-          telefono: storedAddress.telefono || '',
-          id_direccion: Number(storedAddress.id) || '',
+          nombre_contacto: storedAddress.nombre_contacto || "",
+          telefono: storedAddress.telefono || "",
+          id_direccion: Number(storedAddress.id) || "",
           total_pagar: location.state?.totalPrice || 0,
-          detalles: location.state?.detalles?.map(detalle => ({
-            ...detalle,
-            id_tipo_paquete: Number(detalle.id_tipo_paquete),
-            id_empaque: Number(detalle.id_empaque),
-            peso: Number(detalle.peso),
-            id_estado_paquete: 1,
-            id_tamano_paquete: Number(detalle.tamano_paquete),
-            id_tipo_entrega: 1,
-            id_direccion: Number(storedAddress.id),
-            precio: Number(detalle.precio),
-            fecha_envio: detalle.fecha_envio ? new Date(detalle.fecha_envio).toISOString().split('T')[0] + 'T00:00:00' : null,
-            fecha_entrega_estimada: detalle.fecha_entrega_estimada ? new Date(detalle.fecha_entrega_estimada).toISOString().split('T')[0] + 'T00:00:00' : null,
-            fecha_entrega: detalle.fecha_entrega ? new Date(detalle.fecha_entrega).toISOString().split('T')[0] + 'T00:00:00' : null,
-            descripcion_contenido: detalle.descripcion || '',
-          })) || [],
-          ...location.state?.commonData
+          detalles:
+            location.state?.detalles?.map((detalle) => ({
+              ...detalle,
+              id_tipo_paquete: Number(detalle.id_tipo_paquete),
+              id_empaque: Number(detalle.id_empaque),
+              peso: Number(detalle.peso),
+              id_estado_paquete: 1,
+              id_tamano_paquete: Number(detalle.tamano_paquete),
+              id_tipo_entrega: 1,
+              id_direccion: Number(storedAddress.id),
+              precio: Number(detalle.precio),
+              fecha_envio: detalle.fecha_envio
+                ? new Date(detalle.fecha_envio).toISOString().split("T")[0] +
+                  "T00:00:00"
+                : null,
+              fecha_entrega_estimada: detalle.fecha_entrega_estimada
+                ? new Date(detalle.fecha_entrega_estimada)
+                    .toISOString()
+                    .split("T")[0] + "T00:00:00"
+                : null,
+              fecha_entrega: detalle.fecha_entrega
+                ? new Date(detalle.fecha_entrega).toISOString().split("T")[0] +
+                  "T00:00:00"
+                : null,
+              descripcion_contenido: detalle.descripcion || "",
+            })) || [],
+          ...location.state?.commonData,
         }));
-  
-        console.log('Datos iniciales del formulario:', formData);
+
+        console.log("Datos iniciales del formulario:", formData);
       } catch (error) {
         console.error("Error al obtener datos:", error);
         toast.error("Error al obtener datos");
@@ -106,38 +140,38 @@ export default function GenerarOrden() {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, [idCliente, location.state]);
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
     }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
-  
+
     return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
   }, [verificarEstadoUsuarioLogueado]);
-  
+
   const validateField = (name, value) => {
-    let error = '';
+    let error = "";
     switch (name) {
-      case 'nombre_contacto':
-      case 'telefono':
-      case 'concepto':
+      case "nombre_contacto":
+      case "telefono":
+      case "concepto":
         if (!value.trim()) {
-          error = 'Este campo es requerido';
+          error = "Este campo es requerido";
         }
         break;
-      case 'total_pagar':
-      case 'costo_adicional':
+      case "total_pagar":
+      case "costo_adicional":
         if (isNaN(value) || Number(value) < 0) {
-          error = 'Debe ser un número positivo';
+          error = "Debe ser un número positivo";
         }
         break;
-      case 'id_tipo_pago':
-      case 'tipo_documento':
+      case "id_tipo_pago":
+      case "tipo_documento":
         if (!value) {
-          error = 'Debe seleccionar una opción';
+          error = "Debe seleccionar una opción";
         }
         break;
       default:
@@ -145,23 +179,22 @@ export default function GenerarOrden() {
     }
     return error;
   };
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => {
+    setFormData((prevState) => {
       const updatedState = {
         ...prevState,
-        [name]: value
+        [name]: value,
       };
 
-      if (name === 'costo_adicional') {
+      if (name === "costo_adicional") {
         const costoAdicional = Number(value) || 0;
         const totalPagarBase = location.state?.totalPrice || 0;
         updatedState.total_pagar = totalPagarBase + costoAdicional;
       }
 
-      if (name === 'nombre_contacto' || name === 'telefono') {
+      if (name === "nombre_contacto" || name === "telefono") {
         if (value !== selectedAddress[name]) {
           setAddressChanged(true);
         } else {
@@ -171,11 +204,11 @@ export default function GenerarOrden() {
 
       return updatedState;
     });
-    
+
     const error = validateField(name, value);
-    setErrors(prevErrors => ({
+    setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: error
+      [name]: error,
     }));
   };
 
@@ -183,48 +216,58 @@ export default function GenerarOrden() {
     if (addressChanged && selectedAddress && selectedAddress.id) {
       try {
         const token = AuthService.getCurrentUser();
-        const response = await axios.put(`${API_URL}/direcciones/${selectedAddress.id}`, {
-          nombre_contacto: formData.nombre_contacto,
-          telefono: formData.telefono,
-          id_departamento: selectedAddress.id_departamento,
-          id_municipio: selectedAddress.id_municipio,
-          direccion: selectedAddress.direccion,
-          referencia: selectedAddress.referencia,
-          id_cliente: idCliente
-        }, {
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
+        const response = await axios.put(
+          `${API_URL}/direcciones/${selectedAddress.id}`,
+          {
+            nombre_contacto: formData.nombre_contacto,
+            telefono: formData.telefono,
+            id_departamento: selectedAddress.id_departamento,
+            id_municipio: selectedAddress.id_municipio,
+            direccion: selectedAddress.direccion,
+            referencia: selectedAddress.referencia,
+            id_cliente: idCliente,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
 
         if (response.status === 200) {
           console.log("Dirección actualizada con éxito");
-          
+
           const updatedAddress = {
             ...selectedAddress,
             nombre_contacto: formData.nombre_contacto,
-            telefono: formData.telefono
+            telefono: formData.telefono,
           };
           setSelectedAddress(updatedAddress);
-          localStorage.setItem('selectedAddress', JSON.stringify(updatedAddress));
-          
+          localStorage.setItem(
+            "selectedAddress",
+            JSON.stringify(updatedAddress)
+          );
+
           setAddressChanged(false);
         } else {
-          throw new Error('La respuesta del servidor no fue exitosa');
+          throw new Error("La respuesta del servidor no fue exitosa");
         }
       } catch (error) {
         console.error("Error al actualizar la dirección:", error);
-        toast.error("Error al actualizar la dirección: " + (error.response?.data?.message || error.message));
+        toast.error(
+          "Error al actualizar la dirección: " +
+            (error.response?.data?.message || error.message)
+        );
       }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     let newErrors = {};
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
       if (error) {
         newErrors[key] = error;
@@ -234,29 +277,15 @@ export default function GenerarOrden() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      toast.error("Por favor, corrija los errores en el formulario antes de enviar.");
+      toast.error(
+        "Por favor, corrija los errores en el formulario antes de enviar."
+      );
       return;
     }
 
     try {
-      const formattedDetalles = formData.detalles.map(detalle => ({
-        id_tipo_paquete: Number(detalle.id_tipo_paquete),
-        id_empaque: Number(detalle.id_empaque),
-        peso: Number(detalle.peso),
-        id_estado_paquete: Number(detalle.id_estado_paquete),
-        fecha_envio: detalle.fecha_envio + "T00:00:00",
-        fecha_entrega_estimada: detalle.fecha_entrega_estimada + "T00:00:00",
-        fecha_entrega: detalle.fecha_entrega + "T00:00:00",
-        descripcion_contenido: detalle.descripcion,
-        id_tipo_entrega: Number(detalle.id_tipo_entrega),
-        id_direccion: Number(formData.id_direccion),
-        instrucciones_entrega: detalle.instrucciones_entrega,
-        descripcion: detalle.descripcion,
-        precio: Number(detalle.precio)
-      }));
-
       const token = AuthService.getCurrentUser();
-      
+
       await updateAddress();
 
       const orderData = {
@@ -265,39 +294,38 @@ export default function GenerarOrden() {
         telefono: formData.telefono,
         id_direccion: Number(formData.id_direccion),
         id_tipo_pago: Number(formData.id_tipo_pago),
-        id_estado_paquete: 1,
-        id_estado_paquetes: 1,
         total_pagar: Number(formData.total_pagar),
         costo_adicional: Number(formData.costo_adicional) || 0,
         concepto: formData.concepto,
         tipo_documento: formData.tipo_documento,
-        detalles: formData.detalles.map(detalle => ({
+        tipo_orden: "orden",
+        detalles: formData.detalles.map((detalle) => ({
           id_tipo_paquete: Number(detalle.id_tipo_paquete),
           id_empaque: Number(detalle.id_empaque),
           peso: Number(detalle.peso),
-          id_estado_paquete: 1,
+          id_estado_paquete: Number(detalle.id_estado_paquete),
           id_tamano_paquete: Number(detalle.id_tamano_paquete),
-          fecha_envio: detalle.fecha_envio,
-          fecha_entrega_estimada: detalle.fecha_entrega_estimada,
-          fecha_entrega: detalle.fecha_entrega,
+          fecha_envio: detalle.fecha_envio, // Solo la fecha
+          fecha_entrega_estimada: detalle.fecha_entrega_estimada, // Solo la fecha
+          fecha_entrega: detalle.fecha_entrega, // Solo la fecha
           descripcion_contenido: detalle.descripcion_contenido,
-          id_tipo_entrega: 1,
+          id_tipo_entrega: Number(detalle.id_tipo_entrega),
           id_direccion: Number(detalle.id_direccion),
           instrucciones_entrega: detalle.instrucciones_entrega,
           descripcion: detalle.descripcion,
-          precio: Number(detalle.precio)
-        }))
+          precio: Number(detalle.precio),
+        })),
       };
 
       console.log("Datos enviados a la API:", orderData);
-      
+
       const response = await axios.post(`${API_URL}/ordenes`, orderData, {
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        }
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       console.log("Respuesta de la API:", response.data);
 
       toast.success("Orden registrada con éxito", {
@@ -309,15 +337,31 @@ export default function GenerarOrden() {
         draggable: true,
         progress: undefined,
       });
-      
+
       // Navigate to the ProcesarPago page
       navigate(`/procesarpago/${idCliente}`);
     } catch (error) {
       console.error("Error al registrar la orden:", error);
-      if (error.response && error.response.data && error.response.data.message) {
-        toast.error(`Error al registrar la orden: ${error.response.data.message}`);
+      if (error.response && error.response.data) {
+        console.log("Respuesta de error completa:", error.response.data);
+        if (error.response.data.errors) {
+          // Si hay errores de validación específicos
+          Object.keys(error.response.data.errors).forEach((key) => {
+            toast.error(
+              `Error en ${key}: ${error.response.data.errors[key].join(", ")}`
+            );
+          });
+        } else if (error.response.data.message) {
+          toast.error(
+            `Error al registrar la orden: ${error.response.data.message}`
+          );
+        } else {
+          toast.error(
+            "Error al registrar la orden: Respuesta inesperada del servidor"
+          );
+        }
       } else {
-        toast.error("Error al registrar la orden");
+        toast.error("Error al registrar la orden: Problema de conexión");
       }
     }
   };
@@ -331,37 +375,40 @@ export default function GenerarOrden() {
   }
 
   const steps = [
-    { step: 1, label: '', icon: faSearch },
-    { step: 2, label: '', icon: faMapMarkerAlt },
-    { step: 3, label: '', icon: faBook },
-    { step: 4, label: '', icon: faDollarSign }
+    { step: 1, label: "", icon: faSearch },
+    { step: 2, label: "", icon: faMapMarkerAlt },
+    { step: 3, label: "", icon: faBook },
+    { step: 4, label: "", icon: faDollarSign },
   ];
 
   return (
     <div className="page-content">
       <Container fluid>
-        <h1 className='text-center titulo-pasos'>Detalles de Pago</h1>        
+        <h1 className="text-center titulo-pasos">Detalles de Pago</h1>
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">
               {steps.map(({ step, label, icon }) => (
                 <NavItem key={step}>
                   <NavLink
-                    className={`stepperDark ${currentStep === step ? 'active' : ''}`}
+                    className={`stepperDark ${currentStep === step ? "active" : ""}`}
                     href="#"
                     style={{
-                      borderRadius: '50%',
-                      padding: '10px 20px',
-                      margin: '0 5px',
-                    }}                    
+                      borderRadius: "50%",
+                      padding: "10px 20px",
+                      margin: "0 5px",
+                    }}
                   >
-                    <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
+                    <FontAwesomeIcon
+                      icon={icon}
+                      style={{ fontSize: "15px", marginBottom: "0px" }}
+                    />
                     {label}
                   </NavLink>
                 </NavItem>
               ))}
-            </Nav>         
-            <Progress className="custom-progress barra-pasos" value={(1) * 100} />
+            </Nav>
+            <Progress className="custom-progress barra-pasos" value={1 * 100} />
             <br></br>
           </Col>
         </Row>
@@ -370,7 +417,9 @@ export default function GenerarOrden() {
           <Col lg={12}>
             <Card>
               <CardBody>
-                <h4 className="card-title mb-4">Generando orden para: {cliente.nombre} {cliente.apellido}</h4>
+                <h4 className="card-title mb-4">
+                  Generando orden para: {cliente.nombre} {cliente.apellido}
+                </h4>
                 <Form onSubmit={handleSubmit}>
                   <Row>
                     <Col md={6}>
@@ -424,7 +473,9 @@ export default function GenerarOrden() {
                     </Col>
                     <Col md={6}>
                       <FormGroup>
-                        <Label for="id_estado_paquete">Estado de la Orden</Label>
+                        <Label for="id_estado_paquete">
+                          Estado de la Orden
+                        </Label>
                         <Input
                           type="text"
                           name="id_estado_paquete"
@@ -494,7 +545,9 @@ export default function GenerarOrden() {
                           onChange={handleInputChange}
                           invalid={!!errors.tipo_documento}
                         >
-                          <option value="consumidor_final">Consumidor Final</option>
+                          <option value="consumidor_final">
+                            Consumidor Final
+                          </option>
                           <option value="credito_fiscal">Crédito Fiscal</option>
                         </Input>
                         <FormFeedback>{errors.tipo_documento}</FormFeedback>
