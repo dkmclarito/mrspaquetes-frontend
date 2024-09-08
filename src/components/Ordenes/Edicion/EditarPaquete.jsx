@@ -12,11 +12,11 @@ const EditarPaquete = ({
   index,
 }) => {
   const [tiposPaquete, setTiposPaquete] = useState([]);
-  const [empaques, setEmpaques] = useState([]);
+  const [tiposCaja, setTiposCaja] = useState([]);
   const [errors, setErrors] = useState({});
   const [paqueteLocal, setPaqueteLocal] = useState({
     id_tipo_paquete: "",
-    id_empaque: "",
+    tipo_caja: "",
     peso: "",
     id_tamano_paquete: "",
     descripcion_contenido: "",
@@ -28,7 +28,7 @@ const EditarPaquete = ({
     const fetchDropdownData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const [tiposPaqueteRes, empaquesRes] = await Promise.all([
+        const [tiposPaqueteRes, tiposCajaRes] = await Promise.all([
           axios.get(`${API_URL}/dropdown/get_tipo_paquete`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -38,7 +38,7 @@ const EditarPaquete = ({
         ]);
 
         setTiposPaquete(tiposPaqueteRes.data.tipo_paquete || []);
-        setEmpaques(empaquesRes.data.empaques || []);
+        setTiposCaja(tiposCajaRes.data.empaques || []);
       } catch (error) {
         console.error("Error al obtener los datos del dropdown:", error);
       }
@@ -52,7 +52,7 @@ const EditarPaquete = ({
       ...prevState,
       ...paquete,
       id_tipo_paquete: paquete.id_tipo_paquete || "",
-      id_empaque: paquete.id_empaque || "",
+      tipo_caja: paquete.tipo_caja || "",
     }));
   }, [paquete]);
 
@@ -67,7 +67,7 @@ const EditarPaquete = ({
         }
         break;
       case "id_tipo_paquete":
-      case "id_empaque":
+      case "tipo_caja":
       case "id_tamano_paquete":
         if (!value) {
           error = "Debe seleccionar una opción.";
@@ -199,23 +199,23 @@ const EditarPaquete = ({
         </Col>
         <Col md={6}>
           <FormGroup>
-            <Label for="id_empaque">Empaque</Label>
+            <Label for="tipo_caja">Tipo de Caja</Label>
             <Input
               type="select"
-              name="id_empaque"
-              id="id_empaque"
-              value={paqueteLocal.id_empaque}
+              name="tipo_caja"
+              id="tipo_caja"
+              value={paqueteLocal.tipo_caja}
               onChange={handleChange}
-              invalid={!!errors.id_empaque}
+              invalid={!!errors.tipo_caja}
             >
               <option value="">Seleccione</option>
-              {empaques.map((empaque) => (
-                <option key={empaque.id} value={empaque.id}>
-                  {empaque.empaquetado}
+              {tiposCaja.map((caja) => (
+                <option key={caja.id} value={caja.id}>
+                  {caja.empaquetado}
                 </option>
               ))}
             </Input>
-            <FormFeedback>{errors.id_empaque}</FormFeedback>
+            <FormFeedback>{errors.tipo_caja}</FormFeedback>
           </FormGroup>
         </Col>
       </Row>

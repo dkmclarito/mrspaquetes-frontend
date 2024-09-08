@@ -15,7 +15,7 @@ const ResumenOrden = ({ orden }) => {
 
   const totalPaquetes = calcularTotalPaquetes();
   const costoAdicional = parseFloat(orden.costo_adicional || 0);
-  const totalOrden = totalPaquetes + costoAdicional;
+  const totalOrden = parseFloat(orden.total_pagar);
 
   return (
     <Card>
@@ -23,10 +23,11 @@ const ResumenOrden = ({ orden }) => {
         <h2>Resumen de la Orden</h2>
         <ListGroup>
           <ListGroupItem>
-            <strong>ID de la Orden:</strong> {orden.id}
+            <strong>Número de Seguimiento:</strong> {orden.numero_seguimiento}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Cliente:</strong> {orden.id_cliente}
+            <strong>Cliente:</strong> {orden.direccion_emisor.nombre_cliente}{" "}
+            {orden.direccion_emisor.apellido_cliente}
           </ListGroupItem>
           <ListGroupItem>
             <strong>Total Paquetes:</strong> ${totalPaquetes.toFixed(2)}
@@ -38,7 +39,7 @@ const ResumenOrden = ({ orden }) => {
             <strong>Total a Pagar:</strong> ${totalOrden.toFixed(2)}
           </ListGroupItem>
           <ListGroupItem>
-            <strong>Estado:</strong> {orden.id_estado_paquetes}
+            <strong>Estado de Pago:</strong> {orden.estado_pago}
           </ListGroupItem>
           <ListGroupItem>
             <strong>Concepto:</strong> {orden.concepto}
@@ -59,24 +60,14 @@ const ResumenOrden = ({ orden }) => {
           <tbody>
             {orden.detalles.map((detalle, index) => (
               <tr key={index}>
+                <td>{detalle.descripcion_contenido || "N/A"}</td>
+                <td>{detalle.peso ? `${detalle.peso} lb` : "N/A"}</td>
+                <td>{detalle.id_estado_paquete === 2 ? "En Bodega" : "N/A"}</td>
+                <td>{new Date(detalle.fecha_envio).toLocaleDateString()}</td>
                 <td>
-                  {detalle.tipo_paquete ||
-                    detalle.paquete?.tipo_paquete ||
-                    "N/A"}
-                </td>
-                <td>{detalle.peso || detalle.paquete?.peso || "N/A"}</td>
-                <td>
-                  {detalle.estado_paquete ||
-                    detalle.paquete?.estado_paquete ||
-                    "N/A"}
-                </td>
-                <td>
-                  {detalle.fecha_envio || detalle.paquete?.fecha_envio || "N/A"}
-                </td>
-                <td>
-                  {detalle.fecha_entrega_estimada ||
-                    detalle.paquete?.fecha_entrega_estimada ||
-                    "N/A"}
+                  {new Date(
+                    detalle.fecha_entrega_estimada
+                  ).toLocaleDateString()}
                 </td>
                 <td>${parseFloat(detalle.precio || 0).toFixed(2)}</td>
               </tr>
