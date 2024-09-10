@@ -49,6 +49,7 @@ export default function GestionOrdenes() {
       //window.location.href = "/login";
     }
   }, []);
+
   const fetchOrdenes = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -58,10 +59,12 @@ export default function GestionOrdenes() {
       console.log("Ordenes recibidas desde API:", response.data);
 
       // Filtrar las órdenes para mostrar solo las de tipo entrega normal
-      const ordenesNormales = response.data.data.filter((orden) =>
-        orden.detalles.every(
-          (detalle) => detalle.tipo_entrega === "Entrega Normal"
-        )
+      const ordenesNormales = response.data.data.filter(
+        (orden) =>
+          orden.tipo_orden === "orden" &&
+          orden.detalles.some(
+            (detalle) => detalle.tipo_entrega === "Entrega Normal"
+          )
       );
 
       setOrdenes(ordenesNormales);

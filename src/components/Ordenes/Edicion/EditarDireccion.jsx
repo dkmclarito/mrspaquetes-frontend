@@ -158,8 +158,8 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
 
   return (
     <div>
-      <h3>Direcciones Disponibles</h3>
-      <Button color="success" onClick={() => setModalAgregar(true)}>
+      <h3 className="titulo-pasos">Direcciones Disponibles</h3>
+      <Button className="btnGuardarDatosPaquete" color="success" onClick={() => setModalAgregar(true)}>
         Agregar Nueva Dirección
       </Button>
       <Table>
@@ -195,7 +195,7 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
 
       {direccionSeleccionada && (
         <div>
-          <h4>Dirección Seleccionada</h4>
+          <h4 className="titulo-pasos">Dirección Seleccionada</h4>
           {editando ? (
             <Form>
               <FormGroup>
@@ -272,10 +272,10 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
                   onChange={handleChange}
                 />
               </FormGroup>
-              <Button color="success" onClick={guardarCambios}>
+              <Button className="btnGuardarDatosPaquete" color="success" onClick={guardarCambios}>
                 Guardar Cambios
               </Button>
-              <Button color="secondary" onClick={() => setEditando(false)}>
+              <Button className="btn-custom-red" color="danger" onClick={() => setEditando(false)}>
                 Cancelar
               </Button>
             </Form>
