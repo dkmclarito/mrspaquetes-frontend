@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Container,
@@ -49,9 +49,34 @@ export default function GenerarPreOrdenExpress() {
     costo_adicional: "",
     concepto: "Envío de paquetes",
     tipo_documento: "consumidor_final",
-    tipo_orden: "preorden", // Cambiado a preorden
     detalles: [],
   });
+  const token = localStorage.getItem("token");
+
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        // Verifica si el token es inválido
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar el estado del usuario:", error);
+      //AuthService.logout();
+      //window.location.href = "/login";
+    }
+  }, [token]);
   const [errors, setErrors] = useState({});
   const [currentStep, setCurrentStep] = useState(4);
   const [selectedAddress, setSelectedAddress] = useState(null);
@@ -88,7 +113,7 @@ export default function GenerarPreOrdenExpress() {
               id_empaque: Number(detalle.id_empaque),
               peso: Number(detalle.peso),
               id_estado_paquete: 1,
-              id_tamano_paquete: Number(detalle.id_tamano_paquete),
+              id_tamano_paquete: Number(detalle.tamano_paquete),
               id_tipo_entrega: 2, // Cambiado a 2 para express
               id_direccion: Number(storedAddress.id),
               precio: Number(detalle.precio),
@@ -121,6 +146,14 @@ export default function GenerarPreOrdenExpress() {
 
     fetchData();
   }, [idCliente, location.state]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
+    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+
+    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+  }, [verificarEstadoUsuarioLogueado]);
 
   const validateField = (name, value) => {
     let error = "";
@@ -235,7 +268,6 @@ export default function GenerarPreOrdenExpress() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     let newErrors = {};
     Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
@@ -259,8 +291,32 @@ export default function GenerarPreOrdenExpress() {
       await updateAddress();
 
       const orderData = {
-        ...formData,
-        tipo_orden: "preorden", // Aseguramos que se envía como preorden
+        id_cliente: Number(formData.id_cliente),
+        nombre_contacto: formData.nombre_contacto,
+        telefono: formData.telefono,
+        id_direccion: Number(formData.id_direccion),
+        id_tipo_pago: Number(formData.id_tipo_pago),
+        total_pagar: Number(formData.total_pagar),
+        costo_adicional: Number(formData.costo_adicional) || 0,
+        concepto: formData.concepto,
+        tipo_documento: formData.tipo_documento,
+        tipo_orden: "preorden",
+        detalles: formData.detalles.map((detalle) => ({
+          id_tipo_paquete: Number(detalle.id_tipo_paquete),
+          id_empaque: Number(detalle.id_empaque),
+          peso: Number(detalle.peso),
+          id_estado_paquete: Number(detalle.id_estado_paquete),
+          id_tamano_paquete: Number(detalle.id_tamano_paquete),
+          fecha_envio: detalle.fecha_envio, // Solo la fecha
+          fecha_entrega_estimada: detalle.fecha_entrega_estimada, // Solo la fecha
+          fecha_entrega: detalle.fecha_entrega, // Solo la fecha
+          descripcion_contenido: detalle.descripcion_contenido,
+          id_tipo_entrega: Number(detalle.id_tipo_entrega),
+          id_direccion: Number(detalle.id_direccion),
+          instrucciones_entrega: detalle.instrucciones_entrega,
+          descripcion: detalle.descripcion,
+          precio: Number(detalle.precio),
+        })),
       };
 
       console.log("Datos enviados a la API:", orderData);
@@ -312,7 +368,9 @@ export default function GenerarPreOrdenExpress() {
   return (
     <div className="page-content">
       <Container fluid>
-        <h1 className="text-center titulo-pasos">Detalles de Pago express</h1>
+        <h1 className="text-center titulo-pasos">
+          Detalles de Pre-Orden Express
+        </h1>
         <Row>
           <Col lg={12}>
             <Nav pills className="justify-content-center mb-4">

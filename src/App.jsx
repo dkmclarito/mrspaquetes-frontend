@@ -77,10 +77,10 @@ import PreOrdenesSeleccionarCliente from "./pages/PreOrdenesSeleccionarCliente";
 import PreOrdenesSeleccionarClienteExpress from "./pages/PreOrdenesSeleccionarClienteExpress";
 import PreOrdenesDirecciones from "./pages/PreOrdenesDirecciones";
 import PreOrdenesDireccionesExpress from "./pages/PreOrdenesDireccionesExpress";
-import DatosPreOrden from "./pages/DatosPreOrden";
-import DatosPreOrdenExpress from "./pages/DatosPreOrdenExpress";
 import AgregarUbicacion from "./pages/AgregarUbicacion";
 import GestionUbicacion from "./pages/GestionUbicacion";
+import DatosPaquetePreOrden from "./pages/DatosPaquetePreOrden";
+import DatosPaquetePreOrdenExpress from "./pages/DatosPaquetePreOrdenExpress";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -274,9 +274,12 @@ const App = () => {
                 path="/GestionPreOrdenesExpress"
                 element={<GestionPreOrdenesExpress />}
               />
-              <Route path="/GenerarPreOrden" element={<GenerarPreOrden />} />
               <Route
-                path="/GenerarPreOrdenExpress"
+                path="/GenerarPreOrden/:idCliente"
+                element={<GenerarPreOrden />}
+              />
+              <Route
+                path="/GenerarPreOrdenExpress/:idCliente"
                 element={<GenerarPreOrdenExpress />}
               />
 
@@ -285,22 +288,26 @@ const App = () => {
                 element={<PreOrdenesSeleccionarCliente />}
               />
               <Route
-                path="/PreOrdenesDirecciones"
+                path="/PreOrdenesDirecciones/:idCliente"
                 element={<PreOrdenesDirecciones />}
               />
-              <Route path="/DatosPreOrden" element={<DatosPreOrden />} />
 
               <Route
                 path="/PreOrdenesSeleccionarClienteExpress"
                 element={<PreOrdenesSeleccionarClienteExpress />}
               />
               <Route
-                path="/PreOrdenesDireccionesExpress"
+                path="/PreOrdenesDireccionesExpress/:idCliente"
                 element={<PreOrdenesDireccionesExpress />}
               />
+
               <Route
-                path="/DatosPreOrdenExpress"
-                element={<DatosPreOrdenExpress />}
+                path="/DatosPaquetePreOrden/:idCliente"
+                element={<DatosPaquetePreOrden />}
+              />
+              <Route
+                path="/DatosPaquetePreOrdenExpress/:idCliente"
+                element={<DatosPaquetePreOrdenExpress />}
               />
 
               {/* Rutas para 'conductor' */}
