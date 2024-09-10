@@ -49,7 +49,7 @@ const TablaOrdenes = ({
                     <FontAwesomeIcon icon={faPencilAlt} />
                   </Button>
                   <Button
-                    className="btn-icon btn-info"
+                    className="btn-sm me-2 btn-icon btn-success"
                     onClick={() => verDetallesOrden(orden.id)}
                   >
                     <FontAwesomeIcon icon={faEye} />

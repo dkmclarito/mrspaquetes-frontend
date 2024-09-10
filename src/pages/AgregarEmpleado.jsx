@@ -584,6 +584,7 @@ const AgregarEmpleado = () => {
                     onChange={handleFechaNacimientoChange}
                     max={getFechaActual()}
                     invalid={!isFechaNacimientoValida || isFechaNacimientoRequerida}
+                    className="dark-mode-input-date"
                   />
                   <FormFeedback>
                     La fecha de nacimiento es requerida, debe ser válida de una persona mayor de edad y no puede ser en el futuro.
@@ -600,6 +601,7 @@ const AgregarEmpleado = () => {
                     onChange={handleFechaContratacionChange}
                     required
                     invalid={!isFechaContratacionValida}
+                    className="dark-mode-input-date"
                   />
                   <FormFeedback>La fecha de contratación no puede ser posterior a la fecha actual.</FormFeedback>
                 </FormGroup>

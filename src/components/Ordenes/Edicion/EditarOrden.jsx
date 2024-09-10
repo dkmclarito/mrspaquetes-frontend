@@ -169,7 +169,7 @@ const EditarOrden = () => {
 
   return (
     <Container>
-      <h1>Editar Orden #{ordenActualizada.id}</h1>
+      <h1 className="titulo-pasos">Editar Orden #{ordenActualizada.id}</h1>
       <Row className="mb-3">
         <Col>
           <Button color="primary" onClick={() => setSeccionActual("resumen")}>
@@ -188,7 +188,7 @@ const EditarOrden = () => {
       </Row>
       <Row className="mt-3">
         <Col>
-          <Button color="success" onClick={guardarCambios}>
+          <Button color="success" className="btnGuardarDatosPaquete" onClick={guardarCambios}>
             Guardar Todos los Cambios
           </Button>
         </Col>

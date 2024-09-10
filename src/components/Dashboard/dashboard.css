@@ -1,0 +1,18 @@
+.progress-legend {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-around;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .legend-color {
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+    border-radius: 3px;
+  }
+  

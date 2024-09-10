@@ -7,7 +7,10 @@ import axios from 'axios';
 import AuthService from '../../services/authService';
 import BarChartComponent from './BarChartComponent';
 import PieChartComponent from './PieChartComponent';
+import BrushBarChartComponent from './BrushBarChartComponent';
 import { useNavigate } from 'react-router-dom';
+
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,8 +20,10 @@ const Dashboard = () => {
   const [totalEmpleados, setTotalEmpleados] = useState(0);
   const [totalBodegas, setTotalBodegas] = useState(0);  
   const [empleados, setEmpleados] = useState([]);
-  const [paquetes, setPaquetes] = useState([]);
-  const [paquetesRecientes, setPaquetesRecientes] = useState([]);
+  const [ordenes, setOrdenes] = useState([]);
+  const [estado1, setEstado1] = useState([]);
+  const [estado2, setEstado2] = useState([]);
+  const [estado3, setEstado3] = useState([]);
   const navigate = useNavigate();  
   const [packageData, setPackageData] = useState([]);
 
@@ -31,25 +36,7 @@ const Dashboard = () => {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        });  
-
-        const clientes = await axios.get(`${API_URL}/clientes`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });     
-        
-        const bodegas = await axios.get(`${API_URL}/bodegas`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }); 
-
-        const empleados = await axios.get(`${API_URL}/empleados`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
 
         const empleadosResponse = await axios.get(`${API_URL}/empleados`, {
           headers: {
@@ -57,21 +44,37 @@ const Dashboard = () => {
           }
         });
 
-        const paquetesResponse = await axios.get(`${API_URL}/paquete`, {
+        const ordenesResponse = await axios.get(`${API_URL}/ordenes`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
+        const Totales = await axios.get(`${API_URL}/dashboard/card_summary`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        const porcentajes = await axios.get(`${API_URL}/dashboard/packages_by_status`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        //console.log('Datos del Dashboard:', porcentajes.data.estados[9].paquetes);
+
         //console.log('Respuesta de la API paquetes:', paquetesResponse.data.data);
 
         setTotalUsuarios(usuarios.data.users.length);
-        setTotalClientes(clientes.data.data.length);   
-        setTotalBodegas(bodegas.data.bodegas.length);   
-        setTotalEmpleados(empleados.data.empleados.length);
+        setTotalClientes(Totales.data.totales.clientes);   
+        setTotalBodegas(Totales.data.totales.bodegas);   
+        setTotalEmpleados(Totales.data.totales.empleados);
         setEmpleados(empleadosResponse.data.empleados);
-        setPaquetes(paquetesResponse.data.data || []);
-        
+        setOrdenes(ordenesResponse.data.data);
+        setEstado1(porcentajes.data.estados[9].paquetes);
+        setEstado2(porcentajes.data.estados[7].paquetes);
+        setEstado3(porcentajes.data.estados[4].paquetes);
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
@@ -97,27 +100,25 @@ const Dashboard = () => {
     navigate('/GestionBodegas');
   };
 
-  useEffect(() => {
-    if (paquetes.length > 0) {
-      const paquetesOrdenados = [...paquetes].sort((a, b) => b.id - a.id); 
-      setPaquetesRecientes(paquetesOrdenados.slice(0, 4)); 
-    } else {
-      setPaquetesRecientes([]);
-    }
-  }, [paquetes]);
-
   const empleadosRecientes = empleados.slice(-4);
+  const ordenesRecientes =ordenes.slice(-4);
 
   return (
     <div className="page-content">      
       <Container fluid className="mt-4">      
         <Row>          
-          <Col md="3">
+        <Col md="3">
             <Card>
               <CardBody>
                 <CardTitle tag="h5">Usuarios Registrados</CardTitle>
-                <h3><Badge color="info">{totalUsuarios || 0}</Badge></h3>
-                <Button color="primary" block onClick={UsuariosRedirect}>Ver Detalles</Button>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3>
+                    <Badge color="info">{totalUsuarios || 0}</Badge>
+                  </h3>
+                  <Button color="primary" onClick={UsuariosRedirect} style={{ width: '150px' }}>
+                    Ver Detalles
+                  </Button>
+                </div>
               </CardBody>
             </Card>
           </Col>
@@ -126,8 +127,10 @@ const Dashboard = () => {
             <Card>
               <CardBody>
                 <CardTitle tag="h5">Clientes Registrados</CardTitle>
-                <h3><Badge color="warning">{totalClientes || 0}</Badge></h3>
-                <Button color="primary" block onClick={ClientesRedirect}>Ver Detalles</Button>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3><Badge color="warning">{totalClientes || 0}</Badge></h3>
+                  <Button color="primary"  onClick={ClientesRedirect} style={{ width: '150px' }}>Ver Detalles</Button>
+                </div>
               </CardBody>
             </Card>
           </Col>
@@ -136,8 +139,10 @@ const Dashboard = () => {
             <Card>
               <CardBody>
                 <CardTitle tag="h5">Empleados Registrados</CardTitle>
-                <h3><Badge color="secondary">{totalEmpleados || 0}</Badge></h3>
-                <Button color="primary" block onClick={EmpleadosRedirect}>Ver Detalles</Button>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3><Badge color="secondary">{totalEmpleados || 0}</Badge></h3>
+                  <Button color="primary" onClick={EmpleadosRedirect} style={{ width: '150px' }}>Ver Detalles</Button>
+                </div>
               </CardBody>
             </Card>
           </Col>        
@@ -146,8 +151,10 @@ const Dashboard = () => {
             <Card>
               <CardBody>
                 <CardTitle tag="h5">Bodegas Registradas</CardTitle>
-                <h3><Badge color="success">{totalBodegas || 0}</Badge></h3>
-                <Button color="primary" block onClick={BodegasRedirect}>Ver Detalles</Button>
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3><Badge color="success">{totalBodegas || 0}</Badge></h3>
+                  <Button color="primary" onClick={BodegasRedirect} style={{ width: '150px' }}>Ver Detalles</Button>
+                </div>
               </CardBody>
             </Card>
           </Col>       
@@ -163,6 +170,16 @@ const Dashboard = () => {
             <Card>
               <CardBody>
                 <BarChartComponent />
+              </CardBody>
+            </Card>
+          </Col>
+      </Row>
+
+      <Row>
+        <Col md="12">
+            <Card>
+              <CardBody>
+                <BrushBarChartComponent />
               </CardBody>
             </Card>
           </Col>
@@ -194,14 +211,15 @@ const Dashboard = () => {
           <Col md="6">
           <Card>
               <CardBody>
-                <CardTitle tag="h5">Paquetes Recientes</CardTitle>
+                <CardTitle tag="h5">Ordenes Recientes</CardTitle>
                 <ListGroup>
-                  {paquetesRecientes.length > 0 ? (
-                    paquetesRecientes.map((paquete) => (
-                      <ListGroupItem key={paquete.id}>
-                        {paquete.tipo_paquete} - {' '}
-                        <Badge color={paquete.estado_paquete ? 'primary' : 'primary'}>
-                          {paquete.estado_paquete || 'Desconocido'}
+                  {ordenesRecientes.length > 0 ? (
+                    ordenesRecientes.map((orden) => (
+                      <ListGroupItem key={orden.id}>
+                        {orden.cliente.nombre} {orden.cliente.apellido} - {' '}
+                        {orden.tipo_orden}  -  {orden.tipo_entrega} - {' '}
+                        <Badge color={'primary'}>
+                          {orden.numero_seguimiento || 'Desconocido'}
                         </Badge>
                       </ListGroupItem>
                     ))
@@ -215,19 +233,44 @@ const Dashboard = () => {
         </Row>   
 
         <Row className="mt-12">
-          <Col md="12">
-            <Card>
-              <CardBody>
-                <CardTitle tag="h5">Progreso de Órdenes</CardTitle>
-                <Progress multi>
-                  <Progress bar color="success" value="40">Completadas (40%)</Progress>
-                  <Progress bar color="warning" value="35">En Proceso (35%)</Progress>
-                  <Progress bar color="danger" value="25">Pendientes (25%)</Progress>
-                </Progress>
-              </CardBody>
-            </Card>
-          </Col>
-          </Row>                            
+  <Col md="12">
+    <Card>
+      <CardBody>
+        <CardTitle tag="h5">Progreso de Órdenes</CardTitle>
+        <div
+          className="progress-legend"
+          style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px' }}>
+          <div className="legend-item" style={{ display: 'flex', alignItems: 'center' }}>
+            <span
+              className="legend-color"
+              style={{ backgroundColor: 'green', width: '15px', height: '15px', marginRight: '10px', borderRadius: '3px' }}
+            ></span>
+            Completadas ({estado1 || 0}%)
+          </div>
+          <div className="legend-item" style={{ display: 'flex', alignItems: 'center' }}>
+            <span
+              className="legend-color"
+              style={{ backgroundColor: 'orange', width: '15px', height: '15px', marginRight: '10px', borderRadius: '3px' }}
+            ></span>
+            En Proceso ({estado2 || 0}%)
+          </div>
+          <div className="legend-item" style={{ display: 'flex', alignItems: 'center' }}>
+            <span
+              className="legend-color"
+              style={{ backgroundColor: 'red', width: '15px', height: '15px', marginRight: '10px', borderRadius: '3px' }}
+            ></span>
+            Pendientes ({estado3 || 0}%)
+          </div>
+        </div>
+        <Progress multi>
+          <Progress bar color="success" value={estado1 || 0} />
+          <Progress bar color="warning" value={estado2 || 0} />
+          <Progress bar color="danger" value={estado3 || 0} />
+        </Progress>
+      </CardBody>
+    </Card>
+  </Col>
+</Row>                           
       </Container>
     </div>
   );
