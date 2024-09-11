@@ -9,32 +9,54 @@ import "/src/styles/usuarios.css";
 const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }) => {
   const navigate = useNavigate();
 
-  const renderEstado = (estado) => {
+  const renderEstado = (estadoId) => {
+    let color = "";
+    let estadoTexto = "";
+
+    switch (estadoId) {
+      case 1:
+        color = "green";
+        estadoTexto = "Abierta";
+        break;
+      case 2:
+        color = "blue";
+        estadoTexto = "En Proceso";
+        break;
+      case 3:
+        color = "red";
+        estadoTexto = "Cerrada";
+        break;
+      default:
+        color = "gray";
+        estadoTexto = "Desconocido";
+        break;
+    }
+
     return (
-      <span className="estatus-darkmode" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span
           style={{
             width: '10px',
             height: '10px',
             borderRadius: '50%',
-            backgroundColor: estado === 1 ? 'green' : 'red',
+            backgroundColor: color,
             marginRight: '8px'
           }}
         />
-        {estado === 1 ? 'Abierta' : 'Cerrada'}
+        {estadoTexto}
       </span>
     );
   };
 
-  const renderUsuarioAsignado = (usuarioAsignado) => {
-    if (!usuarioAsignado) {
+  const renderUsuarioAsignado = (incidencia) => {
+    if (!incidencia.id_usuario_asignado) {
       return (
         <>
           Sin asignar
           <Button
             color="primary"
             size="sm"
-            onClick={() => navigate(`/AsignarUsuarioIncidencia/${usuarioAsignado}`)}
+            onClick={() => navigate(`/AsignarUsuarioIncidencia/${incidencia.id}`)} // Pasamos el ID de la incidencia
             style={{ marginLeft: '10px' }}
           >
             Asignar
@@ -42,7 +64,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
         </>
       );
     } else {
-      return usuarioAsignado.nombre_completo; // Asegúrate de que `nombre_completo` exista en tu objeto usuario
+      return incidencia.id_usuario_asignado.nombre_completo; // Asegúrate de que `nombre_completo` exista en tu objeto usuario
     }
   };
 
@@ -63,7 +85,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
         <thead className="thead-light">
           <tr>
             <th style={{ width: '5%' }} className="text-center">ID</th>
-            <th style={{ width: '15%' }} className="text-center">ID Paquete</th>
+            <th style={{ width: '15%' }} className="text-center">Descripción</th>
             <th style={{ width: '15%' }} className="text-center">Tipo Incidencia</th>
             <th style={{ width: '10%' }} className="text-center">Estado</th>
             <th style={{ width: '20%' }} className="text-center">Usuario Asignado</th>
@@ -77,10 +99,10 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
             incidencias.map(incidencia => (
               <tr key={incidencia.id}>
                 <td style={{ width: '5%' }} className="text-center">{incidencia.id}</td>
-                <td style={{ width: '15%' }} className="text-center">{incidencia.paquete_uuid}</td>
+                <td style={{ width: '15%' }} className="text-center">{incidencia.paquete_descripcion}</td>
                 <td style={{ width: '15%' }} className="text-center">{incidencia.tipo_incidencia}</td>
-                <td style={{ width: '10%' }} className="text-center">{renderEstado(incidencia.estado)}</td>
-                <td style={{ width: '20%' }} className="text-center">{renderUsuarioAsignado(incidencia.usuario_asignado)}</td>
+                <td style={{ width: '10%' }} className="text-center">{incidencia.estado}</td>
+                <td style={{ width: '20%' }} className="text-center">{renderUsuarioAsignado(incidencia)}</td>
                 <td style={{ width: '20%' }} className="text-center">{incidencia.solucion ? incidencia.solucion : "Sin solución"}</td>
                 <td style={{ width: '10%' }} className="text-center">{formatDate(incidencia.created_at)}</td>
                 <td style={{ width: '15%' }} className="text-center">

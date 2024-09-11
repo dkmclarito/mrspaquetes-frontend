@@ -147,7 +147,8 @@ const GestionIncidencias = () => {
               >
                 <option value="">Todos</option>
                 <option value="1">Abierta</option>
-                <option value="0">Cerrada</option>
+                <option value="2">En Proceso</option>
+                <option value="3">Cerrada</option>
               </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">

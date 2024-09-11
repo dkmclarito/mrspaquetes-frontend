@@ -19,6 +19,7 @@ import {
   BiPlus,
   BiMap,
   BiNavigation,
+  BiErrorCircle,
 } from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
@@ -503,7 +504,7 @@ const VerticalLayout = () => {
                       isActive ? "nav-link active" : "nav-link"
                     }
                   >
-                    <BiShield className="nav-icon" />
+                    <BiErrorCircle  className="nav-icon" />
                     {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
