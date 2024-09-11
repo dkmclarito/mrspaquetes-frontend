@@ -80,6 +80,7 @@ const AgregarUbicacionPaquete = () => {
         } else {
           console.error("No se encontraron paquetes.");
         }
+        setPaquetes(paquetesNoAsignados);
       } catch (error) {
         console.error("Error al obtener paquetes:", error);
       }
@@ -91,19 +92,12 @@ const AgregarUbicacionPaquete = () => {
   useEffect(() => {
     const fetchUbicaciones = async () => {
       try {
-        const response = await axios.get(`${API_URL}/dropdown/get_ubicaciones`, {
+        const response = await axios.get(`${API_URL}/dropdown/get_ubicaciones/0`, {
           headers: { Authorization: `Bearer ${token}` },
         });
     
-        if (response.status === 200 && response.data) {
-          // Filtrar ubicaciones que no tienen paquetes asignados
-          const ubicacionesNoAsignadas = response.data.filter(ubicacion => {
-            return !paquetes.some(paquete => paquete.id_ubicacion === ubicacion.id);
-          });
-          setUbicaciones(ubicacionesNoAsignadas);
-        } else {
-          console.error("No se encontraron ubicaciones.");
-        }
+        
+        setUbicaciones(response.data || []);
       } catch (error) {
         console.error("Error al obtener ubicaciones:", error);
       }
