@@ -20,14 +20,12 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const AgregarUbicacion = () => {
-  const [bodegas, setBodegas] = useState([]);
-  const [pasillos, setPasillos] = useState([]);
-  const [nomenclatura, setNomenclatura] = useState("");
-  const [idBodega, setIdBodega] = useState("");
-  const [idPasillo, setIdPasillo] = useState("");
-  const [isNomenclaturaValida, setIsNomenclaturaValida] = useState(true);
-  const [existingUbicaciones, setExistingUbicaciones] = useState([]);
+const AgregarUbicacionPaquete = () => {
+  const [paquetes, setPaquetes] = useState([]);
+  const [ubicaciones, setUbicaciones] = useState([]);
+  const [idPaquete, setIdPaquete] = useState("");
+  const [idUbicacion, setIdUbicacion] = useState("");
+  const [estado, setEstado] = useState(true);
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
@@ -69,130 +67,84 @@ const AgregarUbicacion = () => {
     const fetchData = async () => {
       try {
         const token = AuthService.getCurrentUser();
-  
-        const response = await axios.get(`${API_URL}/bodegas`, {
+        const response = await axios.get(`${API_URL}/dropdown/get_paquetes`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        // Verifica si la respuesta es exitosa y contiene datos
-        if (response.status === 200 && response.data.bodegas) {
-          setBodegas(response.data.bodegas);
+    
+        if (response.status === 200 && response.data.paquetes) {
+          // Filtrar paquetes que no están asignados
+          const paquetesNoAsignados = response.data.paquetes.filter(paquete => !paquete.id_ubicacion);
+          setPaquetes(paquetesNoAsignados);
         } else {
-          console.error("No se encontraron bodegas.");
+          console.error("No se encontraron paquetes.");
         }
       } catch (error) {
-        console.error("Error al obtener bodegas:", error);
+        console.error("Error al obtener paquetes:", error);
       }
     };
   
     fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchPasillos = async () => {
-      try {
-        const response = await fetch(`${API_URL}/dropdown/get_pasillos`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        // Verifica si la respuesta es exitosa
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-  
-        const data = await response.json();
-  
-        // Verifica que la respuesta sea un array de pasillos
-        if (Array.isArray(data.pasillos)) {
-          setPasillos(data.pasillos);
-        } else {
-          console.error("La respuesta no contiene pasillos válidos:", data);
-        }
-      } catch (error) {
-        console.error("Error al obtener los pasillos:", error);
-      }
-    };
-  
-    if (token) {
-      fetchPasillos();
-    }
-  }, [token]);  
-
-  const fetchExistingUbicaciones = useCallback(async () => {
-    try {
-      const response = await axios.get(`${API_URL}/ubicaciones`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.status === 200) {
-        setExistingUbicaciones(response.data.ubicaciones);
-      }
-    } catch (error) {
-      console.error("Error al obtener las ubicaciones existentes:", error);
-    }
   }, [token]);
 
   useEffect(() => {
-    fetchExistingUbicaciones();
-  }, [fetchExistingUbicaciones]);
+    const fetchUbicaciones = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/dropdown/get_ubicaciones`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+    
+        if (response.status === 200 && response.data) {
+          // Filtrar ubicaciones que no tienen paquetes asignados
+          const ubicacionesNoAsignadas = response.data.filter(ubicacion => {
+            return !paquetes.some(paquete => paquete.id_ubicacion === ubicacion.id);
+          });
+          setUbicaciones(ubicacionesNoAsignadas);
+        } else {
+          console.error("No se encontraron ubicaciones.");
+        }
+      } catch (error) {
+        console.error("Error al obtener ubicaciones:", error);
+      }
+    };
+  
+    fetchUbicaciones();
+  }, [token]);
 
-  const validateNomenclatura = (nomenclatura) => {
-    return (
-      nomenclatura.length > 0 &&
-      nomenclatura.length <= 100 &&
-      !existingUbicaciones.some((ubicacion) => ubicacion.nomenclatura === nomenclatura)
-    );
+  const handlePaqueteChange = (e) => {
+    setIdPaquete(e.target.value);
   };
 
-  const handleNomenclaturaChange = (e) => {
-    const value = e.target.value;
-    setNomenclatura(value);
-    setIsNomenclaturaValida(validateNomenclatura(value));
+  const handleUbicacionChange = (e) => {
+    setIdUbicacion(e.target.value);
   };
 
-  const handleBodegaChange = (e) => {
-    setIdBodega(e.target.value);
-  };
-
-  const handlePasilloChange = (e) => {
-    setIdPasillo(e.target.value);
+  const handleEstadoChange = (e) => {
+    setEstado(e.target.checked);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isNomenclaturaValida) {
-      toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return;
-    }
-
-    const ubicacionData = {
-      nomenclatura,
-      id_bodega: idBodega,
-      id_pasillo: idPasillo,
+    const ubicacionPaqueteData = {
+      id_paquete: idPaquete,
+      id_ubicacion: idUbicacion,
+      estado,
     };
 
     try {
-      const response = await fetch(`${API_URL}/ubicaciones`, {
+      const response = await fetch(`${API_URL}/ubicaciones-paquetes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(ubicacionData),
+        body: JSON.stringify(ubicacionPaqueteData),
       });
 
       if (!response.ok) {
-        let errorMessage = "Error al agregar la ubicación.";
+        let errorMessage = "Error al registrar la ubicación del paquete.";
         toast.error(errorMessage, {
           position: "bottom-right",
           autoClose: 5000,
@@ -204,7 +156,7 @@ const AgregarUbicacion = () => {
         throw new Error(errorMessage);
       }
 
-      toast.success("¡Ubicación agregada con éxito!", {
+      toast.success("¡Ubicación del paquete registrada con éxito!", {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -214,14 +166,14 @@ const AgregarUbicacion = () => {
       });
 
       setTimeout(() => {
-        navigate("/GestionUbicaciones");
+        navigate("/GestionUbicacion");
       }, 2000);
 
-      setNomenclatura("");
-      setIdBodega("");
-      setIdPasillo("");
+      setIdPaquete("");
+      setIdUbicacion("");
+      setEstado(true);
     } catch (error) {
-      toast.error(`Error al agregar la ubicación: ${error.message}`, {
+      toast.error(`Error al registrar la ubicación del paquete: ${error.message}`, {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -235,7 +187,7 @@ const AgregarUbicacion = () => {
   return (
     <Container>
       <Breadcrumbs
-        title="Formulario de Registro de Ubicaciones"
+        title="Formulario de Registro de Ubicaciones de Paquetes"
         breadcrumbItem="Ingrese la información"
       />
       <Card>
@@ -244,37 +196,18 @@ const AgregarUbicacion = () => {
             <Row>
               <Col md="6">
                 <FormGroup>
-                  <Label for="nomenclatura">Nomenclatura</Label>
-                  <Input
-                    type="text"
-                    id="nomenclatura"
-                    value={nomenclatura}
-                    onChange={handleNomenclaturaChange}
-                    required
-                    invalid={!isNomenclaturaValida}
-                  />
-                  {!isNomenclaturaValida && (
-                    <FormFeedback className="text-danger">
-                      Ya existe una ubicación con esa nomenclatura.
-                    </FormFeedback>
-                  )}
-                </FormGroup>
-              </Col>
-
-              <Col md="6">
-                <FormGroup>
-                  <Label for="id_bodega">Bodega</Label>
+                  <Label for="id_paquete">Paquete</Label>
                   <Input
                     type="select"
-                    id="id_bodega"
-                    value={idBodega}
-                    onChange={handleBodegaChange}
+                    id="id_paquete"
+                    value={idPaquete}
+                    onChange={handlePaqueteChange}
                     required
                   >
-                    <option value="">Seleccione una bodega</option>
-                    {bodegas.map((bodega) => (
-                      <option key={bodega.id} value={bodega.id}>
-                        {bodega.nombre}
+                    <option value="">Seleccione un paquete</option>
+                    {paquetes.map((paquete) => (
+                      <option key={paquete.id} value={paquete.id}>
+                      {`Paquete ${paquete.id} - Ubicacion: ${paquete.id_ubicacion}`}
                       </option>
                     ))}
                   </Input>
@@ -283,27 +216,44 @@ const AgregarUbicacion = () => {
 
               <Col md="6">
                 <FormGroup>
-                  <Label for="id_pasillo">Pasillo</Label>
+                  <Label for="id_ubicacion">Ubicación</Label>
                   <Input
                     type="select"
-                    id="id_pasillo"
-                    value={idPasillo}
-                    onChange={handlePasilloChange}
+                    id="id_ubicacion"
+                    value={idUbicacion}
+                    onChange={handleUbicacionChange}
                     required
                   >
-                  <option value="">Seleccione un pasillo</option>
-                    {pasillos.map((pasillo) => (
-                      <option key={pasillo.id} value={pasillo.id}>
-                        {pasillo.nombre}
+                    <option value="">Seleccione una ubicación</option>
+                    {ubicaciones.map((ubicacion) => (
+                      <option key={ubicacion.id} value={ubicacion.id}>
+                        {ubicacion.nomenclatura}
                       </option>
                     ))}
                   </Input>
+                </FormGroup>
+              </Col>
+              <br /><br />
+              <Col md="6">
+                <FormGroup check>
+                  <Label check>
+                    <Input
+                      type="checkbox"
+                      id="estado"
+                      checked={estado}
+                      onChange={handleEstadoChange}
+                    />
+                    Estado (Activo/Inactivo)
+                  </Label>
                 </FormGroup>
               </Col>
             </Row>
-
+            <br />
             <Button type="submit" color="primary">
-              Agregar Ubicación
+              Registrar Ubicación de Paquete
+            </Button>
+            <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionUbicacion'}>
+              Salir
             </Button>
           </Form>
         </CardBody>
@@ -312,4 +262,4 @@ const AgregarUbicacion = () => {
   );
 };
 
-export default AgregarUbicacion;
+export default AgregarUbicacionPaquete;

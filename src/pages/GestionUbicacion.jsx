@@ -11,40 +11,32 @@ import {
   Button,
 } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
-import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
+import Breadcrumbs from "../components/Ubicaciones/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import Pagination from "react-js-pagination";
-import "../styles/Vehiculos.css";
-import TablaBodegas from "../components/Bodegas/TablaBodegas";
-import ModalEditarBodega from "../components/Bodegas/ModalEditarBodega";
-import ModalConfirmarEliminarBodega from "../components/Bodegas/ModalConfirmarEliminarBodega";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import ModalEditarUbicacion from "../components/Ubicaciones/ModalEditarUbicacion";
+import ModalConfirmarEliminarUbicacion from "../components/Ubicaciones/ModalConfirmarEliminarUbicacion";
+import TablaUbicacion from "../components/Ubicaciones/TablaUbicacion";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
 const GestionUbicacion = () => {
-  document.title = "Bodegas | Ubicación";
+  document.title = "Ubicaciones | Gestión";
   const navigate = useNavigate();
-  const [bodegas, setBodegas] = useState([]);
+  const [ubicaciones, setUbicaciones] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
-  const [bodegaEditado, setBodegaEditado] = useState({
-    id: null,
+  const [ubicacionEditada, setUbicacionEditada] = useState({
+    id_ubicacion: null,
     nombre: "",
-    id_departamento: "",
-    id_municipio: "",
-    direccion: "",
+    estado: false,
   });
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
-  const [bodegaAEliminar, setBodegaAEliminar] = useState(null);
+  const [ubicacionAEliminar, setUbicacionAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
-  const [filtroTipo, setFiltroTipo] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipiosPorDepartamento, setMunicipiosPorDepartamento] = useState(
-    {}
-  );
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
@@ -53,191 +45,146 @@ const GestionUbicacion = () => {
 
       if (userId && token) {
         const response = await fetch(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         const responseData = await response.json();
 
-        // Verifica si el token es inválido
         if (responseData.status === "Token is Invalid") {
           console.error("Token is invalid. Logging out...");
           AuthService.logout();
-          window.location.href = "/login"; // Redirige a login si el token es inválido
+          window.location.href = "/login";
           return;
         }
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-     // AuthService.logout();
-     // window.location.href = "/login";
     }
   }, [API_URL]);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+    verificarEstadoUsuarioLogueado();
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
-
-  const verDetallesBodega = (idBodega) => {
-    navigate(`/DetallesBodega/${idBodega}`);
-  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = AuthService.getCurrentUser();
-
-        const [responseBodegas, responseDepartamentos] = await Promise.all([
-          axios.get(`${API_URL}/bodegas`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get(`${API_URL}/dropdown/get_departamentos`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-        ]);
-
-        setBodegas(responseBodegas.data.bodegas || []);
-        setDepartamentos(responseDepartamentos.data || []);
+        const token = localStorage.getItem('token');
+      const config = { headers: { 'Authorization': `Bearer ${token}` } };
+      const responseUbicaciones = await axios.get(`${API_URL}/ubicaciones-paquetes`, {
+        params: {
+          page: 1,
+          per_page: 1000
+        },
+        ...config
+      });
+        setUbicaciones(responseUbicaciones.data.data || []);
+        console.log(responseUbicaciones.data.data)
       } catch (error) {
-        console.error("Error al obtener datos:", error);
+        console.error("Error al obtener ubicaciones:", error);
       }
     };
 
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const fetchMunicipiosPorDepartamento = async (departamentos) => {
-      try {
-        const token = AuthService.getCurrentUser();
-    
-        const municipiosPorDepartamentoPromises = departamentos.map(
-          (departamento) =>
-            axios.get(`${API_URL}/dropdown/get_municipio/${departamento.id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-        );
-    
-        const municipiosResponses = await Promise.all(municipiosPorDepartamentoPromises);
-    
-        const municipiosPorDepartamentoCargados = {};
-        municipiosResponses.forEach((response, index) => {
-          municipiosPorDepartamentoCargados[departamentos[index].id] = response.data.municipio || [];
-        });
-    
-        setMunicipiosPorDepartamento(municipiosPorDepartamentoCargados);
-      } catch (error) {
-        console.error("Error al obtener municipios:", error.response ? error.response.data : error.message);
-      }
-    };
-    
-
-    if (departamentos.length > 0) {
-      fetchMunicipiosPorDepartamento(departamentos);
-    }
-  }, [departamentos]);
-
-  const confirmarEliminarBodega = async () => {
+  const confirmarEliminarUbicacion = async () => {
     try {
       const token = AuthService.getCurrentUser();
-      await axios.delete(`${API_URL}/bodegas/${bodegaAEliminar}`, {
+      await axios.delete(`${API_URL}/ubicaciones-paquetes/${ubicacionAEliminar}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
-      const bodegasRestantes = bodegas.filter((bodega) => bodega.id !== bodegaAEliminar);
-  
-      // Verificar si la página actual tiene elementos suficientes después de eliminar
-      const totalItemsCount = bodegasRestantes.length;
+
+      const ubicacionesRestantes = ubicaciones.filter(
+        (ubicacion) => ubicacion.id_ubicacion !== ubicacionAEliminar
+      );
+
+      const totalItemsCount = ubicacionesRestantes.length;
       const maxPages = Math.ceil(totalItemsCount / ITEMS_PER_PAGE);
-  
-      // Si la página actual es mayor que el número máximo de páginas, ajusta la página
+
       if (currentPage > maxPages) {
         setCurrentPage(maxPages);
       }
-  
-      setBodegas(bodegasRestantes);
-      setConfirmarEliminar(false);
-      toast.success('Bodega eliminada con éxito');
-      setBodegaAEliminar(null);
-    } catch (error) {
-      console.error("Error al eliminar bodega:", error);
-      setConfirmarEliminar(false);
-      toast.error('Error al eliminar la bodega');
-    }
-  };  
 
-  const toggleModalEditar = (bodega) => {
-    setBodegaEditado(
-      bodega || {
-        id: null,
+      setUbicaciones(ubicacionesRestantes);
+      setConfirmarEliminar(false);
+      toast.success("Ubicación eliminada con éxito");
+      setUbicacionAEliminar(null);
+    } catch (error) {
+      console.error("Error al eliminar ubicación:", error);
+      setConfirmarEliminar(false);
+      toast.error("Error al eliminar la ubicación");
+    }
+  };
+
+  const toggleModalEditar = (ubicacion) => {
+    setUbicacionEditada(
+      ubicacion || {
+        id_ubicacion: null,
         nombre: "",
-        id_departamento: "",
-        id_municipio: "",
-        direccion: "",
+        estado: false,
       }
     );
     setModalEditar(!modalEditar);
   };
 
-  const eliminarBodega = (id) => {
-    setBodegaAEliminar(id);
+  const eliminarUbicacion = (id) => {
+    setUbicacionAEliminar(id);
     setConfirmarEliminar(true);
   };
 
-  const guardarCambiosBodega = async () => {
+  const guardarCambiosUbicacion = async () => {
     try {
       const token = AuthService.getCurrentUser();
-      await axios.put(`${API_URL}/bodegas/${bodegaEditado.id}`, bodegaEditado, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.put(
+        `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
+        ubicacionEditada,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      setBodegas(
-        bodegas.map((bodega) =>
-          bodega.id === bodegaEditado.id ? bodegaEditado : bodega
+      setUbicaciones(
+        ubicaciones.map((ubicacion) =>
+          ubicacion.id === ubicacionEditada.id
+            ? ubicacionEditada
+            : ubicacion
         )
       );
       setModalEditar(false);
-      setBodegaEditado({
+      setUbicacionEditada({
         id: null,
-        nombre: "",
-        id_departamento: "",
-        id_municipio: "",
-        direccion: "",
+        id_ubicacion: "",
+        estado: false,
       });
-      toast.success('Bodega actualizada con éxito')
+      toast.success("Ubicación actualizada con éxito");
     } catch (error) {
-      console.error("Error al actualizar bodega:", error);
-      toast.error('Error al actualizar la bodega')
+      console.error("Error al actualizar ubicación:", error);
+      toast.error("Error al actualizar la ubicación");
     }
   };
 
-  const filtrarBodegas = (bodegas) => {
-    if (!Array.isArray(bodegas)) return [];
-  
-    return bodegas.filter((bodega) => {
-      const coincideNombre = bodega.nombre.toLowerCase().includes(busqueda.toLowerCase());
-      const coincideTipo = filtroTipo === "" || bodega.tipo_bodega.toLowerCase() === filtroTipo.toLowerCase();
-      return coincideNombre && coincideTipo;
-    });
+  const filtrarUbicaciones = (ubicaciones) => {
+    if (!Array.isArray(ubicaciones)) return [];
+
+    return ubicaciones.filter((ubicacion) =>
+      ubicacion.id_ubicacion.toString().includes(busqueda.toLowerCase())
+    );
   };
 
-  
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -247,18 +194,12 @@ const GestionUbicacion = () => {
     setCurrentPage(1);
   };
 
-  const bodegasFiltradas = filtrarBodegas(bodegas)
+  const ubicacionesFiltradas = filtrarUbicaciones(ubicaciones);
 
-  const bodegasConIdsNumericos = bodegasFiltradas.map(bodega => ({
-    ...bodega,
-    id_departamento: Number(bodega.id_departamento),
-    id_municipio: Number(bodega.id_municipio),
-  }))
-  
-  const paginatedBodegas = bodegasConIdsNumericos.slice(
+  const paginatedUbicaciones = ubicacionesFiltradas.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
-  )
+  );
 
   return (
     <div className="page-content">
@@ -284,29 +225,15 @@ const GestionUbicacion = () => {
                 id="busqueda"
                 value={busqueda}
                 onChange={handleSearchChange}
-                placeholder="Buscar por nombre de bodega"
+                placeholder="Buscar por ID de ubicación"
                 style={{ width: "300px" }}
               />
-              <Label for="filtroTipo" style={{ marginLeft: "10px", marginRight: "10px" }}>
-                Tipo:
-              </Label>
-              <Input
-                type="select"
-                id="filtroTipo"
-                value={filtroTipo}
-                onChange={(e) => setFiltroTipo(e.target.value)}
-                style={{ width: "200px" }}
-              >
-                <option value="">Todos</option>
-                <option value="fisica">Física</option>
-                <option value="movil">Móvil</option>
-              </Input>
               <div style={{ marginLeft: "auto" }}>
                 <Link
                   to="/AgregarUbicacion"
                   className="btn btn-primary custom-button"
                 >
-                  <i className="fas fa-plus"></i> Agregar Ubicacion
+                  <i className="fas fa-plus"></i> Agregar Ubicación
                 </Link>
               </div>
             </div>
@@ -317,13 +244,10 @@ const GestionUbicacion = () => {
           <Col lg={12}>
             <Card>
               <CardBody>
-                <TablaBodegas
-                  bodegas={paginatedBodegas}
-                  departamentos={departamentos}
-                  municipios={Object.values(municipiosPorDepartamento).flat()}
-                  eliminarBodega={eliminarBodega}
+                <TablaUbicacion
+                  ubicaciones={paginatedUbicaciones}
+                  eliminarUbicacion={eliminarUbicacion}
                   toggleModalEditar={toggleModalEditar}
-                  verDetallesBodega={verDetallesBodega}
                 />
               </CardBody>
             </Card>
@@ -341,7 +265,7 @@ const GestionUbicacion = () => {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={bodegasFiltradas.length}
+              totalItemsCount={ubicacionesFiltradas.length}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"
@@ -351,21 +275,20 @@ const GestionUbicacion = () => {
           </Col>
         </Row>
       </Container>
-      <ModalEditarBodega
+      <ModalEditarUbicacion
         modalEditar={modalEditar}
-        bodegaEditado={bodegaEditado}
-        setBodegaEditado={setBodegaEditado}
-        guardarCambiosBodega={guardarCambiosBodega}
+        ubicacionEditada={ubicacionEditada}
+        setUbicacionEditada={setUbicacionEditada}
+        guardarCambiosUbicacion={guardarCambiosUbicacion}
         setModalEditar={setModalEditar}
-        departamentos={departamentos}
-        municipiosPorDepartamento={municipiosPorDepartamento}
       />
 
-      <ModalConfirmarEliminarBodega
+      <ModalConfirmarEliminarUbicacion
         confirmarEliminar={confirmarEliminar}
-        confirmarEliminarBodega={confirmarEliminarBodega}
+        confirmarEliminarUbicacion={confirmarEliminarUbicacion}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+      <ToastContainer />
     </div>
   );
 };
