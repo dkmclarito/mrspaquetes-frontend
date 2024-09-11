@@ -82,7 +82,7 @@ import GestionUbicacion from "./pages/GestionUbicacion";
 import DatosPaquetePreOrden from "./pages/DatosPaquetePreOrden";
 import DatosPaquetePreOrdenExpress from "./pages/DatosPaquetePreOrdenExpress";
 import GestionIncidencias from "./pages/GestionIncidencias";
-
+import SeleccionarPaquetes from "./pages/SeleccionarPaquetes";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -138,7 +138,7 @@ const App = () => {
                   path="/DetallesAsignacionRutas/:id"
                   element={<DetallesAsignacionRutas />}
                 />
-                 <Route
+                <Route
                   path="/SeleccionarPaquetes"
                   element={<SeleccionarPaquetes />}
                 />
@@ -326,7 +326,10 @@ const App = () => {
               >
                 <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
                 <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
-                <Route path="/GestionIncidencias" element={<GestionIncidencias />} />
+                <Route
+                  path="/GestionIncidencias"
+                  element={<GestionIncidencias />}
+                />
                 {/* Aquí van las rutas adicionales */}
               </Route>
 
