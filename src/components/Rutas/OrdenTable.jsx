@@ -1,7 +1,12 @@
 import React from "react";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTimes,
+  faPencilAlt,
+  faCheck,
+  faShippingFast,
+} from "@fortawesome/free-solid-svg-icons";
 
 const OrdenTable = ({
   ordenes,
@@ -9,6 +14,8 @@ const OrdenTable = ({
   getEstadoTexto,
   handleEdit,
   handleDelete,
+  handleAsignarRecoleccion,
+  handleFinalizarOrden,
 }) => {
   return (
     <Table>
@@ -33,6 +40,9 @@ const OrdenTable = ({
                 <Button
                   className="me-2 btn-icon btn-danger"
                   onClick={() => handleDelete(orden.id)}
+                  disabled={
+                    orden.recoleccion_iniciada || orden.recoleccion_finalizada
+                  }
                   aria-label="Eliminar Orden de Recolección"
                 >
                   <FontAwesomeIcon icon={faTimes} />
@@ -40,9 +50,32 @@ const OrdenTable = ({
                 <Button
                   className="me-2 btn-icon btn-editar"
                   onClick={() => handleEdit(orden.id)}
+                  disabled={
+                    orden.recoleccion_iniciada || orden.recoleccion_finalizada
+                  }
                   aria-label="Editar Orden de Recolección"
                 >
                   <FontAwesomeIcon icon={faPencilAlt} />
+                </Button>
+                <Button
+                  className="me-2 btn-icon btn-primary"
+                  onClick={() => handleAsignarRecoleccion(orden.id)}
+                  disabled={
+                    orden.recoleccion_iniciada || orden.recoleccion_finalizada
+                  }
+                  aria-label="Asignar Recolección"
+                >
+                  <FontAwesomeIcon icon={faShippingFast} />
+                </Button>
+                <Button
+                  className="me-2 btn-icon btn-success"
+                  onClick={() => handleFinalizarOrden(orden.id)}
+                  disabled={
+                    !orden.recoleccion_iniciada || orden.recoleccion_finalizada
+                  }
+                  aria-label="Finalizar Orden"
+                >
+                  <FontAwesomeIcon icon={faCheck} />
                 </Button>
               </div>
             </td>

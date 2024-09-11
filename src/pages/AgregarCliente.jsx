@@ -195,7 +195,7 @@ const AgregarCliente = () => {
 
     const handleEmailChange = (e) => {
         const email = e.target.value;
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|org|net|edu|gov|mil|info|biz|co|us|ca)$/;
 
         if (emailPattern.test(email)) {
             setIsEmailValid(true);
@@ -387,48 +387,63 @@ const AgregarCliente = () => {
 
     const handleError = (error) => {
         let errorMessage = "Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.";
-
+    
         if (error.response && error.response.data) {
-            const errorData = error.response.data.error || error.response.data.message;
-            console.error("Error data:", errorData);
-
-            if (errorData && Array.isArray(errorData)) {
-                if (errorData.includes("El DUI ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
-                    errorMessage = "El DUI y el teléfono ya están registrados.";
-                } else if (errorData.includes("El NIT ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
-                    errorMessage = "El NIT y el teléfono ya están registrados.";
-                } else if (errorData.includes("El DUI ya está registrado.")) {
-                    errorMessage = "El DUI ya está registrado.";
-                } else if (errorData.includes("El NIT ya está registrado.")) {
-                    errorMessage = "El NIT ya está registrado.";
-                } else if (errorData.includes("El teléfono ya está registrado.")) {
-                    errorMessage = "El teléfono ya está registrado.";
+            const errorData = error.response.data.errors || error.response.data.error;
+            
+            // Verifica si los errores están relacionados con email, DUI, teléfono o NIT
+            if (errorData) {
+                let messages = [];
+    
+                // Si el error es un array
+                if (Array.isArray(errorData)) {
+                    if (errorData.includes("El DUI ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
+                        messages.push("El DUI y el teléfono ya están registrados.");
+                    } else if (errorData.includes("El NIT ya está registrado.") && errorData.includes("El teléfono ya está registrado.")) {
+                        messages.push("El NIT y el teléfono ya están registrados.");
+                    } else if (errorData.includes("El DUI ya está registrado.")) {
+                        messages.push("El DUI ya está registrado.");
+                    } else if (errorData.includes("El NIT ya está registrado.")) {
+                        messages.push("El NIT ya está registrado.");
+                    } else if (errorData.includes("El teléfono ya está registrado.")) {
+                        messages.push("El teléfono ya está registrado.");
+                    }
                 }
-            } else if (error.response.data.errors) {
-                const errorKeys = Object.keys(error.response.data.errors);
-                console.error("Error keys:", errorKeys);
-
-                if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
-                    errorMessage = "El DUI y el teléfono ya están registrados.";
-                } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
-                    errorMessage = "El NIT y el teléfono ya están registrados.";
-                } else if (errorKeys.includes("dui") && errorKeys.includes("email")) {
-                    errorMessage = "El DUI y el correo electrónico ya están registrados.";
-                } else if (errorKeys.includes("dui")) {
-                    errorMessage = "El DUI ya está registrado.";
-                } else if (errorKeys.includes("nit")) {
-                    errorMessage = "El NIT ya está registrado.";
-                } else if (errorKeys.includes("telefono")) {
-                    errorMessage = "El teléfono ya está registrado.";
+    
+                // Si el error es un objeto con claves
+                if (typeof errorData === 'object') {
+                    const errorKeys = Object.keys(errorData);
+    
+                    if (errorKeys.includes("dui") && errorKeys.includes("telefono")) {
+                        messages.push("El DUI y el teléfono ya están registrados.");
+                    } else if (errorKeys.includes("nit") && errorKeys.includes("telefono")) {
+                        messages.push("El NIT y el teléfono ya están registrados.");
+                    } else if (errorKeys.includes("dui") && errorKeys.includes("email")) {
+                        messages.push("El DUI y el correo electrónico ya están registrados.");
+                    } else if (errorKeys.includes("dui")) {
+                        messages.push("El DUI ya está registrado.");
+                    } else if (errorKeys.includes("nit")) {
+                        messages.push("El NIT ya está registrado.");
+                    } else if (errorKeys.includes("telefono")) {
+                        messages.push("El teléfono ya está registrado.");
+                    } else if (errorKeys.includes("email")) {
+                        messages.push("El correo electrónico ya está registrado.");
+                    }
+                }
+    
+                // Si hay varios errores, los concatenamos en el mensaje final
+                if (messages.length > 0) {
+                    errorMessage = messages.join(" ");
                 }
             }
         }
-
+    
         console.error("Error message:", errorMessage);
         setAlertaExito(false);
         setAlertaError(true);
         setErrorMensaje(errorMessage);
     };
+    
 
     const handleDepartamentoChange = (e) => {
         const selectedDepartamento = e.target.value;
