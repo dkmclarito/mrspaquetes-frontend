@@ -154,7 +154,7 @@ export default function GestionAsignarRutas() {
                 style={{ width: "500px" }}
               />
               <div style={{ marginLeft: "auto" }}>
-                <Link to="/AgregarAsignacionRuta" className="btn btn-primary">
+                <Link to="/SeleccionarPaquetes" className="btn btn-primary">
                   <i className="fas fa-plus"></i> Agregar Asignación
                 </Link>
               </div>

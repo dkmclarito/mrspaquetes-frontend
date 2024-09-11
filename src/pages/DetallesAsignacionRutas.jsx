@@ -82,7 +82,7 @@ const DetallesAsignacionRutas = () => {
             },
           })
           console.log("Datos del paquete recibidos:", response.data)
-          // Assuming the API returns an array of packages, we'll use the first one
+          
           setPaquete(response.data.paquetes[0])
         } catch (error) {
           console.error("Error al obtener los detalles del paquete:", error)

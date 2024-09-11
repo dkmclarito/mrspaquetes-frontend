@@ -138,6 +138,10 @@ const App = () => {
                   path="/DetallesAsignacionRutas/:id"
                   element={<DetallesAsignacionRutas />}
                 />
+                 <Route
+                  path="/SeleccionarPaquetes"
+                  element={<SeleccionarPaquetes />}
+                />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route
                   path="/AgregarEmpleado/:id"
