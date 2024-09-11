@@ -10,7 +10,7 @@ const ModalConfirmarEliminar = ({
   <Modal isOpen={confirmarEliminar} toggle={() => setConfirmarEliminar(false)}>
     <ModalHeader toggle={() => setConfirmarEliminar(false)}>Confirmar Eliminación</ModalHeader>
     <ModalBody>
-      ¿Estás seguro de que deseas eliminar este usuario?
+      ¿Estás seguro de que deseas eliminar esta incidencia?
     </ModalBody>
     <ModalFooter>
       <Button color="danger" onClick={confirmarEliminarUsuario}>Eliminar</Button>
