@@ -957,11 +957,12 @@ span.btn-direcciones-text{
   background-color: #2b2b2b;
   color: white;
 }
-.items, .dropdown-menu{
+
+.dropdown-menu, .dropdown-item{
   background-color: #444;
   color: white;
 }
-.items:hover{
+.dropdown-menu:hover, .dropdown-item:hover{
   background-color: #555;
   color: white;
 }

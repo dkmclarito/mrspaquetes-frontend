@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Container,
-  Row,
-  Col,
   Card,
   CardBody,
   Form,
@@ -29,6 +27,7 @@ const AgregarUbicacionPaquete = () => {
   const [paquetes, setPaquetes] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
   const [idPaquete, setIdPaquete] = useState("");
+  const [idUbicacion, setIdUbicacion] = useState(""); // Estado para ID de ubicación
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUbicaciones, setFilteredUbicaciones] = useState([]);
   const [modal, setModal] = useState(false);
@@ -109,7 +108,7 @@ const AgregarUbicacionPaquete = () => {
 
   const handleUbicacionSelect = (ubicacion) => {
     setSearchTerm(ubicacion.nomenclatura);
-    setIdPaquete(ubicacion.id);
+    setIdUbicacion(ubicacion.id); // Actualiza el ID de ubicación seleccionado
     setDropdownOpen(false);
   };
 
@@ -132,7 +131,7 @@ const AgregarUbicacionPaquete = () => {
     e.preventDefault();
     const ubicacionPaqueteData = {
       id_paquete: idPaquete,
-      id_ubicacion: idPaquete, // Asegúrate de que esto sea correcto
+      id_ubicacion: idUbicacion, // Usa el ID de ubicación seleccionado
       estado: 1,
     };
 
@@ -145,12 +144,6 @@ const AgregarUbicacionPaquete = () => {
         },
         body: JSON.stringify(ubicacionPaqueteData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al registrar la ubicación del paquete.");
-      }
-
       toast.success("¡Ubicación del paquete registrada con éxito!", {
         position: "bottom-right",
         autoClose: 5000,
@@ -159,11 +152,18 @@ const AgregarUbicacionPaquete = () => {
         pauseOnHover: false,
         draggable: true,
       });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al registrar la ubicación del paquete.");
+      }
+
+      
 
       // Actualizar las ubicaciones y paquetes después de guardar
       fetchData();
       toggleModal();
       setIdPaquete("");
+      setIdUbicacion(""); // Limpiar ID de ubicación después del envío
     } catch (error) {
       toast.error(`Error al registrar la ubicación del paquete: ${error.message}`, {
         position: "bottom-right",
@@ -186,7 +186,7 @@ const AgregarUbicacionPaquete = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Peso</th>
+                  <th>Peso (libras)</th>
                   <th>Descripción</th>
                   <th>Acción</th>
                 </tr>
@@ -196,57 +196,67 @@ const AgregarUbicacionPaquete = () => {
                   paquetes.map((paquete) => (
                     <tr key={paquete.id}>
                       <td>{paquete.id}</td>
-                      <td>{paquete.peso} kg</td>
+                      <td>{paquete.peso}</td>
                       <td>{paquete.descripcion_contenido}</td>
                       <td>
-                        <Button onClick={() => handleAsignarUbicacion(paquete)}>Asignar Ubicación</Button>
+                        <Button color="primary" onClick={() => handleAsignarUbicacion(paquete)}>
+                          Asignar Ubicación
+                        </Button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="text-center">
-                      No hay paquetes disponibles
-                    </td>
+                    <td colSpan="4">No hay paquetes disponibles</td>
                   </tr>
                 )}
               </tbody>
             </Table>
-
-            <Modal isOpen={modal} toggle={toggleModal}>
-              <ModalHeader toggle={toggleModal}>Asignar Ubicación a Paquete</ModalHeader>
-              <ModalBody>
-                <FormGroup>
-                  <Label for="ubicacion">Paquete</Label>
-                  <Input type="text" value={selectedPaquete?.descripcion_contenido || ''} readOnly />
-                </FormGroup>
-                <FormGroup>
-                  <Label for="searchUbicacion">Buscar Ubicación</Label>
-                  <Input
-                    type="text"
-                    id="searchUbicacion"
-                    value={searchTerm}
-                    onChange={handleUbicacionChange}
-                  />
-                  {dropdownOpen && filteredUbicaciones.length > 0 && (
-                    <div className="dropdown-menu show" style={{width: '94%'}}>
-                      {filteredUbicaciones.map((ubicacion) => (
-                        <DropdownItem key={ubicacion.id} onClick={() => handleUbicacionSelect(ubicacion)} className="items">
-                          {ubicacion.nomenclatura}
-                        </DropdownItem>
-                      ))}
-                    </div>
-                  )}
-                </FormGroup>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="primary" onClick={handleSubmit}>Guardar</Button>
-                <Button color="secondary" onClick={toggleModal}>Cancelar</Button>
-              </ModalFooter>
-            </Modal>
           </Form>
         </CardBody>
       </Card>
+
+      <Modal isOpen={modal} toggle={toggleModal}>
+        <ModalHeader toggle={toggleModal}>Asignar Ubicación</ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label for="paqueteDisplay">Paquete Seleccionado</Label>
+              <Input
+                type="text"
+                id="paqueteDisplay"
+                value={selectedPaquete ? selectedPaquete.descripcion_contenido : ""}
+                readOnly
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="ubicacionSelect">Seleccionar Ubicación</Label>
+              <Input
+                type="text"
+                id="ubicacionSelect"
+                value={searchTerm}
+                onChange={handleUbicacionChange}
+              />
+              {dropdownOpen && (
+                <div className="dropdown-menu show" style={{width: '94%'}}>
+                  {filteredUbicaciones.map((ubicacion) => (
+                    <DropdownItem
+                      key={ubicacion.id}
+                      onClick={() => handleUbicacionSelect(ubicacion)}
+                    >
+                      {ubicacion.nomenclatura}
+                    </DropdownItem>
+                  ))}
+                </div>
+              )}
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={handleSubmit}>Guardar</Button>
+          <Button color="secondary" onClick={toggleModal}>Cerrar</Button>
+        </ModalFooter>
+      </Modal>
     </Container>
   );
 };
