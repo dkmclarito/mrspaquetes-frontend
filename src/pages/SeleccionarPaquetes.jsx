@@ -13,6 +13,34 @@ import AuthService from "../services/authService";
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
+const tiposPaquete = {
+  1: "Documentos",
+  2: "Electronicos",
+  3: "Ropa",
+  4: "Alimentos"
+};
+
+const tamanosPaquete = {
+  1: "Pequeño",
+  2: "Mediano",
+  3: "Grande"
+};
+
+const estadosPaquete = {
+  1: "Recepción",
+  2: "En Bodega",
+  3: "En Espera de Recolección",
+  4: "En Transito",
+  5: "En Ruta de entrega"
+};
+
+const tiposEmpaque = {
+  1: "Caja de cartón",
+  2: "Bolsa de plástico",
+  3: "Sobres acolchados",
+  4: "Papel burbuja"
+};
+
 export default function GestionPaquetes() {
   const [allPaquetes, setAllPaquetes] = useState([]);
   const [paquetesFiltrados, setPaquetesFiltrados] = useState([]);
@@ -52,43 +80,42 @@ export default function GestionPaquetes() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { 'Authorization': `Bearer ${token}` } };
-
+      
       const ordenesResponse = await axios.get(`${API_URL}/ordenes`, config);
       const ordenes = ordenesResponse.data.data || [];
       console.log('Total órdenes registradas:', ordenes.length);
 
       const paquetesDisponibles = ordenes.flatMap(orden => 
         orden.detalles.map(detalle => ({
-          ...detalle,
-          numero_seguimiento: orden.numero_seguimiento,
-          cliente: `${orden.cliente.nombre} ${orden.cliente.apellido}`,
-          departamento: detalle.departamento || 'Desconocido',
-          municipio: detalle.municipio || 'Desconocido',
-          estado_paquete: detalle.estado_paquete || 'Desconocido'
+          id_paquete: detalle.id_paquete,
+          tipo_paquete: tiposPaquete[detalle.paquete.id_tipo_paquete] || 'Desconocido',
+          empaquetado: tiposEmpaque[detalle.paquete.tipo_caja] || 'Desconocido',
+          tamano_paquete: tamanosPaquete[detalle.paquete.id_tamano_paquete] || 'Desconocido',
+          estado_paquete: estadosPaquete[detalle.id_estado_paquetes] || 'Desconocido',
+          departamento: orden.direccion_emisor.departamento,
+          municipio: orden.direccion_emisor.municipio,
+          direccion: orden.direccion_emisor.direccion,
+          peso: detalle.paquete.peso,
+          descripcion_contenido: detalle.paquete.descripcion_contenido,
+          fecha_envio: detalle.paquete.fecha_envio,
+          fecha_entrega_estimada: detalle.paquete.fecha_entrega_estimada,
+          paquete: detalle.paquete
+          
         }))
       );
-
+      
       console.log('Total paquetes disponibles:', paquetesDisponibles.length);
 
-      const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas`, config);
-      const asignaciones = responseAsignaciones.data.asignacionrutas || [];
+      setAllPaquetes(paquetesDisponibles);
+      setTotalItems(paquetesDisponibles.length);
 
-      console.log('Total asignaciones:', asignaciones.length);
-
-      const idsPaquetesAsignados = new Set(asignaciones.map(asignacion => asignacion.id_paquete));
-      console.log('IDs de paquetes asignados:', [...idsPaquetesAsignados]);
-
-      const paquetesNoAsignados = paquetesDisponibles.filter(paquete => !idsPaquetesAsignados.has(paquete.id_paquete));
-      console.log('Total paquetes no asignados:', paquetesNoAsignados.length);
-
-      setAllPaquetes(paquetesNoAsignados);
-      setTotalItems(paquetesNoAsignados.length);
-
-      const uniqueDepartamentos = [...new Set(paquetesNoAsignados.map(p => p.departamento).filter(Boolean))];
+      const uniqueDepartamentos = [...new Set(paquetesDisponibles.map(p => p.departamento).filter(Boolean))];
       setDepartamentos(uniqueDepartamentos);
 
-      const uniqueMunicipios = [...new Set(paquetesNoAsignados.map(p => p.municipio).filter(Boolean))];
+      const uniqueMunicipios = [...new Set(paquetesDisponibles.map(p => p.municipio).filter(Boolean))];
       setMunicipios(uniqueMunicipios);
+
+      setPaquetesFiltrados(paquetesDisponibles.slice(0, ITEMS_PER_PAGE));
     } catch (error) {
       console.error('Error fetching paquetes:', error);
       toast.error('Error al cargar los paquetes');
@@ -112,13 +139,15 @@ export default function GestionPaquetes() {
   };
 
   const handleSelectPaquete = (paquete, isSelected) => {
-    setPaquetesSeleccionados(prev => {
-      const updated = isSelected
-        ? [...prev, { id_paquete: parseInt(paquete.id_paquete, 10), tamano_paquete: paquete.tamano_paquete }]
-        : prev.filter(p => p.id_paquete !== parseInt(paquete.id_paquete, 10));
-      console.log('Paquetes seleccionados:', updated.length);
-      return updated;
-    });
+    if (isSelected) {
+      setPaquetesSeleccionados([...paquetesSeleccionados, {
+        id_paquete: paquete.id_paquete,
+        tamano_paquete: paquete.tamano_paquete
+      }]);
+    } else {
+      setPaquetesSeleccionados(paquetesSeleccionados.filter(p => p.id_paquete !== paquete.id_paquete));
+    }
+    console.log('Paquetes seleccionados:', paquetesSeleccionados.length + (isSelected ? 1 : -1));
   };
 
   const handleAsignarRuta = () => {
@@ -190,13 +219,14 @@ export default function GestionPaquetes() {
                   </option>
                 ))}
               </Input>
-              <div style={{ marginLeft: "auto" }}>
-                <Button color="primary" onClick={handleAsignarRuta}>
-                  <i className="fas fa-plus"></i> Asignar Ruta
-                </Button>
+              <div style={ {marginLeft: 'auto'}}>
+              <Button color="primary" onClick={handleAsignarRuta}>
+                <i className="fas fa-plus"></i> Asignar Ruta
+              </Button>
               </div>
-            </div>
-            <Card style={{ marginTop: '20px' }}>
+              </div>
+              
+            <Card>
               <CardBody>
                 <TablaPaquetesAsignados
                   paquetes={paquetesFiltrados}
@@ -204,9 +234,8 @@ export default function GestionPaquetes() {
                 />
               </CardBody>
             </Card>
-            {totalItems > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <Pagination
+            <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
+              <Pagination
                 activePage={currentPage}
                 itemsCountPerPage={ITEMS_PER_PAGE}
                 totalItemsCount={totalItems}
@@ -215,12 +244,10 @@ export default function GestionPaquetes() {
                 innerClass="pagination"
                 itemClass="page-item"
                 linkClass="page-link"
-                />
-                </div>
-              )}
+              />
             </Col>
-          </Row>
-      
+          </Col>
+        </Row>
       </Container>
     </div>
   );
