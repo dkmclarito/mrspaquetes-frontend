@@ -192,16 +192,24 @@ const AgregarUbicacionPaquete = () => {
                 </tr>
               </thead>
               <tbody>
-                {paquetes.map((paquete) => (
-                  <tr key={paquete.id}>
-                    <td>{paquete.id}</td>
-                    <td>{paquete.peso} kg</td>
-                    <td>{paquete.descripcion_contenido}</td>
-                    <td>
-                      <Button onClick={() => handleAsignarUbicacion(paquete)}>Asignar Ubicación</Button>
+                {paquetes.length > 0 ? (
+                  paquetes.map((paquete) => (
+                    <tr key={paquete.id}>
+                      <td>{paquete.id}</td>
+                      <td>{paquete.peso} kg</td>
+                      <td>{paquete.descripcion_contenido}</td>
+                      <td>
+                        <Button onClick={() => handleAsignarUbicacion(paquete)}>Asignar Ubicación</Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="text-center">
+                      No hay paquetes disponibles
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </Table>
 
