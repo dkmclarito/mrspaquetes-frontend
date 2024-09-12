@@ -1,13 +1,42 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPencilAlt, faEye } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Para hacer la solicitud de usuario
 import "/src/styles/usuarios.css";
 
+const API_URL = import.meta.env.VITE_API_URL; // Asegúrate de que la URL esté configurada correctamente
+
 const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }) => {
+  const [usuarioLogueado, setUsuarioLogueado] = useState(null); // Almacena los datos del usuario logueado
   const navigate = useNavigate();
+
+  // Función para obtener el email del usuario logueado desde la API
+  useEffect(() => {
+    const fetchUsuarioLogueado = async () => {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId'); // Obtén el ID del usuario logueado
+      if (userId && token) {
+        try {
+          const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (response.data && response.data.user) {
+            setUsuarioLogueado(response.data.user); // Accede a los datos del usuario dentro del objeto `user`
+
+            // Imprimir los datos del usuario logueado en la consola
+            console.log("Datos del usuario logueado:", response.data.user);
+          }
+        } catch (error) {
+          console.error("Error al obtener los datos del usuario logueado:", error);
+        }
+      }
+    };
+
+    fetchUsuarioLogueado();
+  }, []);
 
   const renderEstado = (estadoId) => {
     let color = "";
@@ -49,10 +78,20 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
   };
 
   const renderUsuarioAsignado = (incidencia) => {
-    if (!incidencia.id_usuario_asignado) {
+    if (!incidencia.usuario_asignado) {
       return (
         <>
-          Sin asignar
+          <span style={{
+            backgroundColor: 'red',
+            color: 'white',
+            padding: '1px 4px',
+            borderRadius: '5px',
+            display: 'inline-block',
+            fontWeight: 'bold',
+            fontSize: '12px'
+          }}>
+            Sin asignar
+          </span>
           <Button
             color="primary"
             size="sm"
@@ -64,7 +103,32 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
         </>
       );
     } else {
-      return incidencia.id_usuario_asignado.nombre_completo; // Asegúrate de que `nombre_completo` exista en tu objeto usuario
+      return (
+        <span>
+          {incidencia.usuario_asignado ? incidencia.usuario_asignado : 'Asignado'}
+        </span>
+      );
+    }
+  };
+
+  const renderSolucion = (incidencia) => {
+    // Ajustamos para acceder correctamente al email del usuario logueado
+    if (!incidencia.solucion && usuarioLogueado && usuarioLogueado.email === incidencia.usuario_asignado) {
+      // Imprimir los datos de comparación
+      console.log("Email del usuario logueado:", usuarioLogueado.email);
+      console.log("Email del usuario asignado a la incidencia:", incidencia.usuario_asignado);
+
+      return (
+        <Button
+          color="success"
+          size="sm"
+          onClick={() => navigate(`/DarSolucionIncidencia/${incidencia.id}`)} // Ruta para dar solución
+        >
+          Dar Solución
+        </Button>
+      );
+    } else {
+      return incidencia.solucion ? incidencia.solucion : "Sin solución";
     }
   };
 
@@ -88,7 +152,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
             <th style={{ width: '15%' }} className="text-center">Descripción</th>
             <th style={{ width: '15%' }} className="text-center">Tipo Incidencia</th>
             <th style={{ width: '10%' }} className="text-center">Estado</th>
-            <th style={{ width: '20%' }} className="text-center">Usuario Asignado</th>
+            <th style={{ width: '20%' }} className="text-center">Email de usuario asignado</th>
             <th style={{ width: '20%' }} className="text-center">Solución</th>
             <th style={{ width: '10%' }} className="text-center">Creación</th>
             <th style={{ width: '15%' }} className="text-center">Acciones</th>
@@ -103,7 +167,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
                 <td style={{ width: '15%' }} className="text-center">{incidencia.tipo_incidencia}</td>
                 <td style={{ width: '10%' }} className="text-center">{incidencia.estado}</td>
                 <td style={{ width: '20%' }} className="text-center">{renderUsuarioAsignado(incidencia)}</td>
-                <td style={{ width: '20%' }} className="text-center">{incidencia.solucion ? incidencia.solucion : "Sin solución"}</td>
+                <td style={{ width: '20%' }} className="text-center">{renderSolucion(incidencia)}</td>
                 <td style={{ width: '10%' }} className="text-center">{formatDate(incidencia.created_at)}</td>
                 <td style={{ width: '15%' }} className="text-center">
                   <div className="button-container">

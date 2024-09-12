@@ -85,8 +85,9 @@ import GestionIncidencias from "./pages/GestionIncidencias";
 import SeleccionarPaquetes from "./pages/SeleccionarPaquetes";
 import AgregarIncidencia from "./pages/AgregarIncidencia";
 import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaqueteSeleccionado";
-import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia";
-
+import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
+import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
+import DataIncidencia from "./pages/DataIncidencia";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -337,6 +338,8 @@ const App = () => {
                  <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
                  <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} /> 
                  <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
+                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
+                 <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
                 {/* Aquí van las rutas adicionales */}
               </Route>
 

@@ -88,16 +88,24 @@ const AsignarUsuarioIncidencia = () => {
         }
     
         try {
-            // Asegúrate de que `incidencia` existe y tiene un `id`
+            const token = localStorage.getItem("token");
+            const userId = localStorage.getItem("userId"); // Obtén el ID del usuario logueado desde el localStorage
+
             const incidenciaActualizada = {
-                ...incidencia,
+                id_paquete: incidencia.id_paquete,
+                fecha_hora: incidencia.fecha_hora,
+                id_tipo_incidencia: incidencia.tipo_incidencia === 'Retraso' ? 1 : 2, // Ajusta según sea necesario
+                descripcion: incidencia.descripcion,
+                estado: 2,  // Estado fijo "En Proceso"
+                fecha_resolucion: incidencia.fecha_resolucion,
+                id_usuario_reporta: userId, // Usar el ID del usuario logueado
                 id_usuario_asignado: usuarioId,
+                solucion: incidencia.solucion || ""
             };
     
-            // Imprime los datos que estás enviando a la API
+            // Imprimir los datos que estás enviando
             console.log("Datos enviados en la solicitud PUT:", incidenciaActualizada);
     
-            // Envía la solicitud de actualización a la API
             const response = await axios.put(`${API_URL}/incidencias/${incidencia.id}`, incidenciaActualizada, {
                 headers: {
                     "Content-Type": "application/json",
@@ -111,11 +119,13 @@ const AsignarUsuarioIncidencia = () => {
             }
         } catch (error) {
             console.error("Error al asignar usuario:", error);
+            if (error.response) {
+                console.log("Respuesta de error del servidor:", error.response.data);
+            }
             alert("Error al asignar el usuario a la incidencia.");
         }
     };
     
-
 
     const filtrarUsuarios = () => {
         return usuarios.filter(usuario => {
