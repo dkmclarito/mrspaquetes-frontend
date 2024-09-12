@@ -2,29 +2,39 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import axios from 'axios'; // Importamos axios para realizar la solicitud a la API
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate para redirigir
 import "/src/styles/usuarios.css";
 
 const API_URL = import.meta.env.VITE_API_URL; // URL de la API
 
 const TablaUsuarios = ({ usuarios, incidencia, actualizarIncidencia }) => {
+  const navigate = useNavigate(); // Definir navigate para usar en la función
+
   // Función para asignar el usuario a la incidencia
   const asignarUsuario = async (usuarioId) => {
-    if (!incidencia || !incidencia.id) {
-        console.error("La incidencia o su ID no están definidas.");
+    if (!incidencia) {
+        console.error("La incidencia no está definida. No se puede asignar el usuario.");
         return;
     }
 
     try {
-        // Asegúrate de obtener el token aquí
         const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId"); // Obtén el ID del usuario logueado desde el localStorage
 
         const incidenciaActualizada = {
-            ...incidencia,
+            id_paquete: incidencia.id_paquete,
+            fecha_hora: incidencia.fecha_hora,
+            id_tipo_incidencia: incidencia.tipo_incidencia === 'Retraso' ? 1 : 2, // Ajusta según sea necesario
+            descripcion: incidencia.descripcion,
+            estado: 2,  // Estado fijo "En Proceso"
+            fecha_resolucion: incidencia.fecha_resolucion,
+            id_usuario_reporta: userId, // Usar el ID del usuario logueado
             id_usuario_asignado: usuarioId,
+            solucion: incidencia.solucion || ""
         };
 
-        // Imprime los datos que estás enviando a la API
-        console.log("Datos enviados en la solicitud PUT desde TablaUsuarios:", incidenciaActualizada);
+        // Imprimir los datos que estás enviando
+        console.log("Datos enviados en la solicitud PUT:", incidenciaActualizada);
 
         const response = await axios.put(`${API_URL}/incidencias/${incidencia.id}`, incidenciaActualizada, {
             headers: {
@@ -35,17 +45,18 @@ const TablaUsuarios = ({ usuarios, incidencia, actualizarIncidencia }) => {
 
         if (response.status === 200) {
             alert("Usuario asignado exitosamente a la incidencia.");
-            if (actualizarIncidencia) {
-                actualizarIncidencia();
-            }
+            navigate("/GestionIncidencias");
         }
     } catch (error) {
         console.error("Error al asignar usuario:", error);
+        if (error.response) {
+            console.log("Respuesta de error del servidor:", error.response.data);
+        }
         alert("Error al asignar el usuario a la incidencia.");
     }
 };
 
-  
+
 
   const renderStatus = (status) => {
     return (

@@ -12,9 +12,7 @@ const AgregarIncidenciaPaqueteSeleccionado = () => {
 
   const [idTipoIncidencia, setIdTipoIncidencia] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [estado, setEstado] = useState('');
   const [tipoIncidencias, setTipoIncidencias] = useState([]);
-  const [estadosIncidencias, setEstadosIncidencias] = useState([]);
   const [alertaExito, setAlertaExito] = useState(false);
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState('');
@@ -33,20 +31,7 @@ const AgregarIncidenciaPaqueteSeleccionado = () => {
       }
     };
 
-    const fetchEstadosIncidencias = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/dropdown/get_estado_incidencias`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setEstadosIncidencias(response.data.estado_incidencias || []);
-        console.log('Estados de incidencias obtenidos:', response.data);  // Verifica los datos obtenidos
-      } catch (error) {
-        console.error('Error al obtener estados de incidencias:', error);
-      }
-    };
-
     fetchTipoIncidencias();
-    fetchEstadosIncidencias();
   }, [token]);
 
   const handleSubmit = async (e) => {
@@ -58,7 +43,7 @@ const AgregarIncidenciaPaqueteSeleccionado = () => {
       id_paquete: idPaquete,  // Paquete seleccionado
       id_tipo_incidencia: idTipoIncidencia,
       descripcion,
-      estado,
+      estado: 1,  // Estado por defecto es "Abierta" (id 1)
       fecha_hora: fechaHoraActual,  // Fecha y hora actuales
       fecha_resolucion: null,  // Enviar como null
       id_usuario_reporta: localStorage.getItem('userId'),  // Usuario logueado
@@ -134,23 +119,6 @@ const AgregarIncidenciaPaqueteSeleccionado = () => {
                 required
               />
             </FormGroup>
-            <FormGroup>
-              <Label for="estado">Estado</Label>
-              <Input
-                type="select"
-                id="estado"
-                value={estado}
-                onChange={(e) => setEstado(e.target.value)}
-                required
-              >
-                <option value="">Seleccione un estado</option>
-                {estadosIncidencias.map(estadoItem => (
-                  <option key={estadoItem.id} value={estadoItem.id}>
-                    {estadoItem.estado}
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
             <Button type="submit" color="primary">Agregar Incidencia</Button>
           </Form>
         </Col>
@@ -160,5 +128,3 @@ const AgregarIncidenciaPaqueteSeleccionado = () => {
 };
 
 export default AgregarIncidenciaPaqueteSeleccionado;
-
-

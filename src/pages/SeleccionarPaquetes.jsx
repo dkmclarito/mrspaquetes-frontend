@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, CardBody, Input, Label, Button } from 'react
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../components/Empleados/Common/Breadcrumbs';
 import Pagination from 'react-js-pagination';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/Paquetes.css';
 import TablaPaquetesAsignados from '../components/AsignacionRutas/TablaPaquetesAsignados';
@@ -100,22 +100,30 @@ export default function GestionPaquetes() {
           fecha_envio: detalle.paquete.fecha_envio,
           fecha_entrega_estimada: detalle.paquete.fecha_entrega_estimada,
           paquete: detalle.paquete
-          
         }))
       );
       
       console.log('Total paquetes disponibles:', paquetesDisponibles.length);
 
-      setAllPaquetes(paquetesDisponibles);
-      setTotalItems(paquetesDisponibles.length);
+      const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas`, config);
+      const asignaciones = responseAsignaciones.data.asignacionrutas || [];
 
-      const uniqueDepartamentos = [...new Set(paquetesDisponibles.map(p => p.departamento).filter(Boolean))];
+      console.log('Total asignaciones:', asignaciones.length);
+
+      const idsPaquetesAsignados = new Set(asignaciones.map(asignacion => asignacion.id_paquete));
+      console.log('IDs de paquetes asignados:', [...idsPaquetesAsignados]);
+
+      const paquetesNoAsignados = paquetesDisponibles.filter(paquete => !idsPaquetesAsignados.has(paquete.id_paquete));
+      console.log('Total paquetes no asignados:', paquetesNoAsignados.length);
+
+      setAllPaquetes(paquetesNoAsignados);
+      setTotalItems(paquetesNoAsignados.length);
+
+      const uniqueDepartamentos = [...new Set(paquetesNoAsignados.map(p => p.departamento).filter(Boolean))];
       setDepartamentos(uniqueDepartamentos);
 
-      const uniqueMunicipios = [...new Set(paquetesDisponibles.map(p => p.municipio).filter(Boolean))];
+      const uniqueMunicipios = [...new Set(paquetesNoAsignados.map(p => p.municipio).filter(Boolean))];
       setMunicipios(uniqueMunicipios);
-
-      setPaquetesFiltrados(paquetesDisponibles.slice(0, ITEMS_PER_PAGE));
     } catch (error) {
       console.error('Error fetching paquetes:', error);
       toast.error('Error al cargar los paquetes');
@@ -139,20 +147,26 @@ export default function GestionPaquetes() {
   };
 
   const handleSelectPaquete = (paquete, isSelected) => {
-    if (isSelected) {
-      setPaquetesSeleccionados([...paquetesSeleccionados, {
-        id_paquete: paquete.id_paquete,
-        tamano_paquete: paquete.tamano_paquete
-      }]);
-    } else {
-      setPaquetesSeleccionados(paquetesSeleccionados.filter(p => p.id_paquete !== paquete.id_paquete));
-    }
-    console.log('Paquetes seleccionados:', paquetesSeleccionados.length + (isSelected ? 1 : -1));
+    setPaquetesSeleccionados(prev => {
+      const updated = isSelected
+        ? [...prev, { id_paquete: parseInt(paquete.id_paquete, 10), tamano_paquete: paquete.tamano_paquete }]
+        : prev.filter(p => p.id_paquete !== parseInt(paquete.id_paquete, 10));
+      console.log('Paquetes seleccionados:', updated.length);
+      return updated;
+    });
   };
 
   const handleAsignarRuta = () => {
     if (paquetesSeleccionados.length === 0) {
-      toast.warning('Por favor, seleccione al menos un paquete para asignar ruta.');
+      toast.warning('Debe seleccionar al menos un paquete para asignar una ruta.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
       return;
     }
     localStorage.setItem('paquetesParaAsignar', JSON.stringify(paquetesSeleccionados));
@@ -219,13 +233,12 @@ export default function GestionPaquetes() {
                   </option>
                 ))}
               </Input>
-              <div style={ {marginLeft: 'auto'}}>
-              <Button color="primary" onClick={handleAsignarRuta}>
-                <i className="fas fa-plus"></i> Asignar Ruta
-              </Button>
+              <div style={{ marginLeft: 'auto' }}>
+                <Button color="primary" onClick={handleAsignarRuta}>
+                  <i className="fas fa-plus"></i> Asignar Ruta
+                </Button>
               </div>
-              </div>
-              
+            </div>
             <Card>
               <CardBody>
                 <TablaPaquetesAsignados
@@ -249,6 +262,7 @@ export default function GestionPaquetes() {
           </Col>
         </Row>
       </Container>
+      <ToastContainer />
     </div>
   );
 }

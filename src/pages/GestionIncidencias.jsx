@@ -3,8 +3,9 @@ import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Incidencias/Common/Breadcrumbs";
-import TablaIncidencias from "../components/Incidencias/TablaIncidencias"; // Componente creado previamente
-import ModalConfirmarEliminar from "../components/Incidencias/ModalConfirmarEliminar"; // Reutilizado de usuarios
+import TablaIncidencias from "../components/Incidencias/TablaIncidencias";
+import ModalConfirmarEliminar from "../components/Incidencias/ModalConfirmarEliminar";
+import ModalEditarIncidencia from "../components/Incidencias/ModalEditarIncidencia"; // Asegúrate de importar el modal correcto
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
 
@@ -18,6 +19,8 @@ const GestionIncidencias = () => {
   const [incidencias, setIncidencias] = useState([]);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [incidenciaAEliminar, setIncidenciaAEliminar] = useState(null);
+  const [incidenciaEditada, setIncidenciaEditada] = useState(null); // Estado para la incidencia que se va a editar
+  const [modalEditar, setModalEditar] = useState(false); // Estado para controlar la visibilidad del modal de edición
   const [busqueda, setBusqueda] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,9 +54,8 @@ const GestionIncidencias = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log("Respuesta completa de la API:", response.data.data);
-      // Verifica si la respuesta incluye los datos paginados correctamente
       if (response.data && Array.isArray(response.data.data)) {
-        setIncidencias(response.data.data);  // Aquí asignamos el array `data` de incidencias
+        setIncidencias(response.data.data);
       } else {
         console.error("Datos inesperados al obtener incidencias:", response.data);
       }
@@ -61,7 +63,6 @@ const GestionIncidencias = () => {
       console.error("Error al obtener incidencias:", error);
     }
   }, []);
-  
 
   useEffect(() => {
     verificarEstadoUsuarioLogueado();
@@ -117,6 +118,20 @@ const GestionIncidencias = () => {
     setCurrentPage(1);
   }, [busqueda, estadoFiltro]);
 
+  const toggleModalEditar = (incidencia) => {
+    setIncidenciaEditada(incidencia);
+    setModalEditar(true);
+  };
+
+  const guardarCambiosIncidencia = (incidenciaActualizada) => {
+    setIncidencias((prevIncidencias) =>
+      prevIncidencias.map((incidencia) =>
+        incidencia.id === incidenciaActualizada.id ? incidenciaActualizada : incidencia
+      )
+    );
+    setModalEditar(false);
+  };
+
   return (
     <div className="page-content">
       <Container fluid>
@@ -166,6 +181,7 @@ const GestionIncidencias = () => {
                 <TablaIncidencias
                   incidencias={paginatedIncidencias}
                   eliminarIncidencia={eliminarIncidencia}
+                  toggleModalEditar={toggleModalEditar}
                 />
               </CardBody>
             </Card>
@@ -186,6 +202,17 @@ const GestionIncidencias = () => {
           </Col>
         </Row>
       </Container>
+
+      {incidenciaEditada && (
+        <ModalEditarIncidencia
+          modalEditar={modalEditar}
+          setModalEditar={setModalEditar}
+          incidenciaEditada={incidenciaEditada}
+          setIncidenciaEditada={setIncidenciaEditada}
+          guardarCambiosIncidencia={guardarCambiosIncidencia}
+        />
+      )}
+
       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarUsuario={confirmarEliminarIncidencia}
