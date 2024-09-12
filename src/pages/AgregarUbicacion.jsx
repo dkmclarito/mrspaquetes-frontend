@@ -11,7 +11,12 @@ import {
   Label,
   Input,
   Button,
-  FormFeedback,
+  Table,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  DropdownItem
 } from "reactstrap";
 import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -24,107 +29,111 @@ const AgregarUbicacionPaquete = () => {
   const [paquetes, setPaquetes] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
   const [idPaquete, setIdPaquete] = useState("");
-  const [idUbicacion, setIdUbicacion] = useState("");
-  const [estado, setEstado] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredUbicaciones, setFilteredUbicaciones] = useState([]);
+  const [modal, setModal] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedPaquete, setSelectedPaquete] = useState(null);
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
-  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const userId = localStorage.getItem("userId");
-      if (userId && token) {
-        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+      const [paquetesResponse, ubicacionesResponse] = await Promise.all([
+        axios.get(`${API_URL}/dropdown/get_paquetes`, {
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }),
+        axios.get(`${API_URL}/dropdown/get_Ubicaciones_SinPaquetes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-        const responseData = await response.json();
-
-        if (responseData.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
-          AuthService.logout();
-          window.location.href = "/login";
-          return;
-        }
-      }
+      const paquetesNoAsignados = paquetesResponse.data.paquetes.filter(paquete => !paquete.id_ubicacion);
+      setPaquetes(paquetesNoAsignados);
+      setUbicaciones(ubicacionesResponse.data || []);
+      setFilteredUbicaciones(ubicacionesResponse.data || []);
     } catch (error) {
-      console.error("Error al verificar el estado del usuario:", error);
+      console.error("Error al obtener datos:", error);
     }
   }, [token]);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado();
-  }, [verificarEstadoUsuarioLogueado]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [verificarEstadoUsuarioLogueado]);
-
-  useEffect(() => {
-    const fetchData = async () => {
+    const verificarEstadoUsuarioLogueado = async () => {
       try {
-        const token = AuthService.getCurrentUser();
-        const response = await axios.get(`${API_URL}/dropdown/get_paquetes`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-    
-        if (response.status === 200 && response.data.paquetes) {
-          // Filtrar paquetes que no están asignados
-          const paquetesNoAsignados = response.data.paquetes.filter(paquete => !paquete.id_ubicacion);
-          setPaquetes(paquetesNoAsignados);
-        } else {
-          console.error("No se encontraron paquetes.");
+        const userId = localStorage.getItem("userId");
+        if (userId && token) {
+          const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const responseData = await response.json();
+          if (responseData.status === "Token is Invalid") {
+            console.error("Token is invalid. Logging out...");
+            AuthService.logout();
+            window.location.href = "/login";
+          }
         }
-        setPaquetes(paquetesNoAsignados);
       } catch (error) {
-        console.error("Error al obtener paquetes:", error);
+        console.error("Error al verificar el estado del usuario:", error);
       }
     };
-  
-    fetchData();
+
+    verificarEstadoUsuarioLogueado();
+    const interval = setInterval(verificarEstadoUsuarioLogueado, 30000);
+    return () => clearInterval(interval);
   }, [token]);
 
   useEffect(() => {
-    const fetchUbicaciones = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/dropdown/get_Ubicaciones_SinPaquetes`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-    
-        
-        setUbicaciones(response.data || []);
-      } catch (error) {
-        console.error("Error al obtener ubicaciones:", error);
-      }
-    };
-  
-    fetchUbicaciones();
-  }, [token]);
+    fetchData();
+  }, [fetchData]);
 
   const handlePaqueteChange = (e) => {
     setIdPaquete(e.target.value);
   };
 
   const handleUbicacionChange = (e) => {
-    setIdUbicacion(e.target.value);
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
+
+    if (searchValue === "") {
+      setFilteredUbicaciones([]);
+      setDropdownOpen(false);
+      return;
+    }
+
+    const filtered = ubicaciones.filter((ubicacion) =>
+      ubicacion.nomenclatura.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setFilteredUbicaciones(filtered);
+    setDropdownOpen(filtered.length > 0);
   };
 
-  const handleEstadoChange = (e) => {
-    setEstado(e.target.checked);
+  const handleUbicacionSelect = (ubicacion) => {
+    setSearchTerm(ubicacion.nomenclatura);
+    setIdPaquete(ubicacion.id);
+    setDropdownOpen(false);
+  };
+
+  const toggleModal = () => {
+    setModal(!modal);
+    if (modal) {
+      // Clear the search term when closing the modal
+      setSearchTerm("");
+      setFilteredUbicaciones([]);
+    }
+  };
+
+  const handleAsignarUbicacion = (paquete) => {
+    setSelectedPaquete(paquete);
+    setIdPaquete(paquete.id);
+    toggleModal();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const ubicacionPaqueteData = {
       id_paquete: idPaquete,
-      id_ubicacion: idUbicacion,
-      estado,
+      id_ubicacion: idPaquete, // Asegúrate de que esto sea correcto
+      estado: 1,
     };
 
     try {
@@ -138,16 +147,8 @@ const AgregarUbicacionPaquete = () => {
       });
 
       if (!response.ok) {
-        let errorMessage = "Error al registrar la ubicación del paquete.";
-        toast.error(errorMessage, {
-          position: "bottom-right",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-        });
-        throw new Error(errorMessage);
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al registrar la ubicación del paquete.");
       }
 
       toast.success("¡Ubicación del paquete registrada con éxito!", {
@@ -159,13 +160,10 @@ const AgregarUbicacionPaquete = () => {
         draggable: true,
       });
 
-      setTimeout(() => {
-        navigate("/GestionUbicacion");
-      }, 2000);
-
+      // Actualizar las ubicaciones y paquetes después de guardar
+      fetchData();
+      toggleModal();
       setIdPaquete("");
-      setIdUbicacion("");
-      setEstado(true);
     } catch (error) {
       toast.error(`Error al registrar la ubicación del paquete: ${error.message}`, {
         position: "bottom-right",
@@ -180,75 +178,64 @@ const AgregarUbicacionPaquete = () => {
 
   return (
     <Container>
-      <Breadcrumbs
-        title="Formulario de Registro de Ubicaciones de Paquetes"
-        breadcrumbItem="Ingrese la información"
-      />
+      <Breadcrumbs title="Formulario de Registro de Ubicaciones de Paquetes" breadcrumbItem="Ingrese la información" />
       <Card>
         <CardBody>
           <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="id_paquete">Paquete</Label>
-                  <Input
-                    type="select"
-                    id="id_paquete"
-                    value={idPaquete}
-                    onChange={handlePaqueteChange}
-                    required
-                  >
-                    <option value="">Seleccione un paquete</option>
-                    {paquetes.map((paquete) => (
-                      <option key={paquete.id} value={paquete.id}>
-                      {`Paquete ${paquete.id} - Ubicacion: ${paquete.id_ubicacion}`}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
+            <Table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Peso</th>
+                  <th>Descripción</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paquetes.map((paquete) => (
+                  <tr key={paquete.id}>
+                    <td>{paquete.id}</td>
+                    <td>{paquete.peso} kg</td>
+                    <td>{paquete.descripcion_contenido}</td>
+                    <td>
+                      <Button onClick={() => handleAsignarUbicacion(paquete)}>Asignar Ubicación</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
 
-              <Col md="6">
+            <Modal isOpen={modal} toggle={toggleModal}>
+              <ModalHeader toggle={toggleModal}>Asignar Ubicación a Paquete</ModalHeader>
+              <ModalBody>
                 <FormGroup>
-                  <Label for="id_ubicacion">Ubicación</Label>
+                  <Label for="ubicacion">Paquete</Label>
+                  <Input type="text" value={selectedPaquete?.descripcion_contenido || ''} readOnly />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="searchUbicacion">Buscar Ubicación</Label>
                   <Input
-                    type="select"
-                    id="id_ubicacion"
-                    value={idUbicacion}
+                    type="text"
+                    id="searchUbicacion"
+                    value={searchTerm}
                     onChange={handleUbicacionChange}
-                    required
-                  >
-                    <option value="">Seleccione una ubicación</option>
-                    {ubicaciones.map((ubicacion) => (
-                      <option key={ubicacion.id} value={ubicacion.id}>
-                        {ubicacion.nomenclatura}
-                      </option>
-                    ))}
-                  </Input>
+                  />
+                  {dropdownOpen && filteredUbicaciones.length > 0 && (
+                    <div className="dropdown-menu show" style={{width: '94%'}}>
+                      {filteredUbicaciones.map((ubicacion) => (
+                        <DropdownItem key={ubicacion.id} onClick={() => handleUbicacionSelect(ubicacion)} className="items">
+                          {ubicacion.nomenclatura}
+                        </DropdownItem>
+                      ))}
+                    </div>
+                  )}
                 </FormGroup>
-              </Col>
-              <br /><br />
-              <Col md="6">
-                <FormGroup check>
-                  <Label check>
-                    <Input
-                      type="checkbox"
-                      id="estado"
-                      checked={estado}
-                      onChange={handleEstadoChange}
-                    />
-                    Estado (Activo/Inactivo)
-                  </Label>
-                </FormGroup>
-              </Col>
-            </Row>
-            <br />
-            <Button type="submit" color="primary">
-              Registrar Ubicación de Paquete
-            </Button>
-            <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionUbicacion'}>
-              Salir
-            </Button>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onClick={handleSubmit}>Guardar</Button>
+                <Button color="secondary" onClick={toggleModal}>Cancelar</Button>
+              </ModalFooter>
+            </Modal>
           </Form>
         </CardBody>
       </Card>
