@@ -144,20 +144,20 @@ const AgregarUbicacionPaquete = () => {
         },
         body: JSON.stringify(ubicacionPaqueteData),
       });
-      toast.success("¡Ubicación del paquete registrada con éxito!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
+      
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al registrar la ubicación del paquete.");
+        throw new Error(errorData.message || "Seleccione una ubicación de la lista.");
+      }else{
+        toast.success("¡Ubicación del paquete registrada con éxito!", {
+          position: "bottom-right",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+        });
       }
-
-      
 
       // Actualizar las ubicaciones y paquetes después de guardar
       fetchData();
@@ -207,7 +207,7 @@ const AgregarUbicacionPaquete = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4">No hay paquetes disponibles</td>
+                    <td colSpan="4" style={{textAlign: 'center'}}>No hay paquetes disponibles</td>
                   </tr>
                 )}
               </tbody>
