@@ -20,22 +20,35 @@ import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Pagination from "react-js-pagination"; // Importar componente de paginación
+import Pagination from "react-js-pagination"; 
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5; // Número de ítems por página
+const ITEMS_PER_PAGE = 10; 
+
+const TAMANO_PAQUETE_MAP = {
+  1: 'Pequeño',
+  2: 'Mediano',
+  3: 'Grande',
+};
+
+const TIPO_PAQUETE_MAP = {
+  1: 'Documentos',
+  2: 'Electrónicos',
+  3: 'Ropa',
+  4: 'Alimentos',
+};
 
 const AgregarUbicacionPaquete = () => {
   const [paquetes, setPaquetes] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
   const [idPaquete, setIdPaquete] = useState("");
-  const [idUbicacion, setIdUbicacion] = useState(""); // Estado para ID de ubicación
+  const [idUbicacion, setIdUbicacion] = useState(""); 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUbicaciones, setFilteredUbicaciones] = useState([]);
   const [modal, setModal] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedPaquete, setSelectedPaquete] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
+  const [currentPage, setCurrentPage] = useState(1); 
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
@@ -111,14 +124,13 @@ const AgregarUbicacionPaquete = () => {
 
   const handleUbicacionSelect = (ubicacion) => {
     setSearchTerm(ubicacion.nomenclatura);
-    setIdUbicacion(ubicacion.id); // Actualiza el ID de ubicación seleccionado
+    setIdUbicacion(ubicacion.id);
     setDropdownOpen(false);
   };
 
   const toggleModal = () => {
     setModal(!modal);
     if (modal) {
-      // Clear the search term when closing the modal
       setSearchTerm("");
       setFilteredUbicaciones([]);
     }
@@ -134,7 +146,7 @@ const AgregarUbicacionPaquete = () => {
     e.preventDefault();
     const ubicacionPaqueteData = {
       id_paquete: idPaquete,
-      id_ubicacion: idUbicacion, // Usa el ID de ubicación seleccionado
+      id_ubicacion: idUbicacion,
       estado: 1,
     };
 
@@ -166,7 +178,7 @@ const AgregarUbicacionPaquete = () => {
       fetchData();
       toggleModal();
       setIdPaquete("");
-      setIdUbicacion(""); // Limpiar ID de ubicación después del envío
+      setIdUbicacion(""); 
     } catch (error) {
       toast.error(`Error al registrar la ubicación del paquete: ${error.message}`, {
         position: "bottom-right",
@@ -194,8 +206,10 @@ const AgregarUbicacionPaquete = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Peso (libras)</th>
                   <th>Descripción</th>
+                  <th>Tipo paquete</th>
+                  <th>Peso (libras)</th>
+                  <th>Tamaño</th>
                   <th>Acción</th>
                 </tr>
               </thead>
@@ -204,8 +218,10 @@ const AgregarUbicacionPaquete = () => {
                   paginatedPaquetes.map((paquete) => (
                     <tr key={paquete.id}>
                       <td>{paquete.id}</td>
-                      <td>{paquete.peso}</td>
                       <td>{paquete.descripcion_contenido}</td>
+                      <td>{TIPO_PAQUETE_MAP[paquete.id_tipo_paquete] || 'Desconocido'}</td> {/* Mostrar nombre del tipo de paquete */}
+                      <td>{paquete.peso}</td>
+                      <td>{TAMANO_PAQUETE_MAP[paquete.id_tamano_paquete] || 'Desconocido'}</td> {/* Mostrar nombre del tamaño */}
                       <td>
                         <Button color="primary" onClick={() => handleAsignarUbicacion(paquete)}>
                           Asignar Ubicación
