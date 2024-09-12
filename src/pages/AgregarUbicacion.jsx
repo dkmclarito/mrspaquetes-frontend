@@ -92,7 +92,7 @@ const AgregarUbicacionPaquete = () => {
   useEffect(() => {
     const fetchUbicaciones = async () => {
       try {
-        const response = await axios.get(`${API_URL}/dropdown/get_ubicaciones/0`, {
+        const response = await axios.get(`${API_URL}/dropdown/get_Ubicaciones_SinPaquetes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
     
