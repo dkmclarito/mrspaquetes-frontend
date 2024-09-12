@@ -20,8 +20,10 @@ import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Pagination from "react-js-pagination"; // Importar componente de paginación
 
 const API_URL = import.meta.env.VITE_API_URL;
+const ITEMS_PER_PAGE = 5; // Número de ítems por página
 
 const AgregarUbicacionPaquete = () => {
   const [paquetes, setPaquetes] = useState([]);
@@ -33,6 +35,7 @@ const AgregarUbicacionPaquete = () => {
   const [modal, setModal] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedPaquete, setSelectedPaquete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
@@ -176,6 +179,11 @@ const AgregarUbicacionPaquete = () => {
     }
   };
 
+  const paginatedPaquetes = paquetes.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <Container>
       <Breadcrumbs title="Formulario de Registro de Ubicaciones de Paquetes" breadcrumbItem="Ingrese la información" />
@@ -192,8 +200,8 @@ const AgregarUbicacionPaquete = () => {
                 </tr>
               </thead>
               <tbody>
-                {paquetes.length > 0 ? (
-                  paquetes.map((paquete) => (
+                {paginatedPaquetes.length > 0 ? (
+                  paginatedPaquetes.map((paquete) => (
                     <tr key={paquete.id}>
                       <td>{paquete.id}</td>
                       <td>{paquete.peso}</td>
@@ -212,10 +220,22 @@ const AgregarUbicacionPaquete = () => {
                 )}
               </tbody>
             </Table>
+            
           </Form>
+          
         </CardBody>
       </Card>
-
+      <br />
+      <Pagination
+              itemsCountPerPage={ITEMS_PER_PAGE}
+              totalItemsCount={paquetes.length}
+              pageRangeDisplayed={5}
+              activePage={currentPage}
+              onChange={setCurrentPage}
+              innerClass="pagination justify-content-center" // Centro de paginación
+              itemClass="page-item"
+              linkClass="page-link"
+            />
       <Modal isOpen={modal} toggle={toggleModal}>
         <ModalHeader toggle={toggleModal}>Asignar Ubicación</ModalHeader>
         <ModalBody>
