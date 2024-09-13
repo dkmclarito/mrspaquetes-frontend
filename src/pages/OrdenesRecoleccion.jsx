@@ -21,6 +21,8 @@ import Breadcrumbs from "../components/Rutas/Common/Breadcrumbs";
 import OrdenForm from "../components/Rutas/OrdenForm";
 import OrdenTable from "../components/Rutas/OrdenTable";
 import ConfirmModal from "../components/Rutas/ConfirmModal";
+import AsignarRecoleccionModal from "../components/Rutas/AsignarRecoleccionModal";
+import FinalizarOrdenModal from "../components/Rutas/FinalizarOrdenModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -45,6 +47,10 @@ const OrdenesRecoleccion = () => {
   const [ordenAEliminar, setOrdenAEliminar] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [confirmarAsignar, setConfirmarAsignar] = useState(false);
+  const [ordenAAsignar, setOrdenAAsignar] = useState(null);
+  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
+  const [ordenAFinalizar, setOrdenAFinalizar] = useState(null);
 
   useEffect(() => {
     cargarOrdenesRecoleccion();
@@ -251,6 +257,152 @@ const OrdenesRecoleccion = () => {
     }
   };
 
+  const handleAsignarRecoleccion = (id) => {
+    setOrdenAAsignar(id);
+    setConfirmarAsignar(true);
+  };
+
+  const confirmarAsignarRecoleccion = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+
+      // Primero, llamamos a la función de asignar recolección
+      await axios.post(
+        `${API_URL}/orden-recoleccion/asignar-recoleccion/${ordenAAsignar}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Obtenemos los datos de la orden actual
+      const ordenActual = ordenesRecoleccion.find(
+        (orden) => orden.id === ordenAAsignar
+      );
+
+      if (!ordenActual) {
+        throw new Error("No se pudo encontrar la orden de recolección");
+      }
+
+      // Luego, actualizamos el estado de la orden
+      await axios.put(
+        `${API_URL}/orden-recoleccion/${ordenAAsignar}`,
+        {
+          estado: 2, // Cambiamos el estado a "En Proceso"
+          id_ruta_recoleccion: ordenActual.id_ruta_recoleccion,
+          id_orden: ordenActual.id_orden,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success("Recolección iniciada con éxito");
+      cargarOrdenesRecoleccion();
+      setConfirmarAsignar(false);
+      setOrdenAAsignar(null);
+    } catch (error) {
+      console.error("Error al iniciar recolección:", error);
+      if (error.response) {
+        console.error("Datos del error:", error.response.data);
+        console.error("Estado del error:", error.response.status);
+        console.error("Cabeceras del error:", error.response.headers);
+
+        if (error.response.status === 422) {
+          const errorMessages = Object.values(error.response.data.errors)
+            .flat()
+            .join(", ");
+          toast.error(`Error al iniciar recolección: ${errorMessages}`);
+        } else {
+          toast.error(
+            "Error al iniciar recolección. Por favor, intente de nuevo."
+          );
+        }
+      } else if (error.request) {
+        console.error("Error de red:", error.request);
+        toast.error("Error de red. Por favor, verifique su conexión.");
+      } else {
+        console.error("Error:", error.message);
+        toast.error(
+          "Error al procesar la solicitud. Por favor, intente de nuevo."
+        );
+      }
+    }
+  };
+
+  const handleFinalizarOrden = (id) => {
+    setOrdenAFinalizar(id);
+    setConfirmarFinalizar(true);
+  };
+
+  const confirmarFinalizarOrden = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+
+      // Primero, llamamos a la función de finalizar orden de recolección
+      await axios.post(
+        `${API_URL}/orden-recoleccion/finalizar-orden-recoleccion/${ordenAFinalizar}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Obtenemos los datos de la orden actual
+      const ordenActual = ordenesRecoleccion.find(
+        (orden) => orden.id === ordenAFinalizar
+      );
+
+      if (!ordenActual) {
+        throw new Error("No se pudo encontrar la orden de recolección");
+      }
+
+      // Luego, actualizamos el estado de la orden
+      await axios.put(
+        `${API_URL}/orden-recoleccion/${ordenAFinalizar}`,
+        {
+          estado: 3, // Cambiamos el estado a "Completada"
+          id_ruta_recoleccion: ordenActual.id_ruta_recoleccion,
+          id_orden: ordenActual.id_orden,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success("Orden de recolección finalizada con éxito");
+      cargarOrdenesRecoleccion();
+      setConfirmarFinalizar(false);
+      setOrdenAFinalizar(null);
+    } catch (error) {
+      console.error("Error al iniciar recolección:", error);
+      if (error.response) {
+        console.error("Datos del error:", error.response.data);
+        console.error("Estado del error:", error.response.status);
+        console.error("Cabeceras del error:", error.response.headers);
+
+        if (error.response.status === 422) {
+          const errorMessages = Object.values(error.response.data.errors)
+            .flat()
+            .join(", ");
+          toast.error(`Error al iniciar recolección: ${errorMessages}`);
+        } else {
+          toast.error(
+            "Error al iniciar recolección. Por favor, intente de nuevo."
+          );
+        }
+      } else if (error.request) {
+        console.error("Error de red:", error.request);
+        toast.error("Error de red. Por favor, verifique su conexión.");
+      } else {
+        console.error("Error:", error.message);
+        toast.error(
+          "Error al procesar la solicitud. Por favor, intente de nuevo."
+        );
+      }
+    }
+  };
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -298,6 +450,8 @@ const OrdenesRecoleccion = () => {
                   getEstadoTexto={getEstadoTexto}
                   handleEdit={handleEdit}
                   handleDelete={handleDelete}
+                  handleAsignarRecoleccion={handleAsignarRecoleccion}
+                  handleFinalizarOrden={handleFinalizarOrden}
                 />
                 <Pagination>
                   <PaginationItem disabled={currentPage === 1}>
@@ -349,6 +503,18 @@ const OrdenesRecoleccion = () => {
           onConfirm={confirmarEliminarOrden}
           title="Confirmar Eliminación"
           body="¿Está seguro de que desea eliminar esta orden de recolección?"
+        />
+
+        <AsignarRecoleccionModal
+          isOpen={confirmarAsignar}
+          toggle={() => setConfirmarAsignar(false)}
+          onConfirm={confirmarAsignarRecoleccion}
+        />
+
+        <FinalizarOrdenModal
+          isOpen={confirmarFinalizar}
+          toggle={() => setConfirmarFinalizar(false)}
+          onConfirm={confirmarFinalizarOrden}
         />
       </Container>
     </div>

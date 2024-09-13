@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 
-const ModalConfirmarEliminarBodega = ({ confirmarEliminar, confirmarEliminarBodega, setConfirmarEliminar }) => {
+const ModalConfirmarEliminarUbicacion = ({ confirmarEliminar, confirmarEliminarBodega, setConfirmarEliminar }) => {
   const handleToggle = useCallback(() => {
     setConfirmarEliminar(false);
   }, [setConfirmarEliminar]);
@@ -21,10 +21,10 @@ const ModalConfirmarEliminarBodega = ({ confirmarEliminar, confirmarEliminarBode
   );
 };
 
-ModalConfirmarEliminarBodega.propTypes = {
+ModalConfirmarEliminarUbicacion.propTypes = {
   confirmarEliminar: PropTypes.bool.isRequired,
-  confirmarEliminarBodega: PropTypes.func.isRequired,
+  confirmarEliminarUbicacion: PropTypes.func.isRequired,
   setConfirmarEliminar: PropTypes.func.isRequired,
 };
 
-export default ModalConfirmarEliminarBodega;
+export default ModalConfirmarEliminarUbicacion;

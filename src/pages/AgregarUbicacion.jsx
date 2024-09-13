@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Container,
-  Row,
-  Col,
   Card,
   CardBody,
   Form,
@@ -11,189 +9,162 @@ import {
   Label,
   Input,
   Button,
-  FormFeedback,
+  Table,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  DropdownItem
 } from "reactstrap";
 import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Pagination from "react-js-pagination"; 
 
 const API_URL = import.meta.env.VITE_API_URL;
+const ITEMS_PER_PAGE = 10; 
 
-const AgregarUbicacion = () => {
-  const [bodegas, setBodegas] = useState([]);
-  const [pasillos, setPasillos] = useState([]);
-  const [nomenclatura, setNomenclatura] = useState("");
-  const [idBodega, setIdBodega] = useState("");
-  const [idPasillo, setIdPasillo] = useState("");
-  const [isNomenclaturaValida, setIsNomenclaturaValida] = useState(true);
-  const [existingUbicaciones, setExistingUbicaciones] = useState([]);
+const TAMANO_PAQUETE_MAP = {
+  1: 'Pequeño',
+  2: 'Mediano',
+  3: 'Grande',
+};
+
+const TIPO_PAQUETE_MAP = {
+  1: 'Documentos',
+  2: 'Electrónicos',
+  3: 'Ropa',
+  4: 'Alimentos',
+};
+
+const AgregarUbicacionPaquete = () => {
+  const [paquetes, setPaquetes] = useState([]);
+  const [ubicaciones, setUbicaciones] = useState([]);
+  const [idPaquete, setIdPaquete] = useState("");
+  const [idUbicacion, setIdUbicacion] = useState(""); 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredUbicaciones, setFilteredUbicaciones] = useState([]);
+  const [modal, setModal] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedPaquete, setSelectedPaquete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); 
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
-  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const userId = localStorage.getItem("userId");
-      if (userId && token) {
-        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+      const [paquetesResponse, ubicacionesResponse] = await Promise.all([
+        axios.get(`${API_URL}/dropdown/get_paquetes`, {
           headers: { Authorization: `Bearer ${token}` },
-        });
+        }),
+        axios.get(`${API_URL}/dropdown/get_Ubicaciones_SinPaquetes`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
 
-        const responseData = await response.json();
-
-        if (responseData.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
-          AuthService.logout();
-          window.location.href = "/login";
-          return;
-        }
-      }
+      const paquetesNoAsignados = paquetesResponse.data.paquetes.filter(paquete => !paquete.id_ubicacion);
+      setPaquetes(paquetesNoAsignados);
+      setUbicaciones(ubicacionesResponse.data || []);
+      setFilteredUbicaciones(ubicacionesResponse.data || []);
     } catch (error) {
-      console.error("Error al verificar el estado del usuario:", error);
+      console.error("Error al obtener datos:", error);
     }
   }, [token]);
 
   useEffect(() => {
+    const verificarEstadoUsuarioLogueado = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        if (userId && token) {
+          const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const responseData = await response.json();
+          if (responseData.status === "Token is Invalid") {
+            console.error("Token is invalid. Logging out...");
+            AuthService.logout();
+            window.location.href = "/login";
+          }
+        }
+      } catch (error) {
+        console.error("Error al verificar el estado del usuario:", error);
+      }
+    };
+
     verificarEstadoUsuarioLogueado();
-  }, [verificarEstadoUsuarioLogueado]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado();
-    }, 30000);
-
+    const interval = setInterval(verificarEstadoUsuarioLogueado, 30000);
     return () => clearInterval(interval);
-  }, [verificarEstadoUsuarioLogueado]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = AuthService.getCurrentUser();
-  
-        const response = await axios.get(`${API_URL}/bodegas`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        // Verifica si la respuesta es exitosa y contiene datos
-        if (response.status === 200 && response.data.bodegas) {
-          setBodegas(response.data.bodegas);
-        } else {
-          console.error("No se encontraron bodegas.");
-        }
-      } catch (error) {
-        console.error("Error al obtener bodegas:", error);
-      }
-    };
-  
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchPasillos = async () => {
-      try {
-        const response = await fetch(`${API_URL}/dropdown/get_pasillos`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-  
-        // Verifica si la respuesta es exitosa
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-  
-        const data = await response.json();
-  
-        // Verifica que la respuesta sea un array de pasillos
-        if (Array.isArray(data.pasillos)) {
-          setPasillos(data.pasillos);
-        } else {
-          console.error("La respuesta no contiene pasillos válidos:", data);
-        }
-      } catch (error) {
-        console.error("Error al obtener los pasillos:", error);
-      }
-    };
-  
-    if (token) {
-      fetchPasillos();
-    }
-  }, [token]);  
-
-  const fetchExistingUbicaciones = useCallback(async () => {
-    try {
-      const response = await axios.get(`${API_URL}/ubicaciones`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (response.status === 200) {
-        setExistingUbicaciones(response.data.ubicaciones);
-      }
-    } catch (error) {
-      console.error("Error al obtener las ubicaciones existentes:", error);
-    }
   }, [token]);
 
   useEffect(() => {
-    fetchExistingUbicaciones();
-  }, [fetchExistingUbicaciones]);
+    fetchData();
+  }, [fetchData]);
 
-  const validateNomenclatura = (nomenclatura) => {
-    return (
-      nomenclatura.length > 0 &&
-      nomenclatura.length <= 100 &&
-      !existingUbicaciones.some((ubicacion) => ubicacion.nomenclatura === nomenclatura)
+  const handlePaqueteChange = (e) => {
+    setIdPaquete(e.target.value);
+  };
+
+  const handleUbicacionChange = (e) => {
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
+
+    if (searchValue === "") {
+      setFilteredUbicaciones([]);
+      setDropdownOpen(false);
+      return;
+    }
+
+    const filtered = ubicaciones.filter((ubicacion) =>
+      ubicacion.nomenclatura.toLowerCase().includes(searchValue.toLowerCase())
     );
+    setFilteredUbicaciones(filtered);
+    setDropdownOpen(filtered.length > 0);
   };
 
-  const handleNomenclaturaChange = (e) => {
-    const value = e.target.value;
-    setNomenclatura(value);
-    setIsNomenclaturaValida(validateNomenclatura(value));
+  const handleUbicacionSelect = (ubicacion) => {
+    setSearchTerm(ubicacion.nomenclatura);
+    setIdUbicacion(ubicacion.id);
+    setDropdownOpen(false);
   };
 
-  const handleBodegaChange = (e) => {
-    setIdBodega(e.target.value);
+  const toggleModal = () => {
+    setModal(!modal);
+    if (modal) {
+      setSearchTerm("");
+      setFilteredUbicaciones([]);
+    }
   };
 
-  const handlePasilloChange = (e) => {
-    setIdPasillo(e.target.value);
+  const handleAsignarUbicacion = (paquete) => {
+    setSelectedPaquete(paquete);
+    setIdPaquete(paquete.id);
+    toggleModal();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isNomenclaturaValida) {
-      toast.error("Por favor, corrija los errores en el formulario antes de enviar.", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-      return;
-    }
-
-    const ubicacionData = {
-      nomenclatura,
-      id_bodega: idBodega,
-      id_pasillo: idPasillo,
+    const ubicacionPaqueteData = {
+      id_paquete: idPaquete,
+      id_ubicacion: idUbicacion,
+      estado: 1,
     };
 
     try {
-      const response = await fetch(`${API_URL}/ubicaciones`, {
+      const response = await fetch(`${API_URL}/ubicaciones-paquetes`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(ubicacionData),
+        body: JSON.stringify(ubicacionPaqueteData),
       });
-
+      
       if (!response.ok) {
-        let errorMessage = "Error al agregar la ubicación.";
-        toast.error(errorMessage, {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Seleccione una ubicación de la lista.");
+      }else{
+        toast.success("¡Ubicación del paquete registrada con éxito!", {
           position: "bottom-right",
           autoClose: 5000,
           hideProgressBar: true,
@@ -201,27 +172,15 @@ const AgregarUbicacion = () => {
           pauseOnHover: false,
           draggable: true,
         });
-        throw new Error(errorMessage);
       }
 
-      toast.success("¡Ubicación agregada con éxito!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-      });
-
-      setTimeout(() => {
-        navigate("/GestionUbicaciones");
-      }, 2000);
-
-      setNomenclatura("");
-      setIdBodega("");
-      setIdPasillo("");
+      // Actualizar las ubicaciones y paquetes después de guardar
+      fetchData();
+      toggleModal();
+      setIdPaquete("");
+      setIdUbicacion(""); 
     } catch (error) {
-      toast.error(`Error al agregar la ubicación: ${error.message}`, {
+      toast.error(`Error al registrar la ubicación del paquete: ${error.message}`, {
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: true,
@@ -232,84 +191,110 @@ const AgregarUbicacion = () => {
     }
   };
 
+  const paginatedPaquetes = paquetes.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <Container>
-      <Breadcrumbs
-        title="Formulario de Registro de Ubicaciones"
-        breadcrumbItem="Ingrese la información"
-      />
+      <Breadcrumbs title="Formulario de Registro de Ubicaciones de Paquetes" breadcrumbItem="Ingrese la información" />
       <Card>
         <CardBody>
           <Form onSubmit={handleSubmit}>
-            <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="nomenclatura">Nomenclatura</Label>
-                  <Input
-                    type="text"
-                    id="nomenclatura"
-                    value={nomenclatura}
-                    onChange={handleNomenclaturaChange}
-                    required
-                    invalid={!isNomenclaturaValida}
-                  />
-                  {!isNomenclaturaValida && (
-                    <FormFeedback className="text-danger">
-                      Ya existe una ubicación con esa nomenclatura.
-                    </FormFeedback>
-                  )}
-                </FormGroup>
-              </Col>
-
-              <Col md="6">
-                <FormGroup>
-                  <Label for="id_bodega">Bodega</Label>
-                  <Input
-                    type="select"
-                    id="id_bodega"
-                    value={idBodega}
-                    onChange={handleBodegaChange}
-                    required
-                  >
-                    <option value="">Seleccione una bodega</option>
-                    {bodegas.map((bodega) => (
-                      <option key={bodega.id} value={bodega.id}>
-                        {bodega.nombre}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-
-              <Col md="6">
-                <FormGroup>
-                  <Label for="id_pasillo">Pasillo</Label>
-                  <Input
-                    type="select"
-                    id="id_pasillo"
-                    value={idPasillo}
-                    onChange={handlePasilloChange}
-                    required
-                  >
-                  <option value="">Seleccione un pasillo</option>
-                    {pasillos.map((pasillo) => (
-                      <option key={pasillo.id} value={pasillo.id}>
-                        {pasillo.nombre}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-            </Row>
-
-            <Button type="submit" color="primary">
-              Agregar Ubicación
-            </Button>
+            <Table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Descripción</th>
+                  <th>Tipo paquete</th>
+                  <th>Peso (libras)</th>
+                  <th>Tamaño</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedPaquetes.length > 0 ? (
+                  paginatedPaquetes.map((paquete) => (
+                    <tr key={paquete.id}>
+                      <td>{paquete.id}</td>
+                      <td>{paquete.descripcion_contenido}</td>
+                      <td>{TIPO_PAQUETE_MAP[paquete.id_tipo_paquete] || 'Desconocido'}</td> {/* Mostrar nombre del tipo de paquete */}
+                      <td>{paquete.peso}</td>
+                      <td>{TAMANO_PAQUETE_MAP[paquete.id_tamano_paquete] || 'Desconocido'}</td> {/* Mostrar nombre del tamaño */}
+                      <td>
+                        <Button color="primary" onClick={() => handleAsignarUbicacion(paquete)}>
+                          Asignar Ubicación
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" style={{textAlign: 'center'}}>No hay paquetes disponibles</td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+            
           </Form>
+          
         </CardBody>
       </Card>
+      <br />
+      <Pagination
+              itemsCountPerPage={ITEMS_PER_PAGE}
+              totalItemsCount={paquetes.length}
+              pageRangeDisplayed={5}
+              activePage={currentPage}
+              onChange={setCurrentPage}
+              innerClass="pagination justify-content-center" // Centro de paginación
+              itemClass="page-item"
+              linkClass="page-link"
+            />
+      <Modal isOpen={modal} toggle={toggleModal}>
+        <ModalHeader toggle={toggleModal}>Asignar Ubicación</ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label for="paqueteDisplay">Paquete Seleccionado</Label>
+              <Input
+                type="text"
+                id="paqueteDisplay"
+                value={selectedPaquete ? selectedPaquete.descripcion_contenido : ""}
+                readOnly
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="ubicacionSelect">Seleccionar Ubicación</Label>
+              <Input
+                type="text"
+                id="ubicacionSelect"
+                value={searchTerm}
+                onChange={handleUbicacionChange}
+              />
+              {dropdownOpen && (
+                <div className="dropdown-menu show" style={{width: '94%'}}>
+                  {filteredUbicaciones.map((ubicacion) => (
+                    <DropdownItem
+                      key={ubicacion.id}
+                      onClick={() => handleUbicacionSelect(ubicacion)}
+                    >
+                      {ubicacion.nomenclatura}
+                    </DropdownItem>
+                  ))}
+                </div>
+              )}
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={handleSubmit}>Guardar</Button>
+          <Button color="secondary" onClick={toggleModal}>Cerrar</Button>
+        </ModalFooter>
+      </Modal>
     </Container>
   );
 };
 
-export default AgregarUbicacion;
+export default AgregarUbicacionPaquete;

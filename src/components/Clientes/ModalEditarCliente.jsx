@@ -63,7 +63,7 @@ const ModalEditarCliente = ({
   // Estados relacionados con el giro
   const [giros, setGiros] = useState([]);
   const [filteredGiros, setFilteredGiros] = useState([]);
-  const [searchGiro, setSearchGiro] = useState(clienteEditado?.giro || ""); // Mostrar el giro seleccionado inicialmente
+  const [searchGiro, setSearchGiro] = useState(""); // Mostrar el giro seleccionado inicialmente
   const [selectedGiro, setSelectedGiro] = useState(clienteEditado?.giro || "");
 
   useEffect(() => {
@@ -73,6 +73,10 @@ const ModalEditarCliente = ({
       setIsTelefonoValid(isValidTelefono(clienteEditado.telefono || ""));
       setIsNitValid(esPersonaJuridica || !clienteEditado.nit || isValidNIT(clienteEditado.nit || ""));
       setError("");
+
+      // Aquí estableces el valor inicial del giro
+      setSearchGiro(clienteEditado.giro || ""); 
+      setSelectedGiro(clienteEditado.giro || "");
     }
   }, [clienteEditado]);
 
@@ -247,7 +251,6 @@ const ModalEditarCliente = ({
     setError("");
     try {
       await guardarCambiosCliente();
-      //toast.success("Cliente actualizado exitosamente.");
       setModalEditar(false);
     } catch (err) {
       const errorMessage = generateErrorMessage(err.response?.data || {});
@@ -382,7 +385,7 @@ const ModalEditarCliente = ({
                       <Input
                         type="text"
                         id="searchGiro"
-                        value={searchGiro}
+                        value={searchGiro}  // Aquí se muestra el valor del giro del cliente o el valor buscado
                         onChange={handleSearchGiro}
                         placeholder="Buscar giro por código o descripción"
                       />

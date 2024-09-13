@@ -958,6 +958,14 @@ span.btn-direcciones-text{
   color: white;
 }
 
+.dropdown-menu, .dropdown-item{
+  background-color: #444;
+  color: white;
+}
+.dropdown-menu:hover, .dropdown-item:hover{
+  background-color: #555;
+  color: white;
+}
 .dark-mode .dark-mode-select__option {
   background-color: #444;
   color: white;

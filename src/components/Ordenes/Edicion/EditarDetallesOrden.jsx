@@ -172,7 +172,7 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
 
   return (
     <Form>
-      <h3>Editar Detalles de la Orden</h3>
+      <h3 className="titulo-pasos">Editar Detalles de la Orden</h3>
 
       <Card className="mb-3">
         <CardBody>
@@ -209,6 +209,7 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
                   id="fecha_envio"
                   value={datosComunes.fecha_envio}
                   onChange={handleDatosComunesChange}
+                  className="dark-mode-input-date"
                 />
                 {errors.fecha_envio && (
                   <Alert color="danger">{errors.fecha_envio}</Alert>
@@ -226,6 +227,7 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
                   id="fecha_entrega_estimada"
                   value={datosComunes.fecha_entrega_estimada}
                   onChange={handleDatosComunesChange}
+                  className="dark-mode-input-date"
                 />
                 {errors.fecha_entrega_estimada && (
                   <Alert color="danger">{errors.fecha_entrega_estimada}</Alert>
@@ -243,6 +245,7 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
                   id="fecha_entrega"
                   value={datosComunes.fecha_entrega}
                   onChange={handleDatosComunesChange}
+                  className="dark-mode-input-date"
                 />
                 {errors.fecha_entrega && (
                   <Alert color="danger">{errors.fecha_entrega}</Alert>
@@ -309,10 +312,10 @@ const EditarDetallesOrden = ({ orden: ordenInicial, actualizarOrden }) => {
           </CardBody>
         </Card>
       ))}
-      <Button color="primary" onClick={agregarNuevoPaquete} className="mb-3">
+      <Button color="primary" onClick={agregarNuevoPaquete} className="mb-3 ">
         Agregar Nuevo Paquete
       </Button>
-      <Button color="success" onClick={guardarPaquetes} className="ml-2 mb-3">
+      <Button  color="success" onClick={guardarPaquetes} className="ml-2 mb-3 btnGuardarDatosPaquete">
         Guardar Paquetes
       </Button>
     </Form>

@@ -19,6 +19,7 @@ import {
   BiPlus,
   BiMap,
   BiNavigation,
+  BiErrorCircle,
 } from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
@@ -74,6 +75,13 @@ const VerticalLayout = () => {
       location.pathname.includes("/GestionAsignarRutas")
     ) {
       setActiveSubMenu("rutas");
+      setVisibleSubMenu(null);
+    }else if (
+      location.pathname.includes("/GestionBodegas") ||
+      location.pathname.includes("/GestionUbicacion") ||
+      location.pathname.includes("/GestionBodegas")
+    ) {
+      setActiveSubMenu("bodegas");
       setVisibleSubMenu(null);
     } else {
       setActiveSubMenu(null);
@@ -368,16 +376,59 @@ const VerticalLayout = () => {
                   </ul>
                 </li>
 
-                <li className="nav-item">
-                  <NavLink
-                    to="/GestionBodegas"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
+                 {/* Submenu for Bodegas */}
+                 <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "bodegas" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("bodegas")}
                   >
                     <BiBuilding className="nav-icon" />
-                    {!menuCollapsed && <span>Bodegas</span>}
-                  </NavLink>
+                    {(!menuCollapsed || visibleSubMenu === "bodegas") && (
+                      <span>Bodegas</span>
+                    )}
+                    {visibleSubMenu === "bodegas" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "bodegas" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionBodegas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Bodegas
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionUbicacion"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Ubicaciones
+                      </NavLink>
+                    </li>
+                    {/* <li>
+                      <NavLink
+                        to="/GestionBodegas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Vehículos
+                      </NavLink>
+                    </li> */}
+                  </ul>
                 </li>
 
                 {/* Submenu for Vehículos */}
@@ -444,6 +495,17 @@ const VerticalLayout = () => {
                   >
                     <BiShield className="nav-icon" />
                     {!menuCollapsed && <span>Roles y permisos</span>}
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/GestionIncidencias"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiErrorCircle  className="nav-icon" />
+                    {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
               </>

@@ -77,10 +77,17 @@ import PreOrdenesSeleccionarCliente from "./pages/PreOrdenesSeleccionarCliente";
 import PreOrdenesSeleccionarClienteExpress from "./pages/PreOrdenesSeleccionarClienteExpress";
 import PreOrdenesDirecciones from "./pages/PreOrdenesDirecciones";
 import PreOrdenesDireccionesExpress from "./pages/PreOrdenesDireccionesExpress";
-import DatosPreOrden from "./pages/DatosPreOrden";
-import DatosPreOrdenExpress from "./pages/DatosPreOrdenExpress";
 import AgregarUbicacion from "./pages/AgregarUbicacion";
 import GestionUbicacion from "./pages/GestionUbicacion";
+import DatosPaquetePreOrden from "./pages/DatosPaquetePreOrden";
+import DatosPaquetePreOrdenExpress from "./pages/DatosPaquetePreOrdenExpress";
+import GestionIncidencias from "./pages/GestionIncidencias";
+import SeleccionarPaquetes from "./pages/SeleccionarPaquetes";
+import AgregarIncidencia from "./pages/AgregarIncidencia";
+import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaqueteSeleccionado";
+import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
+import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
+import DataIncidencia from "./pages/DataIncidencia";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -135,6 +142,10 @@ const App = () => {
                 <Route
                   path="/DetallesAsignacionRutas/:id"
                   element={<DetallesAsignacionRutas />}
+                />
+                <Route
+                  path="/SeleccionarPaquetes"
+                  element={<SeleccionarPaquetes />}
                 />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route
@@ -274,9 +285,12 @@ const App = () => {
                 path="/GestionPreOrdenesExpress"
                 element={<GestionPreOrdenesExpress />}
               />
-              <Route path="/GenerarPreOrden" element={<GenerarPreOrden />} />
               <Route
-                path="/GenerarPreOrdenExpress"
+                path="/GenerarPreOrden/:idCliente"
+                element={<GenerarPreOrden />}
+              />
+              <Route
+                path="/GenerarPreOrdenExpress/:idCliente"
                 element={<GenerarPreOrdenExpress />}
               />
 
@@ -285,22 +299,26 @@ const App = () => {
                 element={<PreOrdenesSeleccionarCliente />}
               />
               <Route
-                path="/PreOrdenesDirecciones"
+                path="/PreOrdenesDirecciones/:idCliente"
                 element={<PreOrdenesDirecciones />}
               />
-              <Route path="/DatosPreOrden" element={<DatosPreOrden />} />
 
               <Route
                 path="/PreOrdenesSeleccionarClienteExpress"
                 element={<PreOrdenesSeleccionarClienteExpress />}
               />
               <Route
-                path="/PreOrdenesDireccionesExpress"
+                path="/PreOrdenesDireccionesExpress/:idCliente"
                 element={<PreOrdenesDireccionesExpress />}
               />
+
               <Route
-                path="/DatosPreOrdenExpress"
-                element={<DatosPreOrdenExpress />}
+                path="/DatosPaquetePreOrden/:idCliente"
+                element={<DatosPaquetePreOrden />}
+              />
+              <Route
+                path="/DatosPaquetePreOrdenExpress/:idCliente"
+                element={<DatosPaquetePreOrdenExpress />}
               />
 
               {/* Rutas para 'conductor' */}
@@ -313,6 +331,15 @@ const App = () => {
               >
                 <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
                 <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
+                <Route
+                  path="/GestionIncidencias"
+                  element={<GestionIncidencias />}
+                />
+                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
+                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} /> 
+                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
+                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
+                 <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
                 {/* Aquí van las rutas adicionales */}
               </Route>
 
