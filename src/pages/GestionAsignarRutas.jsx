@@ -58,7 +58,9 @@ export default function GestionAsignarRutas() {
         axios.get(`${API_URL}/dropdown/get_estado_rutas`, { headers: { Authorization: `Bearer ${token}` } })
       ])
 
-      setAsignaciones(asignacionesRes.data.asignacionrutas || [])
+      const asignacionesData = asignacionesRes.data.asignacionrutas || []
+      console.log("Asignaciones fetched:", asignacionesData)
+      setAsignaciones(asignacionesData)
       setRutas(rutasRes.data.rutas || [])
       setVehiculos(vehiculosRes.data.vehiculos || [])
       setPaquetes(paquetesRes.data.paquetes || [])
@@ -119,19 +121,24 @@ export default function GestionAsignarRutas() {
     setCurrentPage(1)
   }
 
-  const filtrarAsignaciones = (asignaciones) => {
+  const filtrarAsignaciones = useCallback(() => {
+    console.log("Filtering asignaciones. Current asignaciones:", asignaciones)
+    console.log("Current búsqueda:", busqueda)
     if (!busqueda) return asignaciones
     return asignaciones.filter(
       (asignacion) =>
+        asignacion.codigo_unico_asignacion &&
         asignacion.codigo_unico_asignacion.toLowerCase().includes(busqueda.toLowerCase())
     )
-  }
+  }, [asignaciones, busqueda])
 
-  const asignacionesFiltradas = filtrarAsignaciones(asignaciones)
-  const paginatedAsignaciones = asignacionesFiltradas.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
+  const asignacionesFiltradas = filtrarAsignaciones()
+  console.log("Asignaciones filtradas:", asignacionesFiltradas)
+
+  const totalItems = Array.isArray(asignacionesFiltradas) ? asignacionesFiltradas.length : 0
+  const paginatedAsignaciones = Array.isArray(asignacionesFiltradas) 
+    ? asignacionesFiltradas.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : []
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber)
@@ -184,7 +191,7 @@ export default function GestionAsignarRutas() {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={asignacionesFiltradas.length}
+              totalItemsCount={totalItems}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"
