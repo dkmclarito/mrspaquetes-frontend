@@ -32,7 +32,7 @@ const TablaOrdenes = ({
               <td>{orden.detalles[0]?.telefono || "N/A"}</td>
               <td>{orden.tipo_pago}</td>
               <td>${orden.total_pagar}</td>
-              <td>{orden.detalles[0]?.estado_paquete || "N/A"}</td>
+              <td>{orden.estado || "N/A"}</td>
               <td>{orden.numero_seguimiento}</td>
               <td>
                 <div className="button-container">
