@@ -231,7 +231,7 @@ const AgregarUbicacionPaquete = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" style={{textAlign: 'center'}}>No hay paquetes disponibles</td>
+                    <td colSpan="6" style={{textAlign: 'center'}}>No hay paquetes disponibles</td>
                   </tr>
                 )}
               </tbody>
