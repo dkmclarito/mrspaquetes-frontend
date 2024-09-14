@@ -11,12 +11,7 @@
   --timeline-content-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-body {
-  background-color: var(--background-color);
-  color: var(--text-color);
-  font-family: 'Arial', sans-serif;
-  line-height: 1.6;
-}
+
 
 .tracking-card, .details-card, .package-card {
   background-color: var(--card-background);
