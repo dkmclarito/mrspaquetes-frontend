@@ -21,7 +21,8 @@ const AgregarVehiculo = () => {
   const [capacidadCarga, setCapacidadCarga] = useState("");
   const [idEstado, setIdEstado] = useState("");
   const [anio, setAnio] = useState("");
-  const [color, setColor] = useState("");
+  const [bodegas, setBodegas] = useState([]);
+  const [bodegaSeleccionada, setBodegaSeleccionada] = useState("");
   const [alertaExito, setAlertaExito] = useState(false);
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
@@ -138,6 +139,23 @@ const AgregarVehiculo = () => {
     fetchEstados();
   }, [token]);
 
+  useEffect(() => {
+    const fetchBodegas = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/dropdown/get_bodegas`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setBodegas(response.data.bodegas || []);
+      } catch (error) {
+        console.error("Error al obtener las bodegas:", error);
+      }
+    };
+
+    fetchBodegas();
+  }, [token]);
+
   const handleMarcaChange = (e) => {
     setMarcaSeleccionada(e.target.value);
     setModeloSeleccionado(""); // Reset modeloSeleccionado when marca changes
@@ -189,7 +207,8 @@ const AgregarVehiculo = () => {
       id_estado: idEstado,
       year_fabricacion: anio,
       id_empleado_conductor: empleadoConductor,
-      id_empleado_apoyo: empleadoApoyo
+      id_empleado_apoyo: empleadoApoyo,
+      id_bodega: bodegaSeleccionada
     };
 
     try {
@@ -425,6 +444,26 @@ const AgregarVehiculo = () => {
                       <FormFeedback className="text-danger">
                         {errors.anio || `El año de fabricación debe estar entre 1999 y ${new Date().getFullYear()}.`}
                       </FormFeedback>
+                    </FormGroup>
+                  </Col>
+                  <Col md={6}>
+                    <FormGroup>
+                      <Label for="bodega">Bodega</Label>
+                      <Input 
+                        type="select" 
+                        name="bodega" 
+                        id="bodega" 
+                        value={bodegaSeleccionada} 
+                        onChange={(e) => setBodegaSeleccionada(e.target.value)} 
+                        required
+                      >
+                        <option value="">Seleccione Bodega</option>
+                        {bodegas.map((bodega) => (
+                          <option key={bodega.id} value={bodega.id}>
+                            {bodega.nombre}
+                          </option>
+                        ))}
+                      </Input>
                     </FormGroup>
                   </Col>
                 </Row>

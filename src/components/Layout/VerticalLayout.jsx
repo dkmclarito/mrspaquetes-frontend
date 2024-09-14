@@ -20,6 +20,9 @@ import {
   BiMap,
   BiNavigation,
   BiErrorCircle,
+  BiBus,
+  BiBox ,
+  BiLayer   
 } from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
@@ -373,6 +376,17 @@ const VerticalLayout = () => {
                         Órdenes de Recolección
                       </NavLink>
                     </li>
+                    <li>
+                      <NavLink
+                        to="/GestionTraslados"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBus className="nav-icon sub-icon" />
+                        Traslados
+                      </NavLink>
+                    </li>
                   </ul>
                 </li>
 
@@ -402,7 +416,7 @@ const VerticalLayout = () => {
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
-                        <BiPlus className="nav-icon sub-icon" />
+                        <BiBuilding className="nav-icon sub-icon" />
                         Bodegas
                       </NavLink>
                     </li>
@@ -413,21 +427,21 @@ const VerticalLayout = () => {
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
-                        <BiPlus className="nav-icon sub-icon" />
+                        <BiLayer className="nav-icon sub-icon" />
                         Ubicaciones
                       </NavLink>
                     </li>
-                    {/* <li>
+                    <li>
                       <NavLink
-                        to="/GestionBodegas"
+                        to="/GestionInventario"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
-                        <BiPlus className="nav-icon sub-icon" />
-                        Vehículos
+                        <BiBox  className="nav-icon sub-icon" />
+                        Inventario
                       </NavLink>
-                    </li> */}
+                    </li>
                   </ul>
                 </li>
 

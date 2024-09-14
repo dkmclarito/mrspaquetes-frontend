@@ -88,6 +88,8 @@ import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaque
 import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
 import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
 import DataIncidencia from "./pages/DataIncidencia";
+import GestionTraslados from "./pages/GestionTraslados";
+import GestionInventario from "./pages/GestionInventario";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -130,6 +132,14 @@ const App = () => {
                 <Route
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
+                />
+                <Route
+                  path="/GestionTraslados"
+                  element={<GestionTraslados />} 
+                />
+                <Route
+                  path="/GestionInventario"
+                  element={<GestionInventario />} 
                 />
                 <Route
                   path="/GestionAsignarRutas"
