@@ -54,7 +54,7 @@ const PieChartComponent = () => {
  
   const formattedData = Array.isArray(data) && data.length > 0 ? data : defaultData;
 
-  const COLORS = ['#FFBB28', '#0088FE', '#FFBB28'];
+  const COLORS = ['#198754', '#0088FE', '#FFBB28'];
 
   return (
     <Card>
