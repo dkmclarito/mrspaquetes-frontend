@@ -1,0 +1,223 @@
+:root {
+  --primary-color: #0056b3;
+  --secondary-color: #6c757d;
+  --success-color: rgb(98, 254, 20);
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --text-color: #333333;
+  --border-color: #dee2e6;
+  --timeline-line-color: #e9ecef;
+  --timeline-badge-color: #ffffff;
+  --timeline-content-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.tracking-card, .details-card, .package-card {
+  background-color: var(--card-background);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.3s ease;
+}
+
+.tracking-card:hover, .details-card:hover, .package-card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group .form-control {
+  border-radius: 4px 0 0 4px;
+  border: 1px solid var(--border-color);
+}
+
+.input-group .btn {
+  border-radius: 0 4px 4px 0;
+  background-color: var(--primary-color);
+  border: none;
+  color: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+.input-group .btn:hover {
+  background-color: #004494;
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: var(--timeline-line-color);
+  transform: translateX(-50%);
+}
+
+.timeline-item {
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.timeline-item:first-of-type .timeline-badge {
+  background-color: var(--success-color);
+  color: var(--timeline-badge-color);
+}
+
+.timeline-item:first-of-type .timeline-content {
+  background-color: var(--success-color);
+  color: var(--timeline-badge-color);
+  border-left: 3px solid var(--success-color);
+}
+
+.timeline-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: var(--timeline-badge-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  transition: background-color 0.3s ease;
+}
+
+.timeline-content {
+  width: calc(50% - 30px);
+  padding: 15px;
+  background-color: var(--card-background);
+  border-radius: 4px;
+  box-shadow: var(--timeline-content-shadow);
+  transition: box-shadow 0.3s ease;
+}
+
+.timeline-content:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.timeline-item:nth-child(odd) .timeline-content {
+  margin-left: auto;
+}
+
+.timeline-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: var(--primary-color);
+}
+
+.timeline-description {
+  font-size: 0.9em;
+  color: var(--secondary-color);
+}
+
+.timeline-date {
+  font-size: 0.8em;
+  color: var(--secondary-color);
+  margin-top: 5px;
+}
+
+.timeline-item.current .timeline-badge {
+  background-color: var(--success-color);
+}
+
+.timeline-item.current .timeline-content {
+  border-left: 3px solid var(--success-color);
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  background-color: #f1f3f5;
+  font-weight: bold;
+}
+
+.table td, .table th {
+  padding: 12px;
+  vertical-align: middle;
+}
+
+/* Dark mode */
+.dark-mode {
+  --primary-color: #3a8bff;
+  --secondary-color: #f7f4f4;
+  --success-color: #388e3c;
+  --background-color: #121212;
+  --card-background: #1e1e1e;
+  --text-color: #ffffff;
+  --border-color: #100f0f;
+  --timeline-line-color: #333333;
+  --timeline-badge-color: #ffffff;
+  --timeline-content-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.dark-mode .tracking-card, 
+.dark-mode .details-card, 
+.dark-mode .package-card {
+  background-color: var(--card-background);
+}
+
+.dark-mode .timeline-content {
+  background-color: var(--card-background);
+  color: var(--text-color);
+}
+
+.dark-mode .timeline-badge, 
+.dark-mode .input-group .btn {
+  background-color: var(--primary-color);
+}
+
+.dark-mode .input-group .btn:hover {
+  background-color: #2a6dbf;
+}
+
+.dark-mode .table th {
+  background-color: #2a2a2a;
+}
+
+.dark-mode .timeline-description, 
+.dark-mode .timeline-date {
+  color: var(--secondary-color);
+}
+
+.dark-mode .timeline-title,
+.dark-mode .card-title {
+  color: var(--primary-color);
+}
+
+.dark-mode .input-group .form-control {
+  background-color: #2a2a2a;
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode .timeline-item:first-of-type .timeline-content {
+  color: var(--card-background);
+}

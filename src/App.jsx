@@ -88,6 +88,9 @@ import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaque
 import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
 import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
 import DataIncidencia from "./pages/DataIncidencia";
+import GestionTraslados from "./pages/GestionTraslados";
+import GestionInventario from "./pages/GestionInventario";
+import TrackingPaquetes from "./pages/TrackingPaquetes";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -130,6 +133,14 @@ const App = () => {
                 <Route
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
+                />
+                <Route
+                  path="/GestionTraslados"
+                  element={<GestionTraslados />} 
+                />
+                <Route
+                  path="/GestionInventario"
+                  element={<GestionInventario />} 
                 />
                 <Route
                   path="/GestionAsignarRutas"
@@ -175,6 +186,7 @@ const App = () => {
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
                 <Route path="/TrackingPage" element={<TrackingPage />} />
+                <Route path="/TrackingPaquetes" element={<TrackingPaquetes />} />
                 <Route
                   path="/GestionUbicacion"
                   element={<GestionUbicacion />}
