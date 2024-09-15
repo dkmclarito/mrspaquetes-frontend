@@ -44,6 +44,7 @@ export default function PreOrdenesDirecciones() {
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [selectedDireccion, setSelectedDireccion] = useState(null);
+  const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [cliente, setCliente] = useState(null);
   const navigate = useNavigate();
@@ -251,16 +252,26 @@ export default function PreOrdenesDirecciones() {
     setSelectedDireccion(direccion);
   };
 
+  const handleSeleccionarDireccionRecoleccion = (direccion) => {
+    setDireccionRecoleccion(direccion);
+  };
+
   const handleContinuar = () => {
-    if (selectedDireccion) {
+    if (selectedDireccion && direccionRecoleccion) {
       localStorage.setItem(
         "selectedAddress",
         JSON.stringify(selectedDireccion)
       );
+      localStorage.setItem(
+        "direccionRecoleccion",
+        JSON.stringify(direccionRecoleccion)
+      );
       localStorage.setItem("clienteData", JSON.stringify(cliente));
       navigate(`/DatosPaquetePreOrden/${idCliente}`);
     } else {
-      toast.warn("Por favor, seleccione una dirección antes de continuar");
+      toast.warn(
+        "Por favor, seleccione una dirección de entrega y una de recolección antes de continuar"
+      );
     }
   };
 
@@ -310,7 +321,6 @@ export default function PreOrdenesDirecciones() {
         <CardBody>
           <Row>
             <Col lg={12}>
-              <h4>Seleccionar Dirección de Entrega</h4>
               {cliente ? (
                 <h5>
                   Cliente: {cliente.nombre} {cliente.apellido}
@@ -452,6 +462,7 @@ export default function PreOrdenesDirecciones() {
                   </Button>
                 </div>
               )}
+              <h4>Seleccionar Dirección de Entrega</h4>
               <Table responsive>
                 <thead>
                   <tr>
@@ -505,17 +516,83 @@ export default function PreOrdenesDirecciones() {
                 </tbody>
               </Table>
               {selectedDireccion && (
+                <>
+                  <h4>Seleccionar Dirección de Recolección Express</h4>
+                  <Table responsive>
+                    <thead>
+                      <tr>
+                        <th>Dirección</th>
+                        <th>Referencia</th>
+                        <th>Departamento</th>
+                        <th>Municipio</th>
+                        <th>Nombre de Contacto</th>
+                        <th>Teléfono</th>
+                        <th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {direcciones.length > 0 ? (
+                        direcciones.map((direccion, index) => (
+                          <tr key={index}>
+                            <td>
+                              {direccion.direccion || "Dirección no disponible"}
+                            </td>
+                            <td>{direccion.referencia || "N/A"}</td>
+                            <td>{direccion.departamento_nombre}</td>
+                            <td>{direccion.municipio_nombre}</td>
+                            <td>
+                              {direccion.nombre_contacto || "No disponible"}
+                            </td>
+                            <td>{direccion.telefono || "No disponible"}</td>
+                            <td>
+                              <Button
+                                color={
+                                  direccionRecoleccion === direccion
+                                    ? "success"
+                                    : "primary"
+                                }
+                                onClick={() =>
+                                  handleSeleccionarDireccionRecoleccion(
+                                    direccion
+                                  )
+                                }
+                                disabled={direccion === selectedDireccion}
+                              >
+                                {direccionRecoleccion === direccion
+                                  ? "Seleccionada"
+                                  : "Seleccionar"}
+                              </Button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" className="text-center">
+                            No hay direcciones disponibles
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </Table>
+                </>
+              )}
+              {selectedDireccion && direccionRecoleccion && (
                 <div>
-                  <h5>Dirección Seleccionada:</h5>
+                  <h5>Dirección de Entrega Seleccionada:</h5>
                   <p>
                     {selectedDireccion.direccion || "Dirección no disponible"}
+                  </p>
+                  <h5>Dirección de Recolección Seleccionada:</h5>
+                  <p>
+                    {direccionRecoleccion.direccion ||
+                      "Dirección no disponible"}
                   </p>
                   <Button
                     className="btnGuardarDatosPaquete"
                     color="success"
                     onClick={handleContinuar}
                   >
-                    Continuar con la Orden
+                    Continuar con la Pre-Orden Express
                   </Button>
                 </div>
               )}

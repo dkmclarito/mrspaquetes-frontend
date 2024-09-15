@@ -36,8 +36,9 @@ export default function DatosPaquetePreOrden() {
   const [empaques, setEmpaques] = useState([]);
   const [tarifas, setTarifas] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
   const [commonData, setCommonData] = useState({
-    id_estado_paquete: "1", // Assuming '1' is the ID for "recepción"
+    id_estado_paquete: "3", // Assuming '1' is the ID for "recepción"
     fecha_envio: "",
     fecha_entrega_estimada: "",
     fecha_entrega: "",
@@ -113,10 +114,14 @@ export default function DatosPaquetePreOrden() {
         setTarifas(tarifasRes.data || []);
 
         const storedAddress = JSON.parse(
-          localStorage.getItem("selectedAddress")
+          localStorage.getItem("selectedAddress") || "{}"
         );
+        const storedDireccionRecoleccion = JSON.parse(
+          localStorage.getItem("direccionRecoleccion") || "{}"
+        );
+
         setSelectedAddress(storedAddress);
-        console.log("Selected address:", storedAddress);
+        setDireccionRecoleccion(storedDireccionRecoleccion);
 
         console.log("Fetched data:", {
           cliente: clienteRes.data.cliente,
@@ -378,6 +383,8 @@ export default function DatosPaquetePreOrden() {
         detalles: detalles,
         totalPrice: totalPrice,
         commonData: commonData,
+        selectedAddress: selectedAddress,
+        direccionRecoleccion: direccionRecoleccion,
       },
     });
   };
@@ -435,7 +442,15 @@ export default function DatosPaquetePreOrden() {
             </h3>
           )}
           {selectedAddress && (
-            <h6>Dirección seleccionada: {selectedAddress.direccion}</h6>
+            <h6>
+              Dirección de entrega seleccionada: {selectedAddress.direccion}
+            </h6>
+          )}
+          {direccionRecoleccion && (
+            <h6>
+              Dirección de recolección seleccionada:{" "}
+              {direccionRecoleccion.direccion}
+            </h6>
           )}
         </CardHeader>
         <CardBody>
