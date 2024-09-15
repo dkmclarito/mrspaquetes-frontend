@@ -59,7 +59,7 @@ const PieChartComponent = () => {
   return (
     <Card>
       <CardBody>
-        <CardTitle tag="h5">Tipos de Ordenes</CardTitle>
+        <CardTitle style={{ textAlign: 'center' }} tag="h5">Tipos de Ordenes</CardTitle>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
