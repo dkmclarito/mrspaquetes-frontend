@@ -193,7 +193,7 @@ const AgregarUbicacionPaquete = () => {
               />
             </FormGroup>
             <Button color="primary" type="submit">Guardar</Button>
-            <Button color="secondary" onClick={() => navigate('/gestion-ubicacion')} style={{ marginLeft: '10px' }}>
+            <Button color="secondary" onClick={() => navigate('/GestionUbicacion')} style={{ marginLeft: '10px' }}>
               Salir
             </Button>
           </Form>

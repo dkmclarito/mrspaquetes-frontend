@@ -10,11 +10,11 @@ const ModalEditarUbicacion = ({
   guardarCambiosUbicacion,
   setModalEditar,
 }) => {
-  const [estado, setEstado] = useState(ubicacionEditada.estado || false);
+  const [estado, setEstado] = useState(ubicacionEditada?.estado ?? 1); // Estado por defecto en 1
 
   useEffect(() => {
     if (ubicacionEditada) {
-      setEstado(ubicacionEditada.estado || false);
+      setEstado(ubicacionEditada.estado ?? 1); // Asegurarse de que el estado esté actualizado
     }
   }, [ubicacionEditada]);
 
@@ -24,8 +24,8 @@ const ModalEditarUbicacion = ({
   };
 
   const handleEstadoChange = (e) => {
-    setEstado(e.target.checked);
-    setUbicacionEditada({ ...ubicacionEditada, estado: e.target.checked });
+    setEstado(e.target.checked ? 1 : 0); // Convertir checkbox a 1 o 0
+    setUbicacionEditada({ ...ubicacionEditada, estado: e.target.checked ? 1 : 0 });
   };
 
   return (
@@ -36,30 +36,29 @@ const ModalEditarUbicacion = ({
       <Modal.Body>
         {ubicacionEditada ? (
           <Form>
-            <Form.Group as={Row} controlId="id_ubicacion">
-              <Form.Label column sm={12}>ID de Ubicación</Form.Label>
+            <Form.Group as={Row} controlId="nombre_ubicacion">
+              <Form.Label column sm={12}>Paquete</Form.Label>
               <Col sm={12}>
                 <Form.Control
                   type="text"
-                  name="id_ubicacion"
-                  value={ubicacionEditada.id || ""}
+                  name="ubicacion"
+                  value={ubicacionEditada.paquete || ""}
                   onChange={handleChange}
-                  readOnly
                 />
               </Col>
             </Form.Group>
-
-            <Form.Group as={Row} controlId="estado">
-              <Form.Label column sm={12}>Estado</Form.Label>
+            <Form.Group as={Row} controlId="nombre_ubicacion">
+              <Form.Label column sm={12}>Nombre de Ubicación</Form.Label>
               <Col sm={12}>
-                <Form.Check
-                  type="checkbox"
-                  name="estado"
-                  checked={estado}
-                  onChange={handleEstadoChange}
+                <Form.Control
+                  type="text"
+                  name="ubicacion"
+                  value={ubicacionEditada.ubicacion || ""}
+                  onChange={handleChange}
                 />
               </Col>
             </Form.Group>
+            
           </Form>
         ) : (
           <p>Seleccione una ubicación para editar.</p>
@@ -69,7 +68,7 @@ const ModalEditarUbicacion = ({
         <Button
           variant="primary"
           onClick={guardarCambiosUbicacion}
-          disabled={ubicacionEditada.id === undefined}
+          disabled={!ubicacionEditada}
         >
           Guardar
         </Button>
@@ -83,11 +82,10 @@ const ModalEditarUbicacion = ({
 
 ModalEditarUbicacion.propTypes = {
   modalEditar: PropTypes.bool.isRequired,
-  UbicacionEditado: PropTypes.object,
+  ubicacionEditada: PropTypes.object,
   setUbicacionEditada: PropTypes.func.isRequired,
   guardarCambiosUbicacion: PropTypes.func.isRequired,
   setModalEditar: PropTypes.func.isRequired,
 };
-
 
 export default ModalEditarUbicacion;

@@ -89,6 +89,7 @@ import EditarDatosAsignacion from "./components/AsignacionRutas/EdicionRutaAsign
 import GestionTraslados from "./pages/GestionTraslados";
 import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
+import DetallesUbicacion from "./pages/DetallesUbicacion";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -179,6 +180,10 @@ const App = () => {
                 <Route
                   path="/DetallesCliente/:id"
                   element={<DetallesCliente />}
+                />
+                <Route
+                  path="/DetallesUbicacion/:id"
+                  element={<DetallesUbicacion />}
                 />
                 <Route
                   path="/GestionVehiculos"
