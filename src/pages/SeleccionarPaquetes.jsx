@@ -41,7 +41,7 @@ const tiposEmpaque = {
   4: "Papel burbuja"
 };
 
-export default function GestionPaquetes() {
+export default function SeleccionarPaquetes() {
   const [allPaquetes, setAllPaquetes] = useState([]);
   const [paquetesFiltrados, setPaquetesFiltrados] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,49 +81,58 @@ export default function GestionPaquetes() {
       const token = localStorage.getItem('token');
       const config = { headers: { 'Authorization': `Bearer ${token}` } };
       
+      // Obtenemos las asignaciones de rutas
+      const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas`, config);
+      const asignaciones = responseAsignaciones.data.asignacionrutas.data || [];
+      console.log('Asignaciones obtenidas:', asignaciones);
+      console.log('Total asignaciones:', asignaciones.length);
+  
+      // Creamos un conjunto con los IDs de los paquetes ya asignados
+      const idsPaquetesAsignados = new Set(asignaciones.map(asignacion => asignacion.id_paquete));
+      console.log('IDs de paquetes asignados:', [...idsPaquetesAsignados]);
+      console.log('Total paquetes asignados:', idsPaquetesAsignados.size);
+  
+      // Obtenemos todas las órdenes
       const ordenesResponse = await axios.get(`${API_URL}/ordenes`, config);
       const ordenes = ordenesResponse.data.data || [];
       console.log('Total órdenes registradas:', ordenes.length);
-
-      const paquetesDisponibles = ordenes.flatMap(orden => 
-        orden.detalles.map(detalle => ({
-          id_paquete: detalle.id_paquete,
-          tipo_paquete: tiposPaquete[detalle.paquete.id_tipo_paquete] || 'Desconocido',
-          empaquetado: tiposEmpaque[detalle.paquete.tipo_caja] || 'Desconocido',
-          tamano_paquete: tamanosPaquete[detalle.paquete.id_tamano_paquete] || 'Desconocido',
-          estado_paquete: estadosPaquete[detalle.id_estado_paquetes] || 'Desconocido',
-          departamento: orden.direccion_emisor?.departamento || 'No especificado',
-          municipio: orden.direccion_emisor?.municipio || 'No especificado',
-          direccion: orden.direccion_emisor?.direccion || 'No especificada',
-          peso: detalle.paquete.peso,
-          descripcion_contenido: detalle.paquete.descripcion_contenido,
-          fecha_envio: detalle.paquete.fecha_envio,
-          fecha_entrega_estimada: detalle.paquete.fecha_entrega_estimada,
-          paquete: detalle.paquete
-        }))
+  
+      // Filtramos los paquetes que no están asignados
+      const paquetesNoAsignados = ordenes.flatMap(orden => 
+        (orden.detalles || [])
+          .filter(detalle => !idsPaquetesAsignados.has(detalle.id_paquete))
+          .map(detalle => ({
+            id_paquete: detalle.id_paquete,
+            tipo_paquete: tiposPaquete[detalle.paquete?.id_tipo_paquete] || 'Desconocido',
+            empaquetado: tiposEmpaque[detalle.paquete?.tipo_caja] || 'Desconocido',
+            tamano_paquete: tamanosPaquete[detalle.paquete?.id_tamano_paquete] || 'Desconocido',
+            estado_paquete: estadosPaquete[detalle.id_estado_paquetes] || 'Desconocido',
+            departamento: orden.direccion_emisor?.departamento || 'No especificado',
+            municipio: orden.direccion_emisor?.municipio || 'No especificado',
+            direccion: orden.direccion_emisor?.direccion || 'No especificada',
+            peso: parseFloat(detalle.paquete?.peso) || 0,
+            descripcion_contenido: detalle.paquete?.descripcion_contenido,
+            fecha_envio: detalle.paquete?.fecha_envio,
+            fecha_entrega_estimada: detalle.paquete?.fecha_entrega_estimada,
+            paquete: detalle.paquete
+          }))
       );
       
-      console.log('Total paquetes disponibles:', paquetesDisponibles.length);
-
-      const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas`, config);
-      const asignaciones = responseAsignaciones.data.asignacionrutas || [];
-
-      console.log('Total asignaciones:', asignaciones.length);
-
-      const idsPaquetesAsignados = new Set(asignaciones.map(asignacion => asignacion.id_paquete));
-      console.log('IDs de paquetes asignados:', [...idsPaquetesAsignados]);
-
-      const paquetesNoAsignados = paquetesDisponibles.filter(paquete => !idsPaquetesAsignados.has(paquete.id_paquete));
       console.log('Total paquetes no asignados:', paquetesNoAsignados.length);
-
+      console.log('Paquetes no asignados:', paquetesNoAsignados);
+  
       setAllPaquetes(paquetesNoAsignados);
       setTotalItems(paquetesNoAsignados.length);
-
+  
       const uniqueDepartamentos = [...new Set(paquetesNoAsignados.map(p => p.departamento).filter(Boolean))];
       setDepartamentos(uniqueDepartamentos);
-
+  
       const uniqueMunicipios = [...new Set(paquetesNoAsignados.map(p => p.municipio).filter(Boolean))];
       setMunicipios(uniqueMunicipios);
+  
+      const paquetesFiltradosIniciales = filtrarPaquetes(paquetesNoAsignados);
+      setPaquetesFiltrados(paquetesFiltradosIniciales);
+      console.log('Paquetes filtrados:', paquetesFiltradosIniciales.length);
     } catch (error) {
       console.error('Error fetching paquetes:', error);
       toast.error('Error al cargar los paquetes');
@@ -149,9 +158,15 @@ export default function GestionPaquetes() {
   const handleSelectPaquete = (paquete, isSelected) => {
     setPaquetesSeleccionados(prev => {
       const updated = isSelected
-        ? [...prev, { id_paquete: parseInt(paquete.id_paquete, 10), tamano_paquete: paquete.tamano_paquete }]
+        ? [...prev, { 
+            id_paquete: parseInt(paquete.id_paquete, 10), 
+            tamano_paquete: paquete.tamano_paquete,
+            direccion: paquete.direccion,
+            departamento: paquete.departamento,
+            municipio: paquete.municipio
+          }]
         : prev.filter(p => p.id_paquete !== parseInt(paquete.id_paquete, 10));
-      console.log('Paquetes seleccionados:', updated.length);
+      console.log('Paquetes seleccionados:', updated);
       return updated;
     });
   };
@@ -173,18 +188,18 @@ export default function GestionPaquetes() {
     navigate('/AgregarAsignacionRuta');
   };
 
-  const filtrarPaquetes = useCallback(() => {
-    return allPaquetes.filter(paquete => {
+  const filtrarPaquetes = useCallback((paquetes) => {
+    return paquetes.filter(paquete => {
       const departamento = paquete.departamento || '';
       const municipio = paquete.municipio || '';
 
       return (!departamentoSeleccionado || departamento === departamentoSeleccionado) &&
              (!municipioSeleccionado || municipio === municipioSeleccionado);
     });
-  }, [allPaquetes, departamentoSeleccionado, municipioSeleccionado]);
+  }, [departamentoSeleccionado, municipioSeleccionado]);
 
   useEffect(() => {
-    const paquetesFiltrados = filtrarPaquetes();
+    const paquetesFiltrados = filtrarPaquetes(allPaquetes);
     console.log('Paquetes filtrados:', paquetesFiltrados.length);
     setTotalItems(paquetesFiltrados.length);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

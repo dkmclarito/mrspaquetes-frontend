@@ -5,22 +5,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons"
 import { useNavigate } from "react-router-dom"
 
-const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, editarAsignacion, rutas, vehiculos, estados }) => {
+const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, estados }) => {
   const navigate = useNavigate()
 
   const verDetallesAsignacion = (id) => {
     navigate(`/DetallesAsignacionRutas/${id}`)
   }
 
+  const editarAsignacion = (id) => {
+    navigate(`/EditarAsignacionRuta/${id}`)
+  }
+
   const formatFecha = (fecha) => {
     if (!fecha) return "N/A"
     const date = new Date(fecha)
     return date.toLocaleDateString('es-ES')
-  }
-
-  const getNombreRuta = (id_ruta) => {
-    const ruta = rutas.find(r => r.id === id_ruta)
-    return ruta ? ruta.nombre : "N/A"
   }
 
   const getPlacaVehiculo = (id_vehiculo) => {
@@ -33,40 +32,52 @@ const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, editarAsignaci
     return estado ? estado.estado : "N/A"
   }
 
+  // Group asignaciones by codigo_unico_asignacion
+  const groupedAsignaciones = asignaciones.reduce((acc, asignacion) => {
+    if (!acc[asignacion.codigo_unico_asignacion]) {
+      acc[asignacion.codigo_unico_asignacion] = {
+        ...asignacion,
+        paquetes: []
+      }
+    }
+    acc[asignacion.codigo_unico_asignacion].paquetes.push(asignacion.id_paquete)
+    return acc
+  }, {})
+
   return (
     <div className="table-responsive">
       <Table striped className="table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
-            <th className="text-center">Código</th>
-            <th className="text-center">Ruta</th>
+            <th className="text-center">Código de Asignación</th>
             <th className="text-center">Vehículo</th>
             <th className="text-center">Fecha</th>
             <th className="text-center">Estado</th>
+            <th className="text-center">Número de Paquetes</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {asignaciones.length > 0 ? (
-            asignaciones.map((asignacion) => (
+          {Object.values(groupedAsignaciones).length > 0 ? (
+            Object.values(groupedAsignaciones).map((asignacion) => (
               <tr key={asignacion.id}>
                 <td className="text-start">{asignacion.codigo_unico_asignacion || "N/A"}</td>
-                <td className="text-start">{getNombreRuta(asignacion.id_ruta)}</td>
                 <td className="text-start">{getPlacaVehiculo(asignacion.id_vehiculo)}</td>
                 <td className="text-start">{formatFecha(asignacion.fecha)}</td>
                 <td className="text-start">{getNombreEstado(asignacion.id_estado)}</td>
+                <td className="text-start">{asignacion.paquetes.length}</td>
                 <td className="text-start">
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
                       onClick={() => eliminarAsignacion(asignacion.id)}
-                      aria-label="Eliminar Asignación"
+                      aria-label="Desactivar Asignación"
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </Button>
                     <Button
                       className="btn-icon btn-editar"
-                      onClick={() => editarAsignacion(asignacion)}
+                      onClick={() => editarAsignacion(asignacion.id)}
                       aria-label="Editar Asignación"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
@@ -103,16 +114,10 @@ TablaAsignacionRutas.propTypes = {
       id_vehiculo: PropTypes.number,
       fecha: PropTypes.string,
       id_estado: PropTypes.number,
+      id_paquete: PropTypes.number,
     })
   ).isRequired,
   eliminarAsignacion: PropTypes.func.isRequired,
-  editarAsignacion: PropTypes.func.isRequired,
-  rutas: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number,
-      nombre: PropTypes.string,
-    })
-  ).isRequired,
   vehiculos: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number,

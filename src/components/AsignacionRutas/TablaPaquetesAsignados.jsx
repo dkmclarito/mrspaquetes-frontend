@@ -1,38 +1,69 @@
-import React from 'react'
-import { Table } from 'reactstrap'
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Table } from 'reactstrap';
+import '/src/styles/Paquetes.css';
 
-const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, editarAsignacion }) => {
-  if (!Array.isArray(asignaciones) || asignaciones.length === 0) {
-    return <p>No hay asignaciones disponibles.</p>
-  }
-
+export default function TablaPaquetesAsignados({ paquetes, onSelect }) {
   return (
-    <Table responsive striped>
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Ruta</th>
-          <th>Vehículo</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {asignaciones.map((asignacion) => (
-          <tr key={asignacion.id}>
-            <td>{asignacion.codigo_unico_asignacion}</td>
-            <td>{asignacion.ruta?.nombre || 'N/A'}</td>
-            <td>{asignacion.vehiculo?.placa || 'N/A'}</td>
-            <td>{asignacion.estado?.nombre || 'N/A'}</td>
-            <td>
-              <button onClick={() => editarAsignacion(asignacion)}>Editar</button>
-              <button onClick={() => eliminarAsignacion(asignacion.id)}>Eliminar</button>
-            </td>
+    <div className="table-responsive">
+      <Table striped className="table-centered table-nowrap mb-0">
+        <thead className="thead-light">
+          <tr>
+            <th className="text-center">ID</th>
+            <th className="text-center">Tipo de Paquete</th>
+            <th className="text-center">Empaque</th>
+            <th className="text-center">Tamaño de Paquete</th>
+            <th className="text-center">Estado</th>
+            <th className="text-center">Departamento</th>
+            <th className="text-center">Municipio</th>
+            <th className="text-center">Peso</th>
+            <th className="text-center">Seleccionar</th>
           </tr>
-        ))}
-      </tbody>
-    </Table>
-  )
+        </thead>
+        <tbody>
+          {paquetes.length > 0 ? (
+            paquetes.map((paquete) => (
+              <tr key={paquete.id_paquete}>
+                <td>{paquete.id_paquete}</td>
+                <td>{paquete.tipo_paquete}</td>
+                <td>{paquete.empaquetado}</td>
+                <td>{paquete.tamano_paquete}</td>
+                <td>{paquete.estado_paquete}</td>
+                <td>{paquete.departamento}</td>
+                <td>{paquete.municipio}</td>
+                <td>{paquete.peso} kg</td>
+                <td className="text-center">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => onSelect(paquete, e.target.checked)}
+                    className="form-check-input"
+                    style={{ transform: 'scale(1.5)', margin: '0 auto' }} 
+                  />
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="9" className="text-center">No hay paquetes disponibles para asignar.</td>
+            </tr>
+          )}
+        </tbody>
+      </Table>
+    </div>
+  );
 }
 
-export default TablaAsignacionRutas
+TablaPaquetesAsignados.propTypes = {
+  paquetes: PropTypes.arrayOf(PropTypes.shape({
+    id_paquete: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    tipo_paquete: PropTypes.string.isRequired,
+    empaquetado: PropTypes.string.isRequired,
+    tamano_paquete: PropTypes.string.isRequired,
+    estado_paquete: PropTypes.string.isRequired,
+    departamento: PropTypes.string,
+    municipio: PropTypes.string,
+    peso: PropTypes.number,
+    paquete: PropTypes.object
+  })).isRequired,
+  onSelect: PropTypes.func.isRequired,
+};

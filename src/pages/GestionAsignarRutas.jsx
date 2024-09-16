@@ -1,148 +1,135 @@
-import React, { useState, useEffect, useCallback } from "react"
-import axios from "axios"
-import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap"
-import { Link } from "react-router-dom"
-import Breadcrumbs from "../components/AsignacionRutas/Common/Breadcrumbs"
-import TablaAsignacionRutas from "../components/AsignacionRutas/TablaAsignarRuta"
-import Pagination from 'react-js-pagination'
-import { toast } from "react-toastify"
-import ModalConfirmarEliminar from "../components/AsignacionRutas/ModalConfirmarEliminarAR"
-import ModalEditarAsignacionRuta from "../components/AsignacionRutas/ModalEditarAsignarRuta"
-import AuthService from "../services/authService"
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
+import { Link } from "react-router-dom";
+import Breadcrumbs from "../components/AsignacionRutas/Common/Breadcrumbs";
+import TablaAsignacionRutas from "../components/AsignacionRutas/TablaAsignarRuta";
+import Pagination from 'react-js-pagination';
+import { toast } from "react-toastify";
+import ModalConfirmarEliminar from "../components/AsignacionRutas/ModalConfirmarEliminar";
+import AuthService from "../services/authService";
 
-const API_URL = import.meta.env.VITE_API_URL
-const ITEMS_PER_PAGE = 10
+const API_URL = import.meta.env.VITE_API_URL;
+const ITEMS_PER_PAGE = 10;
 
 export default function GestionAsignarRutas() {
-  const [asignaciones, setAsignaciones] = useState([])
-  const [busqueda, setBusqueda] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [modalEliminar, setModalEliminar] = useState(false)
-  const [modalEditar, setModalEditar] = useState(false)
-  const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null)
-  const [rutas, setRutas] = useState([])
-  const [vehiculos, setVehiculos] = useState([])
-  const [paquetes, setPaquetes] = useState([])
-  const [estados, setEstados] = useState([])
+  const [asignaciones, setAsignaciones] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [modalEliminar, setModalEliminar] = useState(false);
+  const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null);
+  const [rutas, setRutas] = useState([]);
+  const [vehiculos, setVehiculos] = useState([]);
+  const [paquetes, setPaquetes] = useState([]);
+  const [estados, setEstados] = useState([]);
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
-      const userId = localStorage.getItem("userId")
-      const token = AuthService.getCurrentUser()
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser()?.token; // Ajusta esta línea si el token está en un campo específico
 
       if (userId && token) {
         const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
           headers: { Authorization: `Bearer ${token}` }
-        })
+        });
 
         if (response.data.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...")
-          AuthService.logout()
-          window.location.href = "/login"
-          return
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
         }
       }
     } catch (error) {
-      console.error("Error al verificar el estado del usuario:", error)
+      console.error("Error al verificar el estado del usuario:", error);
+      toast.error("Error al verificar el estado del usuario.");
     }
-  }, [])
+  }, []);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (page = 1) => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
+
       const [asignacionesRes, rutasRes, vehiculosRes, paquetesRes, estadosRes] = await Promise.all([
-        axios.get(`${API_URL}/asignacionrutas`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/asignacionrutas?page=${page}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_rutas`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_paquetes_sin_asignar`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_estado_rutas`, { headers: { Authorization: `Bearer ${token}` } })
-      ])
+      ]);
 
-      const asignacionesData = asignacionesRes.data.asignacionrutas || []
-      console.log("Asignaciones fetched:", asignacionesData)
-      setAsignaciones(asignacionesData)
-      setRutas(rutasRes.data.rutas || [])
-      setVehiculos(vehiculosRes.data.vehiculos || [])
-      setPaquetes(paquetesRes.data.paquetes || [])
-      setEstados(estadosRes.data.estado_rutas || [])
+      const asignacionesData = asignacionesRes.data.asignacionrutas.data || [];
+      setAsignaciones(asignacionesData);
+      setTotalItems(asignacionesRes.data.asignacionrutas.total);
+
+      setRutas(rutasRes.data.rutas || []);
+      setVehiculos(vehiculosRes.data.vehiculos || []);
+      setPaquetes(paquetesRes.data.paquetes || []);
+      setEstados(estadosRes.data.estado_rutas || []);
     } catch (error) {
-      console.error("Error al obtener asignaciones:", error)
-      toast.error("Error al cargar las asignaciones de rutas")
+      console.error("Error al obtener datos:", error);
+      toast.error("Error al cargar los datos.");
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado()
-    fetchData()
-  }, [verificarEstadoUsuarioLogueado, fetchData])
+    verificarEstadoUsuarioLogueado();
+    fetchData();
+  }, [verificarEstadoUsuarioLogueado, fetchData]);
 
   const iniciarEliminarAsignacion = useCallback((id) => {
-    setAsignacionSeleccionada(id)
-    setModalEliminar(true)
-  }, [])
+    setAsignacionSeleccionada(id);
+    setModalEliminar(true);
+  }, []);
 
   const confirmarEliminarAsignacion = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = AuthService.getCurrentUser()?.token; // Ajusta esta línea si el token está en un campo específico
       await axios.delete(`${API_URL}/asignacionrutas/${asignacionSeleccionada}`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      toast.success("Asignación eliminada con éxito")
-      await fetchData()
-      setModalEliminar(false)
-    } catch (error) {
-      console.error("Error al eliminar la asignación:", error)
-      toast.error("Error al eliminar la asignación")
-    }
-  }
+      });
 
-  const iniciarEditarAsignacion = (asignacion) => {
-    setAsignacionSeleccionada(asignacion)
-    setModalEditar(true)
-  }
+      toast.success("Asignación eliminada con éxito.");
 
-  const guardarCambiosAsignacion = async (asignacionEditada) => {
-    try {
-      const token = localStorage.getItem("token")
-      await axios.put(`${API_URL}/asignacionrutas/${asignacionEditada.id}`, asignacionEditada, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      toast.success("Asignación actualizada con éxito")
-      await fetchData()
-      setModalEditar(false)
+      if (asignaciones.length === 1 && currentPage > 1) {
+        await fetchData(currentPage - 1);
+      } else {
+        await fetchData(currentPage);
+      }
+
+      setModalEliminar(false);
+      setAsignacionSeleccionada(null);
     } catch (error) {
-      console.error("Error al actualizar la asignación:", error)
-      toast.error("Error al actualizar la asignación")
+      console.error("Error al eliminar la asignación:", error);
+      toast.error("Error al eliminar la asignación.");
     }
-  }
+  };
 
   const handleSearchChange = (e) => {
-    setBusqueda(e.target.value)
-    setCurrentPage(1)
-  }
+    setBusqueda(e.target.value);
+    setCurrentPage(1);
+  };
 
   const filtrarAsignaciones = useCallback(() => {
-    console.log("Filtering asignaciones. Current asignaciones:", asignaciones)
-    console.log("Current búsqueda:", busqueda)
-    if (!busqueda) return asignaciones
+    if (!busqueda) return asignaciones;
     return asignaciones.filter(
       (asignacion) =>
         asignacion.codigo_unico_asignacion &&
         asignacion.codigo_unico_asignacion.toLowerCase().includes(busqueda.toLowerCase())
-    )
-  }, [asignaciones, busqueda])
+    );
+  }, [asignaciones, busqueda]);
 
-  const asignacionesFiltradas = filtrarAsignaciones()
-  console.log("Asignaciones filtradas:", asignacionesFiltradas)
-
-  const totalItems = Array.isArray(asignacionesFiltradas) ? asignacionesFiltradas.length : 0
-  const paginatedAsignaciones = Array.isArray(asignacionesFiltradas) 
-    ? asignacionesFiltradas.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-    : []
+  const asignacionesFiltradas = filtrarAsignaciones();
+  const paginatedAsignaciones = asignacionesFiltradas.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber)
-  }
+    setCurrentPage(pageNumber);
+    fetchData(pageNumber);
+  };
 
   return (
     <div className="page-content">
@@ -176,7 +163,6 @@ export default function GestionAsignarRutas() {
                 <TablaAsignacionRutas
                   asignaciones={paginatedAsignaciones}
                   eliminarAsignacion={iniciarEliminarAsignacion}
-                  editarAsignacion={iniciarEditarAsignacion}
                   rutas={rutas}
                   vehiculos={vehiculos}
                   paquetes={paquetes}
@@ -206,16 +192,6 @@ export default function GestionAsignarRutas() {
         toggle={() => setModalEliminar(!modalEliminar)}
         confirmarEliminar={confirmarEliminarAsignacion}
       />
-      <ModalEditarAsignacionRuta
-        isOpen={modalEditar}
-        toggle={() => setModalEditar(!modalEditar)}
-        asignacion={asignacionSeleccionada}
-        guardarCambios={guardarCambiosAsignacion}
-        rutas={rutas}
-        vehiculos={vehiculos}
-        paquetes={paquetes}
-        estados={estados}
-      />
     </div>
-  )
+  );
 }
