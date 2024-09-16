@@ -152,7 +152,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
             <th style={{ width: '15%' }} className="text-center">Descripción</th>
             <th style={{ width: '15%' }} className="text-center">Tipo Incidencia</th>
             <th style={{ width: '10%' }} className="text-center">Estado</th>
-            <th style={{ width: '20%' }} className="text-center">Email de usuario asignado</th>
+            <th style={{ width: '20%' }} className="text-center">Empleado asignado</th>
             <th style={{ width: '20%' }} className="text-center">Solución</th>
             <th style={{ width: '10%' }} className="text-center">Creación</th>
             <th style={{ width: '15%' }} className="text-center">Acciones</th>

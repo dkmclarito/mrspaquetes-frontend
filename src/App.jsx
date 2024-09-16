@@ -80,8 +80,8 @@ import GestionIncidencias from "./pages/GestionIncidencias";
 import SeleccionarPaquetes from "./pages/SeleccionarPaquetes";
 import AgregarIncidencia from "./pages/AgregarIncidencia";
 import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaqueteSeleccionado";
-import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
-import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
+import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia";
+import DarSolucionIncidencia from "./pages/DarSolucionIncidencia";
 import DataIncidencia from "./pages/DataIncidencia";
 import EditarPaquetesAsignacion from "./components/AsignacionRutas/EdicionRutaAsignada/EditarPaquetesAsignacion";
 import EditarAsignacionRuta from "./components/AsignacionRutas/EdicionRutaAsignada/EditarAsignacionRuta";
@@ -89,6 +89,8 @@ import EditarDatosAsignacion from "./components/AsignacionRutas/EdicionRutaAsign
 import GestionTraslados from "./pages/GestionTraslados";
 import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
+import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
+
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -130,11 +132,11 @@ const App = () => {
                 />
                 <Route
                   path="/GestionTraslados"
-                  element={<GestionTraslados />} 
+                  element={<GestionTraslados />}
                 />
                 <Route
                   path="/GestionInventario"
-                  element={<GestionInventario />} 
+                  element={<GestionInventario />}
                 />
                 <Route
                   path="/GestionAsignarRutas"
@@ -162,17 +164,17 @@ const App = () => {
                   element={<DetallesEmpleado />}
                 />
                 <Route path="/DetallesRutas/:id" element={<DetallesRutas />} />
-                <Route 
-                  path="/EditarAsignacionRuta/:codigo_unico_asignacion" 
-                  element={<EditarAsignacionRuta />} 
+                <Route
+                  path="/EditarAsignacionRuta/:codigo_unico_asignacion"
+                  element={<EditarAsignacionRuta />}
                 />
-                <Route 
-                  path="/EditarDatosAsignacion/:codigo_unico_asignacion" 
-                  element={<EditarDatosAsignacion />} 
+                <Route
+                  path="/EditarDatosAsignacion/:codigo_unico_asignacion"
+                  element={<EditarDatosAsignacion />}
                 />
-                <Route 
-                  path="/EditarPaquetesAsignacion/:codigo_unico_asignacion" 
-                  element={<EditarPaquetesAsignacion />} 
+                <Route
+                  path="/EditarPaquetesAsignacion/:codigo_unico_asignacion"
+                  element={<EditarPaquetesAsignacion />}
                 />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
@@ -331,12 +333,15 @@ const App = () => {
                 <Route
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}
-                />
-                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
-                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} /> 
-                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
-                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
-                 <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
+                />   <Route
+                  path="/IncidenciasUbicadas"
+                  element={<IncidenciasUbicadas />}
+                />  
+                <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
+                <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
+                <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
+                <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
+                <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
               </Route>
 
               <Route element={<PrivateRoute allowedRoles={["cliente"]} />}>
