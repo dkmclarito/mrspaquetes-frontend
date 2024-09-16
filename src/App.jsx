@@ -1,5 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import PrivateRoute from "./components/Login/PrivateRoute";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -90,6 +95,7 @@ import GestionTraslados from "./pages/GestionTraslados";
 import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
 import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
+import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
 
 import DetallesUbicacion from "./pages/DetallesUbicacion";
 
@@ -198,7 +204,10 @@ const App = () => {
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
                 <Route path="/TrackingPage" element={<TrackingPage />} />
-                <Route path="/TrackingPaquetes" element={<TrackingPaquetes />} />
+                <Route
+                  path="/TrackingPaquetes"
+                  element={<TrackingPaquetes />}
+                />
                 <Route
                   path="/GestionUbicacion"
                   element={<GestionUbicacion />}
@@ -307,9 +316,7 @@ const App = () => {
               />
 
               <Route
-                path="/Pre
-
-              OrdenesSeleccionarClienteExpress"
+                path="/PreOrdenesSeleccionarClienteExpress"
                 element={<PreOrdenesSeleccionarClienteExpress />}
               />
               <Route
@@ -338,16 +345,36 @@ const App = () => {
                 <Route
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}
-                />   <Route
+                />
+                <Route
                   path="/IncidenciasUbicadas"
                   element={<IncidenciasUbicadas />}
-                />  
-                <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
-                <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
-                <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
-                <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
-                <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
+                />
+                <Route
+                  path="/AgregarIncidencia"
+                  element={<AgregarIncidencia />}
+                />
+                <Route
+                  path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete"
+                  element={<AgregarIncidenciaPaqueteSeleccionado />}
+                />
+                <Route
+                  path="/AsignarUsuarioIncidencia/:idIncidencia"
+                  element={<AsignarUsuarioIncidencia />}
+                />
+                <Route
+                  path="/DarSolucionIncidencia/:idIncidencia"
+                  element={<DarSolucionIncidencia />}
+                />
+                <Route
+                  path="/DataIncidencia/:idIncidencia"
+                  element={<DataIncidencia />}
+                />
               </Route>
+              <Route
+                path="/gestion-ordenes-recoleccion"
+                element={<GestionOrdenesRecoleccion />}
+              />
 
               <Route element={<PrivateRoute allowedRoles={["cliente"]} />}>
                 <Route path="/PerfilCliente" element={<AgregarDatos />} />
