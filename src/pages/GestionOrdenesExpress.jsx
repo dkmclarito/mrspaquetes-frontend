@@ -6,7 +6,7 @@ import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaOrdenes from "../components/Ordenes/TablaOrdenes";
 import Pagination from "react-js-pagination";
 import { toast } from "react-toastify";
-import ModalConfirmarEliminar from "../components/Ordenes/ModalConfirmarEliminar";
+import ModalConfirmarCancelar from "../components/Ordenes/ModalConfirmarCancelar";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 7;
@@ -15,8 +15,8 @@ export default function GestionOrdenesExpress() {
   const [ordenes, setOrdenes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalEliminar, setModalEliminar] = useState(false);
-  const [ordenAEliminar, setOrdenAEliminar] = useState(null);
+  const [modalCancelar, setModalCancelar] = useState(false);
+  const [ordenACancelar, setOrdenACancelar] = useState(null);
 
   const navigate = useNavigate();
 
@@ -48,28 +48,44 @@ export default function GestionOrdenesExpress() {
     fetchOrdenes();
   }, []);
 
-  const toggleModalEliminar = () => {
-    setModalEliminar(!modalEliminar);
+  const toggleModalCancelar = () => {
+    setModalCancelar(!modalCancelar);
   };
 
-  const iniciarEliminarOrden = (id) => {
-    setOrdenAEliminar(id);
-    toggleModalEliminar();
+  const iniciarCancelarOrden = (id) => {
+    setOrdenACancelar(id);
+    toggleModalCancelar();
   };
 
-  const confirmarEliminarOrden = async () => {
+  const confirmarCancelarOrden = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`${API_URL}/ordenes/${ordenAEliminar}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      toast.success("Orden eliminada con éxito");
-      fetchOrdenes(); // Recargar las órdenes
-      toggleModalEliminar();
+      const response = await axios.put(
+        `${API_URL}/ordenes/${ordenACancelar}/cancelar`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        toast.success("Orden cancelada con éxito");
+        actualizarOrdenLocal(ordenACancelar, { estado: "Cancelada" });
+        toggleModalCancelar();
+      }
     } catch (error) {
-      console.error("Error al eliminar la orden:", error);
-      toast.error("Error al eliminar la orden");
+      console.error("Error al cancelar la orden:", error);
+      toast.error(
+        error.response?.data?.message || "Error al cancelar la orden"
+      );
     }
+  };
+
+  const actualizarOrdenLocal = (id, nuevosDatos) => {
+    setOrdenes((ordenesActuales) =>
+      ordenesActuales.map((orden) =>
+        orden.id === id ? { ...orden, ...nuevosDatos } : orden
+      )
+    );
   };
 
   const verDetallesOrden = (idOrden) => {
@@ -149,9 +165,10 @@ export default function GestionOrdenesExpress() {
               <CardBody>
                 <TablaOrdenes
                   ordenes={paginatedOrdenes}
-                  eliminarOrden={iniciarEliminarOrden}
+                  cancelarOrden={iniciarCancelarOrden}
                   navegarAEditar={navegarAEditar}
                   verDetallesOrden={verDetallesOrden}
+                  actualizarOrden={actualizarOrdenLocal}
                 />
               </CardBody>
             </Card>
@@ -179,11 +196,11 @@ export default function GestionOrdenesExpress() {
           </Col>
         </Row>
       </Container>
-      <ModalConfirmarEliminar
-        isOpen={modalEliminar}
-        toggle={toggleModalEliminar}
-        ordenId={ordenAEliminar}
-        confirmarEliminar={confirmarEliminarOrden}
+      <ModalConfirmarCancelar
+        isOpen={modalCancelar}
+        toggle={toggleModalCancelar}
+        ordenId={ordenACancelar}
+        confirmarCancelar={confirmarCancelarOrden}
       />
     </div>
   );

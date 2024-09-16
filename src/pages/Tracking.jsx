@@ -90,7 +90,7 @@ const TrackingPage = () => {
 
       if (response.data && response.data.id) {
         setTrackingData(response.data);
-        fetchHistorial(response.data.numero_seguimiento);
+        fetchHistorial(response.data);
       } else {
         setError('No se encontraron datos de seguimiento para este número.');
       }
@@ -240,9 +240,9 @@ const TrackingPage = () => {
                                 <tbody>
                                   <tr>
                                     <th>Paquete ID</th>
-                                    <td>{paquete.id_paquete}</td>
+                                    <td>{paquete.id}</td>
                                     <th>Descripción</th>
-                                    <td>{paquete.descripcion}</td>
+                                    <td>{paquete.descripcion_contenido}</td>
                                   </tr>
                                   <tr>
                                     <th>Referencia</th>

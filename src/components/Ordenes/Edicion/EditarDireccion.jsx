@@ -21,8 +21,13 @@ const API_URL = import.meta.env.VITE_API_URL;
 const EditarDireccion = ({ orden, actualizarOrden }) => {
   const [direcciones, setDirecciones] = useState([]);
   const [direccionSeleccionada, setDireccionSeleccionada] = useState(null);
+  const [
+    direccionRecoleccionSeleccionada,
+    setDireccionRecoleccionSeleccionada,
+  ] = useState(null);
   const [modalAgregar, setModalAgregar] = useState(false);
   const [editando, setEditando] = useState(false);
+  const [editandoRecoleccion, setEditandoRecoleccion] = useState(false);
 
   useEffect(() => {
     if (orden) {
@@ -41,12 +46,18 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       );
       setDirecciones(response.data.direcciones || []);
 
-      // Seleccionar automáticamente la dirección que viene con la orden
+      // Seleccionar automáticamente las direcciones que vienen con la orden
       const direccionOrden = response.data.direcciones.find(
         (d) => d.id === orden.id_direccion
       );
+      const direccionRecoleccion = response.data.direcciones.find(
+        (d) => d.id === orden.direccion_recoleccion
+      );
       if (direccionOrden) {
         setDireccionSeleccionada(direccionOrden);
+      }
+      if (direccionRecoleccion) {
+        setDireccionRecoleccionSeleccionada(direccionRecoleccion);
       }
     } catch (error) {
       console.error("Error al cargar direcciones:", error);
@@ -54,9 +65,16 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e, isDireccionRecoleccion = false) => {
     const { name, value } = e.target;
-    setDireccionSeleccionada((prev) => ({ ...prev, [name]: value }));
+    if (isDireccionRecoleccion) {
+      setDireccionRecoleccionSeleccionada((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else {
+      setDireccionSeleccionada((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -70,12 +88,25 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success("Dirección actualizada con éxito");
+      if (orden.tipo_orden === "preorden" && direccionRecoleccionSeleccionada) {
+        await axios.put(
+          `${API_URL}/direcciones/${direccionRecoleccionSeleccionada.id}`,
+          direccionRecoleccionSeleccionada,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      }
+      toast.success("Dirección(es) actualizada(s) con éxito");
       actualizarOrden({
         direccion_emisor: direccionSeleccionada,
         id_direccion: direccionSeleccionada.id,
+        direccion_recoleccion: direccionRecoleccionSeleccionada
+          ? direccionRecoleccionSeleccionada.id
+          : null,
       });
       setEditando(false);
+      setEditandoRecoleccion(false);
       fetchDirecciones();
     } catch (error) {
       console.error("Error al actualizar la dirección:", error);
@@ -83,14 +114,34 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
     }
   };
 
-  const seleccionarDireccion = async (direccion) => {
-    setDireccionSeleccionada(direccion);
+  const seleccionarDireccion = async (direccion, esRecoleccion = false) => {
+    if (esRecoleccion) {
+      if (direccion.id === direccionSeleccionada?.id) {
+        toast.error(
+          "La dirección de recolección debe ser diferente a la dirección de entrega"
+        );
+        return;
+      }
+      setDireccionRecoleccionSeleccionada(direccion);
+    } else {
+      if (direccion.id === direccionRecoleccionSeleccionada?.id) {
+        toast.error(
+          "La dirección de entrega debe ser diferente a la dirección de recolección"
+        );
+        return;
+      }
+      setDireccionSeleccionada(direccion);
+    }
+
     try {
       const token = localStorage.getItem("token");
       const dataToSend = {
         id_cliente: orden.id_cliente,
         id_tipo_pago: orden.id_tipo_pago,
-        id_direccion: direccion.id,
+        id_direccion: esRecoleccion ? orden.id_direccion : direccion.id,
+        direccion_recoleccion: esRecoleccion
+          ? direccion.id
+          : direccionRecoleccionSeleccionada?.id || null,
         total_pagar: orden.total_pagar,
         costo_adicional: orden.costo_adicional,
         concepto: orden.concepto,
@@ -109,18 +160,30 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       );
 
       if (response.status === 200) {
-        toast.success("Dirección de la orden actualizada con éxito");
+        toast.success(
+          `Dirección de ${esRecoleccion ? "recolección" : "entrega"} actualizada con éxito`
+        );
         actualizarOrden({
           ...orden,
-          id_direccion: direccion.id,
-          direccion_emisor: direccion,
+          id_direccion: esRecoleccion ? orden.id_direccion : direccion.id,
+          direccion_recoleccion: esRecoleccion
+            ? direccion.id
+            : direccionRecoleccionSeleccionada?.id || null,
+          direccion_emisor: esRecoleccion ? orden.direccion_emisor : direccion,
         });
       } else {
-        toast.error("Error al actualizar la dirección de la orden");
+        toast.error(
+          `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
+        );
       }
     } catch (error) {
-      console.error("Error al actualizar la dirección de la orden:", error);
-      toast.error("Error al actualizar la dirección de la orden");
+      console.error(
+        `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}:`,
+        error
+      );
+      toast.error(
+        `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
+      );
     }
   };
 
@@ -162,6 +225,9 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
               <th>Contacto</th>
               <th>Teléfono</th>
               <th>Acción</th>
+              {orden.tipo_orden === "preorden" && (
+                <th>Seleccionar como Recolección</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -184,13 +250,29 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
                       : "Seleccionar"}
                   </Button>
                 </td>
+                {orden.tipo_orden === "preorden" && (
+                  <td>
+                    <Button
+                      color={
+                        direccion.id === direccionRecoleccionSeleccionada?.id
+                          ? "success"
+                          : "primary"
+                      }
+                      onClick={() => seleccionarDireccion(direccion, true)}
+                    >
+                      {direccion.id === direccionRecoleccionSeleccionada?.id
+                        ? "Seleccionada"
+                        : "Seleccionar"}
+                    </Button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </Table>
         {direccionSeleccionada && (
           <div>
-            <h4>Dirección Seleccionada</h4>
+            <h4>Dirección de Entrega Seleccionada</h4>
             {editando ? (
               <Form onSubmit={handleSubmit}>
                 <FormGroup>
@@ -253,6 +335,86 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
             )}
           </div>
         )}
+
+        {orden.tipo_orden === "preorden" &&
+          direccionRecoleccionSeleccionada && (
+            <div>
+              <h4>Dirección de Recolección Seleccionada</h4>
+              {editandoRecoleccion ? (
+                <Form onSubmit={handleSubmit}>
+                  <FormGroup>
+                    <Label for="referencia_recoleccion">Referencia</Label>
+                    <Input
+                      type="text"
+                      name="referencia"
+                      id="referencia_recoleccion"
+                      value={direccionRecoleccionSeleccionada.referencia || ""}
+                      onChange={(e) => handleInputChange(e, true)}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="nombre_contacto_recoleccion">
+                      Nombre de Contacto
+                    </Label>
+                    <Input
+                      type="text"
+                      name="nombre_contacto"
+                      id="nombre_contacto_recoleccion"
+                      value={
+                        direccionRecoleccionSeleccionada.nombre_contacto || ""
+                      }
+                      onChange={(e) => handleInputChange(e, true)}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="telefono_recoleccion">Teléfono</Label>
+                    <Input
+                      type="text"
+                      name="telefono"
+                      id="telefono_recoleccion"
+                      value={direccionRecoleccionSeleccionada.telefono || ""}
+                      onChange={(e) => handleInputChange(e, true)}
+                    />
+                  </FormGroup>
+                  <Button color="primary" type="submit">
+                    Guardar Cambios
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={() => setEditandoRecoleccion(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </Form>
+              ) : (
+                <>
+                  <p>
+                    <strong>Dirección:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.direccion}
+                  </p>
+                  <p>
+                    <strong>Contacto:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.nombre_contacto}
+                  </p>
+                  <p>
+                    <strong>Teléfono:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.telefono}
+                  </p>
+                  <p>
+                    <strong>Referencia:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.referencia ||
+                      "No especificada"}
+                  </p>
+                  <Button
+                    color="primary"
+                    onClick={() => setEditandoRecoleccion(true)}
+                  >
+                    Editar Detalles
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
 
         <Modal isOpen={modalAgregar} toggle={toggleModalAgregar}>
           <ModalHeader toggle={toggleModalAgregar}>

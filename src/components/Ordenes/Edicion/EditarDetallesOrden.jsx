@@ -332,6 +332,7 @@ const EditarDetallesOrden = ({
           id_cliente: orden.id_cliente,
           id_tipo_pago: orden.id_tipo_pago,
           id_direccion: orden.id_direccion,
+          direccion_recoleccion: orden.direccion_recoleccion,
           total_pagar: nuevoTotalPagar,
           costo_adicional: orden.costo_adicional,
           concepto: orden.concepto,
