@@ -83,6 +83,12 @@ import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaque
 import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
 import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
 import DataIncidencia from "./pages/DataIncidencia";
+import EditarPaquetesAsignacion from "./components/AsignacionRutas/EdicionRutaAsignada/EditarPaquetesAsignacion";
+import EditarAsignacionRuta from "./components/AsignacionRutas/EdicionRutaAsignada/EditarAsignacionRuta";
+import EditarDatosAsignacion from "./components/AsignacionRutas/EdicionRutaAsignada/EditarDatosAsignacion";
+import GestionTraslados from "./pages/GestionTraslados";
+import GestionInventario from "./pages/GestionInventario";
+import TrackingPaquetes from "./pages/TrackingPaquetes";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
