@@ -166,6 +166,9 @@ const GestionIncidencias = () => {
                 <option value="3">Cerrada</option>
               </Input>
               <div style={{ marginLeft: "auto" }}>
+                <Link to="/IncidenciasUbicadas" className="btn btn-secondary custom-button">
+                  <i className="fas fa-map-marker-alt"></i> Incidencias Ubicadas
+                </Link> <samp></samp>
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
                 </Link>
