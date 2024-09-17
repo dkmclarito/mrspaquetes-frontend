@@ -371,7 +371,7 @@ const App = () => {
                   path="/DataIncidencia/:idIncidencia"
                   element={<DataIncidencia />}
                 />
-                />  
+                
                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
                 <Route path="/KardexPaquetes" element={<KardexPaquetes />} /> 
