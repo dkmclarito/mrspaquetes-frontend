@@ -54,12 +54,12 @@ const PieChartComponent = () => {
  
   const formattedData = Array.isArray(data) && data.length > 0 ? data : defaultData;
 
-  const COLORS = ['#FFBB28', '#0088FE', '#FFBB28'];
+  const COLORS = ['#198754', '#0088FE', '#FFBB28'];
 
   return (
     <Card>
       <CardBody>
-        <CardTitle tag="h5">Tipos de Ordenes</CardTitle>
+        <CardTitle style={{ textAlign: 'center' }} tag="h5">Tipos de Ordenes</CardTitle>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie

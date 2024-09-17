@@ -42,9 +42,10 @@ export default function GenerarPreOrdenExpress() {
     nombre_contacto: "",
     telefono: "",
     id_direccion: "",
+    direccion_recoleccion: "",
     id_tipo_pago: 1,
-    id_estado_paquete: 1,
-    id_estado_paquetes: 1,
+    id_estado_paquete: 3,
+    id_estado_paquetes: 3,
     total_pagar: 0,
     costo_adicional: "",
     concepto: "Envío de paquetes",
@@ -105,6 +106,7 @@ export default function GenerarPreOrdenExpress() {
           nombre_contacto: storedAddress.nombre_contacto || "",
           telefono: storedAddress.telefono || "",
           id_direccion: Number(storedAddress.id) || "",
+          direccion_recoleccion: location.state?.direccionRecoleccion?.id || "",
           total_pagar: location.state?.totalPrice || 0,
           detalles:
             location.state?.detalles?.map((detalle) => ({
@@ -295,6 +297,7 @@ export default function GenerarPreOrdenExpress() {
         nombre_contacto: formData.nombre_contacto,
         telefono: formData.telefono,
         id_direccion: Number(formData.id_direccion),
+        direccion_recoleccion: Number(formData.direccion_recoleccion),
         id_tipo_pago: Number(formData.id_tipo_pago),
         total_pagar: Number(formData.total_pagar),
         costo_adicional: Number(formData.costo_adicional) || 0,
@@ -541,7 +544,7 @@ export default function GenerarPreOrdenExpress() {
                     </Col>
                   </Row>
                   <Button color="primary" type="submit">
-                    Registrar Orden
+                    Registrar Pre-Orden
                   </Button>
                 </Form>
               </CardBody>

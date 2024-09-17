@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [estado1, setEstado1] = useState([]);
   const [estado2, setEstado2] = useState([]);
   const [estado3, setEstado3] = useState([]);
+  const [estado4, setEstado4] = useState([]);
   const navigate = useNavigate();  
   const [packageData, setPackageData] = useState([]);
 
@@ -62,9 +63,11 @@ const Dashboard = () => {
           }
         });
 
-        //console.log('Datos del Dashboard:', porcentajes.data.estados[9].paquetes);
 
-        //console.log('Respuesta de la API paquetes:', paquetesResponse.data.data);
+        //console.log('Datos del Dashboard:', porcentajes.data.estados[9].paquetes);
+        console.log('Respuesta de la API: ',token);
+
+        //console.log('Respuesta de la API:', porcentajes.data);
 
         setTotalUsuarios(usuarios.data.users.length);
         setTotalClientes(Totales.data.totales.clientes);   
@@ -75,6 +78,7 @@ const Dashboard = () => {
         setEstado1(porcentajes.data.estados[9].paquetes);
         setEstado2(porcentajes.data.estados[7].paquetes);
         setEstado3(porcentajes.data.estados[4].paquetes);
+        setEstado4(porcentajes.data.estados[8].paquetes);
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
@@ -110,7 +114,7 @@ const Dashboard = () => {
         <Col md="3">
             <Card>
               <CardBody>
-                <CardTitle tag="h5">Usuarios Registrados</CardTitle>
+                <CardTitle style={{ textAlign: 'center' }} tag="h5">Usuarios Registrados</CardTitle>
                 <div className="d-flex justify-content-between align-items-center">
                   <h3>
                     <Badge color="info">{totalUsuarios || 0}</Badge>
@@ -126,9 +130,16 @@ const Dashboard = () => {
           <Col md="3">
             <Card>
               <CardBody>
-                <CardTitle tag="h5">Clientes Registrados</CardTitle>
+                <CardTitle style={{ textAlign: 'center' }} tag="h5">Clientes Registrados</CardTitle>
                 <div className="d-flex justify-content-between align-items-center">
-                  <h3><Badge color="warning">{totalClientes || 0}</Badge></h3>
+                  <h3>
+                    <Badge 
+                    color="warning" 
+                    style={{ color: '#696969' }}
+                    className="badgeWarningDark">
+                      {totalClientes || 0}
+                    </Badge>
+                    </h3>
                   <Button color="primary"  onClick={ClientesRedirect} style={{ width: '150px' }}>Ver Detalles</Button>
                 </div>
               </CardBody>
@@ -138,7 +149,7 @@ const Dashboard = () => {
           <Col md="3">
             <Card>
               <CardBody>
-                <CardTitle tag="h5">Empleados Registrados</CardTitle>
+                <CardTitle style={{ textAlign: 'center' }} tag="h5">Empleados Registrados</CardTitle>
                 <div className="d-flex justify-content-between align-items-center">
                   <h3><Badge color="secondary">{totalEmpleados || 0}</Badge></h3>
                   <Button color="primary" onClick={EmpleadosRedirect} style={{ width: '150px' }}>Ver Detalles</Button>
@@ -150,7 +161,7 @@ const Dashboard = () => {
           <Col md="3">
             <Card>
               <CardBody>
-                <CardTitle tag="h5">Bodegas Registradas</CardTitle>
+                <CardTitle style={{ textAlign: 'center' }} tag="h5">Bodegas Registradas</CardTitle>
                 <div className="d-flex justify-content-between align-items-center">
                   <h3><Badge color="success">{totalBodegas || 0}</Badge></h3>
                   <Button color="primary" onClick={BodegasRedirect} style={{ width: '150px' }}>Ver Detalles</Button>
@@ -158,7 +169,7 @@ const Dashboard = () => {
               </CardBody>
             </Card>
           </Col>       
-        </Row>
+        </Row>                     
         
         <br></br>
 
@@ -184,6 +195,45 @@ const Dashboard = () => {
             </Card>
           </Col>
       </Row>
+<br></br>
+          <Card>
+          <CardBody style={{ textAlign: 'center' }}>
+            <CardTitle tag="h4">Órdenes Mensuales</CardTitle>
+            <Row className="mt-4">
+              <Col md="3">
+                <Card>
+                  <CardBody style={{ textAlign: 'center' }}>
+                    <h5>Completadas:<Badge color="success">{estado1}</Badge></h5>
+                  </CardBody>
+                </Card>
+              </Col>
+
+              <Col md="3">
+                <Card>
+                  <CardBody style={{ textAlign: 'center' }}>
+                    <h5>En Ruta de Entrega:<Badge color="info">{estado4}</Badge></h5>
+                  </CardBody>
+                </Card>
+              </Col>
+
+              <Col md="3">
+                <Card>
+                  <CardBody style={{ textAlign: 'center' }}>
+                   <h5>En Proceso:<Badge color="warning" style={{ color: '#515151' }}>{estado2}</Badge></h5>
+                  </CardBody>
+                </Card>
+              </Col>
+
+              <Col md="3">
+                <Card>
+                  <CardBody style={{ textAlign: 'center' }}>
+                    <h5>Pendientes:<Badge color="danger">{estado3}</Badge></h5>
+                  </CardBody>
+                </Card>
+              </Col>          
+            </Row>
+          </CardBody>
+        </Card>
 
         <Row className="mt-4">
         <Col md="6">
@@ -217,11 +267,22 @@ const Dashboard = () => {
                     ordenesRecientes.map((orden) => (
                       <ListGroupItem key={orden.id}>
                         {orden.cliente.nombre} {orden.cliente.apellido} - {' '}
-                        {orden.tipo_orden}  -  {orden.tipo_entrega} - {' '}
-                        <Badge color={'primary'}>
-                          {orden.numero_seguimiento || 'Desconocido'}
+                        {orden.tipo_orden}    {' '}
+                        {orden.detalles.length > 0 ? (
+                        <Badge color={
+                          orden.detalles[0].tipo_entrega === 'Entrega Normal' ? 'success' :
+                          orden.detalles[0].tipo_entrega === 'Entrega Express' ? 'primary' : 'secondary'
+                        }>
+                          {orden.detalles[0].tipo_entrega}
                         </Badge>
-                      </ListGroupItem>
+                      ) : (
+                        <Badge color="danger">Sin entrega</Badge>
+                      )}  {' '}
+
+                      <Badge color={'secondary'}>
+                        {orden.numero_seguimiento || 'Desconocido'}
+                      </Badge>
+                    </ListGroupItem>
                     ))
                   ) : (
                     <ListGroupItem>No hay paquetes recientes</ListGroupItem>
@@ -232,48 +293,11 @@ const Dashboard = () => {
           </Col>
         </Row>   
 
-        <Row className="mt-12">
-  <Col md="12">
-    <Card>
-      <CardBody>
-        <CardTitle tag="h5">Progreso de Órdenes</CardTitle>
-        <div
-          className="progress-legend"
-          style={{ display: 'flex', justifyContent: 'space-around', marginTop: '10px' }}>
-          <div className="legend-item" style={{ display: 'flex', alignItems: 'center' }}>
-            <span
-              className="legend-color"
-              style={{ backgroundColor: 'green', width: '15px', height: '15px', marginRight: '10px', borderRadius: '3px' }}
-            ></span>
-            Completadas ({estado1 || 0}%)
-          </div>
-          <div className="legend-item" style={{ display: 'flex', alignItems: 'center' }}>
-            <span
-              className="legend-color"
-              style={{ backgroundColor: 'orange', width: '15px', height: '15px', marginRight: '10px', borderRadius: '3px' }}
-            ></span>
-            En Proceso ({estado2 || 0}%)
-          </div>
-          <div className="legend-item" style={{ display: 'flex', alignItems: 'center' }}>
-            <span
-              className="legend-color"
-              style={{ backgroundColor: 'red', width: '15px', height: '15px', marginRight: '10px', borderRadius: '3px' }}
-            ></span>
-            Pendientes ({estado3 || 0}%)
-          </div>
-        </div>
-        <Progress multi>
-          <Progress bar color="success" value={estado1 || 0} />
-          <Progress bar color="warning" value={estado2 || 0} />
-          <Progress bar color="danger" value={estado3 || 0} />
-        </Progress>
-      </CardBody>
-    </Card>
-  </Col>
-</Row>                           
+                    
       </Container>
     </div>
   );
 };
 
 export default Dashboard;
+

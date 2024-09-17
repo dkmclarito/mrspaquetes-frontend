@@ -12,6 +12,7 @@ import {
   Button,
   FormFeedback,
   Table,
+  Alert,
 } from "reactstrap";
 import Breadcrumbs from "../components/AsignacionRutas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
@@ -21,16 +22,30 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const PACKAGE_SIZES = {
+  SMALL: 'Pequeño',
+  MEDIUM: 'Mediano',
+  LARGE: 'Grande'
+};
+
+const SIZE_EQUIVALENTS = {
+  [PACKAGE_SIZES.SMALL]: 1,
+  [PACKAGE_SIZES.MEDIUM]: 2,
+  [PACKAGE_SIZES.LARGE]: 4
+};
+
 export default function AsignarRutas() {
   const [formData, setFormData] = useState({
-    id_ruta: "",
     id_vehiculo: "",
     fecha: "",
+    fecha_programada: "",
   });
   const [errors, setErrors] = useState({});
-  const [rutas, setRutas] = useState([]);
   const [vehiculos, setVehiculos] = useState([]);
   const [paquetesSeleccionados, setPaquetesSeleccionados] = useState([]);
+  const [capacidadExcedida, setCapacidadExcedida] = useState(false);
+  const [excesoPaquetes, setExcesoPaquetes] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem('token') || AuthService.getToken?.() || '';
@@ -43,18 +58,15 @@ export default function AsignarRutas() {
       }
       
       try {
-        const [rutasRes, vehiculosRes] = await Promise.all([
-          axios.get(`${API_URL}/dropdown/get_rutas`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-
-        setRutas(rutasRes.data.rutas || []);
+        const vehiculosRes = await axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } });
         setVehiculos(vehiculosRes.data.vehiculos || []);
 
-        // Retrieve selected packages from localStorage
         const selectedPackages = JSON.parse(localStorage.getItem('paquetesParaAsignar') || '[]');
         console.log("Paquetes seleccionados desde localStorage:", selectedPackages);
-        setPaquetesSeleccionados(selectedPackages);
+        setPaquetesSeleccionados(selectedPackages.map((paquete, index) => ({
+          ...paquete,
+          prioridad: (index + 1).toString() // Set initial priority from 1 to n
+        })));
       } catch (error) {
         console.error("Error al obtener datos:", error.response ? error.response.data : error.message);
         toast.error("Error al cargar los datos necesarios");
@@ -66,18 +78,72 @@ export default function AsignarRutas() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+      fecha_programada: name === 'fecha' ? value : prevData.fecha_programada
+    }));
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
+    }
+    if (name === 'id_vehiculo') {
+      checkVehicleCapacity(value);
+    }
+  };
+
+  const handlePaqueteChange = (index, field, value) => {
+    const updatedPaquetes = [...paquetesSeleccionados];
+    if (field === 'prioridad') {
+      const numValue = parseInt(value, 10);
+      if (numValue < 1 || numValue > paquetesSeleccionados.length) {
+        return; // Ignore invalid values
+      }
+      updatedPaquetes[index][field] = numValue.toString();
+    } else {
+      updatedPaquetes[index][field] = value;
+    }
+    setPaquetesSeleccionados(updatedPaquetes);
+    checkVehicleCapacity(formData.id_vehiculo);
+  };
+
+  const checkVehicleCapacity = (vehicleId) => {
+    const selectedVehicle = vehiculos.find(v => v.id.toString() === vehicleId);
+    if (!selectedVehicle) return;
+
+    const vehicleCapacity = selectedVehicle.capacidad || 40;
+    const totalEquivalentPackages = paquetesSeleccionados.reduce((total, paquete) => {
+      return total + SIZE_EQUIVALENTS[formatTamanoPaquete(paquete.tamano_paquete)];
+    }, 0);
+
+    if (totalEquivalentPackages > vehicleCapacity) {
+      setCapacidadExcedida(true);
+      setExcesoPaquetes(totalEquivalentPackages - vehicleCapacity);
+    } else {
+      setCapacidadExcedida(false);
+      setExcesoPaquetes(0);
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.id_ruta) newErrors.id_ruta = "La ruta es requerida";
     if (!formData.id_vehiculo) newErrors.id_vehiculo = "El vehículo es requerido";
     if (!formData.fecha) newErrors.fecha = "La fecha es requerida";
     if (paquetesSeleccionados.length === 0) newErrors.paquetes = "Debe seleccionar al menos un paquete";
+    if (capacidadExcedida) newErrors.capacidad = "La capacidad del vehículo ha sido excedida";
+
+    // Validación de prioridades
+    const prioridades = new Set();
+    paquetesSeleccionados.forEach((paquete, index) => {
+      const prioridadNum = parseInt(paquete.prioridad, 10);
+      if (!prioridadNum || prioridadNum < 1 || prioridadNum > paquetesSeleccionados.length) {
+        newErrors[`prioridad_${index}`] = `La prioridad debe ser un número entre 1 y ${paquetesSeleccionados.length}`;
+      } else if (prioridades.has(prioridadNum)) {
+        newErrors[`prioridad_${index}`] = "La prioridad no puede repetirse";
+      } else {
+        prioridades.add(prioridadNum);
+      }
+    });
+
     return newErrors;
   };
 
@@ -89,51 +155,86 @@ export default function AsignarRutas() {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const response = await axios.post(`${API_URL}/asignar-paquetes-ruta`, {
-        id_ruta: formData.id_ruta,
-        id_vehiculo: formData.id_vehiculo,
-        fecha: formData.fecha,
-        id_paquete: paquetesSeleccionados.map(p => p.id_paquete)
-      }, {
+      const payload = {
+        id_bodega: 1,
+        fecha_programada: formData.fecha_programada,
+        id_vehiculo: parseInt(formData.id_vehiculo),
+        paquetes: paquetesSeleccionados.map(p => ({
+          id: p.id_paquete,
+          prioridad: parseInt(p.prioridad)
+        }))
+      };
+
+      console.log('Sending request with payload:', payload);
+
+      const response = await axios.post(`${API_URL}/asignacionrutas`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         },
       });
-      if (response.status === 200) {
+
+      console.log('Response:', response);
+
+      if (response.status === 200 || response.status === 201) {
         toast.success('Paquetes asignados exitosamente');
-        localStorage.removeItem('paquetesParaAsignar'); 
+        localStorage.removeItem('paquetesParaAsignar');
         navigate('/GestionAsignarRutas');
+      } else {
+        throw new Error('Respuesta inesperada del servidor');
       }
     } catch (error) {
-      console.error("Error al asignar paquetes a la ruta:", error.response ? error.response.data : error.message);
-      toast.error('Error del servidor al asignar paquetes a la ruta');
+      console.error("Full error object:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+        console.error("Error status:", error.response.status);
+        console.error("Error headers:", error.response.headers);
+        
+        if (error.response.status === 400) {
+          toast.error('Error de validación: Verifique los datos ingresados');
+        } else if (error.response.status === 401) {
+          toast.error('Sesión expirada. Por favor, inicie sesión nuevamente');
+        } else if (error.response.status === 500) {
+          toast.error('Error del servidor. Por favor, intente más tarde');
+        } else {
+          toast.error(`Error: ${error.response.data.message || 'Ocurrió un error al asignar paquetes a la ruta'}`);
+        }
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        toast.error('No se recibió respuesta del servidor. Verifique su conexión');
+      } else {
+        console.error("Error setting up request:", error.message);
+        toast.error('Error al preparar la solicitud');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const formatTamanoPaquete = (string) => {
     if (!string) return 'Desconocido';
     const replacements = {
-      'pequeno': 'Pequeño',
-      'mediano': 'Mediano',
-      'grande': 'Grande'
+      'pequeno': PACKAGE_SIZES.SMALL,
+      'mediano': PACKAGE_SIZES.MEDIUM,
+      'grande': PACKAGE_SIZES.LARGE
     };
     return replacements[string.toLowerCase()] || string;
   };
 
-  const contarPaquetesPorTamaño = () => {
-    console.log("Paquetes a contar:", paquetesSeleccionados);
-    const conteo = paquetesSeleccionados.reduce((acc, paquete) => {
-      const tamano = formatTamanoPaquete(paquete.tamano_paquete);
-      acc[tamano] = (acc[tamano] || 0) + 1;
-      return acc;
-    }, {});
-
-    console.log("Conteo final:", conteo);
-    return conteo;
+  const handleRemovePaquete = (id_paquete) => {
+    const updatedPaquetes = paquetesSeleccionados.filter(p => p.id_paquete !== id_paquete);
+    // Reassign priorities after removal
+    const reassignedPaquetes = updatedPaquetes.map((p, index) => ({
+      ...p,
+      prioridad: (index + 1).toString()
+    }));
+    setPaquetesSeleccionados(reassignedPaquetes);
+    localStorage.setItem('paquetesParaAsignar', JSON.stringify(reassignedPaquetes));
+    checkVehicleCapacity(formData.id_vehiculo);
   };
-
-  const conteoPaquetes = contarPaquetesPorTamaño();
 
   return (
     <React.Fragment>
@@ -148,27 +249,6 @@ export default function AsignarRutas() {
                     <Row>
                       <Col md={6}>
                         <FormGroup>
-                          <Label for="id_ruta">Ruta</Label>
-                          <Input
-                            type="select"
-                            name="id_ruta"
-                            id="id_ruta"
-                            value={formData.id_ruta}
-                            onChange={handleInputChange}
-                            invalid={!!errors.id_ruta}
-                          >
-                            <option value="">Seleccione una ruta</option>
-                            {rutas.map((ruta) => (
-                              <option key={ruta.id} value={ruta.id}>
-                                {ruta.nombre}
-                              </option>
-                            ))}
-                          </Input>
-                          <FormFeedback>{errors.id_ruta}</FormFeedback>
-                        </FormGroup>
-                      </Col>
-                      <Col md={6}>
-                        <FormGroup>
                           <Label for="id_vehiculo">Vehículo</Label>
                           <Input
                             type="select"
@@ -181,18 +261,16 @@ export default function AsignarRutas() {
                             <option value="">Seleccione un vehículo</option>
                             {vehiculos.map((vehiculo) => (
                               <option key={vehiculo.id} value={vehiculo.id}>
-                                {vehiculo.placa}
+                                {vehiculo.placa} - Capacidad: {vehiculo.capacidad || 40} paquetes pequeños
                               </option>
                             ))}
                           </Input>
                           <FormFeedback>{errors.id_vehiculo}</FormFeedback>
                         </FormGroup>
                       </Col>
-                    </Row>
-                    <Row>
                       <Col md={6}>
                         <FormGroup>
-                          <Label for="fecha">Fecha</Label>
+                          <Label for="fecha">Fecha Programada</Label>
                           <Input
                             type="date"
                             name="fecha"
@@ -207,35 +285,54 @@ export default function AsignarRutas() {
                         </FormGroup>
                       </Col>
                     </Row>
+                    {capacidadExcedida && (
+                      <Alert color="danger">
+                        La capacidad del vehículo ha sido excedida por {excesoPaquetes} paquetes pequeños equivalentes.
+                      </Alert>
+                    )}
                     <Row>
                       <Col md={12}>
                         <FormGroup>
                           <Label>Detalle de Paquetes Seleccionados</Label>
                           {paquetesSeleccionados.length > 0 ? (
-                            <Table
-                              bordered
-                              responsive
-                              size="sm"
-                              className="mt-3"
-                              style={{ width: '30%', marginLeft: '0' }} 
-                            >
+                            <Table responsive bordered>
                               <thead>
                                 <tr>
-                                  <th style={{ padding: '0.25rem', fontSize: '1rem' }}>Tamaño</th> 
-                                  <th style={{ padding: '0.25rem', fontSize: '1rem' }}>Cantidad</th> 
+                                  <th>ID Paquete</th>
+                                  <th>Tamaño</th>
+                                  <th>Dirección</th>
+                                  <th>Departamento</th>
+                                  <th>Municipio</th>
+                                  <th>Prioridad</th>
+                                  <th>Acciones</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {Object.entries(conteoPaquetes).map(([tamano, cantidad]) => (
-                                  <tr key={tamano}>
-                                    <td style={{ padding: '0.25rem', fontSize: '1rem' }}>{tamano}</td> 
-                                    <td style={{ padding: '0.25rem', fontSize: '1rem' }}>{cantidad}</td> 
+                                {paquetesSeleccionados.map((paquete, index) => (
+                                  <tr key={paquete.id_paquete}>
+                                    <td>{paquete.id_paquete}</td>
+                                    <td>{formatTamanoPaquete(paquete.tamano_paquete)}</td>
+                                    <td>{paquete.direccion}</td>
+                                    <td>{paquete.departamento}</td>
+                                    <td>{paquete.municipio}</td>
+                                    <td>
+                                      <Input
+                                        type="number"
+                                        value={paquete.prioridad}
+                                        onChange={(e) => handlePaqueteChange(index, 'prioridad', e.target.value)}
+                                        min="1"
+                                        max={paquetesSeleccionados.length}
+                                        invalid={!!errors[`prioridad_${index}`]}
+                                      />
+                                      <FormFeedback>{errors[`prioridad_${index}`]}</FormFeedback>
+                                    </td>
+                                    <td>
+                                      <Button color="danger" size="sm" onClick={() => handleRemovePaquete(paquete.id_paquete)}>
+                                        Quitar
+                                      </Button>
+                                    </td>
                                   </tr>
                                 ))}
-                                <tr>
-                                  <td style={{ padding: '0.25rem', fontSize: '1rem' }}><strong>Total</strong></td> 
-                                  <td style={{ padding: '0.25rem', fontSize: '1rem' }}><strong>{paquetesSeleccionados.length}</strong></td>
-                                </tr>
                               </tbody>
                             </Table>
                           ) : (
@@ -245,11 +342,11 @@ export default function AsignarRutas() {
                         </FormGroup>
                       </Col>
                     </Row>
-                    <Button color="primary" type="submit">
-                      Asignar Paquetes
+                    <Button color="primary" type="submit" disabled={isSubmitting || capacidadExcedida}>
+                      {isSubmitting ? 'Asignando...' : 'Asignar Paquetes'}
                     </Button>
-                    <Button className="ms-2" color="secondary" onClick={() => navigate('/GestionAsignarRutas')}>
-                      Cancelar
+                    <Button className="ms-2" color="secondary" onClick={() => navigate('/SeleccionarPaquetes')} disabled={isSubmitting}>
+                      Regresar a Selección de Paquetes
                     </Button>
                   </Form>
                 </CardBody>

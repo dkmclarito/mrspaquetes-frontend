@@ -90,17 +90,17 @@ const AsignarUsuarioIncidencia = () => {
         try {
             const token = localStorage.getItem("token");
             const userId = localStorage.getItem("userId"); // Obtén el ID del usuario logueado desde el localStorage
-
+    
+            // Prepara los datos en el formato que espera la API
             const incidenciaActualizada = {
                 id_paquete: incidencia.id_paquete,
                 fecha_hora: incidencia.fecha_hora,
                 id_tipo_incidencia: incidencia.tipo_incidencia === 'Retraso' ? 1 : 2, // Ajusta según sea necesario
                 descripcion: incidencia.descripcion,
                 estado: 2,  // Estado fijo "En Proceso"
-                fecha_resolucion: incidencia.fecha_resolucion,
-                id_usuario_reporta: userId, // Usar el ID del usuario logueado
+                fecha_resolucion: incidencia.fecha_resolucion || null, // Maneja null si no hay fecha de resolución
                 id_usuario_asignado: usuarioId,
-                solucion: incidencia.solucion || ""
+                solucion: incidencia.solucion || "Sin Solucion", // Maneja la solución por defecto si no hay
             };
     
             // Imprimir los datos que estás enviando
@@ -116,6 +116,8 @@ const AsignarUsuarioIncidencia = () => {
             if (response.status === 200) {
                 alert("Usuario asignado exitosamente a la incidencia.");
                 navigate("/GestionIncidencias");
+            } else {
+                throw new Error('Error inesperado al asignar usuario.');
             }
         } catch (error) {
             console.error("Error al asignar usuario:", error);

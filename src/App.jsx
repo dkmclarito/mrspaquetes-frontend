@@ -39,8 +39,8 @@ import AgregarPaquete from "./pages/AgregarPaquete";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./services/AuthContext";
 import EmailVerification from "./pages/EmailVerification";
-import ForgetPassword from "./components/LoginClientes/ForgetPassword"; // Nuevo: Importación de ForgetPassword
-import ResetPassword from "./components/LoginClientes/ResetPassword"; // Nuevo: Importación de ResetPassword
+import ForgetPassword from "./components/LoginClientes/ForgetPassword";
+import ResetPassword from "./components/LoginClientes/ResetPassword";
 import DataUsuario from "./pages/DataUsuario";
 import GestionBodegas from "./pages/GestionBodega";
 import AgregarBodega from "./pages/AgregarBodega";
@@ -85,9 +85,19 @@ import GestionIncidencias from "./pages/GestionIncidencias";
 import SeleccionarPaquetes from "./pages/SeleccionarPaquetes";
 import AgregarIncidencia from "./pages/AgregarIncidencia";
 import AgregarIncidenciaPaqueteSeleccionado from "./pages/AgregarIncidenciaPaqueteSeleccionado";
-import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia"; 
-import DarSolucionIncidencia from "./pages/DarSolucionIncidencia"; 
+import AsignarUsuarioIncidencia from "./pages/AsignarUsuarioIncidencia";
+import DarSolucionIncidencia from "./pages/DarSolucionIncidencia";
 import DataIncidencia from "./pages/DataIncidencia";
+import EditarPaquetesAsignacion from "./components/AsignacionRutas/EdicionRutaAsignada/EditarPaquetesAsignacion";
+import EditarAsignacionRuta from "./components/AsignacionRutas/EdicionRutaAsignada/EditarAsignacionRuta";
+import EditarDatosAsignacion from "./components/AsignacionRutas/EdicionRutaAsignada/EditarDatosAsignacion";
+import GestionTraslados from "./pages/GestionTraslados";
+import GestionInventario from "./pages/GestionInventario";
+import TrackingPaquetes from "./pages/TrackingPaquetes";
+import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
+import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
+
+import DetallesUbicacion from "./pages/DetallesUbicacion";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -101,12 +111,9 @@ const App = () => {
           <Route path="/registercliente" element={<RegisterCliente />} />
           <Route path="/email-verification" element={<EmailVerification />} />
           <Route path="/logout" element={<Logout />} />
-
-          {/* Nuevas rutas para "Olvidé mi contraseña" y "Restablecer contraseña" */}
           <Route path="/forget-password" element={<ForgetPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Rutas privadas con VerticalLayout */}
           <Route
             element={
               <PrivateRoute allowedRoles={["admin", "conductor", "cliente"]} />
@@ -115,7 +122,6 @@ const App = () => {
             <Route element={<VerticalLayout />}>
               <Route path="/home" element={<HomePage />} />
 
-              {/* Rutas específicas para 'admin' */}
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
                 <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
@@ -130,6 +136,14 @@ const App = () => {
                 <Route
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
+                />
+                <Route
+                  path="/GestionTraslados"
+                  element={<GestionTraslados />}
+                />
+                <Route
+                  path="/GestionInventario"
+                  element={<GestionInventario />}
                 />
                 <Route
                   path="/GestionAsignarRutas"
@@ -151,18 +165,33 @@ const App = () => {
                 <Route
                   path="/AgregarEmpleado/:id"
                   element={<AgregarEmpleadoUser />}
-                />{" "}
-                {/* NUEVO */}
+                />
                 <Route
                   path="/DetallesEmpleado/:id"
                   element={<DetallesEmpleado />}
                 />
                 <Route path="/DetallesRutas/:id" element={<DetallesRutas />} />
+                <Route
+                  path="/EditarAsignacionRuta/:codigo_unico_asignacion"
+                  element={<EditarAsignacionRuta />}
+                />
+                <Route
+                  path="/EditarDatosAsignacion/:codigo_unico_asignacion"
+                  element={<EditarDatosAsignacion />}
+                />
+                <Route
+                  path="/EditarPaquetesAsignacion/:codigo_unico_asignacion"
+                  element={<EditarPaquetesAsignacion />}
+                />
                 <Route path="/GestionClientes" element={<GestionClientes />} />
                 <Route path="/AgregarCliente" element={<AgregarCliente />} />
                 <Route
                   path="/DetallesCliente/:id"
                   element={<DetallesCliente />}
+                />
+                <Route
+                  path="/DetallesUbicacion/:id"
+                  element={<DetallesUbicacion />}
                 />
                 <Route
                   path="/GestionVehiculos"
@@ -175,6 +204,10 @@ const App = () => {
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
                 <Route path="/TrackingPage" element={<TrackingPage />} />
+                <Route
+                  path="/TrackingPaquetes"
+                  element={<TrackingPaquetes />}
+                />
                 <Route
                   path="/GestionUbicacion"
                   element={<GestionUbicacion />}
@@ -240,27 +273,6 @@ const App = () => {
                   element={<ProcesarPagoExpress />}
                 />
                 <Route
-                  path="/OrdenesSeleccionarCliente"
-                  element={<OrdenesSeleccionarCliente />}
-                />
-                <Route path="/GestionOrdenes" element={<GestionOrdenes />} />
-                <Route
-                  path="/OrdenesDirecciones/:idCliente"
-                  element={<OrdenesDirecciones />}
-                />
-                <Route
-                  path="/DatosPaquete/:idCliente"
-                  element={<DatosPaquete />}
-                />
-                <Route
-                  path="/GenerarOrden/:idCliente"
-                  element={<GenerarOrden />}
-                />
-                <Route
-                  path="/DetallesOrden/:idCliente"
-                  element={<DetallesOrden />}
-                />
-                <Route
                   path="/VerDetallesOrden/:id"
                   element={<VerDetallesOrden />}
                 />
@@ -321,7 +333,6 @@ const App = () => {
                 element={<DatosPaquetePreOrdenExpress />}
               />
 
-              {/* Rutas para 'conductor' */}
               <Route
                 element={
                   <PrivateRoute
@@ -335,18 +346,38 @@ const App = () => {
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}
                 />
-                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
-                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} /> 
-                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
-                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
-                 <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
-                {/* Aquí van las rutas adicionales */}
+                <Route
+                  path="/IncidenciasUbicadas"
+                  element={<IncidenciasUbicadas />}
+                />
+                <Route
+                  path="/AgregarIncidencia"
+                  element={<AgregarIncidencia />}
+                />
+                <Route
+                  path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete"
+                  element={<AgregarIncidenciaPaqueteSeleccionado />}
+                />
+                <Route
+                  path="/AsignarUsuarioIncidencia/:idIncidencia"
+                  element={<AsignarUsuarioIncidencia />}
+                />
+                <Route
+                  path="/DarSolucionIncidencia/:idIncidencia"
+                  element={<DarSolucionIncidencia />}
+                />
+                <Route
+                  path="/DataIncidencia/:idIncidencia"
+                  element={<DataIncidencia />}
+                />
               </Route>
+              <Route
+                path="/gestion-ordenes-recoleccion"
+                element={<GestionOrdenesRecoleccion />}
+              />
 
-              {/* Rutas para 'cliente' */}
               <Route element={<PrivateRoute allowedRoles={["cliente"]} />}>
                 <Route path="/PerfilCliente" element={<AgregarDatos />} />
-                {/* Aquí van las rutas adicionales */}
               </Route>
             </Route>
           </Route>

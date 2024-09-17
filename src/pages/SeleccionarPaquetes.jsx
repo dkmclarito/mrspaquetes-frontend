@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from 'reactstrap';
+import { Container, Row, Col, Card, CardBody, Input, Label, Button, Spinner } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumbs from '../components/Empleados/Common/Breadcrumbs';
 import Pagination from 'react-js-pagination';
@@ -41,7 +41,7 @@ const tiposEmpaque = {
   4: "Papel burbuja"
 };
 
-export default function GestionPaquetes() {
+export default function SeleccionarPaquetes() {
   const [allPaquetes, setAllPaquetes] = useState([]);
   const [paquetesFiltrados, setPaquetesFiltrados] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,8 +51,19 @@ export default function GestionPaquetes() {
   const [municipios, setMunicipios] = useState([]);
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const filtrarPaquetes = useCallback((paquetes) => {
+    return paquetes.filter(paquete => {
+      const departamento = paquete.departamento || '';
+      const municipio = paquete.municipio || '';
+
+      return (!departamentoSeleccionado || departamento === departamentoSeleccionado) &&
+             (!municipioSeleccionado || municipio === municipioSeleccionado);
+    });
+  }, [departamentoSeleccionado, municipioSeleccionado]);
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
@@ -73,18 +84,22 @@ export default function GestionPaquetes() {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
+      toast.error("Error al verificar el estado del usuario.");
     }
   }, []);
 
-  const fetchPaquetes = async () => {
+  const fetchPaquetes = useCallback(async () => {
+    setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { 'Authorization': `Bearer ${token}` } };
-      
+
+      // Obtener todas las órdenes
       const ordenesResponse = await axios.get(`${API_URL}/ordenes`, config);
       const ordenes = ordenesResponse.data.data || [];
       console.log('Total órdenes registradas:', ordenes.length);
 
+      // Obtener todos los paquetes de las órdenes
       const paquetesDisponibles = ordenes.flatMap(orden => 
         orden.detalles.map(detalle => ({
           id_paquete: detalle.id_paquete,
@@ -102,17 +117,21 @@ export default function GestionPaquetes() {
           paquete: detalle.paquete
         }))
       );
-      
+
       console.log('Total paquetes disponibles:', paquetesDisponibles.length);
 
+      // Obtener todas las asignaciones de rutas
       const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas`, config);
-      const asignaciones = responseAsignaciones.data.asignacionrutas || [];
-
+      const asignaciones = responseAsignaciones.data.asignacionrutas.data || [];
       console.log('Total asignaciones:', asignaciones.length);
 
-      const idsPaquetesAsignados = new Set(asignaciones.map(asignacion => asignacion.id_paquete));
+      // Crear un conjunto con los IDs de los paquetes asignados
+      const idsPaquetesAsignados = new Set(asignaciones.flatMap(asignacion => 
+        asignacion.paquetes ? asignacion.paquetes.map(p => p.id) : []
+      ));
       console.log('IDs de paquetes asignados:', [...idsPaquetesAsignados]);
 
+      // Filtrar los paquetes no asignados
       const paquetesNoAsignados = paquetesDisponibles.filter(paquete => !idsPaquetesAsignados.has(paquete.id_paquete));
       console.log('Total paquetes no asignados:', paquetesNoAsignados.length);
 
@@ -124,16 +143,34 @@ export default function GestionPaquetes() {
 
       const uniqueMunicipios = [...new Set(paquetesNoAsignados.map(p => p.municipio).filter(Boolean))];
       setMunicipios(uniqueMunicipios);
+
+      // Aplicar filtros iniciales
+      const paquetesFiltradosIniciales = filtrarPaquetes(paquetesNoAsignados);
+      setPaquetesFiltrados(paquetesFiltradosIniciales);
+      console.log('Paquetes filtrados:', paquetesFiltradosIniciales.length);
     } catch (error) {
       console.error('Error fetching paquetes:', error);
       toast.error('Error al cargar los paquetes');
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [filtrarPaquetes]);
 
   useEffect(() => {
     verificarEstadoUsuarioLogueado();
     fetchPaquetes();
-  }, [verificarEstadoUsuarioLogueado]);
+    const paquetesGuardados = JSON.parse(localStorage.getItem('paquetesParaAsignar') || '[]');
+    setPaquetesSeleccionados(paquetesGuardados);
+  }, [verificarEstadoUsuarioLogueado, fetchPaquetes]);
+
+  useEffect(() => {
+    const paquetesFiltrados = filtrarPaquetes(allPaquetes);
+    console.log('Paquetes filtrados:', paquetesFiltrados.length);
+    setTotalItems(paquetesFiltrados.length);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaquetesFiltrados(paquetesFiltrados.slice(startIndex, endIndex));
+  }, [allPaquetes, currentPage, filtrarPaquetes]);
 
   const handleDepartamentoChange = (event) => {
     setDepartamentoSeleccionado(event.target.value);
@@ -149,9 +186,15 @@ export default function GestionPaquetes() {
   const handleSelectPaquete = (paquete, isSelected) => {
     setPaquetesSeleccionados(prev => {
       const updated = isSelected
-        ? [...prev, { id_paquete: parseInt(paquete.id_paquete, 10), tamano_paquete: paquete.tamano_paquete }]
+        ? [...prev, { 
+            id_paquete: parseInt(paquete.id_paquete, 10), 
+            tamano_paquete: paquete.tamano_paquete,
+            direccion: paquete.direccion,
+            departamento: paquete.departamento,
+            municipio: paquete.municipio
+          }]
         : prev.filter(p => p.id_paquete !== parseInt(paquete.id_paquete, 10));
-      console.log('Paquetes seleccionados:', updated.length);
+      localStorage.setItem('paquetesParaAsignar', JSON.stringify(updated));
       return updated;
     });
   };
@@ -169,28 +212,8 @@ export default function GestionPaquetes() {
       });
       return;
     }
-    localStorage.setItem('paquetesParaAsignar', JSON.stringify(paquetesSeleccionados));
     navigate('/AgregarAsignacionRuta');
   };
-
-  const filtrarPaquetes = useCallback(() => {
-    return allPaquetes.filter(paquete => {
-      const departamento = paquete.departamento || '';
-      const municipio = paquete.municipio || '';
-
-      return (!departamentoSeleccionado || departamento === departamentoSeleccionado) &&
-             (!municipioSeleccionado || municipio === municipioSeleccionado);
-    });
-  }, [allPaquetes, departamentoSeleccionado, municipioSeleccionado]);
-
-  useEffect(() => {
-    const paquetesFiltrados = filtrarPaquetes();
-    console.log('Paquetes filtrados:', paquetesFiltrados.length);
-    setTotalItems(paquetesFiltrados.length);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    setPaquetesFiltrados(paquetesFiltrados.slice(startIndex, endIndex));
-  }, [allPaquetes, currentPage, filtrarPaquetes]);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -241,10 +264,17 @@ export default function GestionPaquetes() {
             </div>
             <Card>
               <CardBody>
-                <TablaPaquetesAsignados
-                  paquetes={paquetesFiltrados}
-                  onSelect={handleSelectPaquete}
-                />
+                {isLoading ? (
+                  <div className="text-center">
+                    <Spinner color="primary" />
+                  </div>
+                ) : (
+                  <TablaPaquetesAsignados
+                    paquetes={paquetesFiltrados}
+                    onSelect={handleSelectPaquete}
+                    paquetesSeleccionados={paquetesSeleccionados}
+                  />
+                )}
               </CardBody>
             </Card>
             <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>

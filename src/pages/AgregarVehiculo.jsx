@@ -1,9 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, FormFeedback } from "reactstrap";
+import {
+  Card,
+  CardBody,
+  Col,
+  Row,
+  Container,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Button,
+  FormFeedback,
+} from "reactstrap";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import AuthService from "../services/authService";
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -21,15 +35,15 @@ const AgregarVehiculo = () => {
   const [capacidadCarga, setCapacidadCarga] = useState("");
   const [idEstado, setIdEstado] = useState("");
   const [anio, setAnio] = useState("");
-  const [color, setColor] = useState("");
-  const [alertaExito, setAlertaExito] = useState(false);
-  const [alertaError, setAlertaError] = useState(false);
-  const [errorMensaje, setErrorMensaje] = useState("");
+  const [bodegas, setBodegas] = useState([]);
+  const [tipo, setTipo] = useState("");
+  const [bodegaSeleccionada, setBodegaSeleccionada] = useState("");
   const [errors, setErrors] = useState({
-    placa: '',
-    capacidadCarga: '',
-    anio: '',
+    placa: "",
+    capacidadCarga: "",
+    anio: "",
   });
+  const [existingVehiculos, setExistingVehiculos] = useState([]);
 
   const navigate = useNavigate();
   const token = AuthService.getCurrentUser();
@@ -54,19 +68,15 @@ const AgregarVehiculo = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-      //window.location.href = "/login";
     }
   }, []);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
-
+    verificarEstadoUsuarioLogueado();
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
-
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
@@ -74,8 +84,8 @@ const AgregarVehiculo = () => {
       try {
         const response = await axios.get(`${API_URL}/dropdown/get_marcas`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         setMarcas(response.data.marcas || []);
       } catch (error) {
@@ -88,28 +98,35 @@ const AgregarVehiculo = () => {
 
   useEffect(() => {
     const fetchModelos = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/dropdown/get_modelos`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setModelos(response.data.modelos || []);
-      } catch (error) {
-        console.error("Error al obtener los modelos:", error);
+      if (marcaSeleccionada) {
+        try {
+          const response = await axios.get(
+            `${API_URL}/dropdown/get_modelos/${marcaSeleccionada}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          setModelos(response.data.modelos || []);
+        } catch (error) {
+          console.error("Error al obtener los modelos:", error);
+        }
+      } else {
+        setModelos([]);
       }
     };
 
     fetchModelos();
-  }, [token]);
+  }, [marcaSeleccionada, token]);
 
   useEffect(() => {
     const fetchEmpleados = async () => {
       try {
         const response = await axios.get(`${API_URL}/dropdown/get_empleados`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         setEmpleados(response.data.empleados || []);
       } catch (error) {
@@ -123,12 +140,14 @@ const AgregarVehiculo = () => {
   useEffect(() => {
     const fetchEstados = async () => {
       try {
-        const response = await axios.get(`${API_URL}/dropdown/get_estado_vehiculos`, {
-          headers: {
-            Authorization: `Bearer ${token}`
+        const response = await axios.get(
+          `${API_URL}/dropdown/get_estado_vehiculos`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
-        console.log("Estados recibidos:", response.data);
+        );
         setEstados(response.data.estado_vehiculos || []);
       } catch (error) {
         console.error("Error al obtener los estados:", error);
@@ -138,35 +157,122 @@ const AgregarVehiculo = () => {
     fetchEstados();
   }, [token]);
 
+  useEffect(() => {
+    const fetchBodegas = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/dropdown/get_bodegas`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setBodegas(response.data.bodegas || []);
+      } catch (error) {
+        console.error("Error al obtener las bodegas:", error);
+      }
+    };
+
+    fetchBodegas();
+  }, [token]);
+
+  useEffect(() => {
+    const fetchExistingVehiculos = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/vehiculo`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log(response.data.data)
+        setExistingVehiculos(response.data.data || []);
+      } catch (error) {
+        console.error("Error al obtener los vehículos existentes:", error);
+      }
+    };
+
+    fetchExistingVehiculos();
+  }, [token]);
+
   const handleMarcaChange = (e) => {
     setMarcaSeleccionada(e.target.value);
-    setModeloSeleccionado(""); // Reset modeloSeleccionado when marca changes
+    setModeloSeleccionado("");
+  };
+
+  const handleTipoChange = (e) => {
+    setTipo(e.target.value);
+    if (e.target.value === "moto") {
+      setEmpleadoApoyo("");
+      setBodegaSeleccionada("");
+      setCapacidadCarga("");
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    switch(name) {
+      case 'placa':
+        setPlaca(value);
+        break;
+      case 'capacidadCarga':
+        setCapacidadCarga(value);
+        break;
+      case 'anio':
+        setAnio(value);
+        break;
+      case 'empleadoConductor':
+        setEmpleadoConductor(value);
+        break;
+      case 'empleadoApoyo':
+        setEmpleadoApoyo(value);
+        break;
+      case 'idEstado':
+        setIdEstado(value);
+        break;
+      case 'bodegaSeleccionada':
+        setBodegaSeleccionada(value);
+        break;
+    }
+
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: ""
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validaciones
     let formIsValid = true;
     const currentYear = new Date().getFullYear();
     let validationErrors = {};
 
-    // Validación para la placa
-    const placaRegex = /^(?=.*[0-9])[A-Z0-9]{1,7}$/;
-    if (!placa.match(placaRegex)) {
-      validationErrors.placa = 'La placa debe ser alfanumérica y entre 1 y 7 caracteres.';
+    if (tipo === "camion") {
+      const camionRegex = /^(C \d{2}-\d{3}|P \d-\d{3})$/;
+      if (!placa.match(camionRegex)) {
+        validationErrors.placa = "El formato de la placa para un camión debe ser 'C 23-180' o 'P 7-180'.";
+        formIsValid = false;
+      }
+    } else if (tipo === "moto") {
+      const motoRegex = /^M \d{6}$/;
+      if (!placa.match(motoRegex)) {
+        validationErrors.placa = "El formato de la placa para una moto debe ser 'M 120926'.";
+        formIsValid = false;
+      }
+    } else {
+      validationErrors.placa = "Seleccione un tipo de vehículo.";
       formIsValid = false;
     }
 
-    // Validación para la capacidad de carga
-    if (isNaN(capacidadCarga) || capacidadCarga <= 0) {
-      validationErrors.capacidadCarga = 'La capacidad de carga debe ser un número positivo.';
-      formIsValid = false;
+    if (tipo === "camion") {
+      if (isNaN(capacidadCarga) || capacidadCarga <= 0 || capacidadCarga > 100) {
+        validationErrors.capacidadCarga = "La capacidad debe ser un número entre 1 y 100.";
+        formIsValid = false;
+      }
     }
-
-    // Validación para el año de fabricación
-    if (anio < 1999 || anio > currentYear) {
-      validationErrors.anio = `El año de fabricación debe estar entre 1999 y ${currentYear}.`;
+    
+    const minYear = tipo === "moto" ? currentYear - 8 : currentYear - 20;
+    if (anio < minYear || anio > currentYear) {
+      validationErrors.anio = `El año de fabricación debe estar entre ${minYear} y ${currentYear}.`;
       formIsValid = false;
     }
 
@@ -175,21 +281,31 @@ const AgregarVehiculo = () => {
       return;
     }
 
-    // Eliminar ' T' de capacidadCarga si existe
-    let cleanedCapacidadCarga = capacidadCarga;
-    if (cleanedCapacidadCarga.endsWith(' T')) {
-      cleanedCapacidadCarga = cleanedCapacidadCarga.slice(0, -2); // Elimina los últimos 2 caracteres
+    // Check if the license plate already exists
+    const placaExists = existingVehiculos.some(vehiculo => vehiculo.placa.toLowerCase() === placa.toLowerCase());
+    if (placaExists) {
+      toast.error("Esta placa ya está registrada.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
     }
 
     const vehiculoData = {
       id_marca: marcaSeleccionada,
       id_modelo: modeloSeleccionado,
       placa,
-      capacidad_carga: cleanedCapacidadCarga, // Usar el valor limpiado
+      capacidad_carga: tipo === "moto" ? null : capacidadCarga,
       id_estado: idEstado,
       year_fabricacion: anio,
       id_empleado_conductor: empleadoConductor,
-      id_empleado_apoyo: empleadoApoyo
+      id_empleado_apoyo: tipo === "moto" ? null : empleadoApoyo,
+      id_bodega: tipo === "moto" ? null : bodegaSeleccionada,
+      tipo,
     };
 
     try {
@@ -197,14 +313,20 @@ const AgregarVehiculo = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        }
+        },
       });
 
       console.log("Vehículo registrado:", response.data);
-      setAlertaExito(true);
-      setTimeout(() => navigate('/GestionVehiculos'), 2000);
+      toast.success("Vehículo agregado con éxito.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      setTimeout(() => navigate("/GestionVehiculos"), 2000);
       resetForm();
-      setAlertaError(false);
     } catch (error) {
       console.error("Error de solicitud:", error.response);
       handleError(error);
@@ -220,6 +342,8 @@ const AgregarVehiculo = () => {
     setCapacidadCarga("");
     setIdEstado("");
     setAnio("");
+    setTipo("");
+    setBodegaSeleccionada("");
     setErrors({});
   };
 
@@ -248,20 +372,24 @@ const AgregarVehiculo = () => {
         errorMessage = error.response.data.message || errorMessage;
       }
 
-      setAlertaExito(false);
-      setAlertaError(true);
-      setErrorMensaje(errorMessage);
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } else {
-      setAlertaExito(false);
-      setAlertaError(true);
-      setErrorMensaje("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.");
+      toast.error("Hubo un error al procesar la solicitud. Por favor, inténtalo de nuevo.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
-  };
-
-  const toggleAlertas = () => {
-    setAlertaExito(false);
-    setAlertaError(false);
-    setErrorMensaje("");
   };
 
   return (
@@ -271,19 +399,9 @@ const AgregarVehiculo = () => {
         <Col xl="12">
           <Card>
             <CardBody>
-            {alertaExito && (
-                  <Alert color="success" toggle={toggleAlertas} className="mt-3">
-                    Vehículo agregado con éxito.
-                  </Alert>
-                )}
-                {alertaError && (
-                  <Alert color="danger" toggle={toggleAlertas} className="mt-3">
-                    {errorMensaje}
-                  </Alert>
-                )}
               <Form onSubmit={handleSubmit}>
                 <Row form>
-                  <Col md={6}>
+                  <Col md={4}>
                     <FormGroup className="form-group-custom">
                       <Label for="marca">Marca</Label>
                       <Input
@@ -303,7 +421,7 @@ const AgregarVehiculo = () => {
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md={6}>
+                  <Col md={4}>
                     <FormGroup className="form-group-custom">
                       <Label for="modelo">Modelo</Label>
                       <Input
@@ -323,15 +441,40 @@ const AgregarVehiculo = () => {
                       </Input>
                     </FormGroup>
                   </Col>
-                </Row>
+                
+                  <Col md={4}>
+                    <FormGroup>
+                      <Label for="tipo">Tipo</Label>
+                      <Input
+                        type="select"
+                        name="tipo"
+                        id="tipo"
+                        value={tipo}
+                        onChange={handleTipoChange}
+                        required
+                      >
+                        <option value="">Seleccione un tipo</option>
+                        <option value="camion">Camión</option>
+                        <option value="moto">Moto</option>
+                      </Input>
+                    </FormGroup>
+                  </Col>
+                  </Row>
                 <Row form>
                   <Col md={6}>
                     <FormGroup>
                       <Label for="conductor">Conductor</Label>
-                      <Input type="select" name="conductor" id="conductor" value={empleadoConductor} onChange={(e) => setEmpleadoConductor(e.target.value)} required>
+                      <Input
+                        type="select"
+                        name="empleadoConductor"
+                        id="conductor"
+                        value={empleadoConductor}
+                        onChange={handleInputChange}
+                        required
+                      >
                         <option value="">Seleccione Conductor</option>
                         {empleados
-                          .filter((empleado) => empleado.id_cargo === 1) // Filtra empleados con id_cargo 1 para conductores
+                          .filter((empleado) => empleado.id_cargo === 1)
                           .map((empleado) => (
                             <option key={empleado.id} value={empleado.id}>
                               {empleado.nombres} {empleado.apellidos}
@@ -340,23 +483,7 @@ const AgregarVehiculo = () => {
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md={6}>
-                    <FormGroup>
-                      <Label for="apoyo">Apoyo</Label>
-                      <Input type="select" name="apoyo" id="apoyo" value={empleadoApoyo} onChange={(e) => setEmpleadoApoyo(e.target.value)} required>
-                        <option value="">Seleccione Apoyo</option>
-                        {empleados
-                          .filter((empleado) => empleado.id_cargo === 2) // Filtra empleados con id_cargo 2 para apoyo
-                          .map((empleado) => (
-                            <option key={empleado.id} value={empleado.id}>
-                              {empleado.nombres} {empleado.apellidos}
-                            </option>
-                          ))}
-                      </Input>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row form>
+                
                   <Col md={6}>
                     <FormGroup className="form-group-custom">
                       <Label for="placa">Placa</Label>
@@ -365,41 +492,43 @@ const AgregarVehiculo = () => {
                         name="placa"
                         id="placa"
                         value={placa}
-                        onChange={(e) => setPlaca(e.target.value)}
-                        valid={!errors.placa}
+                        onChange={handleInputChange}
                         invalid={!!errors.placa}
                         required
-                        maxLength="7" // Limitar a 7 caracteres alfanuméricos
+                        maxLength="9"
                       />
-                      <FormFeedback className="text-danger">
-                        {errors.placa || "La placa debe ser alfanumérica y entre 1 y 7 caracteres."}
-                      </FormFeedback>
+                      <FormFeedback>{errors.placa}</FormFeedback>
                     </FormGroup>
                   </Col>
+                  </Row>
+                <Row form>
                   <Col md={6}>
                     <FormGroup className="form-group-custom">
-                      <Label for="capacidadCarga">Capacidad de Carga (en toneladas)</Label>
+                      <Label for="anio">Año de Fabricación</Label>
                       <Input
-                        type="text"
-                        name="capacidadCarga"
-                        id="capacidadCarga"
-                        value={capacidadCarga}
-                        onChange={(e) => setCapacidadCarga(e.target.value)}
-                        valid={!errors.capacidadCarga}
-                        invalid={!!errors.capacidadCarga}
+                        type="number"
+                        name="anio"
+                        id="anio"
+                        value={anio}
+                        onChange={handleInputChange}
+                        invalid={!!errors.anio}
                         required
                       />
-                      <FormFeedback className="text-danger">
-                        {errors.capacidadCarga || "La capacidad de carga debe ser un número positivo."}
-                      </FormFeedback>
+                      <FormFeedback>{errors.anio}</FormFeedback>
                     </FormGroup>
                   </Col>
-                </Row>
-                <Row form>
+                
                   <Col md={6}>
                     <FormGroup>
                       <Label for="estado">Estado</Label>
-                      <Input type="select" name="estado" id="estado" value={idEstado} onChange={(e) => setIdEstado(e.target.value)} required>
+                      <Input
+                        type="select"
+                        name="idEstado"
+                        id="estado"
+                        value={idEstado}
+                        onChange={handleInputChange}
+                        required
+                      >
                         <option value="">Seleccione Estado</option>
                         {estados.map((estado) => (
                           <option key={estado.id} value={estado.id}>
@@ -409,29 +538,82 @@ const AgregarVehiculo = () => {
                       </Input>
                     </FormGroup>
                   </Col>
-                  <Col md={6}>
-                    <FormGroup className="form-group-custom">
-                      <Label for="anio">Año de Fabricación</Label>
-                      <Input
-                        type="number"
-                        name="anio"
-                        id="anio"
-                        value={anio}
-                        onChange={(e) => setAnio(e.target.value)}
-                        valid={!errors.anio}
-                        invalid={!!errors.anio}
-                        required
-                      />
-                      <FormFeedback className="text-danger">
-                        {errors.anio || `El año de fabricación debe estar entre 1999 y ${new Date().getFullYear()}.`}
-                      </FormFeedback>
-                    </FormGroup>
-                  </Col>
                 </Row>
+                
+                {tipo === "camion" && (
+                  <>
+                    <Row form>
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="capacidadCarga">Capacidad de Carga (en paquetes)</Label>
+                          <Input
+                            type="number"
+                            name="capacidadCarga"
+                            id="capacidadCarga"
+                            value={capacidadCarga}
+                            onChange={handleInputChange}
+                            invalid={!!errors.capacidadCarga}
+                            required
+                            max="100"
+                          />
+                          <FormFeedback>{errors.capacidadCarga}</FormFeedback>
+                        </FormGroup>
+                      </Col>
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="apoyo">Apoyo</Label>
+                          <Input
+                            type="select"
+                            name="empleadoApoyo"
+                            id="apoyo"
+                            value={empleadoApoyo}
+                            onChange={handleInputChange}
+                            required
+                          >
+                            <option value="">Seleccione Apoyo</option>
+                            {empleados
+                              .filter((empleado) => empleado.id_cargo === 2)
+                              .map((empleado) => (
+                                <option key={empleado.id} value={empleado.id}>
+                                  {empleado.nombres} {empleado.apellidos}
+                                </option>
+                              ))}
+                          </Input>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row form>
+                      <Col md={6}>
+                        <FormGroup>
+                          <Label for="bodega">Bodega</Label>
+                          <Input
+                            type="select"
+                            name="bodegaSeleccionada"
+                            id="bodega"
+                            value={bodegaSeleccionada}
+                            onChange={handleInputChange}
+                            required
+                          >
+                            <option value="">Seleccione Bodega</option>
+                            {bodegas.map((bodega) => (
+                              <option key={bodega.id} value={bodega.id}>
+                                {bodega.nombre}
+                              </option>
+                            ))}
+                          </Input>
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                  </>
+                )}
                 <Button color="primary" type="submit">
                   Guardar
                 </Button>
-                <Button color="secondary" className="ms-2" onClick={() => window.location.href = '/GestionVehiculos'}>
+                <Button
+                  color="secondary"
+                  className="ms-2"
+                  onClick={() => (window.location.href = "/GestionVehiculos")}
+                >
                   Salir
                 </Button>
               </Form>
@@ -439,9 +621,9 @@ const AgregarVehiculo = () => {
           </Card>
         </Col>
       </Row>
+      <ToastContainer />
     </Container>
   );
-};
+  }
 
 export default AgregarVehiculo;
-

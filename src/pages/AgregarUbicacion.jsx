@@ -8,54 +8,29 @@ import {
   FormGroup,
   Label,
   Input,
-  Button,
-  Table,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  DropdownItem
+  Button
 } from "reactstrap";
 import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Pagination from "react-js-pagination"; 
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 10; 
-
-const TAMANO_PAQUETE_MAP = {
-  1: 'Pequeño',
-  2: 'Mediano',
-  3: 'Grande',
-};
-
-const TIPO_PAQUETE_MAP = {
-  1: 'Documentos',
-  2: 'Electrónicos',
-  3: 'Ropa',
-  4: 'Alimentos',
-};
 
 const AgregarUbicacionPaquete = () => {
-  const [paquetes, setPaquetes] = useState([]);
+  const [codigoQRPaquete, setCodigoQRPaquete] = useState("");
+  const [codigoNomenclaturaUbicacion, setCodigoNomenclaturaUbicacion] = useState("");
+  const [paquetesDisponibles, setPaquetesDisponibles] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
-  const [idPaquete, setIdPaquete] = useState("");
-  const [idUbicacion, setIdUbicacion] = useState(""); 
-  const [searchTerm, setSearchTerm] = useState("");
   const [filteredUbicaciones, setFilteredUbicaciones] = useState([]);
-  const [modal, setModal] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedPaquete, setSelectedPaquete] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); 
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     try {
       const [paquetesResponse, ubicacionesResponse] = await Promise.all([
-        axios.get(`${API_URL}/dropdown/get_paquetes`, {
+        axios.get(`${API_URL}/paquete/paquetes-asignables`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get(`${API_URL}/dropdown/get_Ubicaciones_SinPaquetes`, {
@@ -63,10 +38,11 @@ const AgregarUbicacionPaquete = () => {
         }),
       ]);
 
-      const paquetesNoAsignados = paquetesResponse.data.paquetes.filter(paquete => !paquete.id_ubicacion);
-      setPaquetes(paquetesNoAsignados);
-      setUbicaciones(ubicacionesResponse.data || []);
-      setFilteredUbicaciones(ubicacionesResponse.data || []);
+      const paquetesDisponibles = paquetesResponse.data.data || [];
+      const ubicacionesDisponibles = (ubicacionesResponse.data || []).filter(ubicacion => !ubicacion.paquete_asignado);
+      setPaquetesDisponibles(paquetesDisponibles);
+      setUbicaciones(ubicacionesDisponibles);
+      setFilteredUbicaciones(ubicacionesDisponibles);
     } catch (error) {
       console.error("Error al obtener datos:", error);
     }
@@ -101,52 +77,49 @@ const AgregarUbicacionPaquete = () => {
     fetchData();
   }, [fetchData]);
 
-  const handlePaqueteChange = (e) => {
-    setIdPaquete(e.target.value);
-  };
-
-  const handleUbicacionChange = (e) => {
-    const searchValue = e.target.value;
-    setSearchTerm(searchValue);
-
-    if (searchValue === "") {
-      setFilteredUbicaciones([]);
-      setDropdownOpen(false);
-      return;
+  const handleScannerInput = (e) => {
+    const value = e.target.value;
+    if (value.includes(';')) {
+      const [uuid, codigoNomenclatura] = value.split(';');
+      setCodigoQRPaquete(uuid.trim());
+      setCodigoNomenclaturaUbicacion(codigoNomenclatura.trim());
     }
-
-    const filtered = ubicaciones.filter((ubicacion) =>
-      ubicacion.nomenclatura.toLowerCase().includes(searchValue.toLowerCase())
-    );
-    setFilteredUbicaciones(filtered);
-    setDropdownOpen(filtered.length > 0);
-  };
-
-  const handleUbicacionSelect = (ubicacion) => {
-    setSearchTerm(ubicacion.nomenclatura);
-    setIdUbicacion(ubicacion.id);
-    setDropdownOpen(false);
-  };
-
-  const toggleModal = () => {
-    setModal(!modal);
-    if (modal) {
-      setSearchTerm("");
-      setFilteredUbicaciones([]);
-    }
-  };
-
-  const handleAsignarUbicacion = (paquete) => {
-    setSelectedPaquete(paquete);
-    setIdPaquete(paquete.id);
-    toggleModal();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Verificar si el paquete ingresado está disponible para asignar
+    const paqueteDisponible = paquetesDisponibles?.find(paquete => paquete.uuid === codigoQRPaquete);
+    if (!paqueteDisponible) {
+      toast.error("El paquete no está disponible para asignar o ya está asignado.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+      });
+      return;
+    }
+
+    // Verificar si la ubicación ingresada está disponible
+    const ubicacionDisponible = ubicaciones?.find(ubicacion => ubicacion.nomenclatura === codigoNomenclaturaUbicacion);
+    if (!ubicacionDisponible) {
+      toast.error("La ubicación no existe o ya está en uso.", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+      });
+      return;
+    }
+
     const ubicacionPaqueteData = {
-      id_paquete: idPaquete,
-      id_ubicacion: idUbicacion,
+      codigo_qr_paquete: codigoQRPaquete,
+      codigo_nomenclatura_ubicacion: codigoNomenclaturaUbicacion,
       estado: 1,
     };
 
@@ -159,11 +132,11 @@ const AgregarUbicacionPaquete = () => {
         },
         body: JSON.stringify(ubicacionPaqueteData),
       });
-      
+    
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Seleccione una ubicación de la lista.");
-      }else{
+        throw new Error(errorData.message || "Error al registrar la ubicación del paquete.");
+      } else {
         toast.success("¡Ubicación del paquete registrada con éxito!", {
           position: "bottom-right",
           autoClose: 5000,
@@ -171,14 +144,13 @@ const AgregarUbicacionPaquete = () => {
           closeOnClick: true,
           pauseOnHover: false,
           draggable: true,
+          onClose: () => navigate('/GestionUbicacion'),  // Redirigir después de que el toast se cierre
         });
       }
-
-      // Actualizar las ubicaciones y paquetes después de guardar
+    
+      setCodigoQRPaquete("");
+      setCodigoNomenclaturaUbicacion(""); 
       fetchData();
-      toggleModal();
-      setIdPaquete("");
-      setIdUbicacion(""); 
     } catch (error) {
       toast.error(`Error al registrar la ubicación del paquete: ${error.message}`, {
         position: "bottom-right",
@@ -189,12 +161,8 @@ const AgregarUbicacionPaquete = () => {
         draggable: true,
       });
     }
+    
   };
-
-  const paginatedPaquetes = paquetes.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <Container>
@@ -202,97 +170,35 @@ const AgregarUbicacionPaquete = () => {
       <Card>
         <CardBody>
           <Form onSubmit={handleSubmit}>
-            <Table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Descripción</th>
-                  <th>Tipo paquete</th>
-                  <th>Peso (libras)</th>
-                  <th>Tamaño</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedPaquetes.length > 0 ? (
-                  paginatedPaquetes.map((paquete) => (
-                    <tr key={paquete.id}>
-                      <td>{paquete.id}</td>
-                      <td>{paquete.descripcion_contenido}</td>
-                      <td>{TIPO_PAQUETE_MAP[paquete.id_tipo_paquete] || 'Desconocido'}</td> {/* Mostrar nombre del tipo de paquete */}
-                      <td>{paquete.peso}</td>
-                      <td>{TAMANO_PAQUETE_MAP[paquete.id_tamano_paquete] || 'Desconocido'}</td> {/* Mostrar nombre del tamaño */}
-                      <td>
-                        <Button color="primary" onClick={() => handleAsignarUbicacion(paquete)}>
-                          Asignar Ubicación
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" style={{textAlign: 'center'}}>No hay paquetes disponibles</td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-            
+            <FormGroup>
+              <Label for="codigoQR">Código Qr del Paquete</Label>
+              <Input
+                type="text"
+                id="codigoQR"
+                value={codigoQRPaquete}
+                onChange={e => setCodigoQRPaquete(e.target.value)}
+                onKeyDown={handleScannerInput}
+                placeholder="Escanee el código qr del paquete"
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="codigoUbicacion">Código de Nomenclatura de Ubicación</Label>
+              <Input
+                type="text"
+                id="codigoUbicacion"
+                value={codigoNomenclaturaUbicacion}
+                onChange={e => setCodigoNomenclaturaUbicacion(e.target.value)}
+                onKeyDown={handleScannerInput}
+                placeholder="Escanee el código de nomenclatura de ubicación"
+              />
+            </FormGroup>
+            <Button color="primary" type="submit">Guardar</Button>
+            <Button color="secondary" onClick={() => navigate('/GestionUbicacion')} style={{ marginLeft: '10px' }}>
+              Salir
+            </Button>
           </Form>
-          
         </CardBody>
       </Card>
-      <br />
-      <Pagination
-              itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={paquetes.length}
-              pageRangeDisplayed={5}
-              activePage={currentPage}
-              onChange={setCurrentPage}
-              innerClass="pagination justify-content-center" // Centro de paginación
-              itemClass="page-item"
-              linkClass="page-link"
-            />
-      <Modal isOpen={modal} toggle={toggleModal}>
-        <ModalHeader toggle={toggleModal}>Asignar Ubicación</ModalHeader>
-        <ModalBody>
-          <Form>
-            <FormGroup>
-              <Label for="paqueteDisplay">Paquete Seleccionado</Label>
-              <Input
-                type="text"
-                id="paqueteDisplay"
-                value={selectedPaquete ? selectedPaquete.descripcion_contenido : ""}
-                readOnly
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="ubicacionSelect">Seleccionar Ubicación</Label>
-              <Input
-                type="text"
-                id="ubicacionSelect"
-                value={searchTerm}
-                onChange={handleUbicacionChange}
-              />
-              {dropdownOpen && (
-                <div className="dropdown-menu show" style={{width: '94%'}}>
-                  {filteredUbicaciones.map((ubicacion) => (
-                    <DropdownItem
-                      key={ubicacion.id}
-                      onClick={() => handleUbicacionSelect(ubicacion)}
-                    >
-                      {ubicacion.nomenclatura}
-                    </DropdownItem>
-                  ))}
-                </div>
-              )}
-            </FormGroup>
-          </Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={handleSubmit}>Guardar</Button>
-          <Button color="secondary" onClick={toggleModal}>Cerrar</Button>
-        </ModalFooter>
-      </Modal>
     </Container>
   );
 };

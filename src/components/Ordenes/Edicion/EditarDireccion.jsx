@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
+  Card,
+  CardBody,
   Form,
   FormGroup,
   Label,
@@ -9,34 +11,29 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
-  ModalFooter,
 } from "reactstrap";
 import axios from "axios";
 import { toast } from "react-toastify";
+import FormularioDireccion from "../../../pages/FormularioDireccion";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const EditarDireccion = ({ orden, actualizarOrden }) => {
   const [direcciones, setDirecciones] = useState([]);
   const [direccionSeleccionada, setDireccionSeleccionada] = useState(null);
-  const [editando, setEditando] = useState(false);
+  const [
+    direccionRecoleccionSeleccionada,
+    setDireccionRecoleccionSeleccionada,
+  ] = useState(null);
   const [modalAgregar, setModalAgregar] = useState(false);
-  const [nuevaDireccion, setNuevaDireccion] = useState({
-    id_cliente: orden.id_cliente,
-    nombre_contacto: "",
-    telefono: "",
-    id_departamento: "",
-    id_municipio: "",
-    direccion: "",
-    referencia: "",
-  });
-  const [departamentos, setDepartamentos] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
+  const [editando, setEditando] = useState(false);
+  const [editandoRecoleccion, setEditandoRecoleccion] = useState(false);
 
   useEffect(() => {
-    fetchDirecciones();
-    fetchDepartamentos();
-  }, [orden.id_cliente]);
+    if (orden) {
+      fetchDirecciones();
+    }
+  }, [orden]);
 
   const fetchDirecciones = async () => {
     try {
@@ -48,108 +45,166 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
         }
       );
       setDirecciones(response.data.direcciones || []);
-      const direccionActual = response.data.direcciones.find(
+
+      // Seleccionar automáticamente las direcciones que vienen con la orden
+      const direccionOrden = response.data.direcciones.find(
         (d) => d.id === orden.id_direccion
       );
-      setDireccionSeleccionada(direccionActual || null);
+      const direccionRecoleccion = response.data.direcciones.find(
+        (d) => d.id === orden.direccion_recoleccion
+      );
+      if (direccionOrden) {
+        setDireccionSeleccionada(direccionOrden);
+      }
+      if (direccionRecoleccion) {
+        setDireccionRecoleccionSeleccionada(direccionRecoleccion);
+      }
     } catch (error) {
       console.error("Error al cargar direcciones:", error);
       toast.error("Error al cargar las direcciones");
     }
   };
 
-  const fetchDepartamentos = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${API_URL}/dropdown/get_departamentos`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setDepartamentos(response.data || []);
-    } catch (error) {
-      console.error("Error al cargar departamentos:", error);
-      toast.error("Error al cargar los departamentos");
-    }
-  };
-
-  const fetchMunicipios = async (idDepartamento) => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${API_URL}/dropdown/get_municipio/${idDepartamento}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setMunicipios(response.data.municipio || []);
-    } catch (error) {
-      console.error("Error al cargar municipios:", error);
-      toast.error("Error al cargar los municipios");
-    }
-  };
-
-  const seleccionarDireccion = (direccion) => {
-    setDireccionSeleccionada(direccion);
-    actualizarOrden({ ...orden, id_direccion: direccion.id });
-  };
-
-  const handleChange = (e) => {
+  const handleInputChange = (e, isDireccionRecoleccion = false) => {
     const { name, value } = e.target;
-    if (editando) {
-      setDireccionSeleccionada((prev) => ({ ...prev, [name]: value }));
+    if (isDireccionRecoleccion) {
+      setDireccionRecoleccionSeleccionada((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     } else {
-      setNuevaDireccion((prev) => ({ ...prev, [name]: value }));
-    }
-
-    if (name === "id_departamento") {
-      fetchMunicipios(value);
+      setDireccionSeleccionada((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const guardarCambios = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.put(
+      await axios.put(
         `${API_URL}/direcciones/${direccionSeleccionada.id}`,
         direccionSeleccionada,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      if (response.data.status === 200) {
-        toast.success("Dirección actualizada con éxito");
-        setEditando(false);
-        fetchDirecciones();
-      } else {
-        toast.error("Error al actualizar la dirección");
+      if (orden.tipo_orden === "preorden" && direccionRecoleccionSeleccionada) {
+        await axios.put(
+          `${API_URL}/direcciones/${direccionRecoleccionSeleccionada.id}`,
+          direccionRecoleccionSeleccionada,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
       }
+      toast.success("Dirección(es) actualizada(s) con éxito");
+      actualizarOrden({
+        direccion_emisor: direccionSeleccionada,
+        id_direccion: direccionSeleccionada.id,
+        direccion_recoleccion: direccionRecoleccionSeleccionada
+          ? direccionRecoleccionSeleccionada.id
+          : null,
+      });
+      setEditando(false);
+      setEditandoRecoleccion(false);
+      fetchDirecciones();
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
-      toast.error("Error al guardar los cambios en la dirección");
+      console.error("Error al actualizar la dirección:", error);
+      toast.error("Error al actualizar la dirección");
     }
   };
 
-  const agregarDireccion = async () => {
+  const seleccionarDireccion = async (direccion, esRecoleccion = false) => {
+    if (esRecoleccion) {
+      if (direccion.id === direccionSeleccionada?.id) {
+        toast.error(
+          "La dirección de recolección debe ser diferente a la dirección de entrega"
+        );
+        return;
+      }
+      setDireccionRecoleccionSeleccionada(direccion);
+    } else {
+      if (direccion.id === direccionRecoleccionSeleccionada?.id) {
+        toast.error(
+          "La dirección de entrega debe ser diferente a la dirección de recolección"
+        );
+        return;
+      }
+      setDireccionSeleccionada(direccion);
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const dataToSend = {
+        id_cliente: orden.id_cliente,
+        id_tipo_pago: orden.id_tipo_pago,
+        id_direccion: esRecoleccion ? orden.id_direccion : direccion.id,
+        direccion_recoleccion: esRecoleccion
+          ? direccion.id
+          : direccionRecoleccionSeleccionada?.id || null,
+        total_pagar: orden.total_pagar,
+        costo_adicional: orden.costo_adicional,
+        concepto: orden.concepto,
+        tipo_documento: orden.tipo_documento,
+      };
+
+      const response = await axios.put(
+        `${API_URL}/ordenes/actualizar-orden/${orden.id}`,
+        dataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success(
+          `Dirección de ${esRecoleccion ? "recolección" : "entrega"} actualizada con éxito`
+        );
+        actualizarOrden({
+          ...orden,
+          id_direccion: esRecoleccion ? orden.id_direccion : direccion.id,
+          direccion_recoleccion: esRecoleccion
+            ? direccion.id
+            : direccionRecoleccionSeleccionada?.id || null,
+          direccion_emisor: esRecoleccion ? orden.direccion_emisor : direccion,
+        });
+      } else {
+        toast.error(
+          `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}:`,
+        error
+      );
+      toast.error(
+        `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
+      );
+    }
+  };
+
+  const toggleModalAgregar = () => setModalAgregar(!modalAgregar);
+
+  const agregarNuevaDireccion = async (nuevaDireccion) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `${API_URL}/direcciones`,
-        nuevaDireccion,
+        {
+          ...nuevaDireccion,
+          id_cliente: orden.id_cliente,
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      if (response.data.status === 201) {
-        toast.success("Nueva dirección agregada con éxito");
-        setModalAgregar(false);
-        fetchDirecciones();
-      } else {
-        toast.error("Error al agregar la nueva dirección");
-      }
+      toast.success("Nueva dirección agregada con éxito");
+      fetchDirecciones();
+      toggleModalAgregar();
     } catch (error) {
       console.error("Error al agregar nueva dirección:", error);
       toast.error("Error al agregar la nueva dirección");
@@ -157,243 +212,224 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
   };
 
   return (
-    <div>
-      <h3 className="titulo-pasos">Direcciones Disponibles</h3>
-      <Button className="btnGuardarDatosPaquete" color="success" onClick={() => setModalAgregar(true)}>
-        Agregar Nueva Dirección
-      </Button>
-      <Table>
-        <thead>
-          <tr>
-            <th>Dirección</th>
-            <th>Contacto</th>
-            <th>Teléfono</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {direcciones.map((direccion) => (
-            <tr key={direccion.id}>
-              <td>{direccion.direccion}</td>
-              <td>{direccion.nombre_contacto}</td>
-              <td>{direccion.telefono}</td>
-              <td>
-                <Button
-                  color="primary"
-                  onClick={() => seleccionarDireccion(direccion)}
-                  disabled={direccion.id === direccionSeleccionada?.id}
-                >
-                  {direccion.id === direccionSeleccionada?.id
-                    ? "Seleccionada"
-                    : "Seleccionar"}
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      {direccionSeleccionada && (
-        <div>
-          <h4 className="titulo-pasos">Dirección Seleccionada</h4>
-          {editando ? (
-            <Form>
-              <FormGroup>
-                <Label for="nombre_contacto">Nombre de Contacto</Label>
-                <Input
-                  type="text"
-                  name="nombre_contacto"
-                  id="nombre_contacto"
-                  value={direccionSeleccionada.nombre_contacto}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="telefono">Teléfono</Label>
-                <Input
-                  type="tel"
-                  name="telefono"
-                  id="telefono"
-                  value={direccionSeleccionada.telefono}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="id_departamento">Departamento</Label>
-                <Input
-                  type="select"
-                  name="id_departamento"
-                  id="id_departamento"
-                  value={direccionSeleccionada.id_departamento}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccione un departamento</option>
-                  {departamentos.map((dep) => (
-                    <option key={dep.id} value={dep.id}>
-                      {dep.nombre}
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-              <FormGroup>
-                <Label for="id_municipio">Municipio</Label>
-                <Input
-                  type="select"
-                  name="id_municipio"
-                  id="id_municipio"
-                  value={direccionSeleccionada.id_municipio}
-                  onChange={handleChange}
-                >
-                  <option value="">Seleccione un municipio</option>
-                  {municipios.map((mun) => (
-                    <option key={mun.id} value={mun.id}>
-                      {mun.nombre}
-                    </option>
-                  ))}
-                </Input>
-              </FormGroup>
-              <FormGroup>
-                <Label for="direccion">Dirección</Label>
-                <Input
-                  type="text"
-                  name="direccion"
-                  id="direccion"
-                  value={direccionSeleccionada.direccion}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label for="referencia">Referencia</Label>
-                <Input
-                  type="text"
-                  name="referencia"
-                  id="referencia"
-                  value={direccionSeleccionada.referencia}
-                  onChange={handleChange}
-                />
-              </FormGroup>
-              <Button className="btnGuardarDatosPaquete" color="success" onClick={guardarCambios}>
-                Guardar Cambios
-              </Button>
-              <Button className="btn-custom-red" color="danger" onClick={() => setEditando(false)}>
-                Cancelar
-              </Button>
-            </Form>
-          ) : (
-            <>
-              <p>
-                <strong>Dirección:</strong> {direccionSeleccionada.direccion}
-              </p>
-              <p>
-                <strong>Contacto:</strong>{" "}
-                {direccionSeleccionada.nombre_contacto}
-              </p>
-              <p>
-                <strong>Teléfono:</strong> {direccionSeleccionada.telefono}
-              </p>
-              <Button color="primary" onClick={() => setEditando(true)}>
-                Editar Dirección
-              </Button>
-            </>
-          )}
-        </div>
-      )}
-
-      <Modal
-        isOpen={modalAgregar}
-        toggle={() => setModalAgregar(!modalAgregar)}
-      >
-        <ModalHeader toggle={() => setModalAgregar(!modalAgregar)}>
+    <Card>
+      <CardBody>
+        <h3>Editar Dirección</h3>
+        <Button color="primary" onClick={toggleModalAgregar}>
           Agregar Nueva Dirección
-        </ModalHeader>
-        <ModalBody>
-          <Form>
-            <FormGroup>
-              <Label for="nombre_contacto">Nombre de Contacto</Label>
-              <Input
-                type="text"
-                name="nombre_contacto"
-                id="nombre_contacto"
-                value={nuevaDireccion.nombre_contacto}
-                onChange={handleChange}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="telefono">Teléfono</Label>
-              <Input
-                type="tel"
-                name="telefono"
-                id="telefono"
-                value={nuevaDireccion.telefono}
-                onChange={handleChange}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="id_departamento">Departamento</Label>
-              <Input
-                type="select"
-                name="id_departamento"
-                id="id_departamento"
-                value={nuevaDireccion.id_departamento}
-                onChange={handleChange}
-              >
-                <option value="">Seleccione un departamento</option>
-                {departamentos.map((dep) => (
-                  <option key={dep.id} value={dep.id}>
-                    {dep.nombre}
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
-            <FormGroup>
-              <Label for="id_municipio">Municipio</Label>
-              <Input
-                type="select"
-                name="id_municipio"
-                id="id_municipio"
-                value={nuevaDireccion.id_municipio}
-                onChange={handleChange}
-              >
-                <option value="">Seleccione un municipio</option>
-                {municipios.map((mun) => (
-                  <option key={mun.id} value={mun.id}>
-                    {mun.nombre}
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
-            <FormGroup>
-              <Label for="direccion">Dirección</Label>
-              <Input
-                type="text"
-                name="direccion"
-                id="direccion"
-                value={nuevaDireccion.direccion}
-                onChange={handleChange}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="referencia">Referencia</Label>
-              <Input
-                type="text"
-                name="referencia"
-                id="referencia"
-                value={nuevaDireccion.referencia}
-                onChange={handleChange}
-              />
-            </FormGroup>
-          </Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={agregarDireccion}>
-            Agregar
-          </Button>{" "}
-          <Button color="secondary" onClick={() => setModalAgregar(false)}>
-            Cancelar
-          </Button>
-        </ModalFooter>
-      </Modal>
-    </div>
+        </Button>
+        <Table>
+          <thead>
+            <tr>
+              <th>Dirección</th>
+              <th>Contacto</th>
+              <th>Teléfono</th>
+              <th>Acción</th>
+              {orden.tipo_orden === "preorden" && (
+                <th>Seleccionar como Recolección</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {direcciones.map((direccion) => (
+              <tr key={direccion.id}>
+                <td>{direccion.direccion}</td>
+                <td>{direccion.nombre_contacto}</td>
+                <td>{direccion.telefono}</td>
+                <td>
+                  <Button
+                    color={
+                      direccion.id === direccionSeleccionada?.id
+                        ? "success"
+                        : "primary"
+                    }
+                    onClick={() => seleccionarDireccion(direccion)}
+                  >
+                    {direccion.id === direccionSeleccionada?.id
+                      ? "Seleccionada"
+                      : "Seleccionar"}
+                  </Button>
+                </td>
+                {orden.tipo_orden === "preorden" && (
+                  <td>
+                    <Button
+                      color={
+                        direccion.id === direccionRecoleccionSeleccionada?.id
+                          ? "success"
+                          : "primary"
+                      }
+                      onClick={() => seleccionarDireccion(direccion, true)}
+                    >
+                      {direccion.id === direccionRecoleccionSeleccionada?.id
+                        ? "Seleccionada"
+                        : "Seleccionar"}
+                    </Button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+        {direccionSeleccionada && (
+          <div>
+            <h4>Dirección de Entrega Seleccionada</h4>
+            {editando ? (
+              <Form onSubmit={handleSubmit}>
+                <FormGroup>
+                  <Label for="referencia">Referencia</Label>
+                  <Input
+                    type="text"
+                    name="referencia"
+                    id="referencia"
+                    value={direccionSeleccionada.referencia || ""}
+                    onChange={handleInputChange}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="nombre_contacto">Nombre de Contacto</Label>
+                  <Input
+                    type="text"
+                    name="nombre_contacto"
+                    id="nombre_contacto"
+                    value={direccionSeleccionada.nombre_contacto || ""}
+                    onChange={handleInputChange}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="telefono">Teléfono</Label>
+                  <Input
+                    type="text"
+                    name="telefono"
+                    id="telefono"
+                    value={direccionSeleccionada.telefono || ""}
+                    onChange={handleInputChange}
+                  />
+                </FormGroup>
+                <Button color="primary" type="submit">
+                  Guardar Cambios
+                </Button>
+                <Button color="secondary" onClick={() => setEditando(false)}>
+                  Cancelar
+                </Button>
+              </Form>
+            ) : (
+              <>
+                <p>
+                  <strong>Dirección:</strong> {direccionSeleccionada.direccion}
+                </p>
+                <p>
+                  <strong>Contacto:</strong>{" "}
+                  {direccionSeleccionada.nombre_contacto}
+                </p>
+                <p>
+                  <strong>Teléfono:</strong> {direccionSeleccionada.telefono}
+                </p>
+                <p>
+                  <strong>Referencia:</strong>{" "}
+                  {direccionSeleccionada.referencia || "No especificada"}
+                </p>
+                <Button color="primary" onClick={() => setEditando(true)}>
+                  Editar Detalles
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+
+        {orden.tipo_orden === "preorden" &&
+          direccionRecoleccionSeleccionada && (
+            <div>
+              <h4>Dirección de Recolección Seleccionada</h4>
+              {editandoRecoleccion ? (
+                <Form onSubmit={handleSubmit}>
+                  <FormGroup>
+                    <Label for="referencia_recoleccion">Referencia</Label>
+                    <Input
+                      type="text"
+                      name="referencia"
+                      id="referencia_recoleccion"
+                      value={direccionRecoleccionSeleccionada.referencia || ""}
+                      onChange={(e) => handleInputChange(e, true)}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="nombre_contacto_recoleccion">
+                      Nombre de Contacto
+                    </Label>
+                    <Input
+                      type="text"
+                      name="nombre_contacto"
+                      id="nombre_contacto_recoleccion"
+                      value={
+                        direccionRecoleccionSeleccionada.nombre_contacto || ""
+                      }
+                      onChange={(e) => handleInputChange(e, true)}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label for="telefono_recoleccion">Teléfono</Label>
+                    <Input
+                      type="text"
+                      name="telefono"
+                      id="telefono_recoleccion"
+                      value={direccionRecoleccionSeleccionada.telefono || ""}
+                      onChange={(e) => handleInputChange(e, true)}
+                    />
+                  </FormGroup>
+                  <Button color="primary" type="submit">
+                    Guardar Cambios
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={() => setEditandoRecoleccion(false)}
+                  >
+                    Cancelar
+                  </Button>
+                </Form>
+              ) : (
+                <>
+                  <p>
+                    <strong>Dirección:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.direccion}
+                  </p>
+                  <p>
+                    <strong>Contacto:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.nombre_contacto}
+                  </p>
+                  <p>
+                    <strong>Teléfono:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.telefono}
+                  </p>
+                  <p>
+                    <strong>Referencia:</strong>{" "}
+                    {direccionRecoleccionSeleccionada.referencia ||
+                      "No especificada"}
+                  </p>
+                  <Button
+                    color="primary"
+                    onClick={() => setEditandoRecoleccion(true)}
+                  >
+                    Editar Detalles
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+
+        <Modal isOpen={modalAgregar} toggle={toggleModalAgregar}>
+          <ModalHeader toggle={toggleModalAgregar}>
+            Agregar Nueva Dirección
+          </ModalHeader>
+          <ModalBody>
+            <FormularioDireccion
+              clienteId={orden.id_cliente}
+              onDireccionGuardada={agregarNuevaDireccion}
+              onCancel={toggleModalAgregar}
+            />
+          </ModalBody>
+        </Modal>
+      </CardBody>
+    </Card>
   );
 };
 
