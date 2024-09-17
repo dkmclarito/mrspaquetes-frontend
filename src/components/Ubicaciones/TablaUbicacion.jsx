@@ -38,13 +38,13 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </Button>
-                    {/* <Button
+                    <Button
                       className="btn-icon btn-editar"
                       onClick={() => toggleModalEditar(ubicacion)}
                       aria-label="Editar Ubicacion"
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
-                    </Button> */}
+                    </Button>
                     <Button
                       className="btn-icon btn-success"
                       onClick={() => verDetallesUbicacion(ubicacion.id)}
@@ -57,7 +57,7 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="7" className="text-center">
                 No hay paquetes disponibles
               </td>
             </tr>

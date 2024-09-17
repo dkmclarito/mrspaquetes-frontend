@@ -142,37 +142,50 @@ const GestionUbicacion = () => {
   };
 
   const guardarCambiosUbicacion = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      await axios.put(
-        `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
-        {
-          id_ubicacion: ubicacionEditada.id_ubicacion,
-          nombre: ubicacionEditada.nombre,
-          estado: ubicacionEditada.estado,
+  try {
+    const token = AuthService.getCurrentUser();
+    await axios.put(
+      `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
+      {
+        codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      }
+    );
 
-      setUbicaciones(
-        ubicaciones.map((ubicacion) =>
-          ubicacion.id === ubicacionEditada.id
-            ? ubicacionEditada
-            : ubicacion
-        )
-      );
-      setModalEditar(false);
-      toast.success("Ubicación actualizada con éxito");
-    } catch (error) {
-      console.error("Error al actualizar ubicación:", error);
-      toast.error("Error al actualizar la ubicación");
-    }
-  };
+    setUbicaciones(
+      ubicaciones.map((ubicacion) =>
+        ubicacion.id === ubicacionEditada.id
+          ? { ...ubicacion, codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion }
+          : ubicacion
+      )
+    );
+    setModalEditar(false);
+    toast.success("Ubicación actualizada con éxito", {
+      position: "bottom-right",
+      autoClose: 6000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  } catch (error) {
+    console.error("Error al actualizar ubicación:", error);
+    toast.error("Error al actualizar la ubicación, ya está asignada o no esta existe", {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+};
+
 
   const filtrarUbicaciones = (ubicaciones) => {
     if (!Array.isArray(ubicaciones)) return [];
