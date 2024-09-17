@@ -20,7 +20,6 @@ export default function TablaPaquetesAsignados({ paquetes, onSelect, paquetesSel
             <th className="text-center">Estado</th>
             <th className="text-center">Departamento</th>
             <th className="text-center">Municipio</th>
-            <th className="text-center">Peso</th>
             <th className="text-center">Seleccionar</th>
           </tr>
         </thead>
@@ -38,7 +37,6 @@ export default function TablaPaquetesAsignados({ paquetes, onSelect, paquetesSel
                 <td>{paquete.estado_paquete}</td>
                 <td>{paquete.departamento}</td>
                 <td>{paquete.municipio}</td>
-                <td>{paquete.peso} kg</td>
                 <td className="text-center">
                   <input
                     type="checkbox"
