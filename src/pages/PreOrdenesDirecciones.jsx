@@ -517,7 +517,7 @@ export default function PreOrdenesDirecciones() {
               </Table>
               {selectedDireccion && (
                 <>
-                  <h4>Seleccionar Dirección de Recolección Express</h4>
+                  <h4>Seleccionar Dirección de Recolección</h4>
                   <Table responsive>
                     <thead>
                       <tr>
@@ -532,43 +532,50 @@ export default function PreOrdenesDirecciones() {
                     </thead>
                     <tbody>
                       {direcciones.length > 0 ? (
-                        direcciones.map((direccion, index) => (
-                          <tr key={index}>
-                            <td>
-                              {direccion.direccion || "Dirección no disponible"}
-                            </td>
-                            <td>{direccion.referencia || "N/A"}</td>
-                            <td>{direccion.departamento_nombre}</td>
-                            <td>{direccion.municipio_nombre}</td>
-                            <td>
-                              {direccion.nombre_contacto || "No disponible"}
-                            </td>
-                            <td>{direccion.telefono || "No disponible"}</td>
-                            <td>
-                              <Button
-                                color={
-                                  direccionRecoleccion === direccion
-                                    ? "success"
-                                    : "primary"
-                                }
-                                onClick={() =>
-                                  handleSeleccionarDireccionRecoleccion(
-                                    direccion
-                                  )
-                                }
-                                disabled={direccion === selectedDireccion}
-                              >
-                                {direccionRecoleccion === direccion
-                                  ? "Seleccionada"
-                                  : "Seleccionar"}
-                              </Button>
-                            </td>
-                          </tr>
-                        ))
+                        direcciones
+                          .filter(
+                            (direccion) =>
+                              direccion.id_departamento === 12 &&
+                              direccion.id_municipio === 215
+                          )
+                          .map((direccion, index) => (
+                            <tr key={index}>
+                              <td>
+                                {direccion.direccion ||
+                                  "Dirección no disponible"}
+                              </td>
+                              <td>{direccion.referencia || "N/A"}</td>
+                              <td>{direccion.departamento_nombre}</td>
+                              <td>{direccion.municipio_nombre}</td>
+                              <td>
+                                {direccion.nombre_contacto || "No disponible"}
+                              </td>
+                              <td>{direccion.telefono || "No disponible"}</td>
+                              <td>
+                                <Button
+                                  color={
+                                    direccionRecoleccion === direccion
+                                      ? "success"
+                                      : "primary"
+                                  }
+                                  onClick={() =>
+                                    handleSeleccionarDireccionRecoleccion(
+                                      direccion
+                                    )
+                                  }
+                                  disabled={direccion === selectedDireccion}
+                                >
+                                  {direccionRecoleccion === direccion
+                                    ? "Seleccionada"
+                                    : "Seleccionar"}
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
                       ) : (
                         <tr>
                           <td colSpan="7" className="text-center">
-                            No hay direcciones disponibles
+                            No hay direcciones disponibles en San Miguel
                           </td>
                         </tr>
                       )}
