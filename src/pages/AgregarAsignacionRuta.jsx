@@ -63,9 +63,9 @@ export default function AsignarRutas() {
 
         const selectedPackages = JSON.parse(localStorage.getItem('paquetesParaAsignar') || '[]');
         console.log("Paquetes seleccionados desde localStorage:", selectedPackages);
-        setPaquetesSeleccionados(selectedPackages.map(paquete => ({
+        setPaquetesSeleccionados(selectedPackages.map((paquete, index) => ({
           ...paquete,
-          prioridad: 1
+          prioridad: (index + 1).toString() // Set initial priority from 1 to n
         })));
       } catch (error) {
         console.error("Error al obtener datos:", error.response ? error.response.data : error.message);
@@ -93,7 +93,15 @@ export default function AsignarRutas() {
 
   const handlePaqueteChange = (index, field, value) => {
     const updatedPaquetes = [...paquetesSeleccionados];
-    updatedPaquetes[index][field] = value;
+    if (field === 'prioridad') {
+      const numValue = parseInt(value, 10);
+      if (numValue < 1 || numValue > paquetesSeleccionados.length) {
+        return; // Ignore invalid values
+      }
+      updatedPaquetes[index][field] = numValue.toString();
+    } else {
+      updatedPaquetes[index][field] = value;
+    }
     setPaquetesSeleccionados(updatedPaquetes);
     checkVehicleCapacity(formData.id_vehiculo);
   };
@@ -122,6 +130,20 @@ export default function AsignarRutas() {
     if (!formData.fecha) newErrors.fecha = "La fecha es requerida";
     if (paquetesSeleccionados.length === 0) newErrors.paquetes = "Debe seleccionar al menos un paquete";
     if (capacidadExcedida) newErrors.capacidad = "La capacidad del vehículo ha sido excedida";
+
+    // Validación de prioridades
+    const prioridades = new Set();
+    paquetesSeleccionados.forEach((paquete, index) => {
+      const prioridadNum = parseInt(paquete.prioridad, 10);
+      if (!prioridadNum || prioridadNum < 1 || prioridadNum > paquetesSeleccionados.length) {
+        newErrors[`prioridad_${index}`] = `La prioridad debe ser un número entre 1 y ${paquetesSeleccionados.length}`;
+      } else if (prioridades.has(prioridadNum)) {
+        newErrors[`prioridad_${index}`] = "La prioridad no puede repetirse";
+      } else {
+        prioridades.add(prioridadNum);
+      }
+    });
+
     return newErrors;
   };
 
@@ -142,7 +164,7 @@ export default function AsignarRutas() {
         id_vehiculo: parseInt(formData.id_vehiculo),
         paquetes: paquetesSeleccionados.map(p => ({
           id: p.id_paquete,
-          prioridad: p.prioridad || 1
+          prioridad: parseInt(p.prioridad)
         }))
       };
 
@@ -175,7 +197,6 @@ export default function AsignarRutas() {
           toast.error('Error de validación: Verifique los datos ingresados');
         } else if (error.response.status === 401) {
           toast.error('Sesión expirada. Por favor, inicie sesión nuevamente');
-          // Optionally, redirect to login page or refresh token
         } else if (error.response.status === 500) {
           toast.error('Error del servidor. Por favor, intente más tarde');
         } else {
@@ -201,6 +222,18 @@ export default function AsignarRutas() {
       'grande': PACKAGE_SIZES.LARGE
     };
     return replacements[string.toLowerCase()] || string;
+  };
+
+  const handleRemovePaquete = (id_paquete) => {
+    const updatedPaquetes = paquetesSeleccionados.filter(p => p.id_paquete !== id_paquete);
+    // Reassign priorities after removal
+    const reassignedPaquetes = updatedPaquetes.map((p, index) => ({
+      ...p,
+      prioridad: (index + 1).toString()
+    }));
+    setPaquetesSeleccionados(reassignedPaquetes);
+    localStorage.setItem('paquetesParaAsignar', JSON.stringify(reassignedPaquetes));
+    checkVehicleCapacity(formData.id_vehiculo);
   };
 
   return (
@@ -271,6 +304,7 @@ export default function AsignarRutas() {
                                   <th>Departamento</th>
                                   <th>Municipio</th>
                                   <th>Prioridad</th>
+                                  <th>Acciones</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -284,11 +318,18 @@ export default function AsignarRutas() {
                                     <td>
                                       <Input
                                         type="number"
-                                        value={paquete.prioridad || 1}
-                                        onChange={(e) => handlePaqueteChange(index, 'prioridad', parseInt(e.target.value) || 1)}
+                                        value={paquete.prioridad}
+                                        onChange={(e) => handlePaqueteChange(index, 'prioridad', e.target.value)}
                                         min="1"
-                                        max="10"
+                                        max={paquetesSeleccionados.length}
+                                        invalid={!!errors[`prioridad_${index}`]}
                                       />
+                                      <FormFeedback>{errors[`prioridad_${index}`]}</FormFeedback>
+                                    </td>
+                                    <td>
+                                      <Button color="danger" size="sm" onClick={() => handleRemovePaquete(paquete.id_paquete)}>
+                                        Quitar
+                                      </Button>
                                     </td>
                                   </tr>
                                 ))}
@@ -304,8 +345,8 @@ export default function AsignarRutas() {
                     <Button color="primary" type="submit" disabled={isSubmitting || capacidadExcedida}>
                       {isSubmitting ? 'Asignando...' : 'Asignar Paquetes'}
                     </Button>
-                    <Button className="ms-2" color="secondary" onClick={() => navigate('/GestionAsignarRutas')} disabled={isSubmitting}>
-                      Cancelar
+                    <Button className="ms-2" color="secondary" onClick={() => navigate('/SeleccionarPaquetes')} disabled={isSubmitting}>
+                      Regresar a Selección de Paquetes
                     </Button>
                   </Form>
                 </CardBody>
