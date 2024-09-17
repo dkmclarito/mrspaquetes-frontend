@@ -22,11 +22,10 @@ import {
   BiErrorCircle,
   BiBus,
   BiBox,
-  BiLayer,
-  BiBox ,
   BiLayer ,
   BiArchive   
-} from "react-icons/bi";
+}
+from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
 
@@ -511,7 +510,7 @@ const VerticalLayout = () => {
                       isActive ? "nav-link active" : "nav-link"
                     }
                   >
-                    <BiArchive   className="nav-icon" />
+                    <BiArchive className="nav-icon" />
                     {!menuCollapsed && <span>Kardex</span>}
                   </NavLink>
                 </li>
