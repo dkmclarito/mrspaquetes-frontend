@@ -1,19 +1,11 @@
 import React from "react";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
-const RutaTable = ({ rutas, vehiculosDetalle, handleEdit, handleDelete }) => {
-  const formatVehicleInfo = (vehicleId) => {
-    const vehicleDetails = vehiculosDetalle[vehicleId];
-    if (!vehicleDetails) return "Cargando...";
-
-    const { marca, modelo, capacidad_carga, placa, conductor } = vehicleDetails;
-    return `${marca || "N/A"} ${modelo || "N/A"} - Carga: ${capacidad_carga || "N/A"} - Placa: ${placa || "N/A"} - Conductor: ${conductor || "N/A"}`;
-  };
-
+const RutaTable = ({ rutas = [], onSelectRuta, rutaSeleccionada }) => {
   return (
-    <Table>
+    <Table responsive striped>
       <thead>
         <tr>
           <th>ID</th>
@@ -24,32 +16,42 @@ const RutaTable = ({ rutas, vehiculosDetalle, handleEdit, handleDelete }) => {
         </tr>
       </thead>
       <tbody>
-        {rutas.map((ruta) => (
-          <tr key={ruta.id}>
-            <td>{ruta.id}</td>
-            <td>{ruta.ruta ? ruta.ruta.nombre : "N/A"}</td>
-            <td>{formatVehicleInfo(ruta.id_vehiculo)}</td>
-            <td>{ruta.fecha_asignacion}</td>
-            <td>
-              <div className="button-container">
+        {rutas && rutas.length > 0 ? (
+          rutas.map((ruta) => (
+            <tr key={ruta.id}>
+              <td>{ruta.id}</td>
+              <td>{ruta.ruta ? ruta.ruta.nombre : "N/A"}</td>
+              <td>
+                {ruta.vehiculo
+                  ? `${ruta.vehiculo.marca} ${ruta.vehiculo.modelo}`
+                  : "N/A"}
+              </td>
+              <td>{new Date(ruta.fecha_asignacion).toLocaleDateString()}</td>
+              <td>
                 <Button
-                  className="me-2 btn-icon btn-danger"
-                  onClick={() => handleDelete(ruta.id)}
-                  aria-label="Eliminar Ruta de Recolección"
+                  color={
+                    rutaSeleccionada && rutaSeleccionada.id === ruta.id
+                      ? "success"
+                      : "primary"
+                  }
+                  onClick={() => onSelectRuta(ruta)}
                 >
-                  <FontAwesomeIcon icon={faTimes} />
+                  {rutaSeleccionada && rutaSeleccionada.id === ruta.id ? (
+                    <FontAwesomeIcon icon={faCheck} />
+                  ) : (
+                    "Seleccionar"
+                  )}
                 </Button>
-                <Button
-                  className="me-2 btn-icon btn-editar"
-                  onClick={() => handleEdit(ruta.id)}
-                  aria-label="Editar Ruta de Recolección"
-                >
-                  <FontAwesomeIcon icon={faPencilAlt} />
-                </Button>
-              </div>
+              </td>
+            </tr>
+          ))
+        ) : (
+          <tr>
+            <td colSpan="5" className="text-center">
+              No hay rutas de recolección disponibles
             </td>
           </tr>
-        ))}
+        )}
       </tbody>
     </Table>
   );

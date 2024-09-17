@@ -236,7 +236,9 @@ export default function OrdenesDireccionesExpress() {
 
   return (
     <Container fluid>
-      <h1 className="text-center titulo-pasos">Seleccionar Dirección Express</h1>
+      <h1 className="text-center titulo-pasos">
+        Seleccionar Dirección Express
+      </h1>
       <Row>
         <Col lg={12}>
           <Nav pills className="justify-content-center mb-4">
@@ -426,35 +428,43 @@ export default function OrdenesDireccionesExpress() {
                 </thead>
                 <tbody>
                   {direcciones.length > 0 ? (
-                    direcciones.map((direccion, index) => (
-                      <tr key={index}>
-                        <td>
-                          {direccion.direccion || "Dirección no disponible"}
-                        </td>
-                        <td>{direccion.referencia || "N/A"}</td>
-                        <td>{direccion.departamento_nombre}</td>
-                        <td>{direccion.municipio_nombre}</td>
-                        <td>{direccion.nombre_contacto || "No disponible"}</td>
-                        <td>{direccion.telefono || "No disponible"}</td>
-                        <td>
-                          <Button
-                            color={
-                              selectedDireccion === direccion
-                                ? "success"
-                                : "primary"
-                            }
-                            onClick={() =>
-                              handleSeleccionarDireccion(direccion)
-                            }
-                            aria-pressed={selectedDireccion === direccion}
-                          >
-                            {selectedDireccion === direccion
-                              ? "Seleccionada"
-                              : "Seleccionar"}
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
+                    direcciones
+                      .filter(
+                        (direccion) =>
+                          direccion.id_departamento === 12 &&
+                          direccion.id_municipio === 215
+                      )
+                      .map((direccion, index) => (
+                        <tr key={index}>
+                          <td>
+                            {direccion.direccion || "Dirección no disponible"}
+                          </td>
+                          <td>{direccion.referencia || "N/A"}</td>
+                          <td>{direccion.departamento_nombre}</td>
+                          <td>{direccion.municipio_nombre}</td>
+                          <td>
+                            {direccion.nombre_contacto || "No disponible"}
+                          </td>
+                          <td>{direccion.telefono || "No disponible"}</td>
+                          <td>
+                            <Button
+                              color={
+                                selectedDireccion === direccion
+                                  ? "success"
+                                  : "primary"
+                              }
+                              onClick={() =>
+                                handleSeleccionarDireccion(direccion)
+                              }
+                              aria-pressed={selectedDireccion === direccion}
+                            >
+                              {selectedDireccion === direccion
+                                ? "Seleccionada"
+                                : "Seleccionar"}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
                   ) : (
                     <tr>
                       <td colSpan="7" className="text-center">
