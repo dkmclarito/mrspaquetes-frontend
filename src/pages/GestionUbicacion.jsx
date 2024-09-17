@@ -39,41 +39,41 @@ const GestionUbicacion = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const verificarEstadoUsuarioLogueado = useCallback(async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const token = AuthService.getCurrentUser();
+  // const verificarEstadoUsuarioLogueado = useCallback(async () => {
+  //   try {
+  //     const userId = localStorage.getItem("userId");
+  //     const token = AuthService.getCurrentUser();
 
-      if (userId && token) {
-        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  //     if (userId && token) {
+  //       const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
 
-        const responseData = await response.json();
+  //       const responseData = await response.json();
 
-        if (responseData.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
-          AuthService.logout();
-          window.location.href = "/login";
-          return;
-        }
-      }
-    } catch (error) {
-      console.error("Error al verificar el estado del usuario:", error);
-    }
-  }, [API_URL]);
+  //       if (responseData.status === "Token is Invalid") {
+  //         console.error("Token is invalid. Logging out...");
+  //         AuthService.logout();
+  //         window.location.href = "/login";
+  //         return;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al verificar el estado del usuario:", error);
+  //   }
+  // }, [API_URL]);
 
-  useEffect(() => {
-    verificarEstadoUsuarioLogueado();
-  }, [verificarEstadoUsuarioLogueado]);
+  // useEffect(() => {
+  //   verificarEstadoUsuarioLogueado();
+  // }, [verificarEstadoUsuarioLogueado]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado();
-    }, 30000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     verificarEstadoUsuarioLogueado();
+  //   }, 30000);
 
-    return () => clearInterval(interval);
-  }, [verificarEstadoUsuarioLogueado]);
+  //   return () => clearInterval(interval);
+  // }, [verificarEstadoUsuarioLogueado]);
 
   const verDetallesUbicacion = (idUbicacion) => {
     navigate(`/DetallesUbicacion/${idUbicacion}`);
