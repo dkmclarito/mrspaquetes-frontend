@@ -52,8 +52,8 @@ const ModalEditarUbicacion = ({
               <Col sm={12}>
                 <Form.Control
                   type="text"
-                  name="ubicacion"
-                  value={ubicacionEditada.ubicacion || ""}
+                  name="codigo_nomenclatura_ubicacion"
+                  value={ubicacionEditada.codigo_nomenclatura_ubicacion || ""}
                   onChange={handleChange}
                 />
               </Col>
