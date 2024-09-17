@@ -11,7 +11,7 @@ import Pagination from 'react-js-pagination';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionVehiculos = () => {
   document.title = "Vehículos | Gestión";
@@ -62,12 +62,15 @@ const GestionVehiculos = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = AuthService.getCurrentUser();
-        const response = await axios.get(`${API_URL}/vehiculo`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const token = localStorage.getItem('token');
+      const config = { headers: { 'Authorization': `Bearer ${token}` } };
+      const response = await axios.get(`${API_URL}/vehiculo`, {
+        params: {
+          page: 1,
+          per_page: 1000
+        },
+        ...config
+      });
 
         if (response.data && Array.isArray(response.data)) {
           setVehiculos(response.data);
