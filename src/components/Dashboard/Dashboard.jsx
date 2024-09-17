@@ -65,7 +65,7 @@ const Dashboard = () => {
 
 
         //console.log('Datos del Dashboard:', porcentajes.data.estados[9].paquetes);
-        console.log('Respuesta de la API: ',token);
+        //console.log('Respuesta de la API: ',ordenesResponse);
 
         //console.log('Respuesta de la API:', porcentajes.data);
 

@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent,useState, useEffect } from 'react';
 import {
   BarChart,
   Bar,
@@ -11,68 +11,136 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import axios from 'axios';
+import AuthService from '../../services/authService';
 
-const data = [
-  { name: '1', ordenes: 300, paquetes: 456 },
-  { name: '2', ordenes: 145, paquetes: 230 },
-  { name: '3', ordenes: 100, paquetes: 345 },
-  { name: '4', ordenes: 8, paquetes: 450 },
-  { name: '5', ordenes: 100, paquetes: 321 },
-  { name: '6', ordenes: 9, paquetes: 235 },
-  { name: '7', ordenes: 53, paquetes: 267 },
-  { name: '8', ordenes: 252, paquetes: 378 },
-  { name: '9', ordenes: 79, paquetes: 210 },
-  { name: '10', ordenes: 294, paquetes: 23 },
-  { name: '12', ordenes: 43, paquetes: 45 },
-  { name: '13', ordenes: 74, paquetes: 90 },
-  { name: '14', ordenes: 71, paquetes: 130 },
-  { name: '15', ordenes: 117, paquetes: 11 },
-  { name: '16', ordenes: 186, paquetes: 107 },
-  { name: '17', ordenes: 16, paquetes: 450 },
-  { name: '18', ordenes: 125, paquetes: 400 },
-  { name: '19', ordenes: 222, paquetes: 366 },
-  { name: '20', ordenes: 372, paquetes: 486 },
-  { name: '21', ordenes: 182, paquetes: 512 },
-  { name: '22', ordenes: 164, paquetes: 302 },
-  { name: '23', ordenes: 316, paquetes: 425 },
-  { name: '24', ordenes: 131, paquetes: 467 },
-  { name: '25', ordenes: 291, paquetes: 190 },
-  { name: '26', ordenes: 47, paquetes: 194 },
-  { name: '27', ordenes: 415, paquetes: 371 },
-  { name: '28', ordenes: 182, paquetes: 376 },
-  { name: '29', ordenes: 93, paquetes: 295 },
-  { name: '30', ordenes: 99, paquetes: 322 },
-  { name: '31', ordenes: 52, paquetes: 246 },
-];
+const API_URL = import.meta.env.VITE_API_URL;
 
-export default class ExampleBarChart extends PureComponent {
-  render() {
-    return (
-      <div style={{ width: '100%', height: '400px' }}> {/* Ajusta el tamaño aquí */}
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            width={500}
-            height={300}
-            data={data}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend verticalAlign="top" wrapperStyle={{ lineHeight: '40px' }} />
-            <ReferenceLine y={0} stroke="#000" />
-            <Brush dataKey="name" height={30} stroke="#8884d8" />
-            <Bar dataKey="ordenes" fill="#8884d8" />
-            <Bar dataKey="paquetes" fill="#82ca9d" />
-          </BarChart>
-        </ResponsiveContainer>
+const ExampleBarChart = () => {
+  const [data, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    const fetchDatos = async () => {
+      try {
+        const token = AuthService.getCurrentUser();
+
+        const response = await axios.get(`${API_URL}/dashboard/orders_by_day`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const formattedData = response.data.orders.map((order) => {
+          const fecha = new Date(order.fecha);
+          const day = fecha.getUTCDate();
+          const month = fecha.getUTCMonth() + 1;
+
+          return {
+            name: `${day}`,
+            fecha: order.fecha,
+            month: month,
+            year: fecha.getUTCFullYear(),
+            ordenes: order.ordenes,
+            paquetes: order.paquetes,
+          };
+        });
+
+        setData(formattedData);
+        generateDataForMonth(formattedData, selectedMonth, selectedYear);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
+    };
+
+    fetchDatos();
+  }, [selectedMonth, selectedYear]);
+
+  const getDaysInMonth = (month, year) => {
+    return new Date(year, month, 0).getUTCDate();
+  };
+
+
+  const generateDataForMonth = (data, month, year) => {
+    const daysInMonth = getDaysInMonth(month, year);
+    const completeData = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayData = data.find(item => {
+        const itemDate = new Date(item.fecha);
+        return (
+          itemDate.getUTCDate() === day && 
+          itemDate.getUTCMonth() + 1 === month && 
+          itemDate.getUTCFullYear() === year
+        );
+      });
+
+      completeData.push({
+        name: `${day}`,
+        ordenes: dayData ? dayData.ordenes : 0,
+        paquetes: dayData ? dayData.paquetes : 0,
+      });
+    }
+
+    setFilteredData(completeData);
+  };
+
+  const handleMonthChange = (event) => {
+    const month = parseInt(event.target.value);
+    setSelectedMonth(month);
+    generateDataForMonth(data, month, selectedYear);
+  };
+
+  const handleYearChange = (event) => {
+    const year = parseInt(event.target.value);
+    setSelectedYear(year);
+    generateDataForMonth(data, selectedMonth, year);
+  };
+
+  return (
+    <div>
+      <h2 style={{ textAlign: 'center' }}>Órdenes y Paquetes</h2>
+
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <label htmlFor="month-select" style={{ marginRight: '10px' }}>Seleccionar Mes: </label>
+        <select id="month-select" value={selectedMonth} onChange={handleMonthChange}>
+          <option value="1">Enero</option>
+          <option value="2">Febrero</option>
+          <option value="3">Marzo</option>
+          <option value="4">Abril</option>
+          <option value="5">Mayo</option>
+          <option value="6">Junio</option>
+          <option value="7">Julio</option>
+          <option value="8">Agosto</option>
+          <option value="9">Septiembre</option>
+          <option value="10">Octubre</option>
+          <option value="11">Noviembre</option>
+          <option value="12">Diciembre</option>
+        </select>
+
+        <label htmlFor="year-select" style={{ marginLeft: '20px',marginRight: '10px' }}>Seleccionar Año: </label>
+        <select id="year-select" value={selectedYear} onChange={handleYearChange}>
+          <option value={2024}>2024</option>
+          <option value={2025}>2025</option>
+        </select>
       </div>
-    );
-  }
-}
+
+      <ResponsiveContainer width="100%" height={400}>
+        <BarChart data={filteredData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Brush dataKey="name" height={30} stroke="#8884d8" />
+          <Bar dataKey="ordenes" fill="#8884d8" />
+          <Bar dataKey="paquetes" fill="#82ca9d" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export default ExampleBarChart;

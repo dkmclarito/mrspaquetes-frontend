@@ -198,7 +198,7 @@ const GestionOrdenesRecoleccion = () => {
 
   return (
     <Container fluid>
-      <h2 className="mb-4">Gestión de Órdenes de Recolección</h2>
+      <h2 className="mb-4 titulo-pasos">Gestión de Órdenes de Recolección</h2>
       <Row>
         <Col md={6}>
           <Card>
