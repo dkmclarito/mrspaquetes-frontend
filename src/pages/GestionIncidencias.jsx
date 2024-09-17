@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Incidencias/Common/Breadcrumbs";
 import TablaIncidencias from "../components/Incidencias/TablaIncidencias";
 import ModalConfirmarEliminar from "../components/Incidencias/ModalConfirmarEliminar";
-import ModalEditarIncidencia from "../components/Incidencias/ModalEditarIncidencia"; // Asegúrate de importar el modal correcto
+import ModalEditarIncidencia from "../components/Incidencias/ModalEditarIncidencia";
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
 
@@ -19,10 +19,11 @@ const GestionIncidencias = () => {
   const [incidencias, setIncidencias] = useState([]);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [incidenciaAEliminar, setIncidenciaAEliminar] = useState(null);
-  const [incidenciaEditada, setIncidenciaEditada] = useState(null); // Estado para la incidencia que se va a editar
-  const [modalEditar, setModalEditar] = useState(false); // Estado para controlar la visibilidad del modal de edición
+  const [incidenciaEditada, setIncidenciaEditada] = useState(null);
+  const [modalEditar, setModalEditar] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
+  const [tipoFiltro, setTipoFiltro] = useState(""); // Nuevo estado para el tipo de incidencia
   const [currentPage, setCurrentPage] = useState(1);
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -53,7 +54,6 @@ const GestionIncidencias = () => {
       const response = await axios.get(`${API_URL}/incidencias`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      console.log("Respuesta completa de la API:", response.data.data);
       if (response.data && Array.isArray(response.data.data)) {
         setIncidencias(response.data.data);
       } else {
@@ -101,11 +101,12 @@ const GestionIncidencias = () => {
     return incidencias.filter(incidencia => {
       const cumpleBusqueda = !busqueda ||
         incidencia.id_paquete.toString().includes(busqueda) ||
-        (incidencia.id_usuario_asignado && incidencia.id_usuario_asignado.toString().includes(busqueda));
-      const cumpleEstado = !estadoFiltro || incidencia.estado.toString() === estadoFiltro;
-      return cumpleBusqueda && cumpleEstado;
+        (incidencia.usuario_asignado && incidencia.usuario_asignado.toString().includes(busqueda));
+      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro; // Ajustar aquí para comparar correctamente el estado
+      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro; // Nuevo filtro para tipo de incidencia
+      return cumpleBusqueda && cumpleEstado && cumpleTipo;
     });
-  }, [incidencias, busqueda, estadoFiltro]);
+  }, [incidencias, busqueda, estadoFiltro, tipoFiltro]);
 
   const incidenciasFiltradas = useMemo(() => filtrarIncidencias(), [filtrarIncidencias]);
 
@@ -116,7 +117,7 @@ const GestionIncidencias = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [busqueda, estadoFiltro]);
+  }, [busqueda, estadoFiltro, tipoFiltro]);
 
   const toggleModalEditar = (incidencia) => {
     setIncidenciaEditada(incidencia);
@@ -161,14 +162,18 @@ const GestionIncidencias = () => {
                 style={{ width: "150px" }}
               >
                 <option value="">Todos</option>
-                <option value="1">Abierta</option>
-                <option value="2">En Proceso</option>
-                <option value="3">Cerrada</option>
+                <option value="Abierta">Abierta</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Cerrada">Cerrada</option>
               </Input>
+
+             
+           
+
               <div style={{ marginLeft: "auto" }}>
-                <Link to="/IncidenciasUbicadas" className="btn btn-secondary custom-button">
-                  <i className="fas fa-map-marker-alt"></i> Incidencias Ubicadas
-                </Link> <samp></samp>
+                <Link to="/UbicarPaqueteDaniado" className="btn btn-secondary custom-button">
+                  <i className="fas fa-map-marker-alt"></i> Ubicar paquete dañado
+                </Link> <span></span>
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
                 </Link>
@@ -176,6 +181,7 @@ const GestionIncidencias = () => {
             </div>
           </Col>
         </Row>
+     
         <br />
         <Row>
           <Col lg={12}>

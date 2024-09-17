@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Container, Row, Col, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import Select from 'react-select';
 import AuthService from '../services/authService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -187,7 +187,10 @@ const AgregarIncidencia = () => {
 
             <Button type="submit" color="primary">
               Agregar Incidencia
-            </Button>
+            </Button> <span></span>
+            <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar">
+                <i className="fas fa-arrow-left"></i> Regresar
+              </Link>
           </Form>
         </Col>
       </Row>

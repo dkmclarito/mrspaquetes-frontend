@@ -22,10 +22,10 @@ import {
   BiErrorCircle,
   BiBus,
   BiBox,
-  BiLayer ,
-  BiArchive   
+  BiLayer,
+  BiArchive
 }
-from "react-icons/bi";
+  from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
 
@@ -499,21 +499,53 @@ const VerticalLayout = () => {
                       isActive ? "nav-link active" : "nav-link"
                     }
                   >
-                    <BiErrorCircle  className="nav-icon" />
+                    <BiErrorCircle className="nav-icon" />
                     {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink
-                    to="/KardexPaquetes"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "kardex" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("kardex")}
                   >
-                    <BiArchive className="nav-icon" />
-                    {!menuCollapsed && <span>Kardex</span>}
-                  </NavLink>
+                    <BiArchive className="nav-icon" /> {/* Usa un ícono que represente el Kardex */}
+                    {(!menuCollapsed || visibleSubMenu === "kardex") && (
+                      <span>Kardex</span>
+                    )}
+                    {visibleSubMenu === "kardex" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "kardex" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/KardexPaquetes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBox className="nav-icon sub-icon" />
+                        Paquetes ubicados
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/IncidenciasUbicadas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiErrorCircle className="nav-icon sub-icon" />
+                        Paquetes dañados ubicados
+                      </NavLink>
+                    </li>
+                  </ul>
                 </li>
+
                 <li className="nav-item">
                   <NavLink
                     to="/GestionRolesPermisos"
@@ -523,17 +555,6 @@ const VerticalLayout = () => {
                   >
                     <BiShield className="nav-icon" />
                     {!menuCollapsed && <span>Roles y permisos</span>}
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/GestionIncidencias"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                  >
-                    <BiErrorCircle className="nav-icon" />
-                    {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
               </>
@@ -570,7 +591,7 @@ const VerticalLayout = () => {
                       isActive ? "nav-link active" : "nav-link"
                     }
                   >
-                    <BiErrorCircle  className="nav-icon" />
+                    <BiErrorCircle className="nav-icon" />
                     {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
