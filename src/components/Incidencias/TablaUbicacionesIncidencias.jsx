@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button } from "reactstrap";
+import { Table } from "reactstrap";
 
 const TablaUbicacionesIncidencias = ({ incidencias }) => {
   return (
@@ -7,6 +7,7 @@ const TablaUbicacionesIncidencias = ({ incidencias }) => {
       <thead>
         <tr>
           <th>ID Paquete</th>
+          <th>UUID</th> {/* Nueva columna para el UUID */}
           <th>Descripción Paquete</th>
           <th>Ubicación</th>
           <th>Estado</th>
@@ -16,6 +17,7 @@ const TablaUbicacionesIncidencias = ({ incidencias }) => {
         {incidencias.map((incidencia) => (
           <tr key={incidencia.id}>
             <td>{incidencia.id_paquete}</td>
+            <td>{incidencia.uuid}</td> {/* Muestra el UUID del paquete */}
             <td>{incidencia.paquete}</td>
             <td>{incidencia.ubicacion}</td>
             <td>{incidencia.estado === 1 ? "Abierta" : "Cerrada"}</td>

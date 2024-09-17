@@ -90,6 +90,7 @@ import GestionTraslados from "./pages/GestionTraslados";
 import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
 import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
+import KardexPaquetes from "./pages/KardexPaquetes";
 
 
 const App = () => {
@@ -339,6 +340,7 @@ const App = () => {
                 />  
                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
+                <Route path="/KardexPaquetes" element={<KardexPaquetes />} /> 
                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
                 <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />

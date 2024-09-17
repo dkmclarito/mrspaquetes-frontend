@@ -149,6 +149,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
         <thead className="thead-light">
           <tr>
             <th style={{ width: '5%' }} className="text-center">ID</th>
+            <th style={{ width: '10%' }} className="text-center">Usuario Reporta</th> {/* Nueva columna para mostrar usuario_reporta */}
             <th style={{ width: '15%' }} className="text-center">Descripción</th>
             <th style={{ width: '15%' }} className="text-center">Tipo Incidencia</th>
             <th style={{ width: '10%' }} className="text-center">Estado</th>
@@ -163,6 +164,7 @@ const TablaIncidencias = ({ incidencias, eliminarIncidencia, toggleModalEditar }
             incidencias.map(incidencia => (
               <tr key={incidencia.id}>
                 <td style={{ width: '5%' }} className="text-center">{incidencia.id}</td>
+                <td style={{ width: '10%' }} className="text-center">{incidencia.id_usuario_reporta}</td> {/* Mostrar usuario_reporta */}
                 <td style={{ width: '15%' }} className="text-center">{incidencia.descripcion}</td>
                 <td style={{ width: '15%' }} className="text-center">{incidencia.tipo_incidencia}</td>
                 <td style={{ width: '10%' }} className="text-center">{incidencia.estado}</td>

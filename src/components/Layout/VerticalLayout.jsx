@@ -22,7 +22,8 @@ import {
   BiErrorCircle,
   BiBus,
   BiBox ,
-  BiLayer   
+  BiLayer ,
+  BiArchive   
 } from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
@@ -499,18 +500,6 @@ const VerticalLayout = () => {
                     </li>
                   </ul>
                 </li>
-
-                <li className="nav-item">
-                  <NavLink
-                    to="/GestionRolesPermisos"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                  >
-                    <BiShield className="nav-icon" />
-                    {!menuCollapsed && <span>Roles y permisos</span>}
-                  </NavLink>
-                </li>
                 <li className="nav-item">
                   <NavLink
                     to="/GestionIncidencias"
@@ -520,6 +509,28 @@ const VerticalLayout = () => {
                   >
                     <BiErrorCircle  className="nav-icon" />
                     {!menuCollapsed && <span>Incidencias</span>}
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/KardexPaquetes"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiArchive   className="nav-icon" />
+                    {!menuCollapsed && <span>Kardex</span>}
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/GestionRolesPermisos"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiShield className="nav-icon" />
+                    {!menuCollapsed && <span>Roles y permisos</span>}
                   </NavLink>
                 </li>
               </>
@@ -547,6 +558,17 @@ const VerticalLayout = () => {
                   >
                     <BiMap className="nav-icon" />
                     {!menuCollapsed && <span>Rutas</span>}
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/GestionIncidencias"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiErrorCircle  className="nav-icon" />
+                    {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
               </>
