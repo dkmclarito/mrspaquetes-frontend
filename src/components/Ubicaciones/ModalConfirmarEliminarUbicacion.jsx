@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import PropTypes from "prop-types";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
 
-const ModalConfirmarEliminarUbicacion = ({ confirmarEliminar, confirmarEliminarBodega, setConfirmarEliminar }) => {
+const ModalConfirmarEliminarUbicacion = ({ confirmarEliminar, confirmarEliminarUbicacion, setConfirmarEliminar }) => {
   const handleToggle = useCallback(() => {
     setConfirmarEliminar(false);
   }, [setConfirmarEliminar]);
@@ -11,10 +11,10 @@ const ModalConfirmarEliminarUbicacion = ({ confirmarEliminar, confirmarEliminarB
     <Modal isOpen={confirmarEliminar} toggle={handleToggle}>
       <ModalHeader toggle={handleToggle}>Confirmar Eliminación</ModalHeader>
       <ModalBody>
-        ¿Estás seguro de que deseas eliminar esta bodega?
+        ¿Estás seguro de que deseas remover el paquete de su ubicacion?
       </ModalBody>
       <ModalFooter>
-        <Button color="danger" onClick={confirmarEliminarBodega} aria-label="Eliminar bodega">Eliminar</Button>
+        <Button color="danger" onClick={confirmarEliminarUbicacion} aria-label="Eliminar ubicacion">Eliminar</Button>
         <Button color="secondary" onClick={handleToggle} aria-label="Cancelar">Cancelar</Button>
       </ModalFooter>
     </Modal>

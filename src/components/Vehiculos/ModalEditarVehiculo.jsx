@@ -244,7 +244,7 @@ const ModalEditarVehiculo = ({
                                         onChange={handleInputChange}
                                         required
                                     />
-                                    <span className="input-group-text">T</span>
+                                    <span className="input-group-text"></span>
                                 </div>
                             </FormGroup>
                         </Col>

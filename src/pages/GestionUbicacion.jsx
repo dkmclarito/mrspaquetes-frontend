@@ -29,6 +29,7 @@ const GestionUbicacion = () => {
   const [ubicaciones, setUbicaciones] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
   const [ubicacionEditada, setUbicacionEditada] = useState({
+    id: null,
     id_ubicacion: null,
     nombre: "",
     estado: false,
@@ -74,20 +75,24 @@ const GestionUbicacion = () => {
     return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
+  const verDetallesUbicacion = (idUbicacion) => {
+    navigate(`/DetallesUbicacion/${idUbicacion}`);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-      const config = { headers: { 'Authorization': `Bearer ${token}` } };
-      const responseUbicaciones = await axios.get(`${API_URL}/ubicaciones-paquetes`, {
-        params: {
-          page: 1,
-          per_page: 1000
-        },
-        ...config
-      });
+        const config = { headers: { 'Authorization': `Bearer ${token}` } };
+        const responseUbicaciones = await axios.get(`${API_URL}/ubicaciones-paquetes`, {
+          params: {
+            page: 1,
+            per_page: 1000
+          },
+          ...config
+        });
         setUbicaciones(responseUbicaciones.data.data || []);
-        console.log(responseUbicaciones.data.data)
+        console.log(responseUbicaciones.data.data);
       } catch (error) {
         console.error("Error al obtener ubicaciones:", error);
       }
@@ -106,20 +111,12 @@ const GestionUbicacion = () => {
       });
 
       const ubicacionesRestantes = ubicaciones.filter(
-        (ubicacion) => ubicacion.id_ubicacion !== ubicacionAEliminar
+        (ubicacion) => ubicacion.id !== ubicacionAEliminar
       );
-
-      const totalItemsCount = ubicacionesRestantes.length;
-      const maxPages = Math.ceil(totalItemsCount / ITEMS_PER_PAGE);
-
-      if (currentPage > maxPages) {
-        setCurrentPage(maxPages);
-      }
 
       setUbicaciones(ubicacionesRestantes);
       setConfirmarEliminar(false);
       toast.success("Ubicación eliminada con éxito");
-      setUbicacionAEliminar(null);
     } catch (error) {
       console.error("Error al eliminar ubicación:", error);
       setConfirmarEliminar(false);
@@ -130,6 +127,7 @@ const GestionUbicacion = () => {
   const toggleModalEditar = (ubicacion) => {
     setUbicacionEditada(
       ubicacion || {
+        id: null,
         id_ubicacion: null,
         nombre: "",
         estado: false,
@@ -148,7 +146,11 @@ const GestionUbicacion = () => {
       const token = AuthService.getCurrentUser();
       await axios.put(
         `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
-        ubicacionEditada,
+        {
+          id_ubicacion: ubicacionEditada.id_ubicacion,
+          nombre: ubicacionEditada.nombre,
+          estado: ubicacionEditada.estado,
+        },
         {
           headers: {
             "Content-Type": "application/json",
@@ -165,11 +167,6 @@ const GestionUbicacion = () => {
         )
       );
       setModalEditar(false);
-      setUbicacionEditada({
-        id: null,
-        id_ubicacion: "",
-        estado: false,
-      });
       toast.success("Ubicación actualizada con éxito");
     } catch (error) {
       console.error("Error al actualizar ubicación:", error);
@@ -248,6 +245,7 @@ const GestionUbicacion = () => {
                   ubicaciones={paginatedUbicaciones}
                   eliminarUbicacion={eliminarUbicacion}
                   toggleModalEditar={toggleModalEditar}
+                  verDetallesUbicacion={verDetallesUbicacion}
                 />
               </CardBody>
             </Card>

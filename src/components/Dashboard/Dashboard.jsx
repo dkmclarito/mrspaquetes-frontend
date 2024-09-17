@@ -65,7 +65,7 @@ const Dashboard = () => {
 
 
         //console.log('Datos del Dashboard:', porcentajes.data.estados[9].paquetes);
-        //console.log('Respuesta de la API: ',entregas);
+        //console.log('Respuesta de la API: ',ordenesResponse);
 
         //console.log('Respuesta de la API:', porcentajes.data);
 
@@ -198,7 +198,7 @@ const Dashboard = () => {
 <br></br>
           <Card>
           <CardBody style={{ textAlign: 'center' }}>
-            <CardTitle tag="h4">Órdenes Diarias</CardTitle>
+            <CardTitle tag="h4">Órdenes Mensuales</CardTitle>
             <Row className="mt-4">
               <Col md="3">
                 <Card>

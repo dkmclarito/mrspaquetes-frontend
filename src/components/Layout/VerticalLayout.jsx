@@ -21,6 +21,8 @@ import {
   BiNavigation,
   BiErrorCircle,
   BiBus,
+  BiBox,
+  BiLayer,
   BiBox ,
   BiLayer ,
   BiArchive   
@@ -80,7 +82,7 @@ const VerticalLayout = () => {
     ) {
       setActiveSubMenu("rutas");
       setVisibleSubMenu(null);
-    }else if (
+    } else if (
       location.pathname.includes("/GestionBodegas") ||
       location.pathname.includes("/GestionUbicacion") ||
       location.pathname.includes("/GestionBodegas")
@@ -303,9 +305,11 @@ const VerticalLayout = () => {
                     </li>
 
                     <li>
-                      <NavLink 
-                        to="/TrackingPaquetes" 
-                        className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+                      <NavLink
+                        to="/TrackingPaquetes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
                       >
                         <BiPlus className="nav-icon sub-icon" />
                         Tracking de Paquetes
@@ -357,24 +361,13 @@ const VerticalLayout = () => {
                     </li>
                     <li>
                       <NavLink
-                        to="/RutasRecoleccion"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiNavigation className="nav-icon sub-icon" />
-                        Rutas de Recolección
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/OrdenesRecoleccion"
+                        to="/gestion-ordenes-recoleccion"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
                         <BiReceipt className="nav-icon sub-icon" />
-                        Órdenes de Recolección
+                        Recolección
                       </NavLink>
                     </li>
                     <li>
@@ -391,8 +384,8 @@ const VerticalLayout = () => {
                   </ul>
                 </li>
 
-                 {/* Submenu for Bodegas */}
-                 <li className="nav-item">
+                {/* Submenu for Bodegas */}
+                <li className="nav-item">
                   <div
                     className={`nav-link text-white ${activeSubMenu === "bodegas" ? "active" : ""}`}
                     onClick={() => handleSubMenuClick("bodegas")}
@@ -439,7 +432,7 @@ const VerticalLayout = () => {
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
-                        <BiBox  className="nav-icon sub-icon" />
+                        <BiBox className="nav-icon sub-icon" />
                         Inventario
                       </NavLink>
                     </li>
@@ -531,6 +524,17 @@ const VerticalLayout = () => {
                   >
                     <BiShield className="nav-icon" />
                     {!menuCollapsed && <span>Roles y permisos</span>}
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/GestionIncidencias"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiErrorCircle className="nav-icon" />
+                    {!menuCollapsed && <span>Incidencias</span>}
                   </NavLink>
                 </li>
               </>
