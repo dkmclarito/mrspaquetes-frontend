@@ -1,46 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Card, CardBody, Form, FormGroup, Label, Input, Button, Table } from 'reactstrap';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const EditarDatosAsignacion = ({ asignacion, actualizarAsignacion }) => {
   const [formData, setFormData] = useState({
-    fecha: '',
+    id_bodega: 1, // Default value
+    fecha_programada: '',
     id_vehiculo: '',
-    id_estado: '',
+    paquetes: []
   });
   const [vehiculos, setVehiculos] = useState([]);
-  const [estados, setEstados] = useState([]);
-  const [paquetes, setPaquetes] = useState([]);
+  const [paquetesDisponibles, setPaquetesDisponibles] = useState([]);
   const navigate = useNavigate();
+  const { codigo_unico_asignacion } = useParams();
 
   useEffect(() => {
     if (asignacion) {
       setFormData({
-        fecha: asignacion.fecha ? new Date(asignacion.fecha).toISOString().split('T')[0] : '',
+        id_bodega: 1,
+        fecha_programada: asignacion.fecha ? new Date(asignacion.fecha).toISOString().split('T')[0] : '',
         id_vehiculo: asignacion.id_vehiculo || '',
-        id_estado: asignacion.id_estado || '',
+        paquetes: asignacion.paquetes || []
       });
-      setPaquetes(asignacion.paquetes || []);
     }
-    fetchDropdownData();
+    fetchVehiculos();
+    fetchPaquetes();
   }, [asignacion]);
 
-  const fetchDropdownData = async () => {
+  const fetchVehiculos = async () => {
     try {
       const token = localStorage.getItem('token');
-      const [vehiculosRes, estadosRes] = await Promise.all([
-        axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_URL}/dropdown/get_estado_rutas`, { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
-      setVehiculos(vehiculosRes.data.vehiculos || []);
-      setEstados(estadosRes.data.estado_rutas || []);
+      const response = await axios.get(`${API_URL}/dropdown/get_vehiculos`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setVehiculos(response.data.vehiculos || []);
     } catch (error) {
-      console.error("Error al obtener datos:", error);
-      toast.error("Error al cargar los datos necesarios");
+      console.error("Error al obtener vehículos:", error);
+      toast.error("Error al cargar los vehículos");
+    }
+  };
+
+  const fetchPaquetes = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/paquete`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPaquetesDisponibles(response.data.data || []);
+    } catch (error) {
+      console.error("Error al obtener paquetes:", error);
+      toast.error("Error al cargar los paquetes");
     }
   };
 
@@ -51,28 +64,59 @@ const EditarDatosAsignacion = ({ asignacion, actualizarAsignacion }) => {
 
   const handlePaqueteChange = (id, e) => {
     const { value } = e.target;
-    setPaquetes(prev =>
-      prev.map(paquete =>
+    setFormData(prev => ({
+      ...prev,
+      paquetes: prev.paquetes.map(paquete =>
         paquete.id === id ? { ...paquete, prioridad: Number(value) } : paquete
       )
-    );
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Guardar los datos en localStorage
-    const datosAEnviar = {
-      fecha_programada: formData.fecha,
-      id_vehiculo: formData.id_vehiculo,
-      paquetes
-    };
-    localStorage.setItem('asignacionData', JSON.stringify({
-      codigo_unico_asignacion: asignacion.codigo_unico_asignacion, // Asegúrate de usar el identificador correcto
-      ...datosAEnviar
+  const agregarPaquete = (paquete) => {
+    setFormData(prev => ({
+      ...prev,
+      paquetes: [...prev.paquetes, { id: paquete.id, prioridad: 1 }]
     }));
-    
-    // Redirigir a la página de edición de paquetes
-    navigate(`/EditarPaquetesAsignacion/${asignacion.codigo_unico_asignacion}`);
+    setPaquetesDisponibles(prev => prev.filter(p => p.id !== paquete.id));
+  };
+
+  const removerPaquete = (id) => {
+    const paqueteRemovido = formData.paquetes.find(p => p.id === id);
+    setFormData(prev => ({
+      ...prev,
+      paquetes: prev.paquetes.filter(p => p.id !== id)
+    }));
+    if (paqueteRemovido) {
+      setPaquetesDisponibles(prev => [...prev, paqueteRemovido]);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(`${API_URL}/asignacionrutas/${codigo_unico_asignacion}`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log("Update response:", response.data);
+      toast.success("Datos de la asignación actualizados con éxito");
+      actualizarAsignacion(response.data);
+
+      // Store updated data in localStorage
+      localStorage.setItem('asignacionData', JSON.stringify(formData));
+
+      navigate(`/EditarPaquetesAsignacion/${codigo_unico_asignacion}`);
+    } catch (error) {
+      console.error("Error al actualizar los datos:", error);
+      if (error.response && error.response.data && error.response.data.errors) {
+        Object.values(error.response.data.errors).forEach(errorMsg => 
+          toast.error(errorMsg[0])
+        );
+      } else {
+        toast.error("Error al actualizar los datos de la asignación");
+      }
+    }
   };
 
   return (
@@ -81,13 +125,14 @@ const EditarDatosAsignacion = ({ asignacion, actualizarAsignacion }) => {
         <h3>Editar Datos de la Asignación</h3>
         <Form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label for="fecha">Fecha Programada</Label>
+            <Label for="fecha_programada">Fecha Programada</Label>
             <Input
               type="date"
-              name="fecha"
-              id="fecha"
-              value={formData.fecha}
+              name="fecha_programada"
+              id="fecha_programada"
+              value={formData.fecha_programada}
               onChange={handleInputChange}
+              required
             />
           </FormGroup>
           <FormGroup>
@@ -98,6 +143,7 @@ const EditarDatosAsignacion = ({ asignacion, actualizarAsignacion }) => {
               id="id_vehiculo"
               value={formData.id_vehiculo}
               onChange={handleInputChange}
+              required
             >
               <option value="">Seleccione un vehículo</option>
               {vehiculos.map(vehiculo => (
@@ -106,35 +152,60 @@ const EditarDatosAsignacion = ({ asignacion, actualizarAsignacion }) => {
             </Input>
           </FormGroup>
           <FormGroup>
-            <Label for="id_estado">Estado</Label>
-            <Input
-              type="select"
-              name="id_estado"
-              id="id_estado"
-              value={formData.id_estado}
-              onChange={handleInputChange}
-            >
-              <option value="">Seleccione un estado</option>
-              {estados.map(estado => (
-                <option key={estado.id} value={estado.id}>{estado.estado}</option>
-              ))}
-            </Input>
+            <Label>Paquetes Asignados</Label>
+            <Table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Prioridad</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {formData.paquetes.map(paquete => (
+                  <tr key={paquete.id}>
+                    <td>{paquete.id}</td>
+                    <td>
+                      <Input
+                        type="number"
+                        value={paquete.prioridad}
+                        onChange={(e) => handlePaqueteChange(paquete.id, e)}
+                        min="1"
+                        max="3"
+                      />
+                    </td>
+                    <td>
+                      <Button color="danger" onClick={() => removerPaquete(paquete.id)}>Eliminar</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
           </FormGroup>
-         
-          {paquetes.map(paquete => (
-            <FormGroup key={paquete.id}>
-              <Label for={`paquete-${paquete.id}`}>Paquete ID {paquete.id}</Label>
-              <Input
-                type="number"
-                id={`paquete-${paquete.id}`}
-                value={paquete.prioridad}
-                onChange={(e) => handlePaqueteChange(paquete.id, e)}
-                min="1"
-                max="3"
-              />
-            </FormGroup>
-          ))}
-          <Button color="primary" type="submit">Continuar editando</Button>
+          <FormGroup>
+            <Label>Paquetes Disponibles</Label>
+            <Table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Tipo de Paquete</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paquetesDisponibles.map(paquete => (
+                  <tr key={paquete.id}>
+                    <td>{paquete.id}</td>
+                    <td>{paquete.tipo_paquete}</td>
+                    <td>
+                      <Button color="primary" onClick={() => agregarPaquete(paquete)}>Agregar</Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </FormGroup>
+          <Button color="primary" type="submit">Guardar y Continuar</Button>
         </Form>
       </CardBody>
     </Card>

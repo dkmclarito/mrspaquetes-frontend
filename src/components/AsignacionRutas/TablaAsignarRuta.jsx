@@ -1,38 +1,31 @@
-import React from "react"
-import PropTypes from "prop-types"
-import { Button, Table } from "reactstrap"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons"
-import { useNavigate } from "react-router-dom"
+import React from "react";
+import PropTypes from "prop-types";
+import { Button, Table } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
+import { useNavigate } from "react-router-dom";
 
-const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, estados, totalPaquetes }) => {
-  const navigate = useNavigate()
+const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, estados, totalPaquetes, rutas }) => {
+  const navigate = useNavigate();
 
   const verDetallesAsignacion = (id) => {
-    navigate(`/DetallesAsignacionRutas/${id}`)
-  }
+    navigate(`/DetallesAsignacionRutas/${id}`);
+  };
 
   const editarAsignacion = (id) => {
-    navigate(`/EditarAsignacionRuta/${id}`)
-  }
+    navigate(`/EditarAsignacionRuta/${id}`);
+  };
 
-  const formatFecha = (fecha) => {
-    if (!fecha) return "N/A"
-    const date = new Date(fecha)
-    return date.toLocaleDateString('es-ES')
-  }
+  const formatFechaLocal = (fecha) => {
+    if (!fecha) return "N/A";
+    const date = new Date(fecha);
+    return date.toLocaleDateString('es-ES'); // Mostrar fecha en formato DD/MM/YYYY
+  };
 
-  const getPlacaVehiculo = (id_vehiculo) => {
-    const vehiculo = vehiculos.find(v => v.id === id_vehiculo)
-    return vehiculo ? vehiculo.placa : "N/A"
-  }
-
-  const getNombreEstado = (id_estado) => {
-    const estado = estados.find(e => e.id === id_estado)
-    return estado ? estado.estado : "N/A"
-  }
-
-  console.log("Asignaciones recibidas:", asignaciones);
+  const getFechaEntregaRuta = (id_ruta) => {
+    const ruta = rutas.find(r => r.id === id_ruta);
+    return ruta ? formatFechaLocal(ruta.fecha_programada) : "N/A";
+  };
 
   return (
     <div className="table-responsive">
@@ -44,7 +37,7 @@ const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, est
           <tr>
             <th className="text-center">Código de Asignación</th>
             <th className="text-center">Vehículo</th>
-            <th className="text-center">Fecha</th>
+            <th className="text-center">Fecha de Entrega</th>
             <th className="text-center">Estado</th>
             <th className="text-center">Número de Paquetes</th>
             <th className="text-center">Acciones</th>
@@ -55,19 +48,12 @@ const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, est
             asignaciones.map((asignacion) => (
               <tr key={asignacion.id}>
                 <td className="text-start">{asignacion.codigo_unico_asignacion || "N/A"}</td>
-                <td className="text-start">{getPlacaVehiculo(asignacion.id_vehiculo)}</td>
-                <td className="text-start">{formatFecha(asignacion.fecha)}</td>
-                <td className="text-start">{getNombreEstado(asignacion.id_estado)}</td>
+                <td className="text-start">{vehiculos.find(v => v.id === asignacion.id_vehiculo)?.placa || "N/A"}</td>
+                <td className="text-start">{getFechaEntregaRuta(asignacion.id_ruta)}</td>
+                <td className="text-start">{estados.find(e => e.id === asignacion.id_estado)?.estado || "N/A"}</td>
                 <td className="text-start">{asignacion.paquetes.length}</td>
                 <td className="text-start">
                   <div className="button-container">
-                    <Button
-                      className="me-2 btn-icon btn-danger"
-                      onClick={() => eliminarAsignacion(asignacion.id)}
-                      aria-label="Desactivar Asignación"
-                    >
-                      <FontAwesomeIcon icon={faTimes} />
-                    </Button>
                     <Button
                       className="btn-icon btn-editar"
                       onClick={() => editarAsignacion(asignacion.id)}
@@ -95,8 +81,8 @@ const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, est
         </tbody>
       </Table>
     </div>
-  )
-}
+  );
+};
 
 TablaAsignacionRutas.propTypes = {
   asignaciones: PropTypes.arrayOf(
@@ -105,7 +91,7 @@ TablaAsignacionRutas.propTypes = {
       codigo_unico_asignacion: PropTypes.string,
       id_ruta: PropTypes.number,
       id_vehiculo: PropTypes.number,
-      fecha: PropTypes.string,
+      fecha: PropTypes.string, // Si es necesario
       id_estado: PropTypes.number,
       paquetes: PropTypes.array,
     })
@@ -124,6 +110,12 @@ TablaAsignacionRutas.propTypes = {
     })
   ).isRequired,
   totalPaquetes: PropTypes.number.isRequired,
-}
+  rutas: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number,
+      fecha_programada: PropTypes.string,
+    })
+  ).isRequired,
+};
 
-export default TablaAsignacionRutas
+export default TablaAsignacionRutas;
