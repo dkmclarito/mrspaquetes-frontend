@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons"
 import { useNavigate } from "react-router-dom"
 
-const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, estados }) => {
+const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, estados, totalPaquetes }) => {
   const navigate = useNavigate()
 
   const verDetallesAsignacion = (id) => {
@@ -32,20 +32,13 @@ const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, est
     return estado ? estado.estado : "N/A"
   }
 
-  // Group asignaciones by codigo_unico_asignacion
-  const groupedAsignaciones = asignaciones.reduce((acc, asignacion) => {
-    if (!acc[asignacion.codigo_unico_asignacion]) {
-      acc[asignacion.codigo_unico_asignacion] = {
-        ...asignacion,
-        paquetes: []
-      }
-    }
-    acc[asignacion.codigo_unico_asignacion].paquetes.push(asignacion.id_paquete)
-    return acc
-  }, {})
+  console.log("Asignaciones recibidas:", asignaciones);
 
   return (
     <div className="table-responsive">
+      <div className="mb-3">
+        <strong>Total de Paquetes: {totalPaquetes}</strong>
+      </div>
       <Table striped className="table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
@@ -58,8 +51,8 @@ const TablaAsignacionRutas = ({ asignaciones, eliminarAsignacion, vehiculos, est
           </tr>
         </thead>
         <tbody>
-          {Object.values(groupedAsignaciones).length > 0 ? (
-            Object.values(groupedAsignaciones).map((asignacion) => (
+          {asignaciones.length > 0 ? (
+            asignaciones.map((asignacion) => (
               <tr key={asignacion.id}>
                 <td className="text-start">{asignacion.codigo_unico_asignacion || "N/A"}</td>
                 <td className="text-start">{getPlacaVehiculo(asignacion.id_vehiculo)}</td>
@@ -114,7 +107,7 @@ TablaAsignacionRutas.propTypes = {
       id_vehiculo: PropTypes.number,
       fecha: PropTypes.string,
       id_estado: PropTypes.number,
-      id_paquete: PropTypes.number,
+      paquetes: PropTypes.array,
     })
   ).isRequired,
   eliminarAsignacion: PropTypes.func.isRequired,
@@ -130,6 +123,7 @@ TablaAsignacionRutas.propTypes = {
       estado: PropTypes.string,
     })
   ).isRequired,
+  totalPaquetes: PropTypes.number.isRequired,
 }
 
 export default TablaAsignacionRutas

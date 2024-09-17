@@ -10,13 +10,14 @@ import ModalConfirmarEliminar from "../components/AsignacionRutas/ModalConfirmar
 import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 100;
 
 export default function GestionAsignarRutas() {
   const [asignaciones, setAsignaciones] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [totalPaquetes, setTotalPaquetes] = useState(0);
   const [modalEliminar, setModalEliminar] = useState(false);
   const [asignacionSeleccionada, setAsignacionSeleccionada] = useState(null);
   const [rutas, setRutas] = useState([]);
@@ -27,7 +28,7 @@ export default function GestionAsignarRutas() {
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userId");
-      const token = AuthService.getCurrentUser()?.token; // Ajusta esta línea si el token está en un campo específico
+      const token = AuthService.getCurrentUser()?.token;
 
       if (userId && token) {
         const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
@@ -52,7 +53,7 @@ export default function GestionAsignarRutas() {
       const token = localStorage.getItem("token");
 
       const [asignacionesRes, rutasRes, vehiculosRes, paquetesRes, estadosRes] = await Promise.all([
-        axios.get(`${API_URL}/asignacionrutas?page=${page}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/asignacionrutas?page=${page}&per_page=${ITEMS_PER_PAGE}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_rutas`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_vehiculos`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_paquetes_sin_asignar`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -60,13 +61,36 @@ export default function GestionAsignarRutas() {
       ]);
 
       const asignacionesData = asignacionesRes.data.asignacionrutas.data || [];
-      setAsignaciones(asignacionesData);
+      
+      // Group asignaciones by codigo_unico_asignacion
+      const groupedAsignaciones = asignacionesData.reduce((acc, asignacion) => {
+        if (!acc[asignacion.codigo_unico_asignacion]) {
+          acc[asignacion.codigo_unico_asignacion] = {
+            ...asignacion,
+            paquetes: []
+          };
+        }
+        acc[asignacion.codigo_unico_asignacion].paquetes.push(asignacion.id_paquete);
+        return acc;
+      }, {});
+
+      const asignacionesConPaquetes = Object.values(groupedAsignaciones);
+
+      setAsignaciones(asignacionesConPaquetes);
       setTotalItems(asignacionesRes.data.asignacionrutas.total);
+
+      // Calculate total number of packages
+      const totalPaquetes = asignacionesConPaquetes.reduce((total, asignacion) => total + asignacion.paquetes.length, 0);
+      setTotalPaquetes(totalPaquetes);
 
       setRutas(rutasRes.data.rutas || []);
       setVehiculos(vehiculosRes.data.vehiculos || []);
       setPaquetes(paquetesRes.data.paquetes || []);
       setEstados(estadosRes.data.estado_rutas || []);
+
+      console.log("Fetched Asignaciones:", asignacionesConPaquetes);
+      console.log("Total Items:", asignacionesRes.data.asignacionrutas.total);
+      console.log("Total Paquetes:", totalPaquetes);
     } catch (error) {
       console.error("Error al obtener datos:", error);
       toast.error("Error al cargar los datos.");
@@ -85,7 +109,7 @@ export default function GestionAsignarRutas() {
 
   const confirmarEliminarAsignacion = async () => {
     try {
-      const token = AuthService.getCurrentUser()?.token; // Ajusta esta línea si el token está en un campo específico
+      const token = AuthService.getCurrentUser()?.token;
       await axios.delete(`${API_URL}/asignacionrutas/${asignacionSeleccionada}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -121,10 +145,6 @@ export default function GestionAsignarRutas() {
   }, [asignaciones, busqueda]);
 
   const asignacionesFiltradas = filtrarAsignaciones();
-  const paginatedAsignaciones = asignacionesFiltradas.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -161,12 +181,13 @@ export default function GestionAsignarRutas() {
             <Card>
               <CardBody>
                 <TablaAsignacionRutas
-                  asignaciones={paginatedAsignaciones}
+                  asignaciones={asignacionesFiltradas}
                   eliminarAsignacion={iniciarEliminarAsignacion}
                   rutas={rutas}
                   vehiculos={vehiculos}
                   paquetes={paquetes}
                   estados={estados}
+                  totalPaquetes={totalPaquetes}
                 />
               </CardBody>
             </Card>

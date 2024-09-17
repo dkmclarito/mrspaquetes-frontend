@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { Table } from 'reactstrap';
 import '/src/styles/Paquetes.css';
 
-export default function TablaPaquetesAsignados({ paquetes, onSelect }) {
+export default function TablaPaquetesAsignados({ paquetes, onSelect, paquetesSeleccionados }) {
+  const isSelected = (id_paquete) => {
+    return paquetesSeleccionados.some(p => p.id_paquete === id_paquete);
+  };
+
   return (
     <div className="table-responsive">
       <Table striped className="table-centered table-nowrap mb-0">
@@ -23,7 +27,10 @@ export default function TablaPaquetesAsignados({ paquetes, onSelect }) {
         <tbody>
           {paquetes.length > 0 ? (
             paquetes.map((paquete) => (
-              <tr key={paquete.id_paquete}>
+              <tr 
+                key={paquete.id_paquete}
+                style={{ backgroundColor: isSelected(paquete.id_paquete) ? '#ffcccb' : 'inherit' }}
+              >
                 <td>{paquete.id_paquete}</td>
                 <td>{paquete.tipo_paquete}</td>
                 <td>{paquete.empaquetado}</td>
@@ -36,6 +43,7 @@ export default function TablaPaquetesAsignados({ paquetes, onSelect }) {
                   <input
                     type="checkbox"
                     onChange={(e) => onSelect(paquete, e.target.checked)}
+                    checked={isSelected(paquete.id_paquete)}
                     className="form-check-input"
                     style={{ transform: 'scale(1.5)', margin: '0 auto' }} 
                   />
@@ -66,4 +74,7 @@ TablaPaquetesAsignados.propTypes = {
     paquete: PropTypes.object
   })).isRequired,
   onSelect: PropTypes.func.isRequired,
+  paquetesSeleccionados: PropTypes.arrayOf(PropTypes.shape({
+    id_paquete: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  })).isRequired,
 };
