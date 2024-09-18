@@ -323,7 +323,7 @@ const GestionBodega = () => {
                   municipios={Object.values(municipiosPorDepartamento).flat()}
                   eliminarBodega={eliminarBodega}
                   toggleModalEditar={toggleModalEditar}
-                  verDetallesBodega={verDetallesBodega}
+                  verDetallesBodega={verDetallesBodega} 
                 />
               </CardBody>
             </Card>

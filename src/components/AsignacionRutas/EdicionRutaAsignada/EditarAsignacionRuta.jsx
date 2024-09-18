@@ -3,7 +3,6 @@ import { Container, Row, Col, Button, Card, CardBody, Nav, NavItem } from 'react
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import ResumenAsignacion from './ResumenAsignacion';
-import EditarDatosAsignacion from './EditarDatosAsignacion';
 import EditarPaquetesAsignacion from './EditarPaquetesAsignacion';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -54,8 +53,6 @@ export default function EditarAsignacionRuta() {
     switch (seccionActual) {
       case "resumen":
         return <ResumenAsignacion asignacion={asignacion} />;
-      case "datos":
-        return <EditarDatosAsignacion asignacion={asignacion} actualizarAsignacion={actualizarAsignacion} />;
       case "paquetes":
         return <EditarPaquetesAsignacion asignacion={asignacion} actualizarAsignacion={actualizarAsignacion} />;
       default:
@@ -90,15 +87,6 @@ export default function EditarAsignacionRuta() {
                 className="me-2"
               >
                 Resumen de Asignación
-              </Button>
-            </NavItem>
-            <NavItem>
-              <Button
-                color={seccionActual === "datos" ? "primary" : "light"}
-                onClick={() => setSeccionActual("datos")}
-                className="me-2"
-              >
-                Datos de la Asignación
               </Button>
             </NavItem>
             <NavItem>

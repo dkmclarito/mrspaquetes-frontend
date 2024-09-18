@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
 import "/src/styles/Clientes.css";
 
-const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar }) => {
+const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar, verDetallesVehiculo }) => {
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <table className="table table-centered table-nowrap mb-0">
@@ -64,7 +64,7 @@ const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar }) => {
                     </Button>
                     <Button
                       className="btn-icon btn-success"
-                      onClick={() => verDetallesUbicacion(ubicacion.id)}
+                      onClick={() => verDetallesVehiculo(vehiculo.id)}
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </Button>
@@ -101,6 +101,7 @@ TablaVehiculos.propTypes = {
   ).isRequired,
   eliminarVehiculo: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
+  verDetallesVehiculo: PropTypes.func.isRequired,
 };
 
 export default TablaVehiculos;

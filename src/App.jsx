@@ -96,9 +96,9 @@ import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
 import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
 import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
-import KardexPaquetes from "./pages/KardexPaquetes"; 
 import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
+import DetallesVehiculo from "./pages/DetallesVehiculo";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -189,6 +189,10 @@ const App = () => {
                 <Route
                   path="/DetallesCliente/:id"
                   element={<DetallesCliente />}
+                />
+                <Route
+                  path="/DetallesVehiculo/:id"
+                  element={<DetallesVehiculo />}
                 />
                 <Route
                   path="/DetallesUbicacion/:id"
@@ -374,7 +378,6 @@ const App = () => {
                 
                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
-                <Route path="/KardexPaquetes" element={<KardexPaquetes />} />
                 <Route path="/UbicarPaqueteDaniado" element={<UbicarPaqueteDaniado />} />
                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />

@@ -9,12 +9,14 @@ import ModalConfirmarEliminar from "../components/Vehiculos/ModalConfirmarElimin
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
 import "../styles/Vehiculos.css";
+import { useNavigate } from "react-router-dom"
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
 const GestionVehiculos = () => {
   document.title = "Vehículos | Gestión";
+  const navigate = useNavigate();
 
   const [vehiculos, setVehiculos] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
@@ -58,6 +60,10 @@ const GestionVehiculos = () => {
 
     return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
   }, [verificarEstadoUsuarioLogueado]);
+
+  const verDetallesVehiculo = (idVehiculo) => {
+    navigate(`/DetallesVehiculo/${idVehiculo}`);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -183,6 +189,7 @@ const GestionVehiculos = () => {
                   vehiculos={paginatedVehiculos}
                   eliminarVehiculo={eliminarVehiculo}
                   toggleModalEditar={toggleModalEditar}
+                  verDetallesVehiculo={verDetallesVehiculo}
                 />
               </CardBody>
             </Card>
