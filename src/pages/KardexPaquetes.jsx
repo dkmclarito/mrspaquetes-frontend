@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Container, Row, Col, Card, CardBody } from "reactstrap";
 import Breadcrumbs from "../components/kardex/Common/Breadcrumbs"; // Ajusta el path si es necesario
-import TablaKardexPaquetes from "../components/Kardex/TablaKardexPaquetes"; // Nueva tabla para mostrar los paquetes en el Kardex
+//import TablaKardexPaquetes from "../components/Kardex/TablaKardexPaquetes"; // Nueva tabla para mostrar los paquetes en el Kardex
 import AuthService from "../services/authService";
 import Pagination from "react-js-pagination";
 
