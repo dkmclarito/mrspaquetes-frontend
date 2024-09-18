@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Container,
@@ -39,42 +39,6 @@ const GestionUbicacion = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // const verificarEstadoUsuarioLogueado = useCallback(async () => {
-  //   try {
-  //     const userId = localStorage.getItem("userId");
-  //     const token = AuthService.getCurrentUser();
-
-  //     if (userId && token) {
-  //       const response = await fetch(`${API_URL}/auth/show/${userId}`, {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-
-  //       const responseData = await response.json();
-
-  //       if (responseData.status === "Token is Invalid") {
-  //         console.error("Token is invalid. Logging out...");
-  //         AuthService.logout();
-  //         window.location.href = "/login";
-  //         return;
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error("Error al verificar el estado del usuario:", error);
-  //   }
-  // }, [API_URL]);
-
-  // useEffect(() => {
-  //   verificarEstadoUsuarioLogueado();
-  // }, [verificarEstadoUsuarioLogueado]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     verificarEstadoUsuarioLogueado();
-  //   }, 30000);
-
-  //   return () => clearInterval(interval);
-  // }, [verificarEstadoUsuarioLogueado]);
-
   const verDetallesUbicacion = (idUbicacion) => {
     navigate(`/DetallesUbicacion/${idUbicacion}`);
   };
@@ -87,19 +51,19 @@ const GestionUbicacion = () => {
         const responseUbicaciones = await axios.get(`${API_URL}/ubicaciones-paquetes`, {
           params: {
             page: 1,
-            per_page: 1000
+            per_page: 1000,
           },
-          ...config
+          ...config,
         });
-        setUbicaciones(responseUbicaciones.data.data || []);
-        console.log(responseUbicaciones.data.data);
+        setUbicaciones(responseUbicaciones.data || []);
+        //console.log(responseUbicaciones.data);
       } catch (error) {
         console.error("Error al obtener ubicaciones:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [ubicaciones]);
 
   const confirmarEliminarUbicacion = async () => {
     try {
@@ -113,14 +77,29 @@ const GestionUbicacion = () => {
       const ubicacionesRestantes = ubicaciones.filter(
         (ubicacion) => ubicacion.id !== ubicacionAEliminar
       );
-
+      
       setUbicaciones(ubicacionesRestantes);
       setConfirmarEliminar(false);
-      toast.success("Ubicación eliminada con éxito");
+      toast.success("Ubicación eliminada con éxito", {
+        position: "bottom-right",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+     
     } catch (error) {
       console.error("Error al eliminar ubicación:", error);
       setConfirmarEliminar(false);
-      toast.error("Error al eliminar la ubicación");
+      toast.error("Error al eliminar la ubicación", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -142,56 +121,61 @@ const GestionUbicacion = () => {
   };
 
   const guardarCambiosUbicacion = async () => {
-  try {
-    const token = AuthService.getCurrentUser();
-    await axios.put(
-      `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
-      {
-        codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+    try {
+      const token = AuthService.getCurrentUser();
+      await axios.put(
+        `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
+        {
+          codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion,
         },
-      }
-    );
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    setUbicaciones(
-      ubicaciones.map((ubicacion) =>
-        ubicacion.id === ubicacionEditada.id
-          ? { ...ubicacion, codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion }
-          : ubicacion
-      )
-    );
-    setModalEditar(false);
-    toast.success("Ubicación actualizada con éxito", {
-      position: "bottom-right",
-      autoClose: 6000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  } catch (error) {
-    console.error("Error al actualizar ubicación:", error);
-    toast.error("Error al actualizar la ubicación, ya está asignada o no esta existe", {
-      position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-  }
-};
-
+      setUbicaciones((prevUbicaciones) =>
+        prevUbicaciones.map((ubicacion) =>
+          ubicacion.id === ubicacionEditada.id
+            ? { ...ubicacion, codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion }
+            : ubicacion
+        )
+      );
+      
+      setModalEditar(false);
+      
+      toast.success("Ubicación actualizada con éxito", {
+        position: "bottom-right",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (error) {
+      console.error("Error al actualizar ubicación:", error);
+      toast.error("Error al actualizar la ubicación, ya está asignada o no existe", {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+  };
 
   const filtrarUbicaciones = (ubicaciones) => {
     if (!Array.isArray(ubicaciones)) return [];
 
     return ubicaciones.filter((ubicacion) =>
-      ubicacion.id_ubicacion.toString().includes(busqueda.toLowerCase())
+      ubicacion.id.toString().toLowerCase().includes(busqueda.toLowerCase()) ||
+      (ubicacion.numero_orden && ubicacion.numero_orden.toLowerCase().includes(busqueda.toLowerCase())) ||
+      (ubicacion.qr_paquete && ubicacion.qr_paquete.toLowerCase().includes(busqueda.toLowerCase())) ||
+      (ubicacion.descripcion_paquete && ubicacion.descripcion_paquete.toLowerCase().includes(busqueda.toLowerCase())) ||
+      (ubicacion.nomenclatura_ubicacion && ubicacion.nomenclatura_ubicacion.toLowerCase().includes(busqueda.toLowerCase()))
     );
   };
 

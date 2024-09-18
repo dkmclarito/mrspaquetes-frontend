@@ -11,11 +11,10 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
         <thead className="thead-light">
           <tr>
             <th className="text-center">ID</th>
-            <th className="text-center">Id Paquete</th>
-            <th className="text-center">Paquete</th>
-            <th className="text-center">Id Ubicación</th>
+            <th className="text-center">Numero de orden</th>
+            <th className="text-center">Código QR del Paquete</th>
+            <th className="text-center">Descripción</th>
             <th className="text-center">Ubicación</th>
-            <th className="text-center">Estado</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -24,11 +23,11 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
             ubicaciones.map(ubicacion => (
               <tr key={ubicacion.id}>
                 <td className="text-center">{ubicacion.id}</td>
-                <td className="text-center">{ubicacion.id_paquete || 'N/A'}</td>
-                <td className="text-center">{ubicacion.paquete || 'N/A'}</td>
-                <td className="text-center">{ubicacion.id_ubicacion || 'N/A'}</td>
-                <td className="text-center">{ubicacion.ubicacion || 'N/A'}</td>
-                <td className="text-center">{ubicacion.estado === 1 ? 'Activo' : 'Inactivo'}</td>
+                <td className="text-center">{ubicacion.numero_orden || 'N/A'}</td>
+                <td className="text-center">{ubicacion.qr_paquete || 'N/A'}</td>
+                <td className="text-center">{ubicacion.descripcion_paquete || 'N/A'}</td>
+                <td className="text-center">{ubicacion.nomenclatura_ubicacion || 'N/A'}</td>
+                
                 <td className="text-center">
                   <div className="button-container">
                     <Button
