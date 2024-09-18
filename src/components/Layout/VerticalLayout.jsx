@@ -535,7 +535,48 @@ const VerticalLayout = () => {
                   </ul>
                 </li>
 
-  
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "kardex" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("kardex")}
+                  >
+                    <BiArchive className="nav-icon" /> {/* Usa un ícono que represente el Kardex */}
+                    {(!menuCollapsed || visibleSubMenu === "kardex") && (
+                      <span>Kardex</span>
+                    )}
+                    {visibleSubMenu === "kardex" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "kardex" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/KardexPaquetes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBox className="nav-icon sub-icon" />
+                        Paquetes ubicados
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/KardexPaquetes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiErrorCircle className="nav-icon sub-icon" />
+                        Trabajando...
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
 
                 <li className="nav-item">
                   <NavLink
