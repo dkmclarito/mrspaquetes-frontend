@@ -65,7 +65,7 @@ export default function AsignarRutas() {
         console.log("Paquetes seleccionados desde localStorage:", selectedPackages);
         setPaquetesSeleccionados(selectedPackages.map((paquete, index) => ({
           ...paquete,
-          prioridad: (index + 1).toString() // Set initial priority from 1 to n
+          prioridad: (index + 1).toString()
         })));
       } catch (error) {
         console.error("Error al obtener datos:", error.response ? error.response.data : error.message);
@@ -96,7 +96,7 @@ export default function AsignarRutas() {
     if (field === 'prioridad') {
       const numValue = parseInt(value, 10);
       if (numValue < 1 || numValue > paquetesSeleccionados.length) {
-        return; // Ignore invalid values
+        return;
       }
       updatedPaquetes[index][field] = numValue.toString();
     } else {
@@ -110,7 +110,7 @@ export default function AsignarRutas() {
     const selectedVehicle = vehiculos.find(v => v.id.toString() === vehicleId);
     if (!selectedVehicle) return;
 
-    const vehicleCapacity = selectedVehicle.capacidad || 40;
+    const vehicleCapacity = selectedVehicle.capacidad_carga || 0;
     const totalEquivalentPackages = paquetesSeleccionados.reduce((total, paquete) => {
       return total + SIZE_EQUIVALENTS[formatTamanoPaquete(paquete.tamano_paquete)];
     }, 0);
@@ -131,7 +131,6 @@ export default function AsignarRutas() {
     if (paquetesSeleccionados.length === 0) newErrors.paquetes = "Debe seleccionar al menos un paquete";
     if (capacidadExcedida) newErrors.capacidad = "La capacidad del vehículo ha sido excedida";
 
-    // Validación de prioridades
     const prioridades = new Set();
     paquetesSeleccionados.forEach((paquete, index) => {
       const prioridadNum = parseInt(paquete.prioridad, 10);
@@ -226,7 +225,6 @@ export default function AsignarRutas() {
 
   const handleRemovePaquete = (id_paquete) => {
     const updatedPaquetes = paquetesSeleccionados.filter(p => p.id_paquete !== id_paquete);
-    // Reassign priorities after removal
     const reassignedPaquetes = updatedPaquetes.map((p, index) => ({
       ...p,
       prioridad: (index + 1).toString()
@@ -261,7 +259,7 @@ export default function AsignarRutas() {
                             <option value="">Seleccione un vehículo</option>
                             {vehiculos.map((vehiculo) => (
                               <option key={vehiculo.id} value={vehiculo.id}>
-                                {vehiculo.placa} - Capacidad: {vehiculo.capacidad || 40} paquetes pequeños
+                                {vehiculo.placa} - Capacidad: {vehiculo.capacidad_carga || 0} paquetes pequeños
                               </option>
                             ))}
                           </Input>

@@ -15,6 +15,7 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
             <th className="text-center">Paquete</th>
             <th className="text-center">Id Ubicación</th>
             <th className="text-center">Ubicación</th>
+            <th className="text-center">Estado</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -27,7 +28,7 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
                 <td className="text-center">{ubicacion.paquete || 'N/A'}</td>
                 <td className="text-center">{ubicacion.id_ubicacion || 'N/A'}</td>
                 <td className="text-center">{ubicacion.ubicacion || 'N/A'}</td>
-                {/* <td className="text-center">{ubicacion.estado === 1 ? 'Activo' : 'Inactivo'}</td> */}
+                <td className="text-center">{ubicacion.estado === 1 ? 'Activo' : 'Inactivo'}</td>
                 <td className="text-center">
                   <div className="button-container">
                     <Button
@@ -56,7 +57,7 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">
+              <td colSpan="7" className="text-center">
                 No hay paquetes disponibles
               </td>
             </tr>

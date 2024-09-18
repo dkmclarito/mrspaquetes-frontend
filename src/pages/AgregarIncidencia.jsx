@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Container, Row, Col, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import Select from 'react-select';
 import AuthService from '../services/authService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -52,14 +52,10 @@ const AgregarIncidencia = () => {
   useEffect(() => {
     const fetchPaquetesDanio = async () => {
       try {
-        // Realiza la solicitud a la nueva ruta
-        const response = await axios.get(`${API_URL}/dropdown/get_paquetes_danio`, {
+        const response = await axios.get(`${API_URL}/dropdown/get_paquetes`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
-        // Imprime en la consola el contenido completo de la respuesta
-        console.log('Respuesta completa del servidor:', response);
-  
+
         if (response.status === 200 && response.data && Array.isArray(response.data.paquetes)) {
           const paquetesFiltrados = response.data.paquetes.filter(paquete => paquete.id_ubicacion === null);
           setPaquetesDanio(paquetesFiltrados);
@@ -73,10 +69,9 @@ const AgregarIncidencia = () => {
         setErrorMensaje('Error al obtener paquetes con daño. Intente nuevamente más tarde.');
       }
     };
-  
+
     fetchPaquetesDanio();
   }, [token]);
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,7 +104,7 @@ const AgregarIncidencia = () => {
         setAlertaExito(true);
         setTimeout(() => {
           setAlertaExito(false);
-          navigate('/GestionIncidencias', { replace: true });
+          navigate('/GestionIncidencias', { replace: true }); // Asegura que la redirección funcione
         }, 3000);
       } else {
         console.error('Error en la respuesta del servidor:', response);
@@ -163,7 +158,7 @@ const AgregarIncidencia = () => {
                     onChange={(selectedOption) => setUuidPaquete(selectedOption)}
                     options={paquetesDanio.map((paquete) => ({
                       value: paquete.id,
-                      label: paquete.descripcion_contenido,
+                      label: paquete.uuid,
                     }))}
                     placeholder="Buscar por descripción"
                     isSearchable
@@ -192,7 +187,10 @@ const AgregarIncidencia = () => {
 
             <Button type="submit" color="primary">
               Agregar Incidencia
-            </Button>
+            </Button> <span></span>
+            <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar">
+                <i className="fas fa-arrow-left"></i> Regresar
+              </Link>
           </Form>
         </Col>
       </Row>
@@ -201,3 +199,5 @@ const AgregarIncidencia = () => {
 };
 
 export default AgregarIncidencia;
+
+

@@ -48,8 +48,8 @@ const PieChartComponent = () => {
   }, []);
 
   const data = [
-    { estado: 'Normal', cantidad: Normal },
-    { estado: 'Express', cantidad: Express }
+    { estado: 'Normal', cantidad: Normal || 0},
+    { estado: 'Express', cantidad: Express || 0}
   ];
  
   const formattedData = Array.isArray(data) && data.length > 0 ? data : defaultData;

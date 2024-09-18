@@ -247,9 +247,9 @@ const AgregarVehiculo = () => {
     let validationErrors = {};
 
     if (tipo === "camion") {
-      const camionRegex = /^(C \d{2}-\d{3}|P \d-\d{3})$/;
+      const camionRegex = /^(C [A-Z0-9]{6}|P [A-Z0-9]{6})$/;
       if (!placa.match(camionRegex)) {
-        validationErrors.placa = "El formato de la placa para un camión debe ser 'C 23-180' o 'P 7-180'.";
+        validationErrors.placa = "El formato de la placa para un camión debe ser inical sin guiones 'C 000000' o 'P 000000'.";
         formIsValid = false;
       }
     } else if (tipo === "moto") {
@@ -319,7 +319,7 @@ const AgregarVehiculo = () => {
       console.log("Vehículo registrado:", response.data);
       toast.success("Vehículo agregado con éxito.", {
         position: "bottom-right",
-        autoClose: 5000,
+        autoClose: 6000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -495,7 +495,7 @@ const AgregarVehiculo = () => {
                         onChange={handleInputChange}
                         invalid={!!errors.placa}
                         required
-                        maxLength="9"
+                        maxLength="8"
                       />
                       <FormFeedback>{errors.placa}</FormFeedback>
                     </FormGroup>

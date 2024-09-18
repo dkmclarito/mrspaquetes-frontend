@@ -84,7 +84,6 @@ export default function SeleccionarPaquetes() {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      toast.error("Error al verificar el estado del usuario.");
     }
   }, []);
 
@@ -94,46 +93,45 @@ export default function SeleccionarPaquetes() {
       const token = localStorage.getItem('token');
       const config = { headers: { 'Authorization': `Bearer ${token}` } };
 
-      // Obtener todas las órdenes
       const ordenesResponse = await axios.get(`${API_URL}/ordenes`, config);
       const ordenes = ordenesResponse.data.data || [];
-      console.log('Total órdenes registradas:', ordenes.length);
 
-      // Obtener todos los paquetes de las órdenes
       const paquetesDisponibles = ordenes.flatMap(orden => 
-        orden.detalles.map(detalle => ({
+        orden.estado_pago === "pagado" ? orden.detalles.map(detalle => ({
           id_paquete: detalle.id_paquete,
           tipo_paquete: tiposPaquete[detalle.paquete.id_tipo_paquete] || 'Desconocido',
           empaquetado: tiposEmpaque[detalle.paquete.tipo_caja] || 'Desconocido',
           tamano_paquete: tamanosPaquete[detalle.paquete.id_tamano_paquete] || 'Desconocido',
-          estado_paquete: estadosPaquete[detalle.id_estado_paquetes] || 'Desconocido',
+          estado_paquete: estadosPaquete[detalle.paquete.id_estado_paquete] || 'Desconocido',
           departamento: orden.direccion_emisor.departamento,
           municipio: orden.direccion_emisor.municipio,
           direccion: orden.direccion_emisor.direccion,
-          peso: detalle.paquete.peso,
+          peso: parseFloat(detalle.paquete.peso) || 0,
           descripcion_contenido: detalle.paquete.descripcion_contenido,
           fecha_envio: detalle.paquete.fecha_envio,
           fecha_entrega_estimada: detalle.paquete.fecha_entrega_estimada,
           paquete: detalle.paquete
-        }))
-      );
+        })) : []
+      ).filter(paquete => paquete.paquete.id_estado_paquete === 2);
 
-      console.log('Total paquetes disponibles:', paquetesDisponibles.length);
+      let allAsignaciones = [];
+      let page = 1;
+      let hasMorePages = true;
 
-      // Obtener todas las asignaciones de rutas
-      const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas`, config);
-      const asignaciones = responseAsignaciones.data.asignacionrutas.data || [];
-      console.log('Total asignaciones:', asignaciones.length);
+      while (hasMorePages) {
+        const responseAsignaciones = await axios.get(`${API_URL}/asignacionrutas?page=${page}`, config);
+        const asignaciones = responseAsignaciones.data.asignacionrutas.data || [];
+        allAsignaciones = [...allAsignaciones, ...asignaciones];
+        
+        if (responseAsignaciones.data.asignacionrutas.next_page_url) {
+          page++;
+        } else {
+          hasMorePages = false;
+        }
+      }
 
-      // Crear un conjunto con los IDs de los paquetes asignados
-      const idsPaquetesAsignados = new Set(asignaciones.flatMap(asignacion => 
-        asignacion.paquetes ? asignacion.paquetes.map(p => p.id) : []
-      ));
-      console.log('IDs de paquetes asignados:', [...idsPaquetesAsignados]);
-
-      // Filtrar los paquetes no asignados
+      const idsPaquetesAsignados = new Set(allAsignaciones.map(asignacion => asignacion.id_paquete));
       const paquetesNoAsignados = paquetesDisponibles.filter(paquete => !idsPaquetesAsignados.has(paquete.id_paquete));
-      console.log('Total paquetes no asignados:', paquetesNoAsignados.length);
 
       setAllPaquetes(paquetesNoAsignados);
       setTotalItems(paquetesNoAsignados.length);
@@ -144,10 +142,8 @@ export default function SeleccionarPaquetes() {
       const uniqueMunicipios = [...new Set(paquetesNoAsignados.map(p => p.municipio).filter(Boolean))];
       setMunicipios(uniqueMunicipios);
 
-      // Aplicar filtros iniciales
       const paquetesFiltradosIniciales = filtrarPaquetes(paquetesNoAsignados);
       setPaquetesFiltrados(paquetesFiltradosIniciales);
-      console.log('Paquetes filtrados:', paquetesFiltradosIniciales.length);
     } catch (error) {
       console.error('Error fetching paquetes:', error);
       toast.error('Error al cargar los paquetes');
@@ -165,7 +161,6 @@ export default function SeleccionarPaquetes() {
 
   useEffect(() => {
     const paquetesFiltrados = filtrarPaquetes(allPaquetes);
-    console.log('Paquetes filtrados:', paquetesFiltrados.length);
     setTotalItems(paquetesFiltrados.length);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -201,15 +196,7 @@ export default function SeleccionarPaquetes() {
 
   const handleAsignarRuta = () => {
     if (paquetesSeleccionados.length === 0) {
-      toast.warning('Debe seleccionar al menos un paquete para asignar una ruta.', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
+      toast.warning('Debe seleccionar al menos un paquete para asignar una ruta.');
       return;
     }
     navigate('/AgregarAsignacionRuta');
@@ -217,6 +204,12 @@ export default function SeleccionarPaquetes() {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+  };
+
+  const handleCancelar = () => {
+    setPaquetesSeleccionados([]);
+    localStorage.removeItem('paquetesParaAsignar');
+    navigate('/GestionAsignarRutas');
   };
 
   return (
@@ -257,8 +250,11 @@ export default function SeleccionarPaquetes() {
                 ))}
               </Input>
               <div style={{ marginLeft: 'auto' }}>
-                <Button color="primary" onClick={handleAsignarRuta}>
+                <Button color="primary" onClick={handleAsignarRuta} className="me-2">
                   <i className="fas fa-plus"></i> Asignar Ruta
+                </Button>
+                <Button color="secondary" onClick={handleCancelar}>
+                  Cancelar
                 </Button>
               </div>
             </div>

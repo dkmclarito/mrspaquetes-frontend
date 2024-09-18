@@ -39,41 +39,41 @@ const GestionUbicacion = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const verificarEstadoUsuarioLogueado = useCallback(async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const token = AuthService.getCurrentUser();
+  // const verificarEstadoUsuarioLogueado = useCallback(async () => {
+  //   try {
+  //     const userId = localStorage.getItem("userId");
+  //     const token = AuthService.getCurrentUser();
 
-      if (userId && token) {
-        const response = await fetch(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  //     if (userId && token) {
+  //       const response = await fetch(`${API_URL}/auth/show/${userId}`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
 
-        const responseData = await response.json();
+  //       const responseData = await response.json();
 
-        if (responseData.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
-          AuthService.logout();
-          window.location.href = "/login";
-          return;
-        }
-      }
-    } catch (error) {
-      console.error("Error al verificar el estado del usuario:", error);
-    }
-  }, [API_URL]);
+  //       if (responseData.status === "Token is Invalid") {
+  //         console.error("Token is invalid. Logging out...");
+  //         AuthService.logout();
+  //         window.location.href = "/login";
+  //         return;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error al verificar el estado del usuario:", error);
+  //   }
+  // }, [API_URL]);
 
-  useEffect(() => {
-    verificarEstadoUsuarioLogueado();
-  }, [verificarEstadoUsuarioLogueado]);
+  // useEffect(() => {
+  //   verificarEstadoUsuarioLogueado();
+  // }, [verificarEstadoUsuarioLogueado]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado();
-    }, 30000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     verificarEstadoUsuarioLogueado();
+  //   }, 30000);
 
-    return () => clearInterval(interval);
-  }, [verificarEstadoUsuarioLogueado]);
+  //   return () => clearInterval(interval);
+  // }, [verificarEstadoUsuarioLogueado]);
 
   const verDetallesUbicacion = (idUbicacion) => {
     navigate(`/DetallesUbicacion/${idUbicacion}`);
@@ -142,37 +142,50 @@ const GestionUbicacion = () => {
   };
 
   const guardarCambiosUbicacion = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      await axios.put(
-        `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
-        {
-          id_ubicacion: ubicacionEditada.id_ubicacion,
-          nombre: ubicacionEditada.nombre,
-          estado: ubicacionEditada.estado,
+  try {
+    const token = AuthService.getCurrentUser();
+    await axios.put(
+      `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
+      {
+        codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      }
+    );
 
-      setUbicaciones(
-        ubicaciones.map((ubicacion) =>
-          ubicacion.id === ubicacionEditada.id
-            ? ubicacionEditada
-            : ubicacion
-        )
-      );
-      setModalEditar(false);
-      toast.success("Ubicación actualizada con éxito");
-    } catch (error) {
-      console.error("Error al actualizar ubicación:", error);
-      toast.error("Error al actualizar la ubicación");
-    }
-  };
+    setUbicaciones(
+      ubicaciones.map((ubicacion) =>
+        ubicacion.id === ubicacionEditada.id
+          ? { ...ubicacion, codigo_nomenclatura_ubicacion: ubicacionEditada.codigo_nomenclatura_ubicacion }
+          : ubicacion
+      )
+    );
+    setModalEditar(false);
+    toast.success("Ubicación actualizada con éxito", {
+      position: "bottom-right",
+      autoClose: 6000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  } catch (error) {
+    console.error("Error al actualizar ubicación:", error);
+    toast.error("Error al actualizar la ubicación, ya está asignada o no esta existe", {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+};
+
 
   const filtrarUbicaciones = (ubicaciones) => {
     if (!Array.isArray(ubicaciones)) return [];
