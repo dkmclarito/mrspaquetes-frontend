@@ -99,6 +99,7 @@ import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
 import KardexPaquetes from "./pages/KardexPaquetes"; 
 import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
+import DetallesVehiculo from "./pages/DetallesVehiculo";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -189,6 +190,10 @@ const App = () => {
                 <Route
                   path="/DetallesCliente/:id"
                   element={<DetallesCliente />}
+                />
+                <Route
+                  path="/DetallesVehiculo/:id"
+                  element={<DetallesVehiculo />}
                 />
                 <Route
                   path="/DetallesUbicacion/:id"
