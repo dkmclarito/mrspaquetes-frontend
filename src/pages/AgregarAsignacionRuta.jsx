@@ -223,6 +223,27 @@ export default function AsignarRutas() {
     return replacements[string.toLowerCase()] || string;
   };
 
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', dateString);
+        return 'Fecha inválida';
+      }
+      return date.toLocaleString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Error en fecha';
+    }
+  };
+
   const handleRemovePaquete = (id_paquete) => {
     const updatedPaquetes = paquetesSeleccionados.filter(p => p.id_paquete !== id_paquete);
     const reassignedPaquetes = updatedPaquetes.map((p, index) => ({
@@ -301,7 +322,8 @@ export default function AsignarRutas() {
                                   <th>Dirección</th>
                                   <th>Departamento</th>
                                   <th>Municipio</th>
-                                  <th>Prioridad</th>
+                                  <th>Fecha de registro</th>
+                                  <th>Orden de entrega</th>
                                   <th>Acciones</th>
                                 </tr>
                               </thead>
@@ -313,6 +335,7 @@ export default function AsignarRutas() {
                                     <td>{paquete.direccion}</td>
                                     <td>{paquete.departamento}</td>
                                     <td>{paquete.municipio}</td>
+                                    <td>{formatDate(paquete.created_at)}</td>
                                     <td>
                                       <Input
                                         type="number"
