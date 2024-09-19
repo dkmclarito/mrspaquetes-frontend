@@ -42,7 +42,7 @@ const ModalEditarUbicacion = ({
                 <Form.Control
                   type="text"
                   name="ubicacion"
-                  value={ubicacionEditada.paquete || ""}
+                  value={ubicacionEditada.qr_paquete || ""}
                   onChange={handleChange}
                 />
               </Col>
