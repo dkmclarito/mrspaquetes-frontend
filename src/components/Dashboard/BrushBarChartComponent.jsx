@@ -132,7 +132,7 @@ const ExampleBarChart = () => {
 
   return (
     <div>
-      <h2 style={{ textAlign: 'center' }}>Órdenes y Paquetes</h2>
+      <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 'bold' }}>Órdenes y Paquetes</h2>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <label htmlFor="month-select" style={{ marginRight: '10px' }}>Seleccionar Mes: </label>

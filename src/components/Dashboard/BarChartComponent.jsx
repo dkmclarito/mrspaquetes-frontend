@@ -70,7 +70,7 @@ const BarChartComponent = () => {
 
   return (
     <div>
-      <h2 style={{ textAlign: 'center' }}>Comparación de Envíos de Paquetes</h2>
+      <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 'bold'  }}>Comparación de Envíos de Paquetes</h2>
       <ResponsiveContainer width="100%" height={400}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

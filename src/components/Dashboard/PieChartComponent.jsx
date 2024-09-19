@@ -84,8 +84,8 @@ const PieChartComponent = () => {
   return (
     <Card>
       <CardBody className='graficaPastel'>
-        <CardTitle style={{ textAlign: 'center', fontSize: '30px', fontWeight: 'normal'  }} tag="h5">Tipos de Ordenes</CardTitle>
-        <ResponsiveContainer width="100%" height={396}>
+        <CardTitle style={{ textAlign: 'center', fontSize: '20px' }} tag="h5">Tipos de Ordenes</CardTitle>
+        <ResponsiveContainer width="100%" height={394}>
           <PieChart className='pieG'>
             <Pie
               data={formattedData}
