@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, FormFeedback } from "reactstrap";
+import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert } from "reactstrap";
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -14,7 +15,6 @@ const AgregarModelo = () => {
     const [marcaSeleccionada, setMarcaSeleccionada] = useState("");
     const [marcas, setMarcas] = useState([]);
     const [isNombreValid, setIsNombreValid] = useState(true);
-    const [alertaExito, setAlertaExito] = useState(false);
     const [alertaError, setAlertaError] = useState(false);
     const [errorMensaje, setErrorMensaje] = useState("");
 
@@ -40,8 +40,8 @@ const AgregarModelo = () => {
             }
         } catch (error) {
             console.error("Error al verificar el estado del usuario:", error);
-           // AuthService.logout();
-           // window.location.href = "/login";
+            // AuthService.logout();
+            // window.location.href = "/login";
         }
     }, [token]);
 
@@ -90,8 +90,13 @@ const AgregarModelo = () => {
         e.preventDefault();
 
         if (!isNombreValid || !marcaSeleccionada) {
-            setAlertaError(true);
             setErrorMensaje("Por favor, completa todos los campos requeridos.");
+            toast.error("Por favor, completa todos los campos requeridos.", { position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true, });
             return;
         }
 
@@ -109,10 +114,14 @@ const AgregarModelo = () => {
                 }
             });
 
-            setAlertaExito(true);
+            toast.success("Modelo agregado exitosamente!", { position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true, });
             setTimeout(() => navigate('/GestionModelos'), 2000);
             resetForm();
-            setAlertaError(false);
         } catch (error) {
             handleError(error);
         }
@@ -129,8 +138,13 @@ const AgregarModelo = () => {
         if (error.response && error.response.data) {
             errorMessage = error.response.data.message || errorMessage;
         }
-        setAlertaError(true);
         setErrorMensaje(errorMessage);
+        toast.error(errorMessage, { position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true, });
     };
 
     return (
@@ -151,7 +165,7 @@ const AgregarModelo = () => {
                                         invalid={!isNombreValid}
                                         required
                                     />
-                                    <FormFeedback>Por favor, ingresa un nombre válido.</FormFeedback>
+                                   
                                 </FormGroup>
                                 <FormGroup>
                                     <Label for="descripcion">Descripción</Label>
@@ -160,6 +174,7 @@ const AgregarModelo = () => {
                                         id="descripcion"
                                         value={descripcion}
                                         onChange={handleDescripcionChange}
+                                        required
                                     />
                                 </FormGroup>
                                 <FormGroup>
@@ -181,13 +196,12 @@ const AgregarModelo = () => {
                                     </Input>
                                 </FormGroup>
                                 <Button type="submit" color="primary">Agregar Modelo</Button>
-                                {alertaExito && <Alert color="success" toggle={() => setAlertaExito(false)}>Modelo agregado exitosamente!</Alert>}
-                                {alertaError && <Alert color="danger" toggle={() => setAlertaError(false)}>{errorMensaje}</Alert>}
                             </Form>
                         </CardBody>
                     </Card>
                 </Col>
             </Row>
+            <ToastContainer />
         </Container>
     );
 };
