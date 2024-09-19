@@ -11,7 +11,7 @@ import Pagination from 'react-js-pagination';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionModelos = () => {
   document.title = "Modelos | Vehículos";
@@ -45,19 +45,17 @@ const GestionModelos = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-     // window.location.href = "/login";
     }
   }, [token]);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+    verificarEstadoUsuarioLogueado();
 
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
@@ -84,24 +82,24 @@ const GestionModelos = () => {
     fetchData();
   }, [token]);
 
+
   useEffect(() => {
     const fetchData = async () => {
-        try {
-            // Obtener marcas
-            const responseMarcas = await axios.get(`${API_URL}/dropdown/get_marcas`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setMarcas(responseMarcas.data.marcas || []);
-            console.log(responseMarcas.data.marcas)
-        } catch (error) {
-            console.error("Error al obtener datos:", error);
-        }
+      try {
+        const responseMarcas = await axios.get(`${API_URL}/dropdown/get_marcas`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setMarcas(responseMarcas.data.marcas || []);
+        console.log(responseMarcas.data.marcas)
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+      }
     };
 
     fetchData();
-}, [token]);
+  }, [token]);
 
   const eliminarModelo = (idModelo) => {
     setConfirmarEliminar(true);
@@ -143,7 +141,7 @@ const GestionModelos = () => {
         const updatedModelos = prevModelos.map(modelo =>
           modelo.id === modeloEditado.id ? { ...modelo, ...modeloEditado } : modelo
         );
-        console.log("Modelos actualizados:", updatedModelos); // Verifica la actualización
+        console.log("Modelos actualizados:", updatedModelos);
         return updatedModelos;
       });
   
@@ -153,14 +151,18 @@ const GestionModelos = () => {
       console.error("Error al actualizar modelo:", error);
     }
   };
-  
-  
 
   const filtrarModelos = (modelos) => {
     if (!busqueda) return modelos;
     return modelos.filter(modelo =>
       modelo.nombre.toLowerCase().includes(busqueda.toLowerCase())
     );
+  };
+
+    
+  const handleSearch = (event) => {
+    setBusqueda(event.target.value);
+    setCurrentPage(1); // Reiniciar a la primera página al buscar
   };
 
   const handlePageChange = (pageNumber) => {
@@ -185,7 +187,7 @@ const GestionModelos = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={handleSearch}
                 placeholder="Buscar por nombre de modelo"
                 style={{ width: "300px" }}
               />

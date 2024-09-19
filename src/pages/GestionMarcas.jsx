@@ -11,7 +11,7 @@ import Pagination from 'react-js-pagination';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 3;
 
 const GestionMarcas = () => {
   document.title = "Marcas | Vehículos";
@@ -45,13 +45,11 @@ const GestionMarcas = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-     // window.location.href = "/login";
     }
   }, []);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+    verificarEstadoUsuarioLogueado();
 
     const fetchData = async () => {
       try {
@@ -78,10 +76,10 @@ const GestionMarcas = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   const eliminarMarca = (idMarca) => {
@@ -136,6 +134,11 @@ const GestionMarcas = () => {
       marca.nombre.toLowerCase().includes(busqueda.toLowerCase())
     );
   };
+  
+  const handleSearch = (event) => {
+    setBusqueda(event.target.value);
+    setCurrentPage(1); // Reiniciar a la primera página al buscar
+  };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -159,7 +162,7 @@ const GestionMarcas = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={handleSearch}
                 placeholder="Buscar por nombre de marca"
                 style={{ width: "300px" }}
               />
@@ -217,4 +220,3 @@ const GestionMarcas = () => {
 };
 
 export default GestionMarcas;
-

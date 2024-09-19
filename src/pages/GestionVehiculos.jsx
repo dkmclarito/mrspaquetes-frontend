@@ -9,10 +9,10 @@ import ModalConfirmarEliminar from "../components/Vehiculos/ModalConfirmarElimin
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
 import "../styles/Vehiculos.css";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 2;
 
 const GestionVehiculos = () => {
   document.title = "Vehículos | Gestión";
@@ -46,37 +46,40 @@ const GestionVehiculos = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-      //window.location.href = "/login";
     }
   }, []);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+    verificarEstadoUsuarioLogueado(); 
 
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   const verDetallesVehiculo = (idVehiculo) => {
     navigate(`/DetallesVehiculo/${idVehiculo}`);
   };
 
+  const handleSearch = (event) => {
+    setBusqueda(event.target.value);
+    setCurrentPage(1); // Reiniciar a la primera página al buscar
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-      const config = { headers: { 'Authorization': `Bearer ${token}` } };
-      const response = await axios.get(`${API_URL}/vehiculo`, {
-        params: {
-          page: 1,
-          per_page: 1000
-        },
-        ...config
-      });
+        const config = { headers: { 'Authorization': `Bearer ${token}` } };
+        const response = await axios.get(`${API_URL}/vehiculo`, {
+          params: {
+            page: 1,
+            per_page: 1000 // Cargar una gran cantidad de vehículos para buscar en todos
+          },
+          ...config
+        });
 
         if (response.data && Array.isArray(response.data)) {
           setVehiculos(response.data);
@@ -142,7 +145,7 @@ const GestionVehiculos = () => {
   const filtrarVehiculos = (vehiculos) => {
     if (!busqueda) return vehiculos;
     return vehiculos.filter(vehiculo =>
-      (vehiculo.nombre || "").toLowerCase().includes(busqueda.toLowerCase())
+      (vehiculo.placa || "").toLowerCase().includes(busqueda.toLowerCase())
     );
   };
 
@@ -151,6 +154,7 @@ const GestionVehiculos = () => {
   };
 
   const vehiculosFiltrados = filtrarVehiculos(vehiculos);
+
   const paginatedVehiculos = vehiculosFiltrados.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
@@ -168,8 +172,8 @@ const GestionVehiculos = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Buscar por nombre de vehículo"
+                onChange={handleSearch}
+                placeholder="Buscar por placa de vehículo"
                 style={{ width: "300px" }}
               />
               <div style={{ marginLeft: "auto" }}>
@@ -195,6 +199,7 @@ const GestionVehiculos = () => {
             </Card>
           </Col>
         </Row>
+
         <Row>
           <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
             <Pagination
@@ -210,6 +215,7 @@ const GestionVehiculos = () => {
           </Col>
         </Row>
       </Container>
+
       <ModalEditarVehiculo
         modalEditar={modalEditar}
         vehiculoEditado={vehiculoEditado}
@@ -217,6 +223,7 @@ const GestionVehiculos = () => {
         guardarCambiosVehiculo={guardarCambiosVehiculo}
         setModalEditar={setModalEditar}
       />
+
       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarVehiculo={confirmarEliminarVehiculo}
