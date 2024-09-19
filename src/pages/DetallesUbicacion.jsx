@@ -72,15 +72,15 @@ const DetallesUbicacion = () => {
     <div className="page-content">
       <Breadcrumbs title="Gestión de Ubicaciones" breadcrumbItem="Detalles de la Ubicación" />        
       <Card>
-        <CardBody>
+        <CardBody >
           <h5 className="card-title">Detalles de la Ubicación</h5>
-          <Row>
-            <Col sm="12">
+          <Row style={{marginLeft:50}}>
+            <Col sm="8">
               <div className="table-responsive">
                 <table className="table table-bordered">
                   <tbody>
                     <tr>
-                      <th scope="row" style={{ width: '180px', whiteSpace: 'wrap' }}>ID:</th>
+                      <th scope="row" style={{ width: '80px', whiteSpace: 'wrap' }}>ID:</th>
                       <td style={{ width: '18px', whiteSpace: 'wrap' }}>
                         <Badge color="primary"> {ubicacion.id} </Badge>
                       </td>

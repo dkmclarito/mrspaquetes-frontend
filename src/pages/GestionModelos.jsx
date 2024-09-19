@@ -23,6 +23,7 @@ const GestionModelos = () => {
   const [modeloAEliminar, setModeloAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [marcas, setMarcas] = useState([]);
   const token = AuthService.getCurrentUser();
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -83,6 +84,25 @@ const GestionModelos = () => {
     fetchData();
   }, [token]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+        try {
+            // Obtener marcas
+            const responseMarcas = await axios.get(`${API_URL}/dropdown/get_marcas`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            setMarcas(responseMarcas.data.marcas || []);
+            console.log(responseMarcas.data.marcas)
+        } catch (error) {
+            console.error("Error al obtener datos:", error);
+        }
+    };
+
+    fetchData();
+}, [token]);
+
   const eliminarModelo = (idModelo) => {
     setConfirmarEliminar(true);
     setModeloAEliminar(idModelo);
@@ -118,14 +138,23 @@ const GestionModelos = () => {
           Authorization: `Bearer ${token}`
         }
       });
-
-      setModelos(modelos.map(modelo => modelo.id === modeloEditado.id ? modeloEditado : modelo));
+  
+      setModelos(prevModelos => {
+        const updatedModelos = prevModelos.map(modelo =>
+          modelo.id === modeloEditado.id ? { ...modelo, ...modeloEditado } : modelo
+        );
+        console.log("Modelos actualizados:", updatedModelos); // Verifica la actualización
+        return updatedModelos;
+      });
+  
       setModalEditar(false);
       setModeloEditado(null);
     } catch (error) {
       console.error("Error al actualizar modelo:", error);
     }
   };
+  
+  
 
   const filtrarModelos = (modelos) => {
     if (!busqueda) return modelos;
@@ -177,6 +206,7 @@ const GestionModelos = () => {
                   modelos={paginatedModelos}
                   eliminarModelo={eliminarModelo}
                   toggleModalEditar={toggleModalEditar}
+                  marcas={marcas}
                 />
               </CardBody>
             </Card>
@@ -203,6 +233,7 @@ const GestionModelos = () => {
         setModeloEditado={setModeloEditado}
         guardarCambiosModelo={guardarCambiosModelo}
         setModalEditar={setModalEditar}
+        marcas={marcas}
       />
       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
