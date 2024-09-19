@@ -8,6 +8,8 @@ import ModalEditarModelo from "../components/Vehiculos/ModalEditarModelo";
 import ModalConfirmarEliminar from "../components/Vehiculos/ModalConfirmarEliminarModelo";
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -82,7 +84,6 @@ const GestionModelos = () => {
     fetchData();
   }, [token]);
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -92,7 +93,6 @@ const GestionModelos = () => {
           }
         });
         setMarcas(responseMarcas.data.marcas || []);
-        console.log(responseMarcas.data.marcas)
       } catch (error) {
         console.error("Error al obtener datos:", error);
       }
@@ -117,9 +117,21 @@ const GestionModelos = () => {
       setModelos(modelos.filter(modelo => modelo.id !== modeloAEliminar));
       setConfirmarEliminar(false);
       setModeloAEliminar(null);
+      toast.success("Modelo eliminado exitosamente.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar notificación de éxito
     } catch (error) {
       console.error("Error al eliminar modelo:", error);
       setConfirmarEliminar(false);
+      toast.error("Error al eliminar el modelo.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, });// Mostrar notificación de error
     }
   };
 
@@ -136,19 +148,30 @@ const GestionModelos = () => {
           Authorization: `Bearer ${token}`
         }
       });
-  
+ 
       setModelos(prevModelos => {
         const updatedModelos = prevModelos.map(modelo =>
           modelo.id === modeloEditado.id ? { ...modelo, ...modeloEditado } : modelo
         );
-        console.log("Modelos actualizados:", updatedModelos);
         return updatedModelos;
       });
-  
+ 
       setModalEditar(false);
       setModeloEditado(null);
+      toast.success("Modelo actualizado exitosamente.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar notificación de éxito
     } catch (error) {
       console.error("Error al actualizar modelo:", error);
+      toast.error("Error al actualizar el modelo.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar notificación de error
     }
   };
 
@@ -159,7 +182,6 @@ const GestionModelos = () => {
     );
   };
 
-    
   const handleSearch = (event) => {
     setBusqueda(event.target.value);
     setCurrentPage(1); // Reiniciar a la primera página al buscar
@@ -242,6 +264,7 @@ const GestionModelos = () => {
         confirmarEliminarModelo={confirmarEliminarModelo}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+      <ToastContainer />
     </div>
   );
 };
