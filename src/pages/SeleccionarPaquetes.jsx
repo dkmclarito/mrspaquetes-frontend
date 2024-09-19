@@ -110,9 +110,12 @@ export default function SeleccionarPaquetes() {
           descripcion_contenido: detalle.paquete.descripcion_contenido,
           fecha_envio: detalle.paquete.fecha_envio,
           fecha_entrega_estimada: detalle.paquete.fecha_entrega_estimada,
+          created_at: orden.created_at,
           paquete: detalle.paquete
         })) : []
       ).filter(paquete => paquete.paquete.id_estado_paquete === 2);
+
+      console.log("Paquetes disponibles:", paquetesDisponibles);
 
       let allAsignaciones = [];
       let page = 1;
@@ -133,16 +136,21 @@ export default function SeleccionarPaquetes() {
       const idsPaquetesAsignados = new Set(allAsignaciones.map(asignacion => asignacion.id_paquete));
       const paquetesNoAsignados = paquetesDisponibles.filter(paquete => !idsPaquetesAsignados.has(paquete.id_paquete));
 
-      setAllPaquetes(paquetesNoAsignados);
-      setTotalItems(paquetesNoAsignados.length);
+      // Ordenar paquetes por fecha de registro (created_at)
+      const paquetesOrdenados = paquetesNoAsignados.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
-      const uniqueDepartamentos = [...new Set(paquetesNoAsignados.map(p => p.departamento).filter(Boolean))];
+      console.log("Paquetes ordenados:", paquetesOrdenados);
+
+      setAllPaquetes(paquetesOrdenados);
+      setTotalItems(paquetesOrdenados.length);
+
+      const uniqueDepartamentos = [...new Set(paquetesOrdenados.map(p => p.departamento).filter(Boolean))];
       setDepartamentos(uniqueDepartamentos);
 
-      const uniqueMunicipios = [...new Set(paquetesNoAsignados.map(p => p.municipio).filter(Boolean))];
+      const uniqueMunicipios = [...new Set(paquetesOrdenados.map(p => p.municipio).filter(Boolean))];
       setMunicipios(uniqueMunicipios);
 
-      const paquetesFiltradosIniciales = filtrarPaquetes(paquetesNoAsignados);
+      const paquetesFiltradosIniciales = filtrarPaquetes(paquetesOrdenados);
       setPaquetesFiltrados(paquetesFiltradosIniciales);
     } catch (error) {
       console.error('Error fetching paquetes:', error);
@@ -186,7 +194,8 @@ export default function SeleccionarPaquetes() {
             tamano_paquete: paquete.tamano_paquete,
             direccion: paquete.direccion,
             departamento: paquete.departamento,
-            municipio: paquete.municipio
+            municipio: paquete.municipio,
+            created_at: paquete.created_at
           }]
         : prev.filter(p => p.id_paquete !== parseInt(paquete.id_paquete, 10));
       localStorage.setItem('paquetesParaAsignar', JSON.stringify(updated));
