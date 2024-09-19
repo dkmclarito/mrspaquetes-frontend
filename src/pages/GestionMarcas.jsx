@@ -8,6 +8,8 @@ import ModalEditarMarca from "../components/Vehiculos/ModalEditarMarca";
 import ModalConfirmarEliminar from "../components/Vehiculos/ModalConfirmarEliminarMarca";
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
+import { toast, ToastContainer } from 'react-toastify'; // Importa toast y ToastContainer
+import 'react-toastify/dist/ReactToastify.css'; // Importa estilos para toast
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -99,9 +101,21 @@ const GestionMarcas = () => {
       setMarcas(marcas.filter(marca => marca.id !== marcaAEliminar));
       setConfirmarEliminar(false);
       setMarcaAEliminar(null);
+      toast.success("Marca eliminada exitosamente!", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar toast de éxito
     } catch (error) {
       console.error("Error al eliminar marca:", error);
       setConfirmarEliminar(false);
+      toast.error("Error al eliminar marca.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar toast de error
     }
   };
 
@@ -123,8 +137,20 @@ const GestionMarcas = () => {
       setMarcas(marcas.map(marca => marca.id === marcaEditada.id ? marcaEditada : marca));
       setModalEditar(false);
       setMarcaEditada(null);
+      toast.success("Marca actualizada exitosamente!", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar toast de éxito
     } catch (error) {
       console.error("Error al actualizar marca:", error);
+      toast.error("Error al actualizar marca.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar toast de error
     }
   };
 
@@ -215,6 +241,7 @@ const GestionMarcas = () => {
         confirmarEliminarMarca={confirmarEliminarMarca}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+      <ToastContainer />
     </div>
   );
 };
