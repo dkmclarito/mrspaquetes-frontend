@@ -22,12 +22,12 @@ const TablaModelos = ({ modelos, eliminarModelo, toggleModalEditar, marcas  }) =
           {modelos.length > 0 ? (
             modelos.map(modelo => (
               <tr key={modelo.id}>
-                <td className="text-center">{modelo.id}</td>
-                <td className="text-center">{modelo.nombre}</td>
-                <td className="text-center">{modelo.descripcion || 'N/A'}</td>
-                <td className="text-center">
+                <td>{modelo.id}</td>
+                <td>{modelo.nombre}</td>
+                <td>{modelo.descripcion || 'N/A'}</td>
+                <td>
                   {marcas.find(marca => marca.id.toString() === modelo.id_marca.toString())?.nombre || 'Desconocido'}               </td>
-                <td className="text-center">
+                <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"

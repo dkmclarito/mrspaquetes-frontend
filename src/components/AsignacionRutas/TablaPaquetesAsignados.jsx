@@ -62,7 +62,7 @@ export default function TablaPaquetesAsignados({ paquetes, onSelect, paquetesSel
                   <td>{paquete.departamento}</td>
                   <td>{paquete.municipio}</td>
                   <td>{formatDate(paquete.created_at)}</td>
-                  <td className="text-center">
+                  <td>
                     <input
                       type="checkbox"
                       onChange={(e) => onSelect(paquete, e.target.checked)}

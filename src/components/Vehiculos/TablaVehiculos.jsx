@@ -17,9 +17,8 @@ const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar, verDet
             <th className="text-center">Placa</th>
             <th className="text-center">Capacidad de Carga</th>
             <th className="text-center">Estado</th>
-            <th className="text-center">Marca</th>
-            <th className="text-center">Modelo</th>
-            <th className="text-center">Año de Fabricación</th>
+            <th className="text-center">Bodega</th>
+            <th className="text-center">Tipo vehiculo</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -27,26 +26,25 @@ const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar, verDet
           {vehiculos.length > 0 ? (
             vehiculos.map((vehiculo) => (
               <tr key={vehiculo.id}>
-                <td className="text-center">{vehiculo.id}</td>
-                <td className="text-center">
+                <td>{vehiculo.id}</td>
+                <td>
                   {vehiculo.conductor || "Desconocido"}
                 </td>
-                <td className="text-center">
+                <td>
                   {vehiculo.apoyo || "Desconocido"}
                 </td>
-                <td className="text-center">{vehiculo.placa}</td>
-                <td className="text-center">{vehiculo.capacidad_carga}</td>
-                <td className="text-center">
+                <td>{vehiculo.placa}</td>
+                <td>{vehiculo.capacidad_carga}</td>
+                <td>
                   {vehiculo.estado || "Desconocido"}
                 </td>
-                <td className="text-center">
-                  {vehiculo.marca || "Desconocido"}
+                <td>
+                  {vehiculo.bodega || "Desconocido"}
                 </td>
-                <td className="text-center">
-                  {vehiculo.modelo || "Desconocido"}
+                <td>
+                  {vehiculo.tipo || "Desconocido"}
                 </td>
-                <td className="text-center">{vehiculo.year_fabricacion}</td>
-                <td className="text-center">
+                <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
