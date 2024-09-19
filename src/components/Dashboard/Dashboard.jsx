@@ -186,6 +186,7 @@ const Dashboard = () => {
           </Col>
       </Row>
 
+      <br></br>
       <Row>
         <Col md="12">
             <Card>
