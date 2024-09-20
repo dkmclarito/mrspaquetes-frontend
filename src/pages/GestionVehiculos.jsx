@@ -12,7 +12,7 @@ import "../styles/Vehiculos.css";
 import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 2;
+const ITEMS_PER_PAGE = 10;
 
 const GestionVehiculos = () => {
   document.title = "Vehículos | Gestión";

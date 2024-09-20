@@ -28,10 +28,10 @@ const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar, verDet
               <tr key={vehiculo.id}>
                 <td>{vehiculo.id}</td>
                 <td>
-                  {vehiculo.conductor || "Desconocido"}
+                  {vehiculo.conductor || "No asignado"}
                 </td>
                 <td>
-                  {vehiculo.apoyo || "Desconocido"}
+                  {vehiculo.apoyo || "No asignado"}
                 </td>
                 <td>{vehiculo.placa}</td>
                 <td>{vehiculo.capacidad_carga}</td>
@@ -39,7 +39,7 @@ const TablaVehiculos = ({ vehiculos, eliminarVehiculo, toggleModalEditar, verDet
                   {vehiculo.estado || "Desconocido"}
                 </td>
                 <td>
-                  {vehiculo.bodega || "Desconocido"}
+                  {vehiculo.bodega || "Sin bodega"}
                 </td>
                 <td>
                   {vehiculo.tipo || "Desconocido"}

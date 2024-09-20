@@ -365,14 +365,16 @@ const AgregarVehiculo = () => {
   const handleError = (error) => {
     if (error.response && error.response.data) {
       const errorData = error.response.data.error;
-      let errorMessage = "Error al agregar el vehículo.";
-
+      //let errorMessage = "Error al agregar el vehículo, posiblemente el empleado ya esta asignado a otro vehiculo.";
+      let errorMessage = errorData;
       if (errorData) {
         if (errorData.id_marca) {
           errorMessage = "Error en la marca seleccionada.";
         } else if (errorData.id_modelo) {
           errorMessage = "Error en el modelo seleccionado.";
-        } else if (errorData.placa) {
+        } else if (errorData.empleadoConductor) {
+          errorMessage = "El conductor ya está asignado a un vehiculo.";
+        }else if (errorData.placa) {
           errorMessage = "La placa ya está registrada.";
         } else if (errorData.capacidad_carga) {
           errorMessage = "Error en la capacidad de carga.";
@@ -451,6 +453,7 @@ const AgregarVehiculo = () => {
                         }))}
                         placeholder="Seleccione Marca"
                         isClearable
+                        required
                       />
                     </FormGroup>
                   </Col>
@@ -478,7 +481,8 @@ const AgregarVehiculo = () => {
                         }))}
                         placeholder="Seleccione Modelo"
                         isClearable
-                        isDisabled={!marcaSeleccionada} // Deshabilitar si no hay marca seleccionada
+                        isDisabled={!marcaSeleccionada}
+                        required // Deshabilitar si no hay marca seleccionada
                       />
                     </FormGroup>
                   </Col>
@@ -521,6 +525,7 @@ const AgregarVehiculo = () => {
                           }))}
                         placeholder="Seleccione Conductor"
                         isClearable
+                        required
                       />
                     </FormGroup>
                   </Col>
@@ -639,6 +644,7 @@ const AgregarVehiculo = () => {
                               }))}
                             placeholder="Seleccione Apoyo"
                             isClearable
+                            required
                           />
                         </FormGroup>
                       </Col>
@@ -673,6 +679,7 @@ const AgregarVehiculo = () => {
                             }))}
                             placeholder="Seleccione Bodega"
                             isClearable
+                            required
                           />
                         </FormGroup>
                       </Col>
