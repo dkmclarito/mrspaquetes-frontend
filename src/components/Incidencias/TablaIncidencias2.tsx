@@ -11,13 +11,13 @@ import UbicarPaqueteModal from "../UbicarPaqueteModal/UbicarPaqueteModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
+const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
   const [usuarioLogueado, setUsuarioLogueado] = useState(null);
   const [paquetes, setPaquetes] = useState([]);
-  const [incidenciasAsignadas, setIncidenciasAsignadas] = useState([]);
-  const [paquetesUbicados, setPaquetesUbicados] = useState([]); // Paquetes ubicados
+  const [incidenciasReportadas, setIncidenciasReportadas] = useState([]);
+  const [paquetesUbicados, setPaquetesUbicados] = useState([]); 
   const [tooltipOpen, setTooltipOpen] = useState({});
-  const [modalUbicar, setModalUbicar] = useState({ open: false, paqueteUuid: null }); // Modal state
+  const [modalUbicar, setModalUbicar] = useState({ open: false, paqueteUuid: null }); 
   const navigate = useNavigate();
 
   // Obtener ID del usuario logueado
@@ -41,9 +41,9 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
     fetchUsuarioLogueado();
   }, [userId]);
 
-  // Obtener incidencias asignadas al usuario logueado
+  // Obtener incidencias reportadas por el usuario logueado
   useEffect(() => {
-    const fetchIncidenciasAsignadas = async () => {
+    const fetchIncidenciasReportadas = async () => {
       try {
         const token = localStorage.getItem('token');
         const response = await axios.get(`${API_URL}/incidencias`, {
@@ -52,18 +52,18 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
 
         if (response.data && Array.isArray(response.data.data)) {
           const incidenciasFiltradas = response.data.data.filter(
-            (incidencia) => incidencia.id_usuario_asignado === usuarioLogueado?.id_empleado
+            (incidencia) => incidencia.id_usuario_reporta === usuarioLogueado?.id_empleado
           );
 
-          setIncidenciasAsignadas(incidenciasFiltradas);
+          setIncidenciasReportadas(incidenciasFiltradas);
         }
       } catch (error) {
-        console.error("Error al obtener las incidencias asignadas:", error);
+        console.error("Error al obtener las incidencias reportadas:", error);
       }
     };
 
     if (usuarioLogueado) {
-      fetchIncidenciasAsignadas();
+      fetchIncidenciasReportadas();
     }
   }, [usuarioLogueado]);
 
@@ -198,7 +198,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
   };
 
   const renderSolucion = (incidencia) => {
-    if (usuarioLogueado && usuarioLogueado.id_empleado === incidencia.id_usuario_asignado) {
+    if (usuarioLogueado && usuarioLogueado.id_empleado === incidencia.id_usuario_reporta) {
       const paqueteUuid = getUUIDByPaqueteId(incidencia.id_paquete);
       const paqueteYaUbicado = paquetesUbicados.some((paquete) => paquete.id_paquete === incidencia.id_paquete);
 
@@ -234,13 +234,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
 
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
-      <div className="d-flex justify-content-between mb-3">
-        <Button color="primary" onClick={() => navigate('/MisIncidencias')}>
-          Mis incidencias reportadas
-        </Button>
-      </div>
-
-      <h5>Incidencias a dar solución</h5>
+      <h5>Incidencias reportadas</h5>
       <Table striped className="table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
@@ -251,13 +245,12 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
             <th style={{ width: '10%' }} className="text-center">Estado</th>
             <th style={{ width: '20%' }} className="text-center">Empleado asignado</th>
             <th style={{ width: '10%' }} className="text-center">Usuario Reporta</th>
-            <th style={{ width: '20%' }} className="text-center">Solución</th>
             <th style={{ width: '15%' }} className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {incidenciasAsignadas.length > 0 ? (
-            incidenciasAsignadas.map(incidencia => {
+          {incidenciasReportadas.length > 0 ? (
+            incidenciasReportadas.map(incidencia => {
               const uuid = getUUIDByPaqueteId(incidencia.id_paquete);
               return (
                 <tr key={incidencia.id}>
@@ -287,11 +280,9 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
                   <td style={{ width: '10%' }} className="text-center">{renderEstado(incidencia.estado)}</td>
                   <td style={{ width: '20%' }} className="text-center">{renderUsuarioAsignado(incidencia)}</td>
                   <td style={{ width: '10%' }} className="text-center">{incidencia.usuario_reporta}</td>
-                  <td style={{ width: '20%' }} className="text-center">{renderSolucion(incidencia)}</td>
+                
                   <td style={{ width: '15%' }} className="text-center">
                     <div className="button-container">
-                  
-                   
                       <Link
                         to={`/DataIncidencia/${incidencia.id}`}
                         className="btn btn-success btn-icon"
@@ -307,7 +298,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
             })
           ) : (
             <tr>
-              <td colSpan="9" className="text-center">Sin incidencias asignadas.</td>
+              <td colSpan="9" className="text-center">Sin incidencias reportadas.</td>
             </tr>
           )}
         </tbody>
@@ -326,9 +317,9 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
   );
 };
 
-TablaIncidencias.propTypes = {
+TablaIncidencias2.propTypes = {
   eliminarIncidencia: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
 };
 
-export default TablaIncidencias;
+export default TablaIncidencias2;

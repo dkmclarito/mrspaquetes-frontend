@@ -96,13 +96,13 @@ import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
 import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
 import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
-import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
 import DetallesVehiculo from "./pages/DetallesVehiculo"; 
 import AgregarNuevoRol from "./pages/AgregarNuevoRol"; 
 import DataRol from "./pages/DataRol"; 
 import PaquetesTrackingScreen from "./components/Tracking/PaquetesTrackingScreen";
 import OrdenEntregada from "./pages/OrdenEntregada";
+import MisIncidencias from "./pages/MisIncidencias";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -390,12 +390,12 @@ const App = () => {
                 
                 <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
                 <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
-                <Route path="/UbicarPaqueteDaniado" element={<UbicarPaqueteDaniado />} />
                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
                 <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} /> 
                 <Route path="/AgregarNuevoRol" element={<AgregarNuevoRol />} />
                 <Route path="/DataRol/:id" element={<DataRol />} /> 
+                <Route path="/MisIncidencias" element={<MisIncidencias />} />
               </Route>
               <Route
                 path="/gestion-ordenes-recoleccion"

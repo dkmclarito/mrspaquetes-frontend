@@ -3,7 +3,7 @@ import axios from "axios";
 import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Incidencias/Common/Breadcrumbs";
-import TablaIncidencias from "../components/Incidencias/TablaIncidencias";
+import TablaIncidencias2 from "../components/Incidencias/TablaIncidencias2";
 import ModalConfirmarEliminar from "../components/Incidencias/ModalConfirmarEliminar";
 import ModalEditarIncidencia from "../components/Incidencias/ModalEditarIncidencia";
 import AuthService from "../services/authService";
@@ -23,9 +23,10 @@ const GestionIncidencias = () => {
   const [modalEditar, setModalEditar] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
-  const [tipoFiltro, setTipoFiltro] = useState(""); // Nuevo estado para el tipo de incidencia
+  const [tipoFiltro, setTipoFiltro] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Verificar el estado del usuario logueado
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -37,10 +38,8 @@ const GestionIncidencias = () => {
         });
 
         if (response.data.status === "Token is Invalid") {
-          console.error("Token is invalid. Logging out...");
           AuthService.logout();
           window.location.href = "/login";
-          return;
         }
       }
     } catch (error) {
@@ -48,12 +47,14 @@ const GestionIncidencias = () => {
     }
   }, []);
 
+  // Obtener incidencias desde la API
   const fetchData = useCallback(async () => {
     try {
       const token = AuthService.getCurrentUser();
       const response = await axios.get(`${API_URL}/incidencias`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       if (response.data && Array.isArray(response.data.data)) {
         setIncidencias(response.data.data);
       } else {
@@ -64,24 +65,28 @@ const GestionIncidencias = () => {
     }
   }, []);
 
+  // Cargar datos al montar el componente
   useEffect(() => {
     verificarEstadoUsuarioLogueado();
     fetchData();
   }, [fetchData, verificarEstadoUsuarioLogueado]);
 
+  // Actualizar estado del usuario periódicamente
   useEffect(() => {
     const interval = setInterval(() => {
       verificarEstadoUsuarioLogueado();
-    }, 30000);
+    }, 30000); // 30 segundos
 
     return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
+  // Eliminar una incidencia
   const eliminarIncidencia = useCallback((idIncidencia) => {
     setConfirmarEliminar(true);
     setIncidenciaAEliminar(idIncidencia);
   }, []);
 
+  // Confirmar la eliminación de la incidencia
   const confirmarEliminarIncidencia = useCallback(async () => {
     try {
       const token = AuthService.getCurrentUser();
@@ -97,33 +102,38 @@ const GestionIncidencias = () => {
     }
   }, [incidenciaAEliminar]);
 
+  // Filtrar las incidencias según los filtros de búsqueda, estado y tipo
   const filtrarIncidencias = useCallback(() => {
     return incidencias.filter(incidencia => {
       const cumpleBusqueda = !busqueda ||
         incidencia.id_paquete.toString().includes(busqueda) ||
         (incidencia.usuario_asignado && incidencia.usuario_asignado.toString().includes(busqueda));
-      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro; // Ajustar aquí para comparar correctamente el estado
-      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro; // Nuevo filtro para tipo de incidencia
+      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro;
+      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro;
       return cumpleBusqueda && cumpleEstado && cumpleTipo;
     });
   }, [incidencias, busqueda, estadoFiltro, tipoFiltro]);
 
   const incidenciasFiltradas = useMemo(() => filtrarIncidencias(), [filtrarIncidencias]);
 
+  // Paginación de incidencias
   const paginatedIncidencias = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return incidenciasFiltradas.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [incidenciasFiltradas, currentPage]);
 
+  // Resetear la página actual si cambian los filtros
   useEffect(() => {
     setCurrentPage(1);
   }, [busqueda, estadoFiltro, tipoFiltro]);
 
+  // Abrir el modal para editar la incidencia
   const toggleModalEditar = (incidencia) => {
     setIncidenciaEditada(incidencia);
     setModalEditar(true);
   };
 
+  // Guardar los cambios en la incidencia editada
   const guardarCambiosIncidencia = (incidenciaActualizada) => {
     setIncidencias((prevIncidencias) =>
       prevIncidencias.map((incidencia) =>
@@ -166,12 +176,23 @@ const GestionIncidencias = () => {
                 <option value="En Proceso">En Proceso</option>
                 <option value="Cerrada">Cerrada</option>
               </Input>
-
-             
-           
+              <Label for="tipoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+                Tipo de Incidencia:
+              </Label>
+              <Input
+                type="select"
+                id="tipoFiltro"
+                value={tipoFiltro}
+                onChange={(e) => setTipoFiltro(e.target.value)}
+                style={{ width: "150px" }}
+              >
+                <option value="">Todos</option>
+                <option value="Paquete Dañado">Paquete Dañado</option>
+                <option value="Entrega Fallida">Entrega Fallida</option>
+                <option value="Otro">Otro</option>
+              </Input>
 
               <div style={{ marginLeft: "auto" }}>
-               
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
                 </Link>
@@ -179,13 +200,12 @@ const GestionIncidencias = () => {
             </div>
           </Col>
         </Row>
-     
         <br />
         <Row>
           <Col lg={12}>
             <Card>
               <CardBody>
-                <TablaIncidencias
+                <TablaIncidencias2
                   incidencias={paginatedIncidencias}
                   eliminarIncidencia={eliminarIncidencia}
                   toggleModalEditar={toggleModalEditar}
