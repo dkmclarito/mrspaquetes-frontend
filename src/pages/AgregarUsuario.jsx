@@ -19,6 +19,7 @@ const AgregarUsuario = () => {
   const [alertaError, setAlertaError] = useState(false);
   const [errorMensaje, setErrorMensaje] = useState("");
   const [usuarios, setUsuarios] = useState([]);
+  const [roles, setRoles] = useState([]); // Estado para almacenar los roles obtenidos de la API
   const [mostrarPassword, setMostrarPassword] = useState(false);
 
   const token = AuthService.getCurrentUser();
@@ -75,7 +76,23 @@ const AgregarUsuario = () => {
       }
     };
 
+    const fetchRoles = async () => { // Nueva función para obtener los roles desde la API
+      try {
+        const response = await axios.get(`${API_URL}/roles`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (response.data && Array.isArray(response.data)) {
+          setRoles(response.data); // Guardar los roles en el estado
+        }
+      } catch (error) {
+        console.error("Error al obtener roles:", error);
+      }
+    };
+
     fetchUsuarios();
+    fetchRoles(); // Llamada a la función para obtener los roles
   }, [token]);
 
   const displayAlert = (type, message) => {
@@ -239,9 +256,9 @@ const AgregarUsuario = () => {
                     required
                   >
                     <option value="">Selecciona un rol</option>
-                    <option value="1">Administrador</option>
-                    <option value="3">Conductor</option>
-                    <option value="4">Básico</option>
+                    {roles.map(role => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                    ))}
                   </Input>
                 </FormGroup>
               </Col>
@@ -258,4 +275,3 @@ const AgregarUsuario = () => {
 };
 
 export default AgregarUsuario;
-

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Card, CardBody, Button, FormGroup, Label, Input } from 'reactstrap';
 import { confirmAlert } from 'react-confirm-alert';
@@ -11,13 +11,14 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 // Mapeo de permisos a español
 const permisosEspañol = {
-    "auth-view_user": "Ver usuario",
     "auth-get_user_by_id": "Obtener usuario por ID",
     "auth-get_users": "Obtener usuarios",
     "auth-assign_user_role": "Asignar rol a usuario",
     "auth-assign_permissions_to_role": "Asignar permisos a rol",
     "auth-update": "Actualizar autenticación",
     "auth-store": "Almacenar autenticación",
+    "auth-adminClienteRegistrar": "Registrar cliente como administrador",
+    "auth-actualizarClientePerfil": "Actualizar perfil del cliente",
     "auth-destroy": "Eliminar autenticación",
     "roles-view": "Ver roles",
     "roles-create": "Crear roles",
@@ -66,11 +67,6 @@ const permisosEspañol = {
     "direcciones-create": "Crear direcciones",
     "direcciones-update": "Actualizar direcciones",
     "direcciones-destroy": "Eliminar direcciones",
-    "destinos-view": "Ver destinos",
-    "destinos-show": "Mostrar destinos",
-    "destinos-create": "Crear destinos",
-    "destinos-update": "Actualizar destinos",
-    "destinos-destroy": "Eliminar destinos",
     "bodegas-view": "Ver bodegas",
     "bodegas-show": "Mostrar bodegas",
     "bodegas-create": "Crear bodegas",
@@ -97,17 +93,54 @@ const permisosEspañol = {
     "orden-view": "Vista de órdenes",
     "orden-show": "Mostrar órden",
     "orden-create": "Crear órden",
-    "orden-update": "Actulizar órden",
-    "orden-destroy": "Eliminar órden"
+    "orden-update": "Actualizar órden",
+    "orden-destroy": "Eliminar órden",
+    "orden-cliente": "Orden del cliente",
+    "mis-ordenes-cliente": "Mis órdenes del cliente",
+    "rutarecoleccion-view": "Ver ruta de recolección",
+    "rutarecoleccion-show": "Mostrar ruta de recolección",
+    "rutarecoleccion-create": "Crear ruta de recolección",
+    "rutarecoleccion-update": "Actualizar ruta de recolección",
+    "rutarecoleccion-destroy": "Eliminar ruta de recolección",
+    "ordenrecoleccion-view": "Ver orden de recolección",
+    "ordenrecoleccion-show": "Mostrar orden de recolección",
+    "ordenrecoleccion-create": "Crear orden de recolección",
+    "ordenrecoleccion-update": "Actualizar orden de recolección",
+    "ordenrecoleccion-destroy": "Eliminar orden de recolección",
+    "ubicaciones-view": "Ver ubicaciones",
+    "ubicaciones-show": "Mostrar ubicaciones",
+    "ubicaciones-create": "Crear ubicaciones",
+    "ubicaciones-update": "Actualizar ubicaciones",
+    "ubicaciones-destroy": "Eliminar ubicaciones",
+    "ubicacionespaquetes-view": "Ver ubicaciones de paquetes",
+    "ubicacionespaquetes-show": "Mostrar ubicaciones de paquetes",
+    "ubicacionespaquetes-create": "Crear ubicaciones de paquetes",
+    "ubicacionespaquetes-update": "Actualizar ubicaciones de paquetes",
+    "ubicacionespaquetes-destroy": "Eliminar ubicaciones de paquetes",
+    "pasillos-view": "Ver pasillos",
+    "pasillos-show": "Mostrar pasillos",
+    "pasillos-create": "Crear pasillos",
+    "pasillos-update": "Actualizar pasillos",
+    "pasillos-destroy": "Eliminar pasillos",
+    "traslados-view": "Ver traslados",
+    "traslados-show": "Mostrar traslados",
+    "traslados-create": "Crear traslados",
+    "traslados-update": "Actualizar traslados",
+    "traslados-destroy": "Eliminar traslados",
+    "traslados-pdf": "Generar PDF de traslados",
+    "ubicacion-paquetes-danados-index": "Índice de paquetes dañados",
+    "ubicacion-paquetes-danados-store": "Almacenar ubicación de paquetes dañados",
+    "ubicacion-paquetes-danados-show": "Mostrar ubicación de paquetes dañados",
+    "ubicacion-paquetes-danados-update": "Actualizar ubicación de paquetes dañados",
+    "ubicacion-paquetes-danados-destroy": "Eliminar ubicación de paquetes dañados",
 };
 
 const AgregarRolesPermisos = () => {
     const { id } = useParams();
-    const { state } = useLocation();
     const navigate = useNavigate();
     const [permisos, setPermisos] = useState([]);
     const [permisosAsignados, setPermisosAsignados] = useState([]);
-    const [roleName, setRoleName] = useState(state?.name || ''); 
+    const [roleName, setRoleName] = useState('');
 
     const verificarEstadoUsuarioLogueado = useCallback(async () => {
         try {
@@ -129,8 +162,6 @@ const AgregarRolesPermisos = () => {
             }
         } catch (error) {
             console.error("Error al verificar el estado del usuario:", error);
-           // AuthService.logout();
-           // window.location.href = "/login";
         }
     }, []);
 
@@ -145,9 +176,29 @@ const AgregarRolesPermisos = () => {
     }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
+        const fetchRolName = async () => {
+            try {
+                const token = AuthService.getCurrentUser();
+                const rolesResponse = await axios.get(`${API_URL}/roles`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const rolesData = rolesResponse.data;
+                const role = rolesData.find(role => role.id === parseInt(id));
+                setRoleName(role ? role.name : 'Desconocido');
+            } catch (error) {
+                console.error('Error al obtener el nombre del rol:', error);
+            }
+        };
+
+        fetchRolName();
+    }, [id]);
+
+    useEffect(() => {
         const fetchPermisosAsignados = async () => {
             try {
-                const token = AuthService.getCurrentUser(); 
+                const token = AuthService.getCurrentUser();
                 const permisosResponse = await axios.get(`${API_URL}/auth/get_assigned_permissions_to_role/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -169,13 +220,11 @@ const AgregarRolesPermisos = () => {
     }, [id]);
 
     const handlePermisoChange = (permisoId, isChecked) => {
-        setPermisosAsignados(current => {
-            if (isChecked) {
-                return [...current, permisoId];
-            } else {
-                return current.filter(id => id !== permisoId);
-            }
-        });
+        if (isChecked) {
+            setPermisosAsignados(current => [...current, permisoId]);
+        } else {
+            setPermisosAsignados(current => current.filter(id => id !== permisoId));
+        }
     };
 
     const handleSubmit = async () => {
@@ -188,7 +237,7 @@ const AgregarRolesPermisos = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            alert('Permisos actualizados exitosamente!');
+
             navigate('/GestionRolesPermisos');
         } catch (error) {
             console.error('Error al actualizar permisos:', error);
@@ -203,7 +252,7 @@ const AgregarRolesPermisos = () => {
         }
 
         confirmAlert({
-            title: `Permisos para ${roleName}`,
+            title: `Asignación de permisos`,
             message: '¿Está seguro de asignar a este rol los permisos seleccionados?',
             buttons: [
                 {
@@ -221,34 +270,63 @@ const AgregarRolesPermisos = () => {
         navigate('/GestionRolesPermisos');
     };
 
+    const permisosNoAsignados = permisos.filter(permiso => !permisosAsignados.includes(permiso.id));
+    const permisosAsignadosFiltrados = permisos.filter(permiso => permisosAsignados.includes(permiso.id));
+
     return (
         <Container fluid>
             <Breadcrumbs title="Roles y Permisos" breadcrumbItem="Lista de Permisos" />
             <Row>
                 <Col lg={12}>
                     <Card>
+                        <div className="sticky-top " style={{ zIndex: 1000 }}>
+                            <div className="d-flex justify-content-between align-items-center p-3">
+                          
+                                <Link to="/GestionRolesPermisos" className="btn btn-secondary btn-regresar">
+                                    <i className="fas fa-arrow-left"></i> Regresar
+                                </Link>      <Button color="primary" onClick={showConfirmationDialog} style={{ marginRight: '10px' }}>
+                                    Guardar Cambios
+                                </Button>
+                            </div>
+                        </div>
                         <CardBody>
-                            <h3>Asignación de permisos al rol de {roleName}</h3>
-                            <br />
-                            {Array.isArray(permisos) ? permisos.map(permiso => (
-                                <FormGroup key={permiso.id}>
-                                    <Label check>
-                                        <Input
-                                            type="checkbox"
-                                            checked={permisosAsignados.includes(permiso.id)}
-                                            onChange={e => handlePermisoChange(permiso.id, e.target.checked)}
-                                        />{' '}
-                                        {permisosEspañol[permiso.name] || permiso.name} 
-                                    </Label>
-                                </FormGroup>
-                            )) : <p>Cargando permisos...</p>}
-                            <hr />
-                            <Button color="primary" onClick={showConfirmationDialog} style={{ marginRight: '10px' }}>
-                                Guardar Cambios
-                            </Button>
-                            <Button color="secondary" onClick={handleBack}>
-                                Regresar
-                            </Button>
+                            <h3>Asignando permisos al rol '{roleName}'</h3>
+                            <Row>
+                                <Col md={6}>
+                                    <h5>Permisos sin asignar</h5>
+                                    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                                        {permisosNoAsignados.length > 0 ? permisosNoAsignados.map(permiso => (
+                                            <FormGroup key={permiso.id}>
+                                                <Label check>
+                                                    <Input
+                                                        type="checkbox"
+                                                        checked={false}
+                                                        onChange={e => handlePermisoChange(permiso.id, e.target.checked)}
+                                                    />{' '}
+                                                    {permisosEspañol[permiso.name] || permiso.name}
+                                                </Label>
+                                            </FormGroup>
+                                        )) : <p>No hay permisos no asignados.</p>}
+                                    </div>
+                                </Col>
+                                <Col md={6}>
+                                    <h5>Permisos Asignados</h5>
+                                    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                                        {permisosAsignadosFiltrados.length > 0 ? permisosAsignadosFiltrados.map(permiso => (
+                                            <FormGroup key={permiso.id}>
+                                                <Label check>
+                                                    <Input
+                                                        type="checkbox"
+                                                        checked={true}
+                                                        onChange={e => handlePermisoChange(permiso.id, e.target.checked)}
+                                                    />{' '}
+                                                    {permisosEspañol[permiso.name] || permiso.name}
+                                                </Label>
+                                            </FormGroup>
+                                        )) : <p>No hay permisos asignados.</p>}
+                                    </div>
+                                </Col>
+                            </Row>
                         </CardBody>
                     </Card>
                 </Col>
