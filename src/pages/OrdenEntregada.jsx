@@ -126,6 +126,8 @@ const OrdenEntregada = () => {
                                     <Input
                                         type="file"
                                         id="imagen"
+                                        accept="image/*"  // Esto permite seleccionar solo imágenes y abre la cámara en dispositivos móviles
+                                        capture="environment"  // Esto intenta usar la cámara trasera del dispositivo
                                         onChange={handleImagenChange}
                                         required
                                     />
