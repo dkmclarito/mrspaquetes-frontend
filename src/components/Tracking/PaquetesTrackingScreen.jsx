@@ -78,7 +78,7 @@ const PaquetesTrackingScreen = () => {
                                         <CardTitle tag="h5">Fecha: {new Date(item.date).toLocaleDateString()}</CardTitle>
                                         <ListGroup>
                                             {item.data.map((paquete, idx) => (
-                                                <ListGroupItem key={idx} style={{ backgroundColor: '#f8f9fa', marginBottom: '0.5rem', borderRadius: '5px' }}>
+                                                <ListGroupItem key={idx} style={{  marginBottom: '0.5rem', borderRadius: '5px' }}>
                                                     <strong>{paquete.title}</strong> - {paquete.subtitle}
                                                 </ListGroupItem>
                                             ))}
