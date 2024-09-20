@@ -305,6 +305,7 @@ const VerticalLayout = () => {
                       </NavLink>
                     </li>
 
+                        {/* 
                     <li>
                       <NavLink
                         to="/TrackingPaquetes"
@@ -316,6 +317,7 @@ const VerticalLayout = () => {
                         Tracking de Paquetes
                       </NavLink>
                     </li>
+                    */}
                   </ul>
                 </li>
 

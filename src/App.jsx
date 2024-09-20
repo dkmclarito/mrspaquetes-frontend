@@ -53,7 +53,7 @@ import ProcesarPago from "./pages/ProcesarPago";
 import OrdenesSeleccionarCliente from "./pages/OrdenesSeleccionarCliente";
 import OrdenesDirecciones from "./pages/OrdenesDirecciones";
 import DetallesOrden from "./pages/DetallesOrden";
-import TrackingPage from "./pages/Tracking";
+import TrackingPage from "./components/Tracking/Tracking";
 import VerDetallesOrden from "./pages/VerDetallesOrden";
 import EditarOrden from "./components/Ordenes/Edicion/EditarOrden";
 import GestionRutas from "./pages/GestionRutas";
@@ -99,6 +99,7 @@ import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
 import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
 import DetallesVehiculo from "./pages/DetallesVehiculo";
+import PaquetesTrackingScreen from "./components/Tracking/PaquetesTrackingScreen";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -212,6 +213,10 @@ const App = () => {
                 <Route
                   path="/TrackingPaquetes"
                   element={<TrackingPaquetes />}
+                />
+                <Route
+                  path="/PaquetesTrackingScreen/:id"
+                  element={<PaquetesTrackingScreen />}
                 />
                 <Route
                   path="/GestionUbicacion"
