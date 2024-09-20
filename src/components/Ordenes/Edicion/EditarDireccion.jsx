@@ -13,7 +13,7 @@ import {
   ModalBody,
 } from "reactstrap";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import FormularioDireccion from "../../../pages/FormularioDireccion";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -28,10 +28,35 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
   const [modalAgregar, setModalAgregar] = useState(false);
   const [editando, setEditando] = useState(false);
   const [editandoRecoleccion, setEditandoRecoleccion] = useState(false);
+  const [direccionesDetalladas, setDireccionesDetalladas] = useState({});
+
+  const obtenerDetallesDirecciones = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/dropdown/get_direcciones/${orden.id_cliente}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const detalles = {};
+      response.data.forEach((d) => {
+        detalles[d.id] = {
+          departamento: d.departamento,
+          municipio: d.municipio,
+        };
+      });
+      setDireccionesDetalladas(detalles);
+    } catch (error) {
+      console.error("Error al obtener detalles de direcciones:", error);
+      toast.error("Error al cargar detalles de ubicaciones");
+    }
+  };
 
   useEffect(() => {
     if (orden) {
       fetchDirecciones();
+      obtenerDetallesDirecciones();
     }
   }, [orden]);
 
@@ -63,6 +88,24 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       console.error("Error al cargar direcciones:", error);
       toast.error("Error al cargar las direcciones");
     }
+  };
+
+  const filtrarDirecciones = (direcciones, esRecoleccion) => {
+    if (orden.tipo_orden === "preorden" && esRecoleccion) {
+      return direcciones.filter(
+        (d) => d.id_departamento === 12 && d.id_municipio === 215
+      );
+    } else if (orden.tipo_orden === "entrega_expres" && !esRecoleccion) {
+      return direcciones.filter(
+        (d) => d.id_departamento === 12 && d.id_municipio === 215
+      );
+    }
+    return direcciones;
+  };
+
+  const obtenerNombreUbicacion = (direccion) => {
+    const detalles = direccionesDetalladas[direccion.id];
+    return `${detalles?.municipio || direccion.id_municipio}, ${detalles?.departamento || direccion.id_departamento}`;
   };
 
   const handleInputChange = (e, isDireccionRecoleccion = false) => {
@@ -130,6 +173,7 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
         );
         return;
       }
+
       setDireccionSeleccionada(direccion);
     }
 
@@ -218,24 +262,30 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
         <Button color="primary" onClick={toggleModalAgregar}>
           Agregar Nueva Dirección
         </Button>
-        <Table>
+
+        <h4>Direcciones de Entrega Disponibles</h4>
+        <Table responsive>
           <thead>
             <tr>
               <th>Dirección</th>
               <th>Contacto</th>
               <th>Teléfono</th>
+              <th>Ubicación</th>
               <th>Acción</th>
-              {orden.tipo_orden === "preorden" && (
-                <th>Seleccionar como Recolección</th>
-              )}
             </tr>
           </thead>
           <tbody>
-            {direcciones.map((direccion) => (
+            {filtrarDirecciones(direcciones, false).map((direccion) => (
               <tr key={direccion.id}>
-                <td>{direccion.direccion}</td>
+                <td>
+                  {direccion.direccion}
+                  {direccion.id === direccionRecoleccionSeleccionada?.id && (
+                    <span className="text-warning"> (Recolección)</span>
+                  )}
+                </td>
                 <td>{direccion.nombre_contacto}</td>
                 <td>{direccion.telefono}</td>
+                <td>{obtenerNombreUbicacion(direccion)}</td>
                 <td>
                   <Button
                     color={
@@ -244,32 +294,62 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
                         : "primary"
                     }
                     onClick={() => seleccionarDireccion(direccion)}
+                    disabled={
+                      direccion.id === direccionRecoleccionSeleccionada?.id
+                    }
                   >
                     {direccion.id === direccionSeleccionada?.id
                       ? "Seleccionada"
                       : "Seleccionar"}
                   </Button>
                 </td>
-                {orden.tipo_orden === "preorden" && (
-                  <td>
-                    <Button
-                      color={
-                        direccion.id === direccionRecoleccionSeleccionada?.id
-                          ? "success"
-                          : "primary"
-                      }
-                      onClick={() => seleccionarDireccion(direccion, true)}
-                    >
-                      {direccion.id === direccionRecoleccionSeleccionada?.id
-                        ? "Seleccionada"
-                        : "Seleccionar"}
-                    </Button>
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>
         </Table>
+
+        {orden.tipo_orden === "preorden" && (
+          <div>
+            <h4>Direcciones de Recolección Disponibles</h4>
+            <Table responsive>
+              <thead>
+                <tr>
+                  <th>Dirección</th>
+                  <th>Contacto</th>
+                  <th>Teléfono</th>
+                  <th>Ubicacion</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtrarDirecciones(direcciones, true).map((direccion) => (
+                  <tr key={direccion.id}>
+                    <td>{direccion.direccion}</td>
+                    <td>{direccion.nombre_contacto}</td>
+                    <td>{direccion.telefono}</td>
+                    <td>{obtenerNombreUbicacion(direccion)}</td>
+                    <td>
+                      <Button
+                        color={
+                          direccion.id === direccionRecoleccionSeleccionada?.id
+                            ? "success"
+                            : "primary"
+                        }
+                        onClick={() => seleccionarDireccion(direccion, true)}
+                        disabled={direccion.id === direccionSeleccionada?.id}
+                      >
+                        {direccion.id === direccionRecoleccionSeleccionada?.id
+                          ? "Seleccionada"
+                          : "Seleccionar"}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
+
         {direccionSeleccionada && (
           <div>
             <h4>Dirección de Entrega Seleccionada</h4>
@@ -323,6 +403,10 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
                 </p>
                 <p>
                   <strong>Teléfono:</strong> {direccionSeleccionada.telefono}
+                </p>
+                <p>
+                  <strong>Ubicación:</strong>{" "}
+                  {obtenerNombreUbicacion(direccionSeleccionada)}
                 </p>
                 <p>
                   <strong>Referencia:</strong>{" "}
@@ -390,25 +474,24 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
                 <>
                   <p>
                     <strong>Dirección:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.direccion}
+                    {direccionSeleccionada.direccion}
                   </p>
                   <p>
                     <strong>Contacto:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.nombre_contacto}
+                    {direccionSeleccionada.nombre_contacto}
                   </p>
                   <p>
-                    <strong>Teléfono:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.telefono}
+                    <strong>Teléfono:</strong> {direccionSeleccionada.telefono}
+                  </p>
+                  <p>
+                    <strong>Ubicación:</strong>{" "}
+                    {obtenerNombreUbicacion(direccionSeleccionada)}
                   </p>
                   <p>
                     <strong>Referencia:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.referencia ||
-                      "No especificada"}
+                    {direccionSeleccionada.referencia || "No especificada"}
                   </p>
-                  <Button
-                    color="primary"
-                    onClick={() => setEditandoRecoleccion(true)}
-                  >
+                  <Button color="primary" onClick={() => setEditando(true)}>
                     Editar Detalles
                   </Button>
                 </>

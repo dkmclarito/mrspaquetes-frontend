@@ -469,7 +469,7 @@ export default function DatosPaquetePreOrdenExpress() {
                         type="text"
                         name="id_estado_paquete"
                         id="id_estado_paquete"
-                        value="En Recepción"
+                        value="En espera de recoleccion"
                         disabled
                       />
                     </FormGroup>
