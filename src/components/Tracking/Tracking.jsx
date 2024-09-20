@@ -30,7 +30,7 @@ const TrackingPaquetes = () => {
       const token = AuthService.getCurrentUser();
       const response = await axios.get(`${API_URL}/seguimiento-orden`, { 
         headers: { 'Authorization': `Bearer ${token}` },
-        params: { numero_seguimiento: numeroSeguimiento }
+        params: { numero_tracking: numeroSeguimiento }
       });
   
       if (response.data.hasOwnProperty('id')) {
@@ -70,6 +70,7 @@ const TrackingPaquetes = () => {
                   value={numeroSeguimiento}
                   onChange={(e) => setNumeroSeguimientp(e.target.value)}
                 />
+                <br />
                 <Button color="primary" onClick={handleSeguimientoOrden} disabled={loading}>
                   {loading ? 'Cargando...' : 'Buscar Orden'}
                 </Button>
