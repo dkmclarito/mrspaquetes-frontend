@@ -151,7 +151,7 @@ const UbicarPaqueteDaniado = () => {
             </Row>
 
             <Button type="submit" color="primary">
-              Registrar Ubicación
+              Ubicar Paquete
             </Button> <span></span>
             <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar">
                 <i className="fas fa-arrow-left"></i> Regresar
