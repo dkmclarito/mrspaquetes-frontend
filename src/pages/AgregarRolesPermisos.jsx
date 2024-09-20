@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Card, CardBody, Button, FormGroup, Label, Input } from 'reactstrap';
 import { confirmAlert } from 'react-confirm-alert';
@@ -137,11 +137,10 @@ const permisosEspañol = {
 
 const AgregarRolesPermisos = () => {
     const { id } = useParams();
-    const { state } = useLocation();
     const navigate = useNavigate();
     const [permisos, setPermisos] = useState([]);
     const [permisosAsignados, setPermisosAsignados] = useState([]);
-    const [roleName, setRoleName] = useState(state?.name || '');
+    const [roleName, setRoleName] = useState('');
 
     const verificarEstadoUsuarioLogueado = useCallback(async () => {
         try {
@@ -163,8 +162,6 @@ const AgregarRolesPermisos = () => {
             }
         } catch (error) {
             console.error("Error al verificar el estado del usuario:", error);
-            // AuthService.logout();
-            // window.location.href = "/login";
         }
     }, []);
 
@@ -177,6 +174,26 @@ const AgregarRolesPermisos = () => {
 
         return () => clearInterval(interval);
     }, [verificarEstadoUsuarioLogueado]);
+
+    useEffect(() => {
+        const fetchRolName = async () => {
+            try {
+                const token = AuthService.getCurrentUser();
+                const rolesResponse = await axios.get(`${API_URL}/roles`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                const rolesData = rolesResponse.data;
+                const role = rolesData.find(role => role.id === parseInt(id));
+                setRoleName(role ? role.name : 'Desconocido');
+            } catch (error) {
+                console.error('Error al obtener el nombre del rol:', error);
+            }
+        };
+
+        fetchRolName();
+    }, [id]);
 
     useEffect(() => {
         const fetchPermisosAsignados = async () => {
@@ -203,13 +220,11 @@ const AgregarRolesPermisos = () => {
     }, [id]);
 
     const handlePermisoChange = (permisoId, isChecked) => {
-        setPermisosAsignados(current => {
-            if (isChecked) {
-                return [...current, permisoId];
-            } else {
-                return current.filter(id => id !== permisoId);
-            }
-        });
+        if (isChecked) {
+            setPermisosAsignados(current => [...current, permisoId]);
+        } else {
+            setPermisosAsignados(current => current.filter(id => id !== permisoId));
+        }
     };
 
     const handleSubmit = async () => {
@@ -237,7 +252,7 @@ const AgregarRolesPermisos = () => {
         }
 
         confirmAlert({
-            title: `Permisos para ${roleName}`,
+            title: `Asignación de permisos`,
             message: '¿Está seguro de asignar a este rol los permisos seleccionados?',
             buttons: [
                 {
@@ -255,6 +270,9 @@ const AgregarRolesPermisos = () => {
         navigate('/GestionRolesPermisos');
     };
 
+    const permisosNoAsignados = permisos.filter(permiso => !permisosAsignados.includes(permiso.id));
+    const permisosAsignadosFiltrados = permisos.filter(permiso => permisosAsignados.includes(permiso.id));
+
     return (
         <Container fluid>
             <Breadcrumbs title="Roles y Permisos" breadcrumbItem="Lista de Permisos" />
@@ -263,31 +281,52 @@ const AgregarRolesPermisos = () => {
                     <Card>
                         <div className="sticky-top " style={{ zIndex: 1000 }}>
                             <div className="d-flex justify-content-between align-items-center p-3">
-                                <Button color="primary" onClick={showConfirmationDialog} style={{ marginRight: '10px' }}>
-                                    Guardar Cambios
-                                </Button>
+                          
                                 <Link to="/GestionRolesPermisos" className="btn btn-secondary btn-regresar">
                                     <i className="fas fa-arrow-left"></i> Regresar
-                                </Link>
+                                </Link>      <Button color="primary" onClick={showConfirmationDialog} style={{ marginRight: '10px' }}>
+                                    Guardar Cambios
+                                </Button>
                             </div>
                         </div>
                         <CardBody>
-                            <h3>Asignación de permisos al rol de {roleName}</h3>
-                            <br />
-                            <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px' }}>
-                                {Array.isArray(permisos) ? permisos.map(permiso => (
-                                    <FormGroup key={permiso.id}>
-                                        <Label check>
-                                            <Input
-                                                type="checkbox"
-                                                checked={permisosAsignados.includes(permiso.id)}
-                                                onChange={e => handlePermisoChange(permiso.id, e.target.checked)}
-                                            />{' '}
-                                            {permisosEspañol[permiso.name] || permiso.name}
-                                        </Label>
-                                    </FormGroup>
-                                )) : <p>Cargando permisos...</p>}
-                            </div>
+                            <h3>Asignando permisos al rol '{roleName}'</h3>
+                            <Row>
+                                <Col md={6}>
+                                    <h5>Permisos sin asignar</h5>
+                                    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                                        {permisosNoAsignados.length > 0 ? permisosNoAsignados.map(permiso => (
+                                            <FormGroup key={permiso.id}>
+                                                <Label check>
+                                                    <Input
+                                                        type="checkbox"
+                                                        checked={false}
+                                                        onChange={e => handlePermisoChange(permiso.id, e.target.checked)}
+                                                    />{' '}
+                                                    {permisosEspañol[permiso.name] || permiso.name}
+                                                </Label>
+                                            </FormGroup>
+                                        )) : <p>No hay permisos no asignados.</p>}
+                                    </div>
+                                </Col>
+                                <Col md={6}>
+                                    <h5>Permisos Asignados</h5>
+                                    <div style={{ maxHeight: '300px', overflowY: 'auto', padding: '10px', border: '1px solid #dee2e6', borderRadius: '4px' }}>
+                                        {permisosAsignadosFiltrados.length > 0 ? permisosAsignadosFiltrados.map(permiso => (
+                                            <FormGroup key={permiso.id}>
+                                                <Label check>
+                                                    <Input
+                                                        type="checkbox"
+                                                        checked={true}
+                                                        onChange={e => handlePermisoChange(permiso.id, e.target.checked)}
+                                                    />{' '}
+                                                    {permisosEspañol[permiso.name] || permiso.name}
+                                                </Label>
+                                            </FormGroup>
+                                        )) : <p>No hay permisos asignados.</p>}
+                                    </div>
+                                </Col>
+                            </Row>
                         </CardBody>
                     </Card>
                 </Col>

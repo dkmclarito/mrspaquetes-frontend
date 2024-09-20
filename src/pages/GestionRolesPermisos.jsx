@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, CardBody, Button } from "reactstrap";
 import Breadcrumbs from "../components/RolesPermisos/Common/Breadcrumbs";
 import TablaRolesPermisos from "../components/RolesPermisos/TablaRolesPermisos";
-import AuthService from "../services/authService"; 
-import ModalConfirmarEliminar from "../components/RolesPermisos/ModalConfirmarEliminar"; // Importa el modal de confirmación
+import AuthService from "../services/authService";
+import ModalConfirmarEliminar from "../components/RolesPermisos/ModalConfirmarEliminar";
+import ModalEditarRol from "../components/RolesPermisos/ModalEditarRol";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -18,8 +19,10 @@ const roleAliases = {
 
 const GestionRolesPermisos = () => {
     const [roles, setRoles] = useState([]);
-    const [roleAEliminar, setRoleAEliminar] = useState(null); // Estado para manejar el rol a eliminar
-    const [confirmarEliminar, setConfirmarEliminar] = useState(false); // Estado para mostrar el modal de confirmación
+    const [roleAEliminar, setRoleAEliminar] = useState(null);
+    const [confirmarEliminar, setConfirmarEliminar] = useState(false);
+    const [roleAEditar, setRoleAEditar] = useState(null);
+    const [mostrarEditar, setMostrarEditar] = useState(false);
     const navigate = useNavigate();
 
     const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -46,21 +49,21 @@ const GestionRolesPermisos = () => {
     }, []);
 
     useEffect(() => {
-        verificarEstadoUsuarioLogueado(); 
+        verificarEstadoUsuarioLogueado();
 
         const interval = setInterval(() => {
             verificarEstadoUsuarioLogueado();
-        }, 30000); 
+        }, 30000);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
         const fetchRoles = async () => {
-            const token = AuthService.getCurrentUser(); 
+            const token = AuthService.getCurrentUser();
             if (!token) {
                 console.error("No se encontró token de autorización.");
-                return;  
+                return;
             }
             
             const response = await axios.get(`${API_URL}/roles`, {
@@ -84,16 +87,16 @@ const GestionRolesPermisos = () => {
     }, []);
 
     const handleAssignPermissions = (id, name) => {
-        navigate(`/AgregarRolesPermisos/${id}`, { state: { name } }); 
+        navigate(`/AgregarRolesPermisos/${id}`, { state: { name } });
     };
 
     const handleAddRole = () => {
-        navigate('/AgregarNuevoRol'); 
+        navigate('/AgregarNuevoRol');
     };
 
     const handleDeleteRole = (id) => {
-        setRoleAEliminar(id); 
-        setConfirmarEliminar(true); 
+        setRoleAEliminar(id);
+        setConfirmarEliminar(true);
     };
 
     const confirmarEliminarRole = async () => {
@@ -110,9 +113,43 @@ const GestionRolesPermisos = () => {
             console.error("Error al eliminar el rol:", error);
             alert("No se pudo eliminar el rol. Inténtelo de nuevo más tarde.");
         } finally {
-            setConfirmarEliminar(false); 
-            setRoleAEliminar(null); 
+            setConfirmarEliminar(false);
+            setRoleAEliminar(null);
         }
+    };
+
+    const handleEditRole = (id, name) => {
+        setRoleAEditar({ id, name });
+        setMostrarEditar(true);
+    };
+
+    const confirmarEditarRol = async (nombreActualizado) => {
+        try {
+            const token = AuthService.getCurrentUser();
+            const response = await axios.put(`${API_URL}/roles/${roleAEditar.id}`, {
+                name: nombreActualizado
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.status === 200) {
+                setRoles(prevRoles => prevRoles.map(role =>
+                    role.id === roleAEditar.id ? { ...role, name: nombreActualizado } : role
+                ));
+            }
+        } catch (error) {
+            console.error("Error al actualizar el rol:", error);
+            alert("No se pudo actualizar el rol. Inténtelo de nuevo más tarde.");
+        } finally {
+            setMostrarEditar(false);
+            setRoleAEditar(null);
+        }
+    };
+
+    const toggleModalEditar = () => {
+        setMostrarEditar(!mostrarEditar);
     };
 
     return (
@@ -131,7 +168,8 @@ const GestionRolesPermisos = () => {
                             <TablaRolesPermisos
                                 roles={roles}
                                 onAssignPermissions={handleAssignPermissions}
-                                onDeleteRole={handleDeleteRole} // Pasamos la función de eliminar rol a la tabla
+                                onDeleteRole={handleDeleteRole}
+                                onEditRole={handleEditRole} 
                             />
                         </CardBody>
                     </Card>
@@ -142,6 +180,13 @@ const GestionRolesPermisos = () => {
                 confirmarEliminar={confirmarEliminar}
                 confirmarEliminarUsuario={confirmarEliminarRole}
                 setConfirmarEliminar={setConfirmarEliminar}
+            />
+
+            <ModalEditarRol
+                mostrar={mostrarEditar}
+                toggle={toggleModalEditar}
+                role={roleAEditar}
+                onConfirm={confirmarEditarRol}
             />
         </Container>
     );
