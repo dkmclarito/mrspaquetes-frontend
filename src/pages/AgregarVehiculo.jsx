@@ -365,7 +365,6 @@ const AgregarVehiculo = () => {
   const handleError = (error) => {
     if (error.response && error.response.data) {
       const errorData = error.response.data.error;
-      //let errorMessage = "Error al agregar el vehículo, posiblemente el empleado ya esta asignado a otro vehiculo.";
       let errorMessage = errorData;
       if (errorData) {
         if (errorData.id_marca) {
@@ -442,7 +441,7 @@ const AgregarVehiculo = () => {
                     <FormGroup className="form-group-custom">
                       <Label for="marca">Marca</Label>
                       <Select
-                        classNamePrefix="custom-select" //usar esta clase para los selec to
+                        classNamePrefix="custom-select"
                         name="marca"
                         id="marca"
                         value={marcaSeleccionada}
@@ -454,6 +453,10 @@ const AgregarVehiculo = () => {
                         placeholder="Seleccione Marca"
                         isClearable
                         required
+                        filterOption={(option, inputValue) =>
+                          option.label.toLowerCase().includes(inputValue.toLowerCase())
+                        }
+                        maxMenuHeight={200}
                       />
                     </FormGroup>
                   </Col>
@@ -482,7 +485,11 @@ const AgregarVehiculo = () => {
                         placeholder="Seleccione Modelo"
                         isClearable
                         isDisabled={!marcaSeleccionada}
-                        required // Deshabilitar si no hay marca seleccionada
+                        required
+                        filterOption={(option, inputValue) =>
+                          option.label.toLowerCase().includes(inputValue.toLowerCase())
+                        }
+                        maxMenuHeight={200}
                       />
                     </FormGroup>
                   </Col>
@@ -526,6 +533,10 @@ const AgregarVehiculo = () => {
                         placeholder="Seleccione Conductor"
                         isClearable
                         required
+                        filterOption={(option, inputValue) =>
+                          option.label.toLowerCase().includes(inputValue.toLowerCase())
+                        }
+                        maxMenuHeight={200}
                       />
                     </FormGroup>
                   </Col>
@@ -645,6 +656,10 @@ const AgregarVehiculo = () => {
                             placeholder="Seleccione Apoyo"
                             isClearable
                             required
+                            filterOption={(option, inputValue) =>
+                              option.label.toLowerCase().includes(inputValue.toLowerCase())
+                            }
+                            maxMenuHeight={200}
                           />
                         </FormGroup>
                       </Col>
@@ -680,6 +695,10 @@ const AgregarVehiculo = () => {
                             placeholder="Seleccione Bodega"
                             isClearable
                             required
+                            filterOption={(option, inputValue) =>
+                              option.label.toLowerCase().includes(inputValue.toLowerCase())
+                            }
+                            maxMenuHeight={200}
                           />
                         </FormGroup>
                       </Col>
