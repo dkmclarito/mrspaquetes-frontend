@@ -102,6 +102,7 @@ import DetallesVehiculo from "./pages/DetallesVehiculo";
 import AgregarNuevoRol from "./pages/AgregarNuevoRol"; 
 import DataRol from "./pages/DataRol"; 
 import PaquetesTrackingScreen from "./components/Tracking/PaquetesTrackingScreen";
+import OrdenEntregada from "./pages/OrdenEntregada";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -129,6 +130,10 @@ const App = () => {
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
                 <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
+                <Route
+                  path="/OrdenEntregada"
+                  element={<OrdenEntregada />}
+                />
                 <Route
                   path="/GestionRolesPermisos"
                   element={<GestionRolesPermisos />}

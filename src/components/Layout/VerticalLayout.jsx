@@ -304,20 +304,19 @@ const VerticalLayout = () => {
                         Tracking
                       </NavLink>
                     </li>
-
-                        {/* 
+                        
                     <li>
                       <NavLink
-                        to="/TrackingPaquetes"
+                        to="/OrdenEntregada"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
                         <BiPlus className="nav-icon sub-icon" />
-                        Tracking de Paquetes
+                         Validar orden
                       </NavLink>
                     </li>
-                    */}
+                   
                   </ul>
                 </li>
 
