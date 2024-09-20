@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, CardBody } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Button } from "reactstrap";
 import Breadcrumbs from "../components/RolesPermisos/Common/Breadcrumbs";
 import TablaRolesPermisos from "../components/RolesPermisos/TablaRolesPermisos";
 import AuthService from "../services/authService"; 
+import ModalConfirmarEliminar from "../components/RolesPermisos/ModalConfirmarEliminar"; // Importa el modal de confirmación
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Mapeo de nombres técnicos a nombres en español
 const roleAliases = {
     admin: 'Administrador',
     cliente: 'Cliente',
@@ -18,6 +18,8 @@ const roleAliases = {
 
 const GestionRolesPermisos = () => {
     const [roles, setRoles] = useState([]);
+    const [roleAEliminar, setRoleAEliminar] = useState(null); // Estado para manejar el rol a eliminar
+    const [confirmarEliminar, setConfirmarEliminar] = useState(false); // Estado para mostrar el modal de confirmación
     const navigate = useNavigate();
 
     const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -40,19 +42,17 @@ const GestionRolesPermisos = () => {
             }
         } catch (error) {
             console.error("Error al verificar el estado del usuario:", error);
-           // AuthService.logout();
-           // window.location.href = "/login";
         }
     }, []);
 
     useEffect(() => {
-        verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+        verificarEstadoUsuarioLogueado(); 
 
         const interval = setInterval(() => {
-            verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-        }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+            verificarEstadoUsuarioLogueado();
+        }, 30000); 
 
-        return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+        return () => clearInterval(interval); 
     }, [verificarEstadoUsuarioLogueado]);
 
     useEffect(() => {
@@ -60,7 +60,7 @@ const GestionRolesPermisos = () => {
             const token = AuthService.getCurrentUser(); 
             if (!token) {
                 console.error("No se encontró token de autorización.");
-                return;  // Sale de la función si no hay token
+                return;  
             }
             
             const response = await axios.get(`${API_URL}/roles`, {
@@ -72,7 +72,7 @@ const GestionRolesPermisos = () => {
             if (response.data && Array.isArray(response.data)) {
                 const transformedRoles = response.data.map(role => ({
                     ...role,
-                    alias: roleAliases[role.name] || role.name  // Usa el alias si está disponible, de lo contrario usa el nombre original
+                    alias: roleAliases[role.name] || role.name 
                 }));
                 setRoles(transformedRoles);
             } else {
@@ -84,7 +84,35 @@ const GestionRolesPermisos = () => {
     }, []);
 
     const handleAssignPermissions = (id, name) => {
-        navigate(`/AgregarRolesPermisos/${id}`, { state: { name } });  // Navega a la página para asignar permisos con el nombre del rol
+        navigate(`/AgregarRolesPermisos/${id}`, { state: { name } }); 
+    };
+
+    const handleAddRole = () => {
+        navigate('/AgregarNuevoRol'); 
+    };
+
+    const handleDeleteRole = (id) => {
+        setRoleAEliminar(id); 
+        setConfirmarEliminar(true); 
+    };
+
+    const confirmarEliminarRole = async () => {
+        try {
+            const token = AuthService.getCurrentUser();
+            await axios.delete(`${API_URL}/roles/${roleAEliminar}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            setRoles(prevRoles => prevRoles.filter(role => role.id !== roleAEliminar));
+        } catch (error) {
+            console.error("Error al eliminar el rol:", error);
+            alert("No se pudo eliminar el rol. Inténtelo de nuevo más tarde.");
+        } finally {
+            setConfirmarEliminar(false); 
+            setRoleAEliminar(null); 
+        }
     };
 
     return (
@@ -94,11 +122,27 @@ const GestionRolesPermisos = () => {
                 <Col lg={12}>
                     <Card>
                         <CardBody>
-                            <TablaRolesPermisos roles={roles} onAssignPermissions={handleAssignPermissions} />
+                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                <h4 className="card-title">Roles</h4>
+                                <Button color="primary" onClick={handleAddRole}>
+                                    Agregar Nuevo Rol
+                                </Button>
+                            </div>
+                            <TablaRolesPermisos
+                                roles={roles}
+                                onAssignPermissions={handleAssignPermissions}
+                                onDeleteRole={handleDeleteRole} // Pasamos la función de eliminar rol a la tabla
+                            />
                         </CardBody>
                     </Card>
                 </Col>
             </Row>
+
+            <ModalConfirmarEliminar
+                confirmarEliminar={confirmarEliminar}
+                confirmarEliminarUsuario={confirmarEliminarRole}
+                setConfirmarEliminar={setConfirmarEliminar}
+            />
         </Container>
     );
 };

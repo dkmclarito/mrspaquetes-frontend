@@ -98,7 +98,9 @@ import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
 import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
 import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
-import DetallesVehiculo from "./pages/DetallesVehiculo";
+import DetallesVehiculo from "./pages/DetallesVehiculo"; 
+import AgregarNuevoRol from "./pages/AgregarNuevoRol"; 
+import DataRol from "./pages/DataRol"; 
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -381,7 +383,9 @@ const App = () => {
                 <Route path="/UbicarPaqueteDaniado" element={<UbicarPaqueteDaniado />} />
                 <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
                 <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
-                <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
+                <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} /> 
+                <Route path="/AgregarNuevoRol" element={<AgregarNuevoRol />} />
+                <Route path="/DataRol/:id" element={<DataRol />} /> 
               </Route>
               <Route
                 path="/gestion-ordenes-recoleccion"
