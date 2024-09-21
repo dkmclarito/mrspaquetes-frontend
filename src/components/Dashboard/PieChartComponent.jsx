@@ -3,7 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import { Card, CardBody, CardTitle } from 'reactstrap';
 import axios from 'axios';
 import AuthService from '../../services/authService';
-import './Dashboard.css'
+import './Dashboard.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
