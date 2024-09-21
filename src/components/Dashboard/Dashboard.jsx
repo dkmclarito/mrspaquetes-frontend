@@ -186,6 +186,7 @@ const Dashboard = () => {
           </Col>
       </Row>
 
+      <br></br>
       <Row>
         <Col md="12">
             <Card>
@@ -261,7 +262,7 @@ const Dashboard = () => {
           <Col md="6">
           <Card>
               <CardBody>
-                <CardTitle tag="h5">Ordenes Recientes</CardTitle>
+                <CardTitle tag="h5">Órdenes Recientes</CardTitle>
                 <ListGroup>
                   {ordenesRecientes.length > 0 ? (
                     ordenesRecientes.map((orden) => (

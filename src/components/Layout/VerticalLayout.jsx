@@ -25,9 +25,9 @@ import {
   BiLayer,
   BiArchive,
   BiChevronDown,
-  BiChevronUp
-}
-  from "react-icons/bi";
+  BiChevronUp,
+  BiChart,
+} from "react-icons/bi";
 import logoImage from "../../assets/logo-menu.png";
 import { useAuth } from "../../services/AuthContext";
 
@@ -307,13 +307,13 @@ const VerticalLayout = () => {
 
                     <li>
                       <NavLink
-                        to="/TrackingPaquetes"
+                        to="/OrdenEntregada"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
                         }
                       >
                         <BiPlus className="nav-icon sub-icon" />
-                        Tracking de Paquetes
+                        Validar orden
                       </NavLink>
                     </li>
                   </ul>
@@ -499,7 +499,8 @@ const VerticalLayout = () => {
                     className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
                     onClick={() => handleSubMenuClick("incidencias")}
                   >
-                    <BiErrorCircle className="nav-icon" /> {/* Ícono principal para Incidencias */}
+                    <BiErrorCircle className="nav-icon" />{" "}
+                    {/* Ícono principal para Incidencias */}
                     {(!menuCollapsed || visibleSubMenu === "incidencias") && (
                       <span>Incidencias</span>
                     )}
@@ -509,7 +510,9 @@ const VerticalLayout = () => {
                       <BiChevronDown className="sub-menu-icon" />
                     )}
                   </div>
-                  <ul className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
+                  >
                     <li>
                       <NavLink
                         to="/GestionIncidencias"
@@ -545,6 +548,17 @@ const VerticalLayout = () => {
                     {!menuCollapsed && <span>Roles y permisos</span>}
                   </NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink
+                    to="/reportes"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiChart className="nav-icon" />
+                    {!menuCollapsed && <span>Reportes</span>}
+                  </NavLink>
+                </li>
               </>
             )}
 
@@ -577,7 +591,8 @@ const VerticalLayout = () => {
                     className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
                     onClick={() => handleSubMenuClick("incidencias")}
                   >
-                    <BiErrorCircle className="nav-icon" /> {/* Ícono principal para Incidencias */}
+                    <BiErrorCircle className="nav-icon" />{" "}
+                    {/* Ícono principal para Incidencias */}
                     {(!menuCollapsed || visibleSubMenu === "incidencias") && (
                       <span>Incidencias</span>
                     )}
@@ -587,7 +602,9 @@ const VerticalLayout = () => {
                       <BiChevronDown className="sub-menu-icon" />
                     )}
                   </div>
-                  <ul className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
+                  >
                     <li>
                       <NavLink
                         to="/GestionIncidencias"

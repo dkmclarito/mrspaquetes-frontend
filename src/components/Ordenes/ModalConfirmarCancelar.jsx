@@ -1,5 +1,8 @@
-import React, { useCallback } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from "reactstrap";
+import React from "react";
+import { Modal, Button } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const ModalConfirmarCancelar = ({
   isOpen,
@@ -7,34 +10,28 @@ const ModalConfirmarCancelar = ({
   ordenId,
   confirmarCancelar,
 }) => {
-  // Use callback to avoid unnecessary re-renders
-  const handleToggle = useCallback(() => {
-    toggle();
-  }, [toggle]);
-
   return (
-    <Modal isOpen={isOpen} toggle={handleToggle}>
-      <ModalHeader toggle={handleToggle}>Confirmar Cancelación</ModalHeader>
-      <ModalBody>
+    <Modal show={isOpen} onHide={toggle} className="modal-confirmar-cancelar">
+      <Modal.Header closeButton>
+        <Modal.Title>Confirmar Cancelación</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
         <p>¿Está seguro de que desea cancelar esta orden?</p>
         <p>Esta acción no se puede deshacer.</p>
-      </ModalBody>
-      <ModalFooter>
+      </Modal.Body>
+      <Modal.Footer>
         <Button
-          color="danger"
+          variant="danger"
           onClick={() => confirmarCancelar(ordenId)}
-          aria-label="Cancelar orden"
+          className="btn-eliminar"
         >
+          <FontAwesomeIcon icon={faTimes} className="me-2" />
           Eliminar
         </Button>
-        <Button
-          color="secondary"
-          onClick={handleToggle}
-          aria-label="Cerrar modal"
-        >
+        <Button variant="secondary" onClick={toggle} className="btn-cancelar">
           Cancelar
         </Button>
-      </ModalFooter>
+      </Modal.Footer>
     </Modal>
   );
 };

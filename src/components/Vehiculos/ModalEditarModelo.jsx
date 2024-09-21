@@ -50,17 +50,17 @@ const ModalEditarModelo = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setModeloEditado((prevState) => ({
+    setModeloEditado(prevState => ({
       ...prevState,
       [name]: value,
     }));
-
-    // Si se selecciona una nueva marca, actualizar el nombre de la marca seleccionada
+    
+    // Actualizar la marca seleccionada
     if (name === "id_marca") {
       const marca = marcas.find(marca => marca.id === value);
       setMarcaSeleccionada(marca ? marca.nombre : "");
     }
-  };
+  };  
 
   return (
     <Modal isOpen={modalEditar} toggle={() => setModalEditar(false)}>
@@ -110,23 +110,6 @@ const ModalEditarModelo = ({
             required
           />
         </FormGroup>
-
-        <FormGroup>
-          <Label for="status">Estado</Label>
-          <Input
-            type="select"
-            id="status"
-            name="status"
-            value={modeloEditado?.status || ""}
-            onChange={handleInputChange}
-            required
-          >
-            <option value="1">Activo</option>
-            <option value="0">Inactivo</option>
-          </Input>
-        </FormGroup>
-
-        {error && <p className="text-danger">{error}</p>}
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleGuardarCambios}>Guardar Cambios</Button>

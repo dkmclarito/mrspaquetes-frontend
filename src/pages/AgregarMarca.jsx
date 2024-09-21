@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, Alert, FormFeedback } from "reactstrap";
+import { Card, CardBody, Col, Row, Container, Form, FormGroup, Label, Input, Button, FormFeedback } from "reactstrap";
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -12,9 +13,6 @@ const AgregarMarca = () => {
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
     const [isNombreValid, setIsNombreValid] = useState(true);
-    const [alertaExito, setAlertaExito] = useState(false);
-    const [alertaError, setAlertaError] = useState(false);
-    const [errorMensaje, setErrorMensaje] = useState("");
 
     const navigate = useNavigate();
     const token = AuthService.getCurrentUser();
@@ -56,7 +54,7 @@ const AgregarMarca = () => {
     const handleNombreChange = (e) => {
         const value = e.target.value;
         setNombre(value);
-        setIsNombreValid(value.trim().length > 0); // Validate if the name is not empty
+        setIsNombreValid(value.trim().length > 0); // Validar si el nombre no está vacío
     };
 
     const handleDescripcionChange = (e) => {
@@ -67,8 +65,7 @@ const AgregarMarca = () => {
         e.preventDefault();
 
         if (!isNombreValid) {
-            setAlertaError(true);
-            setErrorMensaje("Por favor, ingresa un nombre válido.");
+            toast.error("Por favor, ingresa un nombre válido.");
             return;
         }
 
@@ -85,10 +82,14 @@ const AgregarMarca = () => {
                 }
             });
 
-            setAlertaExito(true);
+            toast.success("Marca agregada exitosamente!", { position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true, });
             setTimeout(() => navigate('/GestionMarcas'), 2000);
             resetForm();
-            setAlertaError(false);
         } catch (error) {
             handleError(error);
         }
@@ -104,8 +105,12 @@ const AgregarMarca = () => {
         if (error.response && error.response.data) {
             errorMessage = error.response.data.message || errorMessage;
         }
-        setAlertaError(true);
-        setErrorMensaje(errorMessage);
+        toast.error(errorMessage, { position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true, });
     };
 
     return (
@@ -124,6 +129,7 @@ const AgregarMarca = () => {
                                         value={nombre}
                                         onChange={handleNombreChange}
                                         invalid={!isNombreValid}
+                                        required
                                     />
                                     <FormFeedback>Por favor, ingresa un nombre válido.</FormFeedback>
                                 </FormGroup>
@@ -134,11 +140,10 @@ const AgregarMarca = () => {
                                         id="descripcion"
                                         value={descripcion}
                                         onChange={handleDescripcionChange}
+                                        required
                                     />
                                 </FormGroup>
                                 <Button type="submit" color="primary">Agregar Marca</Button>
-                                {alertaExito && <Alert color="success" toggle={() => setAlertaExito(false)}>Marca agregada exitosamente!</Alert>}
-                                {alertaError && <Alert color="danger" toggle={() => setAlertaError(false)}>{errorMensaje}</Alert>}
                             </Form>
                         </CardBody>
                     </Card>
@@ -149,4 +154,3 @@ const AgregarMarca = () => {
 };
 
 export default AgregarMarca;
-

@@ -53,7 +53,7 @@ import ProcesarPago from "./pages/ProcesarPago";
 import OrdenesSeleccionarCliente from "./pages/OrdenesSeleccionarCliente";
 import OrdenesDirecciones from "./pages/OrdenesDirecciones";
 import DetallesOrden from "./pages/DetallesOrden";
-import TrackingPage from "./pages/Tracking";
+import TrackingPage from "./components/Tracking/Tracking";
 import VerDetallesOrden from "./pages/VerDetallesOrden";
 import EditarOrden from "./components/Ordenes/Edicion/EditarOrden";
 import GestionRutas from "./pages/GestionRutas";
@@ -65,8 +65,6 @@ import DatosPaqueteExpress from "./pages/DatosPaqueteExpress";
 import GenerarOrdenExpress from "./pages/GenerarOrdenExpress";
 import ProcesarPagoExpress from "./pages/ProcesarPagoExpress";
 import GestionAsignarRutas from "./pages/GestionAsignarRutas";
-import RutasRecoleccion from "./pages/RutasRecoleccion";
-import OrdenesRecoleccion from "./pages/OrdenesRecoleccion";
 import AgregarAsignacionRuta from "./pages/AgregarAsignacionRuta";
 import DetallesAsignacionRutas from "./pages/DetallesAsignacionRutas";
 import GestionPreOrdenes from "./pages/GestionPreOrdenes";
@@ -96,12 +94,21 @@ import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
 import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
 import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
-import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
 import DetallesVehiculo from "./pages/DetallesVehiculo";
-import AgregarTraslados from "./pages/AgregarTraslados";
-import DetallesTraslados from "./pages/DetallesTraslados";
+import CrearRutaRecoleccion from "./components/Recoleccion/CrearRutaRecoleccion";
+import EditarRutaRecoleccion from "./components/Recoleccion/EditarRutaRecoleccion";
+import DetallesRutaRecoleccion from "./components/Recoleccion/DetallesRutaRecoleccion";
+import AgregarNuevoRol from "./pages/AgregarNuevoRol";
+import DataRol from "./pages/DataRol";
+import PaquetesTrackingScreen from "./components/Tracking/PaquetesTrackingScreen";
+import OrdenEntregada from "./pages/OrdenEntregada";
+import MisIncidencias from "./pages/MisIncidencias";
+import Reportes from "./pages/Reportes";
+import AgregarTraslados from './pages/AgregarTraslados';
+import DetallesTraslados from './pages/DetallesTraslados';
 import EditarTraslados from './components/Traslados/EditarTraslados/EditarTraslados';
+
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -129,6 +136,7 @@ const App = () => {
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
                 <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
+                <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
                 <Route
                   path="/GestionRolesPermisos"
                   element={<GestionRolesPermisos />}
@@ -145,12 +153,17 @@ const App = () => {
                   path="/GestionTraslados"
                   element={<GestionTraslados />}
                 />
+                <Route
+                  path="/GestionTraslados"
+                  element={<GestionTraslados />}
+                />
                  <Route
                   path="/AgregarTraslados"
                   element={<AgregarTraslados />}
                 />
                 <Route path="/DetallesTraslados/:id" element={<DetallesTraslados />} />
                 <Route path="/EditarTraslados/:id" element={<EditarTraslados />} />
+
                 <Route
                   path="/GestionInventario"
                   element={<GestionInventario />}
@@ -223,6 +236,10 @@ const App = () => {
                   element={<TrackingPaquetes />}
                 />
                 <Route
+                  path="/PaquetesTrackingScreen/:id"
+                  element={<PaquetesTrackingScreen />}
+                />
+                <Route
                   path="/GestionUbicacion"
                   element={<GestionUbicacion />}
                 />
@@ -293,14 +310,6 @@ const App = () => {
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
                 <Route path="/GestionRutas" element={<GestionRutas />} />
                 <Route path="/AgregarRuta" element={<AgregarRuta />} />
-                <Route
-                  path="/RutasRecoleccion"
-                  element={<RutasRecoleccion />}
-                />
-                <Route
-                  path="/OrdenesRecoleccion"
-                  element={<OrdenesRecoleccion />}
-                />
               </Route>
 
               <Route
@@ -384,18 +393,69 @@ const App = () => {
                   path="/DataIncidencia/:idIncidencia"
                   element={<DataIncidencia />}
                 />
-                
-                <Route path="/AgregarIncidencia" element={<AgregarIncidencia />} />
-                <Route path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete" element={<AgregarIncidenciaPaqueteSeleccionado />} />
-                <Route path="/UbicarPaqueteDaniado" element={<UbicarPaqueteDaniado />} />
-                <Route path="/AsignarUsuarioIncidencia/:idIncidencia" element={<AsignarUsuarioIncidencia />} />
-                <Route path="/DarSolucionIncidencia/:idIncidencia" element={<DarSolucionIncidencia />} />
-                <Route path="/DataIncidencia/:idIncidencia" element={<DataIncidencia />} />
+
+                <Route
+                  path="/AgregarIncidencia"
+                  element={<AgregarIncidencia />}
+                />
+                <Route
+                  path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete"
+                  element={<AgregarIncidenciaPaqueteSeleccionado />}
+                />
+                <Route
+                  path="/AsignarUsuarioIncidencia/:idIncidencia"
+                  element={<AsignarUsuarioIncidencia />}
+                />
+                <Route
+                  path="/DarSolucionIncidencia/:idIncidencia"
+                  element={<DarSolucionIncidencia />}
+                />
+                <Route
+                  path="/DataIncidencia/:idIncidencia"
+                  element={<DataIncidencia />}
+                />
+
+                <Route
+                  path="/AgregarIncidencia"
+                  element={<AgregarIncidencia />}
+                />
+                <Route
+                  path="/AgregarIncidenciaPaqueteSeleccionado/:idPaquete"
+                  element={<AgregarIncidenciaPaqueteSeleccionado />}
+                />
+                <Route
+                  path="/AsignarUsuarioIncidencia/:idIncidencia"
+                  element={<AsignarUsuarioIncidencia />}
+                />
+                <Route
+                  path="/DarSolucionIncidencia/:idIncidencia"
+                  element={<DarSolucionIncidencia />}
+                />
+                <Route
+                  path="/DataIncidencia/:idIncidencia"
+                  element={<DataIncidencia />}
+                />
+                <Route path="/AgregarNuevoRol" element={<AgregarNuevoRol />} />
+                <Route path="/DataRol/:id" element={<DataRol />} />
+                <Route path="/MisIncidencias" element={<MisIncidencias />} />
               </Route>
               <Route
                 path="/gestion-ordenes-recoleccion"
                 element={<GestionOrdenesRecoleccion />}
               />
+              <Route
+                path="/crear-ruta-recoleccion"
+                element={<CrearRutaRecoleccion />}
+              />
+              <Route
+                path="/editar-ruta-recoleccion/:id"
+                element={<EditarRutaRecoleccion />}
+              />
+              <Route
+                path="/detalles-ruta-recoleccion/:id"
+                element={<DetallesRutaRecoleccion />}
+              />
+              <Route path="/reportes" element={<Reportes />} />
 
               <Route element={<PrivateRoute allowedRoles={["cliente"]} />}>
                 <Route path="/PerfilCliente" element={<AgregarDatos />} />

@@ -51,7 +51,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                 <td>{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
                 <td>{cliente.telefono || 'N/A'}</td>
                 <td>{formatearFecha(cliente.fecha_registro)}</td>
-                <td className="text-center">
+                <td>
                   <Button
                     color="info"
                     className="btn-sm d-flex align-items-center justify-content-center mx-auto btn-direcciones"

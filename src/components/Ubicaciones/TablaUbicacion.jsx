@@ -22,13 +22,13 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
           {ubicaciones.length > 0 ? (
             ubicaciones.map(ubicacion => (
               <tr key={ubicacion.id}>
-                <td className="text-center">{ubicacion.id}</td>
-                <td className="text-center">{ubicacion.numero_orden || 'N/A'}</td>
-                <td className="text-center">{ubicacion.qr_paquete || 'N/A'}</td>
-                <td className="text-center">{ubicacion.descripcion_paquete || 'N/A'}</td>
-                <td className="text-center">{ubicacion.nomenclatura_ubicacion || 'N/A'}</td>
+                <td>{ubicacion.id}</td>
+                <td>{ubicacion.numero_orden || 'N/A'}</td>
+                <td>{ubicacion.qr_paquete || 'N/A'}</td>
+                <td>{ubicacion.descripcion_paquete || 'N/A'}</td>
+                <td>{ubicacion.nomenclatura_ubicacion || 'N/A'}</td>
                 
-                <td className="text-center">
+                <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"

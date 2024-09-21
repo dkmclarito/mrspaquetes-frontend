@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import "/src/styles/Vehiculos.css";
 
-const TablaModelos = ({ modelos, eliminarModelo, toggleModalEditar }) => {
+const TablaModelos = ({ modelos, eliminarModelo, toggleModalEditar, marcas  }) => {
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <table className="table table-centered table-nowrap mb-0">
@@ -14,6 +14,7 @@ const TablaModelos = ({ modelos, eliminarModelo, toggleModalEditar }) => {
             <th className="text-center">ID</th>
             <th className="text-center">Nombre</th>
             <th className="text-center">Descripción</th>
+            <th className="text-center">Marca</th>
             <th className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -21,10 +22,12 @@ const TablaModelos = ({ modelos, eliminarModelo, toggleModalEditar }) => {
           {modelos.length > 0 ? (
             modelos.map(modelo => (
               <tr key={modelo.id}>
-                <td className="text-center">{modelo.id}</td>
-                <td className="text-center">{modelo.nombre}</td>
-                <td className="text-center">{modelo.descripcion || 'N/A'}</td>
-                <td className="text-center">
+                <td>{modelo.id}</td>
+                <td>{modelo.nombre}</td>
+                <td>{modelo.descripcion || 'N/A'}</td>
+                <td>
+                  {marcas.find(marca => marca.id.toString() === modelo.id_marca.toString())?.nombre || 'Desconocido'}               </td>
+                <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"
@@ -46,7 +49,7 @@ const TablaModelos = ({ modelos, eliminarModelo, toggleModalEditar }) => {
             ))
           ) : (
             <tr>
-              <td colSpan="4" className="text-center">No hay datos disponibles</td>
+              <td colSpan="5" className="text-center">No hay datos disponibles</td>
             </tr>
           )}
         </tbody>
@@ -63,6 +66,10 @@ TablaModelos.propTypes = {
   })).isRequired,
   eliminarModelo: PropTypes.func.isRequired,
   toggleModalEditar: PropTypes.func.isRequired,
+  marcas: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    nombre: PropTypes.string.isRequired,
+  })).isRequired,
 };
 
 export default TablaModelos;

@@ -21,10 +21,10 @@ const TablaMarcas = ({ marcas, eliminarMarca, toggleModalEditar }) => {
           {marcas.length > 0 ? (
             marcas.map(marca => (
               <tr key={marca.id}>
-                <td className="text-center">{marca.id}</td>
-                <td className="text-center">{marca.nombre}</td>
-                <td className="text-center">{marca.descripcion || 'N/A'}</td>
-                <td className="text-center">
+                <td>{marca.id}</td>
+                <td>{marca.nombre}</td>
+                <td>{marca.descripcion || 'N/A'}</td>
+                <td>
                   <div className="button-container">
                     <Button
                       className="me-2 btn-icon btn-danger"

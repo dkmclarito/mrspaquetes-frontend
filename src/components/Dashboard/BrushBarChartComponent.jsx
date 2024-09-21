@@ -16,6 +16,37 @@ import AuthService from '../../services/authService';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const CustomTooltip2 = ({ active, payload }) => {
+  
+  if (active && payload && payload.length) {
+    const day = payload[0].payload.name; // Día
+    const ordenes = payload[0].value; // Órdenes
+    const paquetes = payload[1] ? payload[1].value : 0;    
+
+    return (
+      <div className="custom-tooltip2">
+        <p>{`Día: ${day}`}</p>
+        <p>{`Órdenes: ${ordenes}`}</p>
+        <p>{`Paquetes: ${paquetes}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomLegend = ({ payload }) => {
+  return (
+    <div className="custom-legend">
+      {payload.map((entry, index) => (
+        <div key={`item-${index}`} className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: entry.color }} />
+          {entry.value}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const ExampleBarChart = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -101,7 +132,7 @@ const ExampleBarChart = () => {
 
   return (
     <div>
-      <h2 style={{ textAlign: 'center' }}>Órdenes y Paquetes</h2>
+      <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 'bold' }}>Órdenes y Paquetes</h2>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <label htmlFor="month-select" style={{ marginRight: '10px' }}>Seleccionar Mes: </label>
@@ -132,9 +163,9 @@ const ExampleBarChart = () => {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip />
-          <Legend />
-          <Brush dataKey="name" height={30} stroke="#8884d8" />
+          <Tooltip content={<CustomTooltip2 />} />
+          <Legend content={<CustomLegend />}/>
+          <Brush dataKey="name" height={30} stroke="#1a2276" fill='#d1d1d1' />
           <Bar dataKey="ordenes" fill="#8884d8" />
           <Bar dataKey="paquetes" fill="#82ca9d" />
         </BarChart>

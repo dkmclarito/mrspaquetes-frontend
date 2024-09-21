@@ -63,20 +63,6 @@ const ModalEditarMarca = ({
             required
           />
         </FormGroup>
-        <FormGroup>
-          <Label for="status">Estado</Label>
-          <Input
-            type="select"
-            id="status"
-            value={marcaEditada ? marcaEditada.status : ""}
-            onChange={(e) => setMarcaEditada(prevState => ({ ...prevState, status: e.target.value }))}
-            required
-          >
-            <option value="1">Activo</option>
-            <option value="0">Inactivo</option>
-          </Input>
-        </FormGroup>
-        {error && <p className="text-danger">{error}</p>}
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleGuardarCambios}>Guardar Cambios</Button>
