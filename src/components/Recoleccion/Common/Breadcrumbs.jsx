@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Breadcrumb = ({ title, breadcrumbItem }) => {
+const Breadcrumbs = ({ title, mainMenu, breadcrumbItem }) => {
   return (
     <div className="row">
       <div className="col-sm-12">
@@ -11,7 +11,8 @@ const Breadcrumb = ({ title, breadcrumbItem }) => {
               <h4 className="page-title">{title}</h4>
               <ol className="breadcrumb m-0">
                 <li className="breadcrumb-item">
-                  <Link to="/Home"></Link>
+                  {/* Renderiza el menú principal como texto, no como enlace */}
+                  {mainMenu}
                 </li>
                 <li className="breadcrumb-item active">{breadcrumbItem}</li>
               </ol>
@@ -23,4 +24,4 @@ const Breadcrumb = ({ title, breadcrumbItem }) => {
   );
 };
 
-export default Breadcrumb;
+export default Breadcrumbs;

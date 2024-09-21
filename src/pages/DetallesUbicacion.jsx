@@ -55,6 +55,7 @@ const DetallesUbicacion = () => {
           }
         });
         setUbicacion(response.data);
+        console.log(1)
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
@@ -71,38 +72,36 @@ const DetallesUbicacion = () => {
     <div className="page-content">
       <Breadcrumbs title="Gestión de Ubicaciones" breadcrumbItem="Detalles de la Ubicación" />        
       <Card>
-        <CardBody>
+        <CardBody >
           <h5 className="card-title">Detalles de la Ubicación</h5>
-          <Row>
-            <Col sm="12">
+          <Row style={{marginLeft:50}}>
+            <Col sm="8">
               <div className="table-responsive">
                 <table className="table table-bordered">
                   <tbody>
                     <tr>
-                      <th scope="row" style={{ width: '150px', whiteSpace: 'nowrap' }}>ID:</th>
-                      <td>
+                      <th scope="row" style={{ width: '80px', whiteSpace: 'wrap' }}>ID:</th>
+                      <td style={{ width: '18px', whiteSpace: 'wrap' }}>
                         <Badge color="primary"> {ubicacion.id} </Badge>
                       </td>
                     </tr>
                     <tr>
-                      <th scope="row">Paquete:</th>
-                      <td>{ubicacion.paquete || 'N/A'}</td>
+                      <th scope="row">Numero de orden:</th>
+                      <td>{ubicacion.numero_orden || 'N/A'}</td>
+                    </tr>
+                    
+                    <tr>
+                      <th scope="row">Código QR del Paquete:</th>
+                      <td>{ubicacion.qr_paquete || 'N/A'}</td>
+                    </tr>
+                    
+                    <tr>
+                      <th scope="row">Descripción del Paquete:</th>
+                      <td>{ubicacion.descripcion_paquete || 'N/A'}</td>
                     </tr>
                     <tr>
-                      <th scope="row">ID Paquete:</th>
-                      <td>{ubicacion.id_paquete || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Ubicación:</th>
-                      <td>{ubicacion.ubicacion || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">ID Ubicación:</th>
-                      <td>{ubicacion.id_ubicacion || 'N/A'}</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Estado:</th>
-                      <td>{ubicacion.estado === 1 ? 'Activo' : 'Inactivo'}</td>
+                      <th scope="row">Ubicacion:</th>
+                      <td>{ubicacion.nomenclatura_ubicacion || 'N/A'}</td>
                     </tr>
                   </tbody>
                 </table>

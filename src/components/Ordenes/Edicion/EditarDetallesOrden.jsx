@@ -181,6 +181,26 @@ const EditarDetallesOrden = ({
     }
   };
 
+  const getEstadoPaqueteNombre = (id) => {
+    const estados = {
+      1: "En Recepción",
+      2: "En Bodega",
+      3: "En Espera de Recolección",
+      4: "En Tránsito",
+      5: "En Ruta de Entrega",
+      6: "Reprogramado",
+      7: "Recibido en Destino",
+      8: "Entregado",
+      9: "En Proceso de Retorno",
+      10: "Devuelto",
+      11: "Dañado",
+      12: "Perdido",
+      13: "Cancelado",
+      14: "En espera de reubicación",
+    };
+    return estados[id] || "Desconocido";
+  };
+
   const agregarPaquete = () => {
     setPaquetes([
       ...paquetes,
@@ -379,6 +399,8 @@ const EditarDetallesOrden = ({
       precio: parseFloat(paquete.precio),
       fecha_ingreso: commonData.fecha_envio,
       fecha_entrega: commonData.fecha_entrega,
+      fecha_envio: commonData.fecha_envio,
+      fecha_entrega_estimada: commonData.fecha_entrega_estimada,
     };
 
     try {
@@ -544,20 +566,14 @@ const EditarDetallesOrden = ({
                     <FormGroup>
                       <Label for="id_estado_paquete">Estado del Paquete</Label>
                       <Input
-                        type="select"
+                        type="text"
                         name="id_estado_paquete"
                         id="id_estado_paquete"
-                        value={commonData.id_estado_paquete}
-                        onChange={handleCommonDataChange}
-                        invalid={!!errors.commonData.id_estado_paquete}
-                      >
-                        <option value="1">En Recepción</option>
-                        <option value="2">En Tránsito</option>
-                        <option value="3">Entregado</option>
-                      </Input>
-                      <FormFeedback>
-                        {errors.commonData.id_estado_paquete}
-                      </FormFeedback>
+                        value={getEstadoPaqueteNombre(
+                          commonData.id_estado_paquete
+                        )}
+                        readOnly
+                      />
                     </FormGroup>
                   </Col>
                   <Col md={4}>

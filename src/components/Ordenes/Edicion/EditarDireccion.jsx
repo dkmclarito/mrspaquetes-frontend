@@ -13,7 +13,7 @@ import {
   ModalBody,
 } from "reactstrap";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import FormularioDireccion from "../../../pages/FormularioDireccion";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -28,12 +28,59 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
   const [modalAgregar, setModalAgregar] = useState(false);
   const [editando, setEditando] = useState(false);
   const [editandoRecoleccion, setEditandoRecoleccion] = useState(false);
+  const [direccionesDetalladas, setDireccionesDetalladas] = useState({});
+  const [direccionEntrega, setDireccionEntrega] = useState(null);
+  const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
+
+  const obtenerDetallesDirecciones = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/dropdown/get_direcciones/${orden.id_cliente}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const detalles = {};
+      response.data.forEach((d) => {
+        detalles[d.id] = {
+          departamento: d.departamento,
+          municipio: d.municipio,
+        };
+      });
+      setDireccionesDetalladas(detalles);
+    } catch (error) {
+      console.error("Error al obtener detalles de direcciones:", error);
+      toast.error("Error al cargar detalles de ubicaciones");
+    }
+  };
 
   useEffect(() => {
     if (orden) {
       fetchDirecciones();
+      obtenerDetallesDirecciones();
     }
   }, [orden]);
+
+  useEffect(() => {
+    if (orden && direcciones.length > 0) {
+      // Seleccionar la dirección de entrega (usando el primer detalle)
+      const direccionEntrega = direcciones.find(
+        (d) => d.id === orden.detalles[0]?.id_direccion_entrega
+      );
+      setDireccionEntrega(direccionEntrega);
+      setDireccionSeleccionada(direccionEntrega);
+
+      // Seleccionar la dirección de recolección (solo para preordenes)
+      if (orden.tipo_orden === "preorden") {
+        const direccionRecoleccion = direcciones.find(
+          (d) => d.id === orden.id_direccion
+        );
+        setDireccionRecoleccion(direccionRecoleccion);
+        setDireccionRecoleccionSeleccionada(direccionRecoleccion);
+      }
+    }
+  }, [orden, direcciones]);
 
   const fetchDirecciones = async () => {
     try {
@@ -63,6 +110,28 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       console.error("Error al cargar direcciones:", error);
       toast.error("Error al cargar las direcciones");
     }
+  };
+
+  const filtrarDirecciones = (direcciones, esRecoleccion) => {
+    if (orden.tipo_orden === "preorden" && esRecoleccion) {
+      return direcciones.filter(
+        (d) => d.id_departamento === 12 && d.id_municipio === 215
+      );
+    } else if (
+      (orden.tipo_orden === "orden" || orden.tipo_orden === "preorden") &&
+      orden.detalles[0].id_tipo_entrega === 2
+    ) {
+      // Para órdenes o preórdenes de tipo entrega express
+      return direcciones.filter(
+        (d) => d.id_departamento === 12 && d.id_municipio === 215
+      );
+    }
+    return direcciones;
+  };
+
+  const obtenerNombreUbicacion = (direccion) => {
+    const detalles = direccionesDetalladas[direccion.id];
+    return `${detalles?.municipio || direccion.id_municipio}, ${detalles?.departamento || direccion.id_departamento}`;
   };
 
   const handleInputChange = (e, isDireccionRecoleccion = false) => {
@@ -115,37 +184,64 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
   };
 
   const seleccionarDireccion = async (direccion, esRecoleccion = false) => {
-    if (esRecoleccion) {
-      if (direccion.id === direccionSeleccionada?.id) {
+    if (orden.tipo_orden === "preorden") {
+      if (esRecoleccion && direccion.id === direccionEntrega?.id) {
         toast.error(
-          "La dirección de recolección debe ser diferente a la dirección de entrega"
+          "La dirección de recolección no puede ser la misma que la de entrega"
         );
         return;
       }
-      setDireccionRecoleccionSeleccionada(direccion);
-    } else {
-      if (direccion.id === direccionRecoleccionSeleccionada?.id) {
+      if (!esRecoleccion && direccion.id === direccionRecoleccion?.id) {
         toast.error(
-          "La dirección de entrega debe ser diferente a la dirección de recolección"
+          "La dirección de entrega no puede ser la misma que la de recolección"
         );
         return;
       }
-      setDireccionSeleccionada(direccion);
     }
 
     try {
       const token = localStorage.getItem("token");
+
+      let nuevaOrden = { ...orden };
+
+      if (orden.tipo_orden === "preorden" && esRecoleccion) {
+        // Actualizar dirección de recolección para preórdenes
+        nuevaOrden.id_direccion = direccion.id;
+      } else {
+        // Actualizar dirección de entrega en todos los detalles
+        nuevaOrden.detalles = orden.detalles.map((detalle) => ({
+          ...detalle,
+          id_direccion_entrega: direccion.id,
+        }));
+
+        // Para órdenes normales, actualizar también id_direccion
+        if (orden.tipo_orden === "orden") {
+          nuevaOrden.id_direccion = direccion.id;
+        }
+
+        // Actualizar los detalles en el backend
+        for (let detalle of nuevaOrden.detalles) {
+          await axios.put(
+            `${API_URL}/ordenes/actualizar-detalle-orden/${detalle.id}`,
+            { ...detalle, id_direccion_entrega: direccion.id },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+        }
+      }
+
+      // Actualizar la orden principal
       const dataToSend = {
-        id_cliente: orden.id_cliente,
-        id_tipo_pago: orden.id_tipo_pago,
-        id_direccion: esRecoleccion ? orden.id_direccion : direccion.id,
-        direccion_recoleccion: esRecoleccion
-          ? direccion.id
-          : direccionRecoleccionSeleccionada?.id || null,
-        total_pagar: orden.total_pagar,
-        costo_adicional: orden.costo_adicional,
-        concepto: orden.concepto,
-        tipo_documento: orden.tipo_documento,
+        id_cliente: nuevaOrden.id_cliente,
+        id_tipo_pago: nuevaOrden.id_tipo_pago,
+        id_direccion: nuevaOrden.id_direccion,
+        direccion_recoleccion:
+          orden.tipo_orden === "preorden" && esRecoleccion
+            ? direccion.id
+            : nuevaOrden.direccion_recoleccion,
+        total_pagar: nuevaOrden.total_pagar,
+        costo_adicional: nuevaOrden.costo_adicional,
+        concepto: nuevaOrden.concepto,
+        tipo_documento: nuevaOrden.tipo_documento,
       };
 
       const response = await axios.put(
@@ -160,30 +256,27 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       );
 
       if (response.status === 200) {
+        if (orden.tipo_orden === "preorden" && esRecoleccion) {
+          setDireccionRecoleccion(direccion);
+          setDireccionRecoleccionSeleccionada(direccion);
+        } else {
+          setDireccionEntrega(direccion);
+          setDireccionSeleccionada(direccion);
+        }
+
+        actualizarOrden(nuevaOrden);
+
         toast.success(
-          `Dirección de ${esRecoleccion ? "recolección" : "entrega"} actualizada con éxito`
+          `Dirección de ${orden.tipo_orden === "preorden" && esRecoleccion ? "recolección" : "entrega"} actualizada con éxito`
         );
-        actualizarOrden({
-          ...orden,
-          id_direccion: esRecoleccion ? orden.id_direccion : direccion.id,
-          direccion_recoleccion: esRecoleccion
-            ? direccion.id
-            : direccionRecoleccionSeleccionada?.id || null,
-          direccion_emisor: esRecoleccion ? orden.direccion_emisor : direccion,
-        });
       } else {
         toast.error(
-          `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
+          `Error al actualizar la dirección de ${orden.tipo_orden === "preorden" && esRecoleccion ? "recolección" : "entrega"}`
         );
       }
     } catch (error) {
-      console.error(
-        `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}:`,
-        error
-      );
-      toast.error(
-        `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
-      );
+      console.error(`Error al actualizar la dirección:`, error);
+      toast.error(`Error al actualizar la dirección`);
     }
   };
 
@@ -218,59 +311,104 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
         <Button color="primary" onClick={toggleModalAgregar}>
           Agregar Nueva Dirección
         </Button>
-        <Table>
+
+        <h4>
+          Direcciones de {orden.tipo_orden === "preorden" ? "Entrega" : ""}{" "}
+          Disponibles
+        </h4>
+        <Table responsive>
           <thead>
             <tr>
               <th>Dirección</th>
               <th>Contacto</th>
               <th>Teléfono</th>
+              <th>Ubicación</th>
               <th>Acción</th>
-              {orden.tipo_orden === "preorden" && (
-                <th>Seleccionar como Recolección</th>
-              )}
             </tr>
           </thead>
           <tbody>
-            {direcciones.map((direccion) => (
+            {filtrarDirecciones(direcciones, false).map((direccion) => (
               <tr key={direccion.id}>
-                <td>{direccion.direccion}</td>
+                <td>
+                  {direccion.direccion}
+                  {direccion.id === direccionEntrega?.id && (
+                    <span className="text-success"> (Entrega)</span>
+                  )}
+                </td>
                 <td>{direccion.nombre_contacto}</td>
                 <td>{direccion.telefono}</td>
+                <td>{obtenerNombreUbicacion(direccion)}</td>
                 <td>
                   <Button
                     color={
-                      direccion.id === direccionSeleccionada?.id
+                      direccion.id === direccionEntrega?.id
                         ? "success"
                         : "primary"
                     }
-                    onClick={() => seleccionarDireccion(direccion)}
+                    onClick={() => seleccionarDireccion(direccion, false)}
+                    disabled={
+                      orden.tipo_orden === "preorden" &&
+                      direccion.id === direccionRecoleccion?.id
+                    }
                   >
-                    {direccion.id === direccionSeleccionada?.id
+                    {direccion.id === direccionEntrega?.id
                       ? "Seleccionada"
                       : "Seleccionar"}
                   </Button>
                 </td>
-                {orden.tipo_orden === "preorden" && (
-                  <td>
-                    <Button
-                      color={
-                        direccion.id === direccionRecoleccionSeleccionada?.id
-                          ? "success"
-                          : "primary"
-                      }
-                      onClick={() => seleccionarDireccion(direccion, true)}
-                    >
-                      {direccion.id === direccionRecoleccionSeleccionada?.id
-                        ? "Seleccionada"
-                        : "Seleccionar"}
-                    </Button>
-                  </td>
-                )}
               </tr>
             ))}
           </tbody>
         </Table>
-        {direccionSeleccionada && (
+
+        {orden.tipo_orden === "preorden" && (
+          <div>
+            <h4>Direcciones de Recolección Disponibles</h4>
+            <Table responsive>
+              <thead>
+                <tr>
+                  <th>Dirección</th>
+                  <th>Contacto</th>
+                  <th>Teléfono</th>
+                  <th>Ubicacion</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtrarDirecciones(direcciones, true).map((direccion) => (
+                  <tr key={direccion.id}>
+                    <td>
+                      {direccion.direccion}
+                      {direccion.id === direccionRecoleccion?.id && (
+                        <span className="text-warning"> (Recolección)</span>
+                      )}
+                    </td>
+                    <td>{direccion.nombre_contacto}</td>
+                    <td>{direccion.telefono}</td>
+                    <td>{obtenerNombreUbicacion(direccion)}</td>
+                    <td>
+                      <Button
+                        color={
+                          direccion.id === direccionRecoleccion?.id
+                            ? "success"
+                            : "primary"
+                        }
+                        onClick={() => seleccionarDireccion(direccion, true)}
+                        disabled={direccion.id === direccionEntrega?.id}
+                      >
+                        {direccion.id === direccionRecoleccion?.id
+                          ? "Seleccionada"
+                          : "Seleccionar"}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
+
+        {direccionEntrega && (
           <div>
             <h4>Dirección de Entrega Seleccionada</h4>
             {editando ? (
@@ -325,6 +463,10 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
                   <strong>Teléfono:</strong> {direccionSeleccionada.telefono}
                 </p>
                 <p>
+                  <strong>Ubicación:</strong>{" "}
+                  {obtenerNombreUbicacion(direccionSeleccionada)}
+                </p>
+                <p>
                   <strong>Referencia:</strong>{" "}
                   {direccionSeleccionada.referencia || "No especificada"}
                 </p>
@@ -336,85 +478,85 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           </div>
         )}
 
-        {orden.tipo_orden === "preorden" &&
-          direccionRecoleccionSeleccionada && (
-            <div>
-              <h4>Dirección de Recolección Seleccionada</h4>
-              {editandoRecoleccion ? (
-                <Form onSubmit={handleSubmit}>
-                  <FormGroup>
-                    <Label for="referencia_recoleccion">Referencia</Label>
-                    <Input
-                      type="text"
-                      name="referencia"
-                      id="referencia_recoleccion"
-                      value={direccionRecoleccionSeleccionada.referencia || ""}
-                      onChange={(e) => handleInputChange(e, true)}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <Label for="nombre_contacto_recoleccion">
-                      Nombre de Contacto
-                    </Label>
-                    <Input
-                      type="text"
-                      name="nombre_contacto"
-                      id="nombre_contacto_recoleccion"
-                      value={
-                        direccionRecoleccionSeleccionada.nombre_contacto || ""
-                      }
-                      onChange={(e) => handleInputChange(e, true)}
-                    />
-                  </FormGroup>
-                  <FormGroup>
-                    <Label for="telefono_recoleccion">Teléfono</Label>
-                    <Input
-                      type="text"
-                      name="telefono"
-                      id="telefono_recoleccion"
-                      value={direccionRecoleccionSeleccionada.telefono || ""}
-                      onChange={(e) => handleInputChange(e, true)}
-                    />
-                  </FormGroup>
-                  <Button color="primary" type="submit">
-                    Guardar Cambios
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={() => setEditandoRecoleccion(false)}
-                  >
-                    Cancelar
-                  </Button>
-                </Form>
-              ) : (
-                <>
-                  <p>
-                    <strong>Dirección:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.direccion}
-                  </p>
-                  <p>
-                    <strong>Contacto:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.nombre_contacto}
-                  </p>
-                  <p>
-                    <strong>Teléfono:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.telefono}
-                  </p>
-                  <p>
-                    <strong>Referencia:</strong>{" "}
-                    {direccionRecoleccionSeleccionada.referencia ||
-                      "No especificada"}
-                  </p>
-                  <Button
-                    color="primary"
-                    onClick={() => setEditandoRecoleccion(true)}
-                  >
-                    Editar Detalles
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
+        {orden.tipo_orden === "preorden" && direccionRecoleccion && (
+          <div>
+            <h4>Dirección de Recolección Seleccionada</h4>
+            {editandoRecoleccion ? (
+              <Form onSubmit={handleSubmit}>
+                <FormGroup>
+                  <Label for="referencia_recoleccion">Referencia</Label>
+                  <Input
+                    type="text"
+                    name="referencia"
+                    id="referencia_recoleccion"
+                    value={direccionRecoleccionSeleccionada.referencia || ""}
+                    onChange={(e) => handleInputChange(e, true)}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="nombre_contacto_recoleccion">
+                    Nombre de Contacto
+                  </Label>
+                  <Input
+                    type="text"
+                    name="nombre_contacto"
+                    id="nombre_contacto_recoleccion"
+                    value={
+                      direccionRecoleccionSeleccionada.nombre_contacto || ""
+                    }
+                    onChange={(e) => handleInputChange(e, true)}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label for="telefono_recoleccion">Teléfono</Label>
+                  <Input
+                    type="text"
+                    name="telefono"
+                    id="telefono_recoleccion"
+                    value={direccionRecoleccionSeleccionada.telefono || ""}
+                    onChange={(e) => handleInputChange(e, true)}
+                  />
+                </FormGroup>
+                <Button color="primary" type="submit">
+                  Guardar Cambios
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => setEditandoRecoleccion(false)}
+                >
+                  Cancelar
+                </Button>
+              </Form>
+            ) : (
+              <>
+                <p>
+                  <strong>Dirección:</strong> {direccionRecoleccion.direccion}
+                </p>
+                <p>
+                  <strong>Contacto:</strong>{" "}
+                  {direccionRecoleccion.nombre_contacto}
+                </p>
+                <p>
+                  <strong>Teléfono:</strong> {direccionRecoleccion.telefono}
+                </p>
+                <p>
+                  <strong>Ubicación:</strong>{" "}
+                  {obtenerNombreUbicacion(direccionRecoleccion)}
+                </p>
+                <p>
+                  <strong>Referencia:</strong>{" "}
+                  {direccionRecoleccion.referencia || "No especificada"}
+                </p>
+                <Button
+                  color="primary"
+                  onClick={() => setEditandoRecoleccion(true)}
+                >
+                  Editar Detalles
+                </Button>
+              </>
+            )}
+          </div>
+        )}
 
         <Modal isOpen={modalAgregar} toggle={toggleModalAgregar}>
           <ModalHeader toggle={toggleModalAgregar}>

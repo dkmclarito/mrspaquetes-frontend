@@ -614,6 +614,45 @@ body {
   background-color: #1e1e1e;
 }
 
+.dark-mode .custom-select__control{
+  background-color: #555; /* Color de fondo */
+   /* Color del borde */
+  color: #fff; /* Color del texto */
+  border: 1px solid #ffffff;
+}
+.dark-mode .custom-select__single-value {
+  color: #ffffff; /* Color del texto seleccionado */
+}
+
+.dark-mode .custom-select__input-container {
+  color: #ffffff; /* Color del texto que el usuario escribe */
+}
+
+.dark-mode .custom-select__placeholder  {
+  color: #fff; /* Color del placeholder */
+}
+
+.dark-mode .custom-select__menu {
+  background-color: #666; /* Color de fondo del menú */
+  color: #fff; /* Color del texto del menú */
+}
+
+.dark-mode .custom-select__option {
+  background-color: #666; /* Color de fondo de las opciones */
+  color: #fff; /* Color del texto de las opciones */
+}
+
+.dark-mode .custom-select__option--is-focused {
+  background-color: #777; /* Color de fondo cuando se enfoca la opción */
+  
+}
+
+.dark-mode .custom-select__option--is-selected #react-select-19-live-region{
+  background-color: #888; /* Color de fondo cuando se selecciona la opción */
+  color: #fff;
+}
+
+
 /* Estilos del Modo Oscuro para .card */
 .dark-mode .card {
   background-color: #2b2b2b;
@@ -656,7 +695,7 @@ body {
   color: white;
 }
 
-.dark-mode .card  select {
+.dark-mode .card  elect {
   background-color: #444;
   color: white;
 }

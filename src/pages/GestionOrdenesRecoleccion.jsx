@@ -1,250 +1,434 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Container, Row, Col, Card, CardBody, Button } from "reactstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Input,
+  Label,
+  Button,
+} from "reactstrap";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import RutaTable from "../components/Rutas/RutaTable";
-import OrdenTable from "../components/Rutas/OrdenTable";
-import AsignarPreordenesModal from "../components/Rutas/AsignarPreordenesModal";
-import FinalizarOrdenModal from "../components/Rutas/FinalizarOrdenModal";
+import Breadcrumbs from "../components/Recoleccion/Common/Breadcrumbs";
+import TablaRutasRecoleccion from "../components/Recoleccion/TablaRutasRecoleccion";
+import Pagination from "react-js-pagination";
+import ModalConfirmarEliminar from "../components/Recoleccion/ModalConfirmarEliminar";
+import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const ITEMS_PER_PAGE = 10;
 
 const GestionOrdenesRecoleccion = () => {
   const [rutasRecoleccion, setRutasRecoleccion] = useState([]);
-  const [ordenesAsignadas, setOrdenesAsignadas] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalOrdenes, setTotalOrdenes] = useState(0);
+  const [modalEliminar, setModalEliminar] = useState(false);
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
-  const [modalAsignarPreordenes, setModalAsignarPreordenes] = useState(false);
-  const [modalFinalizar, setModalFinalizar] = useState(false);
-  const [ordenAFinalizar, setOrdenAFinalizar] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [vehiculos, setVehiculos] = useState([]);
+  const [estados, setEstados] = useState([]);
 
-  const fetchRutasRecoleccion = useCallback(async () => {
+  const navigate = useNavigate();
+
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/rutas-recolecciones`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Datos recibidos de rutas de recolección:", response.data);
-      setRutasRecoleccion(response.data.data || []);
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser()?.token;
+
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login";
+          return;
+        }
+      }
     } catch (error) {
-      console.error("Error al obtener rutas de recolección:", error);
-      toast.error("Error al cargar las rutas de recolección");
+      console.error("Error al verificar el estado del usuario:", error);
+      toast.error("Error al verificar el estado del usuario.");
     }
   }, []);
 
-  const fetchOrdenesAsignadas = useCallback(async () => {
+  const fetchData = useCallback(async (page = 1) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/orden-recoleccion`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Datos recibidos de órdenes asignadas:", response.data);
-      setOrdenesAsignadas(response.data.data || []);
+
+      const [rutasRes, vehiculosRes, estadosRes] = await Promise.all([
+        axios.get(
+          `${API_URL}/rutas-recolecciones?page=${page}&per_page=${ITEMS_PER_PAGE}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        ),
+        axios.get(`${API_URL}/dropdown/get_vehiculos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/dropdown/get_estado_rutas`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const rutasData = rutasRes.data.data || [];
+      const rutasConEstado = await Promise.all(
+        rutasData.map(async (ruta) => {
+          const ordenesRes = await axios.get(
+            `${API_URL}/rutas-recolecciones/${ruta.id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const ordenes = ordenesRes.data.ordenes_recolecciones || [];
+
+          const puedeIniciar = ordenes.some(
+            (orden) => orden.estado !== 0 && !orden.recoleccion_iniciada
+          );
+
+          const puedeFinalizar = ordenes.some(
+            (orden) =>
+              orden.estado !== 0 &&
+              orden.recoleccion_iniciada &&
+              !orden.recoleccion_finalizada
+          );
+
+          return { ...ruta, puedeIniciar, puedeFinalizar };
+        })
+      );
+
+      setRutasRecoleccion(rutasConEstado);
+      setTotalItems(rutasRes.data.total || 0);
+
+      const totalOrdenes = rutasConEstado.reduce(
+        (total, ruta) => total + (ruta.ordenes_recolecciones?.length || 0),
+        0
+      );
+      setTotalOrdenes(totalOrdenes);
+
+      setVehiculos(vehiculosRes.data.vehiculos || []);
+      setEstados(estadosRes.data.estado_rutas || []);
     } catch (error) {
-      console.error("Error al obtener órdenes asignadas:", error);
-      toast.error("Error al cargar las órdenes asignadas");
+      console.error("Error al obtener datos:", error);
+      toast.error("Error al cargar los datos.");
     }
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      await Promise.all([fetchRutasRecoleccion(), fetchOrdenesAsignadas()]);
-      setLoading(false);
-    };
+    verificarEstadoUsuarioLogueado();
     fetchData();
-  }, [fetchRutasRecoleccion, fetchOrdenesAsignadas]);
+  }, [verificarEstadoUsuarioLogueado, fetchData]);
 
-  const handleSeleccionRuta = (ruta) => {
-    console.log("Ruta seleccionada:", ruta);
-    setRutaSeleccionada(ruta);
+  const handleSearchChange = (e) => {
+    setBusqueda(e.target.value);
+    setCurrentPage(1);
   };
 
-  const handleAsignarPreordenes = () => {
-    if (!rutaSeleccionada) {
-      toast.warn("Seleccione una ruta primero");
-      return;
-    }
-    setModalAsignarPreordenes(true);
+  const filtrarRutas = useCallback(() => {
+    if (!busqueda) return rutasRecoleccion;
+    return rutasRecoleccion.filter(
+      (ruta) =>
+        ruta.nombre &&
+        ruta.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    );
+  }, [rutasRecoleccion, busqueda]);
+
+  const rutasFiltradas = filtrarRutas();
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    fetchData(pageNumber);
   };
 
-  const confirmarAsignacion = async (preordenesSeleccionadas) => {
-    if (!rutaSeleccionada) {
-      toast.error("No se ha seleccionado una ruta de recolección");
-      return;
-    }
+  const verDetallesRuta = (id) => {
+    navigate(`/detalles-ruta-recoleccion/${id}`);
+  };
 
+  const editarRuta = (id) => {
+    navigate(`/editar-ruta-recoleccion/${id}`);
+  };
+
+  const iniciarEliminarRuta = useCallback((id) => {
+    setRutaSeleccionada(id);
+    setModalEliminar(true);
+  }, []);
+
+  const confirmarEliminarRuta = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = AuthService.getCurrentUser()?.token;
+      await axios.delete(`${API_URL}/rutas-recolecciones/${rutaSeleccionada}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      console.log("Ruta seleccionada para asignación:", rutaSeleccionada);
-      console.log("Preórdenes seleccionadas:", preordenesSeleccionadas);
+      toast.success("Ruta de recolección eliminada con éxito.");
 
-      // Paso 1: Crear órdenes de recolección
-      const ordenesRecoleccion = await Promise.all(
-        preordenesSeleccionadas.map(async (preorden) => {
-          const dataToSend = {
-            id_ruta_recoleccion: rutaSeleccionada.id,
-            fecha_asignacion: rutaSeleccionada.fecha_asignacion,
-            id_vehiculo: rutaSeleccionada.id_vehiculo,
-            ordenes: [{ id: preorden.id }],
-          };
-          console.log(
-            "Datos a enviar para crear orden de recolección:",
-            dataToSend
-          );
-
-          try {
-            const response = await axios.post(
-              `${API_URL}/orden-recoleccion`,
-              dataToSend,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-              }
-            );
-            console.log(
-              "Respuesta de crear orden de recolección:",
-              response.data
-            );
-            return response.data;
-          } catch (error) {
-            console.error(
-              "Error al crear orden de recolección:",
-              error.response?.data || error.message
-            );
-            throw error;
-          }
-        })
-      );
-
-      // Paso 2: Asignar las órdenes de recolección a la ruta
-      const dataToAssign = {
-        ordenes_recoleccion: ordenesRecoleccion.map((orden) => orden.id),
-      };
-      console.log("Datos a enviar para asignar órdenes a ruta:", dataToAssign);
-
-      await axios.post(
-        `${API_URL}/rutas-recolecciones/${rutaSeleccionada.id}/asignar-ordenes`,
-        dataToAssign,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      toast.success("Órdenes asignadas con éxito");
-      fetchOrdenesAsignadas();
-    } catch (error) {
-      console.error("Error al asignar órdenes:", error);
-      if (error.response) {
-        console.error("Datos del error:", error.response.data);
-        console.error("Estado del error:", error.response.status);
-        console.error("Cabeceras del error:", error.response.headers);
-
-        if (error.response.data && error.response.data.errors) {
-          const errorMessages = Object.values(error.response.data.errors)
-            .flat()
-            .join(", ");
-          toast.error(`Error al asignar las órdenes: ${errorMessages}`);
-        } else {
-          toast.error(
-            `Error al asignar las órdenes: ${error.response.data.message || "Error desconocido"}`
-          );
-        }
-      } else if (error.request) {
-        console.error("Error de red:", error.request);
-        toast.error("Error de red. Por favor, verifica tu conexión.");
+      if (rutasRecoleccion.length === 1 && currentPage > 1) {
+        await fetchData(currentPage - 1);
       } else {
-        console.error("Error:", error.message);
-        toast.error(
-          "Error al procesar la solicitud. Por favor, intenta de nuevo."
-        );
+        await fetchData(currentPage);
       }
+
+      setModalEliminar(false);
+      setRutaSeleccionada(null);
+    } catch (error) {
+      console.error("Error al eliminar la ruta de recolección:", error);
+      toast.error("Error al eliminar la ruta de recolección.");
     }
   };
 
-  const handleFinalizarOrden = (orden) => {
-    setOrdenAFinalizar(orden);
-    setModalFinalizar(true);
-  };
-
-  const confirmarFinalizarOrden = async () => {
+  const iniciarRecoleccion = async (rutaId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        `${API_URL}/orden-recoleccion/finalizar-orden-recoleccion/${ordenAFinalizar.id}`,
-        {},
+      const response = await axios.get(
+        `${API_URL}/rutas-recolecciones/${rutaId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success("Orden finalizada con éxito");
-      setModalFinalizar(false);
-      fetchOrdenesAsignadas();
+
+      const rutaConPaquetes = {
+        ...response.data,
+        ordenes_recolecciones: await Promise.all(
+          response.data.ordenes_recolecciones.map(async (orden) => {
+            const detallesOrden = await axios.get(
+              `${API_URL}/ordenes/${orden.id_orden}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            return { ...orden, paquetes: detallesOrden.data.detalles };
+          })
+        ),
+      };
+
+      console.log("Información de la ruta y sus órdenes:", rutaConPaquetes);
+
+      if (
+        !rutaConPaquetes.ordenes_recolecciones ||
+        rutaConPaquetes.ordenes_recolecciones.length === 0
+      ) {
+        toast.warning("No hay órdenes de recolección asociadas a esta ruta.");
+        return;
+      }
+
+      let ordenesIniciadas = 0;
+      let errores = 0;
+
+      for (const orden of rutaConPaquetes.ordenes_recolecciones) {
+        try {
+          await axios.post(
+            `${API_URL}/orden-recoleccion/asignar-recoleccion/${orden.id}`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          ordenesIniciadas++;
+        } catch (ordenError) {
+          console.error(
+            `Error al iniciar la recolección para la orden ${orden.id}:`,
+            ordenError
+          );
+          errores++;
+        }
+      }
+
+      if (ordenesIniciadas > 0) {
+        toast.success(
+          `Recolección iniciada con éxito para ${ordenesIniciadas} órdenes de la ruta ${rutaConPaquetes.nombre}`
+        );
+      } else if (errores > 0) {
+        toast.error(
+          `No se pudo iniciar la recolección para ninguna orden. Se encontraron ${errores} errores.`
+        );
+      } else {
+        toast.info(
+          `No se iniciaron nuevas recolecciones para la ruta ${rutaConPaquetes.nombre}.`
+        );
+      }
+
+      fetchData(currentPage);
     } catch (error) {
-      console.error("Error al finalizar la orden:", error);
-      toast.error("Error al finalizar la orden");
+      console.error("Error al iniciar la recolección:", error);
+      toast.error(
+        "Error al iniciar la recolección: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
+  const finalizarRecoleccion = async (rutaId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/rutas-recolecciones/${rutaId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const rutaConPaquetes = {
+        ...response.data,
+        ordenes_recolecciones: await Promise.all(
+          response.data.ordenes_recolecciones.map(async (orden) => {
+            const detallesOrden = await axios.get(
+              `${API_URL}/ordenes/${orden.id_orden}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            return { ...orden, paquetes: detallesOrden.data.detalles };
+          })
+        ),
+      };
+
+      console.log(
+        "Información de la ruta y sus órdenes para finalizar:",
+        rutaConPaquetes
+      );
+
+      if (
+        !rutaConPaquetes.ordenes_recolecciones ||
+        rutaConPaquetes.ordenes_recolecciones.length === 0
+      ) {
+        toast.warning(
+          "No hay órdenes de recolección asociadas a esta ruta para finalizar."
+        );
+        return;
+      }
+
+      let ordenesFInalizadas = 0;
+      let errores = 0;
+
+      for (const orden of rutaConPaquetes.ordenes_recolecciones) {
+        try {
+          await axios.post(
+            `${API_URL}/orden-recoleccion/finalizar-orden-recoleccion/${orden.id}`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          ordenesFInalizadas++;
+        } catch (ordenError) {
+          console.error(
+            `Error al finalizar la recolección para la orden ${orden.id}:`,
+            ordenError
+          );
+          errores++;
+        }
+      }
+
+      if (ordenesFInalizadas > 0) {
+        toast.success(
+          `Recolección finalizada con éxito para ${ordenesFInalizadas} órdenes de la ruta ${rutaConPaquetes.nombre}`
+        );
+      } else if (errores > 0) {
+        toast.error(
+          `No se pudo finalizar la recolección para ninguna orden. Se encontraron ${errores} errores.`
+        );
+      } else {
+        toast.info(
+          `No se finalizaron nuevas recolecciones para la ruta ${rutaConPaquetes.nombre}.`
+        );
+      }
+
+      fetchData(currentPage);
+    } catch (error) {
+      console.error("Error al finalizar la recolección:", error);
+      toast.error(
+        "Error al finalizar la recolección: " +
+          (error.response?.data?.message || error.message)
+      );
+    }
+  };
 
   return (
-    <Container fluid>
-      <h2 className="mb-4 titulo-pasos">Gestión de Órdenes de Recolección</h2>
-      <Row>
-        <Col md={6}>
-          <Card>
-            <CardBody>
-              <h4>Rutas de Recolección</h4>
-              <RutaTable
-                rutas={rutasRecoleccion}
-                onSelectRuta={handleSeleccionRuta}
-                rutaSeleccionada={rutaSeleccionada}
+    <div className="page-content">
+      <Container fluid>
+        <Breadcrumbs
+          title="Gestión de Rutas de Recolección"
+          breadcrumbItem="Listado de Rutas"
+        />
+        <Row>
+          <Col lg={12}>
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Label for="busqueda" style={{ marginRight: "10px" }}>
+                Buscar:
+              </Label>
+              <Input
+                type="text"
+                id="busqueda"
+                value={busqueda}
+                onChange={handleSearchChange}
+                placeholder="Buscar por código de ruta"
+                style={{ width: "300px" }}
               />
-              <Button
-                color="primary"
-                onClick={handleAsignarPreordenes}
-                disabled={!rutaSeleccionada}
-                className="mt-3"
-              >
-                Asignar Preórdenes a Ruta
-              </Button>
-            </CardBody>
-          </Card>
-        </Col>
-        <Col md={6}>
-          <Card>
-            <CardBody>
-              <h4>Órdenes de Recolección Asignadas</h4>
-              <OrdenTable
-                ordenes={ordenesAsignadas}
-                onFinalizarOrden={handleFinalizarOrden}
-                tipo="asignada"
-              />
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
-      <AsignarPreordenesModal
-        isOpen={modalAsignarPreordenes}
-        toggle={() => setModalAsignarPreordenes(!modalAsignarPreordenes)}
-        rutaSeleccionada={rutaSeleccionada}
-        onAsignarOrdenes={confirmarAsignacion}
+              <div style={{ marginLeft: "auto" }}>
+                <Link to="/crear-ruta-recoleccion" className="btn btn-primary">
+                  <i className="fas fa-plus"></i> Crear Ruta de Recolección
+                </Link>
+              </div>
+            </div>
+          </Col>
+        </Row>
+        <br />
+        <Row>
+          <Col lg={12}>
+            <Card>
+              <CardBody>
+                <TablaRutasRecoleccion
+                  rutas={rutasFiltradas}
+                  vehiculos={vehiculos}
+                  estados={estados}
+                  eliminarRuta={iniciarEliminarRuta}
+                  verDetallesRuta={verDetallesRuta}
+                  editarRuta={editarRuta}
+                  iniciarRecoleccion={iniciarRecoleccion}
+                  finalizarRecoleccion={finalizarRecoleccion}
+                  totalOrdenes={totalOrdenes}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+        <Row>
+          <Col
+            lg={12}
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <Pagination
+              activePage={currentPage}
+              itemsCountPerPage={ITEMS_PER_PAGE}
+              totalItemsCount={totalItems}
+              pageRangeDisplayed={5}
+              onChange={handlePageChange}
+              itemClass="page-item"
+              linkClass="page-link"
+              innerClass="pagination"
+            />
+          </Col>
+        </Row>
+      </Container>
+      <ModalConfirmarEliminar
+        isOpen={modalEliminar}
+        toggle={() => setModalEliminar(!modalEliminar)}
+        confirmarEliminar={confirmarEliminarRuta}
       />
-      <FinalizarOrdenModal
-        isOpen={modalFinalizar}
-        toggle={() => setModalFinalizar(!modalFinalizar)}
-        onConfirm={confirmarFinalizarOrden}
-      />
-    </Container>
+    </div>
   );
 };
 

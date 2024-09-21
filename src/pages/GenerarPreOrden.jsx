@@ -42,8 +42,7 @@ export default function GenerarPreOrden() {
     id_cliente: idCliente,
     nombre_contacto: "",
     telefono: "",
-    id_direccion: "",
-    direccion_recoleccion: "",
+    id_direccion: "", //Direccion de recoleccion
     id_tipo_pago: 1,
     id_estado_paquete: 3,
     id_estado_paquetes: 3,
@@ -102,8 +101,7 @@ export default function GenerarPreOrden() {
           ...prevState,
           nombre_contacto: storedAddress.nombre_contacto || "",
           telefono: storedAddress.telefono || "",
-          id_direccion: Number(storedAddress.id) || "",
-          direccion_recoleccion: location.state?.direccionRecoleccion?.id || "",
+          id_direccion: Number(location.state?.direccionRecoleccion?.id) || "", // Dirección de recolección
           total_pagar: location.state?.totalPrice || 0,
           detalles:
             location.state?.detalles?.map((detalle) => ({
@@ -114,7 +112,7 @@ export default function GenerarPreOrden() {
               id_estado_paquete: 1,
               id_tamano_paquete: Number(detalle.tamano_paquete),
               id_tipo_entrega: 1,
-              id_direccion: Number(location.state?.selectedAddress?.id) || "",
+              id_direccion: Number(location.state?.selectedAddress?.id) || "", // Dirección de entrega
               precio: Number(detalle.precio),
               fecha_envio: detalle.fecha_envio
                 ? new Date(detalle.fecha_envio).toISOString().split("T")[0] +
@@ -292,8 +290,7 @@ export default function GenerarPreOrden() {
         id_cliente: Number(formData.id_cliente),
         nombre_contacto: formData.nombre_contacto,
         telefono: formData.telefono,
-        id_direccion: Number(formData.id_direccion),
-        direccion_recoleccion: Number(formData.direccion_recoleccion),
+        id_direccion: Number(formData.id_direccion), // Dirección de recolección
         id_tipo_pago: Number(formData.id_tipo_pago),
         total_pagar: Number(formData.total_pagar),
         costo_adicional: Number(formData.costo_adicional) || 0,
@@ -311,7 +308,7 @@ export default function GenerarPreOrden() {
           fecha_entrega: detalle.fecha_entrega, // Solo la fecha
           descripcion_contenido: detalle.descripcion_contenido,
           id_tipo_entrega: Number(detalle.id_tipo_entrega),
-          id_direccion: Number(detalle.id_direccion),
+          id_direccion: Number(detalle.id_direccion), // Dirección de entrega
           instrucciones_entrega: detalle.instrucciones_entrega,
           descripcion: detalle.descripcion,
           precio: Number(detalle.precio),

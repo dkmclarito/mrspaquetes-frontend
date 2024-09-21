@@ -3,8 +3,33 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import { Card, CardBody, CardTitle } from 'reactstrap';
 import axios from 'axios';
 import AuthService from '../../services/authService';
+import '../Dashboard/Dashboard.css'
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip">
+        <p>{`${payload[0].name} : ${payload[0].value}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomLegend = ({ payload }) => {
+  return (
+    <div className="custom-legend">
+      {payload.map((entry, index) => (
+        <div key={`item-${index}`} className="legend-item">
+          <span className="legend-color" style={{ backgroundColor: entry.color }} />
+          {entry.value}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const PieChartComponent = () => {
   const [Normal, setNormal] = useState(0);
@@ -58,15 +83,15 @@ const PieChartComponent = () => {
 
   return (
     <Card>
-      <CardBody>
-        <CardTitle style={{ textAlign: 'center' }} tag="h5">Tipos de Ordenes</CardTitle>
-        <ResponsiveContainer width="100%" height={300}>
-          <PieChart>
+      <CardBody className='graficaPastel'>
+        <CardTitle style={{ textAlign: 'center', fontSize: '20px' }} tag="h5">Tipos de Órdenes</CardTitle>
+        <ResponsiveContainer width="100%" height={394}>
+          <PieChart className='pieG'>
             <Pie
               data={formattedData}
               dataKey="cantidad"
               nameKey="estado"
-              outerRadius={100}
+              outerRadius={170}
               fill="#8884d8"
               label              
             >
@@ -74,8 +99,8 @@ const PieChartComponent = () => {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip/>
-            <Legend />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend content={<CustomLegend />}/>
           </PieChart>
         </ResponsiveContainer>
       </CardBody>

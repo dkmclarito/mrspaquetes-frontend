@@ -1,4 +1,4 @@
-.progress-legend {
+ .progress-legend {
     margin-top: 10px;
     display: flex;
     justify-content: space-around;
@@ -14,5 +14,62 @@
     height: 15px;
     margin-right: 10px;
     border-radius: 3px;
+  }
+
+  /*RECUADROS SOBRE LAS GRRAFICAS*/
+  
+  .custom-tooltip {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  font-size: 20px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  }
+
+  .dark-mode .custom-tooltip {
+  background-color: #1e1e1e;
+  }
+
+  .custom-tooltip2 {
+    background-color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    font-size: '20px';
+    text-align: 'center';
+    display: 'flex';
+    flex-direction: 'column';
+    justify-content: 'center';
+    align-items: 'center';
+  }
+  .dark-mode .custom-tooltip2 {
+    background-color: #1e1e1e;
+  }
+  
+
+  /*INDICADORES ABAJO DE LAS GRAFICAS*/
+
+  .dark-mode .custom-legend {
+    display: flex;
+    justify-content: center; 
+    margin-top: 10px;
+    background-color: #1e1e1e; 
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .custom-legend {
+    display: flex;
+    justify-content: center; 
+    margin-top: 10px;
+    background-color: white; 
+    padding: 10px;
+    border-radius: 5px;
   }
   

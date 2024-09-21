@@ -24,7 +24,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
 const GestionInventario = () => {
-  document.title = "Traslados | Gestión";
+  document.title = "Inventario | Gestión";
   const navigate = useNavigate();
   const [ubicaciones, setUbicaciones] = useState([]);
   const [modalEditar, setModalEditar] = useState(false);
@@ -205,8 +205,8 @@ const GestionInventario = () => {
     <div className="page-content">
       <Container fluid>
         <Breadcrumbs
-          title="Gestión de Traslados"
-          breadcrumbItem="Listado de Traslados"
+          title="Gestión de Inventario"
+          breadcrumbItem="Listado de Inventario"
         />
         <Row>
           <Col lg={12}>

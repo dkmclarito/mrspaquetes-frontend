@@ -8,10 +8,12 @@ import ModalEditarModelo from "../components/Vehiculos/ModalEditarModelo";
 import ModalConfirmarEliminar from "../components/Vehiculos/ModalConfirmarEliminarModelo";
 import AuthService from "../services/authService";
 import Pagination from 'react-js-pagination';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import "../styles/Vehiculos.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionModelos = () => {
   document.title = "Modelos | Vehículos";
@@ -23,6 +25,7 @@ const GestionModelos = () => {
   const [modeloAEliminar, setModeloAEliminar] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [marcas, setMarcas] = useState([]);
   const token = AuthService.getCurrentUser();
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -44,19 +47,17 @@ const GestionModelos = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-     // window.location.href = "/login";
     }
   }, [token]);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
+    verificarEstadoUsuarioLogueado();
 
     const interval = setInterval(() => {
-      verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario cada cierto tiempo
-    }, 30000); // Verifica cada 30 segundos, ajusta según sea necesario
+      verificarEstadoUsuarioLogueado();
+    }, 30000);
 
-    return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
+    return () => clearInterval(interval);
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
@@ -83,6 +84,23 @@ const GestionModelos = () => {
     fetchData();
   }, [token]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const responseMarcas = await axios.get(`${API_URL}/dropdown/get_marcas`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setMarcas(responseMarcas.data.marcas || []);
+      } catch (error) {
+        console.error("Error al obtener datos:", error);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
   const eliminarModelo = (idModelo) => {
     setConfirmarEliminar(true);
     setModeloAEliminar(idModelo);
@@ -99,9 +117,21 @@ const GestionModelos = () => {
       setModelos(modelos.filter(modelo => modelo.id !== modeloAEliminar));
       setConfirmarEliminar(false);
       setModeloAEliminar(null);
+      toast.success("Modelo eliminado exitosamente.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar notificación de éxito
     } catch (error) {
       console.error("Error al eliminar modelo:", error);
       setConfirmarEliminar(false);
+      toast.error("Error al eliminar el modelo.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, });// Mostrar notificación de error
     }
   };
 
@@ -118,12 +148,30 @@ const GestionModelos = () => {
           Authorization: `Bearer ${token}`
         }
       });
-
-      setModelos(modelos.map(modelo => modelo.id === modeloEditado.id ? modeloEditado : modelo));
+ 
+      setModelos(prevModelos => {
+        const updatedModelos = prevModelos.map(modelo =>
+          modelo.id === modeloEditado.id ? { ...modelo, ...modeloEditado } : modelo
+        );
+        return updatedModelos;
+      });
+ 
       setModalEditar(false);
       setModeloEditado(null);
+      toast.success("Modelo actualizado exitosamente.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar notificación de éxito
     } catch (error) {
       console.error("Error al actualizar modelo:", error);
+      toast.error("Error al actualizar el modelo.", { position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true, }); // Mostrar notificación de error
     }
   };
 
@@ -132,6 +180,11 @@ const GestionModelos = () => {
     return modelos.filter(modelo =>
       modelo.nombre.toLowerCase().includes(busqueda.toLowerCase())
     );
+  };
+
+  const handleSearch = (event) => {
+    setBusqueda(event.target.value);
+    setCurrentPage(1); // Reiniciar a la primera página al buscar
   };
 
   const handlePageChange = (pageNumber) => {
@@ -156,7 +209,7 @@ const GestionModelos = () => {
                 type="text"
                 id="busqueda"
                 value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
+                onChange={handleSearch}
                 placeholder="Buscar por nombre de modelo"
                 style={{ width: "300px" }}
               />
@@ -177,6 +230,7 @@ const GestionModelos = () => {
                   modelos={paginatedModelos}
                   eliminarModelo={eliminarModelo}
                   toggleModalEditar={toggleModalEditar}
+                  marcas={marcas}
                 />
               </CardBody>
             </Card>
@@ -203,12 +257,14 @@ const GestionModelos = () => {
         setModeloEditado={setModeloEditado}
         guardarCambiosModelo={guardarCambiosModelo}
         setModalEditar={setModalEditar}
+        marcas={marcas}
       />
       <ModalConfirmarEliminar
         confirmarEliminar={confirmarEliminar}
         confirmarEliminarModelo={confirmarEliminarModelo}
         setConfirmarEliminar={setConfirmarEliminar}
       />
+      <ToastContainer />
     </div>
   );
 };

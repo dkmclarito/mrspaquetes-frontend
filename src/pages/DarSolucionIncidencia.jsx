@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link  } from 'react-router-dom';
 import { Container, Row, Col, Form, FormGroup, Label, Input, Button, Alert } from 'reactstrap';
 import AuthService from '../services/authService';
 
@@ -108,7 +108,10 @@ const DarSolucionIncidencia = () => {
                   required
                 />
               </FormGroup>
-              <Button type="submit" color="primary">Cerrar Incidencia</Button>
+              <Button type="submit" color="primary">Cerrar Incidencia</Button> <span></span>
+              <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar">
+                <i className="fas fa-arrow-left"></i> Regresar
+              </Link>
             </Form>
           ) : (
             <p>Cargando datos de la incidencia...</p>

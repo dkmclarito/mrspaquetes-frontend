@@ -171,9 +171,7 @@ const GestionIncidencias = () => {
            
 
               <div style={{ marginLeft: "auto" }}>
-                <Link to="/UbicarPaqueteDaniado" className="btn btn-secondary custom-button">
-                  <i className="fas fa-map-marker-alt"></i> Ubicar paquete dañado
-                </Link> <span></span>
+               
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
                 </Link>

@@ -20,6 +20,7 @@ const AgregarIncidencia = () => {
   const [errorMensaje, setErrorMensaje] = useState('');
 
   const token = AuthService.getCurrentUser();
+  const userId = localStorage.getItem('userId');
 
   const customStyles = {
     option: (provided) => ({
@@ -52,26 +53,30 @@ const AgregarIncidencia = () => {
   useEffect(() => {
     const fetchPaquetesDanio = async () => {
       try {
-        const response = await axios.get(`${API_URL}/dropdown/get_paquetes`, {
+        const response = await axios.get(`${API_URL}/dropdown/get_paquetes_usuario/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (response.status === 200 && response.data && Array.isArray(response.data.paquetes)) {
-          const paquetesFiltrados = response.data.paquetes.filter(paquete => paquete.id_ubicacion === null);
-          setPaquetesDanio(paquetesFiltrados);
-          console.log('Paquetes con id_ubicacion null:', paquetesFiltrados);
+  
+        // Imprime la data completa recibida en la respuesta
+        console.log('Data recibida de la API:', response.data);
+  
+        // Asignar directamente la lista de paquetes recibida a paquetesDanio
+        if (response.status === 200 && Array.isArray(response.data)) {
+          setPaquetesDanio(response.data);
+          console.log('Paquetes recibidos:', response.data);
         } else {
-          throw new Error('Datos inesperados al obtener paquetes con daño');
+          throw new Error('Datos inesperados al obtener paquetes');
         }
       } catch (error) {
-        console.error('Error al obtener paquetes con daño:', error);
+        console.error('Error al obtener paquetes:', error);
         setAlertaError(true);
-        setErrorMensaje('Error al obtener paquetes con daño. Intente nuevamente más tarde.');
+        setErrorMensaje('Error al obtener paquetes. Intente nuevamente más tarde.');
       }
     };
-
+  
     fetchPaquetesDanio();
-  }, [token]);
+  }, [token, userId]);
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,7 +90,7 @@ const AgregarIncidencia = () => {
       estado: '1',
       fecha_hora: fechaHoraActual,
       fecha_resolucion: null,
-      id_usuario_reporta: localStorage.getItem('userId'),
+      id_usuario_reporta: userId,
       id_usuario_asignado: null,
       solucion: 'Pendiente',
     };
@@ -104,7 +109,7 @@ const AgregarIncidencia = () => {
         setAlertaExito(true);
         setTimeout(() => {
           setAlertaExito(false);
-          navigate('/GestionIncidencias', { replace: true }); // Asegura que la redirección funcione
+          navigate('/MisIncidencias', { replace: true });
         }, 3000);
       } else {
         console.error('Error en la respuesta del servidor:', response);
@@ -127,7 +132,6 @@ const AgregarIncidencia = () => {
           {alertaExito && <Alert color="success">Incidencia agregada exitosamente</Alert>}
           {alertaError && <Alert color="danger">{errorMensaje}</Alert>}
           <Form onSubmit={handleSubmit}>
-            {/* Alineamos los campos en una sola fila */}
             <Row>
               <Col md="6">
                 <FormGroup>
@@ -169,7 +173,6 @@ const AgregarIncidencia = () => {
               </Col>
             </Row>
 
-            {/* Campo de Descripción en otra fila */}
             <Row>
               <Col md="12">
                 <FormGroup>
@@ -189,8 +192,8 @@ const AgregarIncidencia = () => {
               Agregar Incidencia
             </Button> <span></span>
             <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar">
-                <i className="fas fa-arrow-left"></i> Regresar
-              </Link>
+              <i className="fas fa-arrow-left"></i> Regresar
+            </Link>
           </Form>
         </Col>
       </Row>

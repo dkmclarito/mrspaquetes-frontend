@@ -34,7 +34,7 @@ const TablaBodegas = ({ bodegas, departamentos, municipios, verDetallesBodega, e
                   <td>{departamentoNombre || 'N/A'}</td>
                   <td>{municipioNombre || 'N/A'}</td>
                   <td>{bodega.direccion || 'N/A'}</td>
-                  <td className="text-center">
+                  <td>
                     <div className="button-container">
                       <Button
                         className="me-2 btn-icon btn-danger"
