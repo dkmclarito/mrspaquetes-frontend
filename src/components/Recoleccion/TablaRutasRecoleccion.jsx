@@ -2,7 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTimes,
+  faPencilAlt,
+  faEye,
+  faPlay,
+  faStop,
+} from "@fortawesome/free-solid-svg-icons";
 
 const TablaRutasRecoleccion = ({
   rutas,
@@ -11,6 +17,8 @@ const TablaRutasRecoleccion = ({
   eliminarRuta,
   verDetallesRuta,
   editarRuta,
+  iniciarRecoleccion,
+  finalizarRecoleccion,
 }) => {
   const obtenerNombreVehiculo = (id) => {
     const vehiculo = vehiculos.find((v) => v.id === id);
@@ -73,6 +81,20 @@ const TablaRutasRecoleccion = ({
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </Button>
+                    <Button
+                      className="btn-icon btn-primary"
+                      onClick={() => iniciarRecoleccion(ruta.id)}
+                      disabled={!ruta.puedeIniciar}
+                    >
+                      <FontAwesomeIcon icon={faPlay} />
+                    </Button>
+                    <Button
+                      className="btn-icon btn-warning"
+                      onClick={() => finalizarRecoleccion(ruta.id)}
+                      disabled={!ruta.puedeFinalizar}
+                    >
+                      <FontAwesomeIcon icon={faStop} />
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -97,6 +119,8 @@ TablaRutasRecoleccion.propTypes = {
   eliminarRuta: PropTypes.func.isRequired,
   verDetallesRuta: PropTypes.func.isRequired,
   editarRuta: PropTypes.func.isRequired,
+  iniciarRecoleccion: PropTypes.func.isRequired,
+  finalizarRecoleccion: PropTypes.func.isRequired,
 };
 
 export default TablaRutasRecoleccion;
