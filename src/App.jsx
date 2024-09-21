@@ -99,6 +99,9 @@ import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
 import UbicarPaqueteDaniado from "./pages/UbicarPaqueteDaniado";
 import DetallesUbicacion from "./pages/DetallesUbicacion";
 import DetallesVehiculo from "./pages/DetallesVehiculo";
+import AgregarTraslados from "./pages/AgregarTraslados";
+import DetallesTraslados from "./pages/DetallesTraslados";
+import EditarTraslados from './components/Traslados/EditarTraslados/EditarTraslados';
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -142,6 +145,12 @@ const App = () => {
                   path="/GestionTraslados"
                   element={<GestionTraslados />}
                 />
+                 <Route
+                  path="/AgregarTraslados"
+                  element={<AgregarTraslados />}
+                />
+                <Route path="/DetallesTraslados/:id" element={<DetallesTraslados />} />
+                <Route path="/EditarTraslados/:id" element={<EditarTraslados />} />
                 <Route
                   path="/GestionInventario"
                   element={<GestionInventario />}

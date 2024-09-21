@@ -11,14 +11,13 @@ import {
   Button,
 } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
-import Breadcrumbs from "../components/Ubicaciones/Common/Breadcrumbs";
+import Breadcrumbs from "../components/Traslados/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import Pagination from "react-js-pagination";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ModalEditarUbicacion from "../components/Ubicaciones/ModalEditarUbicacion";
-import ModalConfirmarEliminarUbicacion from "../components/Ubicaciones/ModalConfirmarEliminarUbicacion";
-import TablaUbicacion from "../components/Ubicaciones/TablaUbicacion";
+import TablaTraslados from "../components/Traslados/TablaTraslados";
+import ModalConfirmarEliminarTraslado from "../components/Traslados/ModalConfirmarEliminarTraslado";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
@@ -26,17 +25,12 @@ const ITEMS_PER_PAGE = 10;
 const GestionTraslados = () => {
   document.title = "Traslados | Gestión";
   const navigate = useNavigate();
-  const [ubicaciones, setUbicaciones] = useState([]);
-  const [modalEditar, setModalEditar] = useState(false);
-  const [ubicacionEditada, setUbicacionEditada] = useState({
-    id_ubicacion: null,
-    nombre: "",
-    estado: false,
-  });
-  const [confirmarEliminar, setConfirmarEliminar] = useState(false);
-  const [ubicacionAEliminar, setUbicacionAEliminar] = useState(null);
+  const [traslados, setTraslados] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [modalEliminar, setModalEliminar] = useState(false);
+  const [selectedTrasladoId, setSelectedTrasladoId] = useState(null);
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
@@ -60,7 +54,7 @@ const GestionTraslados = () => {
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
     }
-  }, [API_URL]);
+  }, []);
 
   useEffect(() => {
     verificarEstadoUsuarioLogueado();
@@ -75,114 +69,25 @@ const GestionTraslados = () => {
   }, [verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-      const config = { headers: { 'Authorization': `Bearer ${token}` } };
-      const responseUbicaciones = await axios.get(`${API_URL}/ubicaciones-paquetes`, {
+    fetchTraslados();
+  }, [currentPage]);
+
+  const fetchTraslados = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/traslados`, {
         params: {
-          page: 1,
-          per_page: 1000
+          page: currentPage,
+          per_page: ITEMS_PER_PAGE,
         },
-        ...config
+        headers: { Authorization: `Bearer ${token}` },
       });
-        setUbicaciones(responseUbicaciones.data.data || []);
-        console.log(responseUbicaciones.data.data)
-      } catch (error) {
-        console.error("Error al obtener ubicaciones:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const confirmarEliminarUbicacion = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      await axios.delete(`${API_URL}/ubicaciones-paquetes/${ubicacionAEliminar}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const ubicacionesRestantes = ubicaciones.filter(
-        (ubicacion) => ubicacion.id_ubicacion !== ubicacionAEliminar
-      );
-
-      const totalItemsCount = ubicacionesRestantes.length;
-      const maxPages = Math.ceil(totalItemsCount / ITEMS_PER_PAGE);
-
-      if (currentPage > maxPages) {
-        setCurrentPage(maxPages);
-      }
-
-      setUbicaciones(ubicacionesRestantes);
-      setConfirmarEliminar(false);
-      toast.success("Ubicación eliminada con éxito");
-      setUbicacionAEliminar(null);
+      setTraslados(response.data.data);
+      setTotalItems(response.data.total);
     } catch (error) {
-      console.error("Error al eliminar ubicación:", error);
-      setConfirmarEliminar(false);
-      toast.error("Error al eliminar la ubicación");
+      console.error("Error al obtener traslados:", error);
+      toast.error("Error al cargar los traslados");
     }
-  };
-
-  const toggleModalEditar = (ubicacion) => {
-    setUbicacionEditada(
-      ubicacion || {
-        id_ubicacion: null,
-        nombre: "",
-        estado: false,
-      }
-    );
-    setModalEditar(!modalEditar);
-  };
-
-  const eliminarUbicacion = (id) => {
-    setUbicacionAEliminar(id);
-    setConfirmarEliminar(true);
-  };
-
-  const guardarCambiosUbicacion = async () => {
-    try {
-      const token = AuthService.getCurrentUser();
-      await axios.put(
-        `${API_URL}/ubicaciones-paquetes/${ubicacionEditada.id}`,
-        ubicacionEditada,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setUbicaciones(
-        ubicaciones.map((ubicacion) =>
-          ubicacion.id === ubicacionEditada.id
-            ? ubicacionEditada
-            : ubicacion
-        )
-      );
-      setModalEditar(false);
-      setUbicacionEditada({
-        id: null,
-        id_ubicacion: "",
-        estado: false,
-      });
-      toast.success("Ubicación actualizada con éxito");
-    } catch (error) {
-      console.error("Error al actualizar ubicación:", error);
-      toast.error("Error al actualizar la ubicación");
-    }
-  };
-
-  const filtrarUbicaciones = (ubicaciones) => {
-    if (!Array.isArray(ubicaciones)) return [];
-
-    return ubicaciones.filter((ubicacion) =>
-      ubicacion.id_ubicacion.toString().includes(busqueda.toLowerCase())
-    );
   };
 
   const handlePageChange = (pageNumber) => {
@@ -194,12 +99,32 @@ const GestionTraslados = () => {
     setCurrentPage(1);
   };
 
-  const ubicacionesFiltradas = filtrarUbicaciones(ubicaciones);
+  const verDetallesTraslado = (id) => {
+    navigate(`/DetallesTraslados/${id}`);
+  };
 
-  const paginatedUbicaciones = ubicacionesFiltradas.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const eliminarTraslado = (id) => {
+    setSelectedTrasladoId(id);
+    setModalEliminar(true);
+  };
+
+  const onTrasladoEliminado = () => {
+    fetchTraslados();
+  };
+
+  const filtrarTraslados = (traslados) => {
+    if (!Array.isArray(traslados)) return [];
+
+    return traslados.filter((traslado) =>
+      traslado.numero_traslado.toLowerCase().includes(busqueda.toLowerCase())
+    );
+  };
+
+  const editarTraslado = (id) => {
+    navigate(`/EditarTraslados/${id}`);
+  };
+
+  const trasladosFiltrados = filtrarTraslados(traslados);
 
   return (
     <div className="page-content">
@@ -210,14 +135,8 @@ const GestionTraslados = () => {
         />
         <Row>
           <Col lg={12}>
-            <div
-              style={{
-                marginTop: "10px",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Label for="busqueda" style={{ marginRight: "10px" }}>
+            <div className="d-flex align-items-center mb-2">
+              <Label for="busqueda" className="me-2">
                 Buscar:
               </Label>
               <Input
@@ -225,70 +144,55 @@ const GestionTraslados = () => {
                 id="busqueda"
                 value={busqueda}
                 onChange={handleSearchChange}
-                placeholder="Buscar por ID de ubicación"
+                placeholder="Buscar por número de traslado"
                 style={{ width: "300px" }}
               />
-              <div style={{ marginLeft: "auto" }}>
+              <div className="ms-auto">
                 <Link
-                  to="/AgregarUbicacion"
-                  className="btn btn-primary custom-button"
+                  to="/AgregarTraslados"
+                  className="btn btn-primary"
                 >
-                  <i className="fas fa-plus"></i> Agregar Ubicación
+                  <i className="fas fa-plus me-1"></i> Agregar Traslado
                 </Link>
               </div>
             </div>
           </Col>
         </Row>
-        <br />
         <Row>
           <Col lg={12}>
             <Card>
               <CardBody>
-                <TablaUbicacion
-                  ubicaciones={paginatedUbicaciones}
-                  eliminarUbicacion={eliminarUbicacion}
-                  toggleModalEditar={toggleModalEditar}
+                <TablaTraslados
+                  traslados={trasladosFiltrados}
+                  verDetallesTraslado={verDetallesTraslado}
+                  editarTraslado={editarTraslado}
+                  eliminarTraslado={eliminarTraslado}
                 />
               </CardBody>
             </Card>
           </Col>
         </Row>
         <Row>
-          <Col
-            lg={12}
-            style={{
-              marginTop: "20px",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
+          <Col lg={12} className="d-flex justify-content-center mt-3">
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={ubicacionesFiltradas.length}
+              totalItemsCount={totalItems}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"
               linkClass="page-link"
-              innerClass="pagination"
             />
           </Col>
         </Row>
       </Container>
-      <ModalEditarUbicacion
-        modalEditar={modalEditar}
-        ubicacionEditada={ubicacionEditada}
-        setUbicacionEditada={setUbicacionEditada}
-        guardarCambiosUbicacion={guardarCambiosUbicacion}
-        setModalEditar={setModalEditar}
-      />
-
-      <ModalConfirmarEliminarUbicacion
-        confirmarEliminar={confirmarEliminar}
-        confirmarEliminarUbicacion={confirmarEliminarUbicacion}
-        setConfirmarEliminar={setConfirmarEliminar}
-      />
       <ToastContainer />
+      <ModalConfirmarEliminarTraslado
+        isOpen={modalEliminar}
+        toggle={() => setModalEliminar(!modalEliminar)}
+        trasladoId={selectedTrasladoId}
+        onTrasladoEliminado={onTrasladoEliminado}
+      />
     </div>
   );
 };
