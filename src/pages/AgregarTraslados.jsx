@@ -130,8 +130,22 @@ const AgregarTraslado = () => {
   };
 
   const handleSelectChange = (selectedOption, { name }) => {
-    setFormData({ ...formData, [name]: selectedOption.value });
-    validateField(name, selectedOption.value);
+    const otherFieldName = name === "bodega_origen" ? "bodega_destino" : "bodega_origen";
+    const otherFieldValue = formData[otherFieldName];
+
+    if (selectedOption.value === otherFieldValue) {
+      setErrors({
+        ...errors,
+        [name]: "La bodega de origen y destino no pueden ser la misma",
+        [otherFieldName]: "La bodega de origen y destino no pueden ser la misma"
+      });
+    } else {
+      setFormData({ ...formData, [name]: selectedOption.value });
+      const newErrors = { ...errors };
+      delete newErrors[name];
+      delete newErrors[otherFieldName];
+      setErrors(newErrors);
+    }
   };
 
   const validateField = (name, value) => {
@@ -163,11 +177,9 @@ const AgregarTraslado = () => {
     const selectedDate = new Date(date);
     const currentDate = new Date();
     
-    
     selectedDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
 
-  
     if (selectedDate < currentDate) {
       return "La fecha no puede ser anterior a la fecha actual";
     }
@@ -175,7 +187,6 @@ const AgregarTraslado = () => {
     const [year, month, day] = date.split('-').map(Number);
     const currentYear = currentDate.getFullYear();
 
-   
     if (year < currentYear || year > currentYear + 1) {
       return `El año debe ser ${currentYear} o ${currentYear + 1}`;
     }
@@ -243,6 +254,10 @@ const AgregarTraslado = () => {
     const formErrors = {};
     if (!formData.bodega_origen) formErrors.bodega_origen = "Este campo es requerido";
     if (!formData.bodega_destino) formErrors.bodega_destino = "Este campo es requerido";
+    if (formData.bodega_origen === formData.bodega_destino) {
+      formErrors.bodega_origen = "La bodega de origen y destino no pueden ser la misma";
+      formErrors.bodega_destino = "La bodega de origen y destino no pueden ser la misma";
+    }
     const dateError = validateDate(formData.fecha_traslado);
     if (dateError) formErrors.fecha_traslado = dateError;
     if (formData.codigos_qr.length === 0) formErrors.codigos_qr = "Debe agregar al menos un código QR";

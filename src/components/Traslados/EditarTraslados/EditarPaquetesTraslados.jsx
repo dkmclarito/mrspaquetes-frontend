@@ -88,6 +88,10 @@ export default function EditarPaquetesTraslados() {
     setCurrentPage(pageNumber);
   };
 
+  const handleExit = () => {
+    navigate('/GestionTraslados');
+  };
+
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error}</div>;
   if (!traslado) return <div>No se encontró el traslado</div>;
@@ -171,42 +175,42 @@ export default function EditarPaquetesTraslados() {
           </Col>
         </Row>
         <h4 className="mt-4">Agregar Nuevo Paquete</h4>
-            <FormGroup>
-            <Label for="nuevoPaqueteUUID">UUID del Paquete</Label>
-            <Row className="align-items-end">
-                <Col md={8}>
-                <Input
-                    type="text"
-                    name="nuevoPaqueteUUID"
-                    id="nuevoPaqueteUUID"
-                    value={nuevoPaqueteUUID}
-                    onChange={(e) => setNuevoPaqueteUUID(e.target.value)}
-                    placeholder="Ingrese el UUID del paquete"
-                />
-                </Col>
-                <Col md={4}>
-                <Button 
-                    color="primary" 
-                    onClick={handleAgregarPaquete} 
-                    className="w-100"
-                  
-                >
-                    Agregar Paquete
-                </Button>
-                </Col>
-            </Row>
-            </FormGroup>
-            <Row className="mt-3">
-            <Col md={2}>
-            <Button color="primary" >
-               Actualizar traslado
-            </Button>
+        <FormGroup>
+          <Label for="nuevoPaqueteUUID">UUID del Paquete</Label>
+          <Row className="align-items-end">
+            <Col md={8}>
+              <Input
+                type="text"
+                name="nuevoPaqueteUUID"
+                id="nuevoPaqueteUUID"
+                value={nuevoPaqueteUUID}
+                onChange={(e) => setNuevoPaqueteUUID(e.target.value)}
+                placeholder="Ingrese el UUID del paquete"
+              />
             </Col>
-            </Row>
+            <Col md={4}>
+              <Button 
+                color="primary" 
+                onClick={handleAgregarPaquete} 
+                className="w-100"
+              >
+                Agregar Paquete
+              </Button>
+            </Col>
+          </Row>
+        </FormGroup>
+        <Col md="12" className="mt-4">
+        <Button color="primary" onClick={handleActualizarTraslado}>
+            Actualizar Traslado
+          </Button>
+          <Button className="ms-2 btn-custom-red" onClick={handleExit}>
+            Salir
+         </Button>
+        </Col>
       </CardBody>
       <ToastContainer
         position="bottom-right"
-        autoClose={5000}
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
