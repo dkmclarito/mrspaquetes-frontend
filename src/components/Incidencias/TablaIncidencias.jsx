@@ -210,12 +210,8 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
   const renderSolucion = (incidencia) => {
     if (usuarioLogueado && usuarioLogueado.id_empleado === incidencia.id_usuario_asignado) {
       const paqueteUuid = getUUIDByPaqueteId(incidencia.id_paquete);
-      const paqueteYaUbicado = paquetesUbicados.some((paquete) => paquete.id_paquete === incidencia.id_paquete);
-
-      if (incidencia.solucion !== "Pendiente") {
-        // Mostrar la solución si ya fue dada
-        return <span>{incidencia.solucion}</span>;
-      }
+      const paquete = paquetesUbicados.find((paquete) => paquete.id_paquete === incidencia.id_paquete);
+      const paqueteYaUbicado = paquete && /^B\d+P\d+E\d+AN\d+DA$/.test(paquete.ubicacion);
 
       return (
         <>
@@ -225,9 +221,12 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
             </Button>
           )}
           {paqueteYaUbicado && (
-            <Button color="success" size="sm" onClick={() => handleDarSolucion(incidencia.id)} style={{ marginLeft: paqueteYaUbicado ? '0' : '10px' }}>
+            <Button color="success" size="sm" onClick={() => handleDarSolucion(incidencia.id)} style={{ marginLeft: '10px' }}>
               Dar Solución
             </Button>
+          )}
+          {incidencia.solucion !== "Pendiente" && (
+            <span>{incidencia.solucion}</span>
           )}
         </>
       );
@@ -239,7 +238,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
   const handleCloseModal = () => {
     setModalUbicar({ open: false, paqueteUuid: null });
     // Refrescar la página después de ubicar un paquete
-    window.location.reload();
+   // window.location.reload();
   };
 
   return (
@@ -300,8 +299,6 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
                   <td style={{ width: '20%' }} className="text-center">{renderSolucion(incidencia)}</td>
                   <td style={{ width: '15%' }} className="text-center">
                     <div className="button-container">
-                  
-                   
                       <Link
                         to={`/DataIncidencia/${incidencia.id}`}
                         className="btn btn-success btn-icon"
