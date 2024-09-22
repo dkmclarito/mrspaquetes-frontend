@@ -12,13 +12,21 @@ import {
   Row,
   Col,
   CardHeader,
-  Nav, NavItem, NavLink, Progress
+  Nav,
+  NavItem,
+  NavLink,
+  Progress,
 } from "reactstrap";
-import { toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faMapMarkerAlt, faBook, faDollarSign } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faMapMarkerAlt,
+  faBook,
+  faDollarSign,
+} from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 import AuthService from "../services/authService";
 
 export default function DatosPaquete() {
@@ -29,27 +37,29 @@ export default function DatosPaquete() {
   const [tarifas, setTarifas] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [commonData, setCommonData] = useState({
-    id_estado_paquete: '1', // Assuming '1' is the ID for "recepción"
-    fecha_envio: '',
-    fecha_entrega_estimada: '',
-    fecha_entrega: '',
-    id_tipo_entrega: '1', // Set to '1' for "normal" delivery
-    instrucciones_entrega: '',
+    id_estado_paquete: "1", // Assuming '1' is the ID for "recepción"
+    fecha_envio: new Date().toISOString().split("T")[0],
+    fecha_entrega_estimada: "",
+    fecha_entrega: "",
+    id_tipo_entrega: "1", // Set to '1' for "normal" delivery
+    instrucciones_entrega: "",
   });
-  const [paquetes, setPaquetes] = useState([{
-    id_tipo_paquete: '',
-    id_empaque: '',
-    peso: '',
-    descripcion: '',
-    precio: '',
-    tamano_paquete: '',
-  }]);
+  const [paquetes, setPaquetes] = useState([
+    {
+      id_tipo_paquete: "",
+      id_empaque: "",
+      peso: "",
+      descripcion: "",
+      precio: "",
+      tamano_paquete: "",
+    },
+  ]);
   const [errors, setErrors] = useState({
     commonData: {},
-    paquetes: []
+    paquetes: [],
   });
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
 
@@ -60,7 +70,7 @@ export default function DatosPaquete() {
 
       if (userId && token) {
         const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         // Verifica si el token es inválido
@@ -81,35 +91,43 @@ export default function DatosPaquete() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [clienteRes, tiposPaqueteRes, empaquesRes, tarifasRes] = await Promise.all([
-          axios.get(`${API_URL}/clientes/${idCliente}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/dropdown/get_tipo_paquete`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/dropdown/get_empaques`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API_URL}/tarifa-destinos`, { headers: { Authorization: `Bearer ${token}` } })
-        ]);
+        const [clienteRes, tiposPaqueteRes, empaquesRes, tarifasRes] =
+          await Promise.all([
+            axios.get(`${API_URL}/clientes/${idCliente}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/dropdown/get_tipo_paquete`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/dropdown/get_empaques`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/tarifa-destinos`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
         setCliente(clienteRes.data.cliente || {});
         setTiposPaquete(tiposPaqueteRes.data.tipo_paquete || []);
         setEmpaques(empaquesRes.data.empaques || []);
         setTarifas(tarifasRes.data || []);
 
-        const storedAddress = JSON.parse(localStorage.getItem('selectedAddress'));
+        const storedAddress = JSON.parse(
+          localStorage.getItem("selectedAddress")
+        );
         setSelectedAddress(storedAddress);
-        console.log('Selected address:', storedAddress);
+        console.log("Selected address:", storedAddress);
 
-        console.log('Fetched data:', {
+        console.log("Fetched data:", {
           cliente: clienteRes.data.cliente,
           tiposPaquete: tiposPaqueteRes.data.tipo_paquete,
           empaques: empaquesRes.data.empaques,
           tarifas: tarifasRes.data,
-          storedAddress
+          storedAddress,
         });
-
       } catch (error) {
         console.error("Error al obtener los datos:", error);
-        toast.error('Error al obtener los datos');
+        toast.error("Error al obtener los datos");
       }
     };
 
@@ -126,36 +144,36 @@ export default function DatosPaquete() {
   }, [verificarEstadoUsuarioLogueado]);
 
   const validateField = (name, value) => {
-    let error = '';
+    let error = "";
 
     switch (name) {
-      case 'peso':
-      case 'precio':
+      case "peso":
+      case "precio":
         if (isNaN(value) || value <= 0) {
-          error = 'El valor debe ser un número positivo.';
+          error = "El valor debe ser un número positivo.";
         }
         break;
 
-      case 'id_tipo_paquete':
-      case 'id_empaque':
-      case 'tamano_paquete':
+      case "id_tipo_paquete":
+      case "id_empaque":
+      case "tamano_paquete":
         if (!value) {
-          error = 'Debe seleccionar una opción.';
+          error = "Debe seleccionar una opción.";
         }
         break;
 
-      case 'descripcion':
-      case 'instrucciones_entrega':
+      case "descripcion":
+      case "instrucciones_entrega":
         if (!value.trim()) {
-          error = 'Debe rellenar este campo.';
+          error = "Debe rellenar este campo.";
         }
         break;
 
-      case 'fecha_envio':
-      case 'fecha_entrega_estimada':
-      case 'fecha_entrega':
+      case "fecha_envio":
+      case "fecha_entrega_estimada":
+      case "fecha_entrega":
         if (!value) {
-          error = 'Debe seleccionar una fecha.';
+          error = "Debe seleccionar una fecha.";
         }
         break;
 
@@ -168,68 +186,94 @@ export default function DatosPaquete() {
 
   const handleChangeCommonData = (e) => {
     const { name, value } = e.target;
-    setCommonData(prev => ({ ...prev, [name]: value }));
-    
+    setCommonData((prev) => {
+      const updatedData = { ...prev, [name]: value };
+
+      // Si se cambia la fecha de entrega estimada, actualizar también la fecha de entrega
+      if (name === "fecha_entrega_estimada") {
+        updatedData.fecha_entrega = value;
+      }
+
+      return updatedData;
+    });
+
     const error = validateField(name, value);
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      commonData: { ...prev.commonData, [name]: error }
+      commonData: { ...prev.commonData, [name]: error },
     }));
 
     // Recalculate prices for all packages
-    const updatedPaquetes = paquetes.map(paquete => ({
+    const updatedPaquetes = paquetes.map((paquete) => ({
       ...paquete,
-      precio: calculatePrice(paquete.tamano_paquete)
+      precio: calculatePrice(paquete.tamano_paquete),
     }));
     setPaquetes(updatedPaquetes);
   };
 
   const getTamanoPaqueteString = (tamanoPaquete) => {
     switch (tamanoPaquete) {
-      case '1': return 'pequeno';
-      case '2': return 'mediano';
-      case '3': return 'grande';
-      default: return '';
+      case "1":
+        return "pequeno";
+      case "2":
+        return "mediano";
+      case "3":
+        return "grande";
+      default:
+        return "";
     }
   };
 
   const calculatePrice = (tamanoPaquete) => {
     if (!selectedAddress || !tamanoPaquete) {
-      console.log('Missing selectedAddress or tamanoPaquete', { selectedAddress, tamanoPaquete });
-      return '';
+      console.log("Missing selectedAddress or tamanoPaquete", {
+        selectedAddress,
+        tamanoPaquete,
+      });
+      return "";
     }
 
-    const isSanMiguelUrban = selectedAddress.id_departamento === 12 && selectedAddress.id_municipio === 215;
+    const isSanMiguelUrban =
+      selectedAddress.id_departamento === 12 &&
+      selectedAddress.id_municipio === 215;
 
-    console.log('Calculating price for:', { tamanoPaquete, selectedAddress, isSanMiguelUrban });
+    console.log("Calculating price for:", {
+      tamanoPaquete,
+      selectedAddress,
+      isSanMiguelUrban,
+    });
 
-    let tarifaType = isSanMiguelUrban ? 'tarifa urbana' : 'tarifa rural';
+    let tarifaType = isSanMiguelUrban ? "tarifa urbana" : "tarifa rural";
 
-    const tarifa = tarifas.find(t => 
-      t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
-      t.departamento === selectedAddress.departamento_nombre &&
-      t.municipio === selectedAddress.municipio_nombre &&
-      t.tarifa === tarifaType
+    const tarifa = tarifas.find(
+      (t) =>
+        t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
+        t.departamento === selectedAddress.departamento_nombre &&
+        t.municipio === selectedAddress.municipio_nombre &&
+        t.tarifa === tarifaType
     );
 
     if (!tarifa) {
-      console.log('No exact match found, searching for a general tariff for the department');
-      const generalTarifa = tarifas.find(t => 
-        t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
-        t.departamento === selectedAddress.departamento_nombre &&
-        t.tarifa === tarifaType
+      console.log(
+        "No exact match found, searching for a general tariff for the department"
+      );
+      const generalTarifa = tarifas.find(
+        (t) =>
+          t.tamano_paquete === getTamanoPaqueteString(tamanoPaquete) &&
+          t.departamento === selectedAddress.departamento_nombre &&
+          t.tarifa === tarifaType
       );
 
       if (generalTarifa) {
-        console.log('Found general tarifa:', generalTarifa);
+        console.log("Found general tarifa:", generalTarifa);
         return generalTarifa.monto;
       }
 
-      console.log('No matching tarifa found');
-      return '';
+      console.log("No matching tarifa found");
+      return "";
     }
 
-    console.log('Found tarifa:', tarifa);
+    console.log("Found tarifa:", tarifa);
     return tarifa.monto;
   };
 
@@ -238,48 +282,51 @@ export default function DatosPaquete() {
     const updatedPaquetes = [...paquetes];
     updatedPaquetes[index] = { ...updatedPaquetes[index], [name]: value };
 
-    if (name === 'tamano_paquete') {
+    if (name === "tamano_paquete") {
       if (selectedAddress) {
         const calculatedPrice = calculatePrice(value);
         updatedPaquetes[index].precio = calculatedPrice;
         console.log(`Updated price for paquete ${index}:`, calculatedPrice);
       } else {
-        console.log('No selectedAddress available, price calculation skipped');
+        console.log("No selectedAddress available, price calculation skipped");
       }
     }
 
     setPaquetes(updatedPaquetes);
-    
+
     const error = validateField(name, value);
-    setErrors(prev => {
+    setErrors((prev) => {
       const newPaquetesErrors = [...(prev.paquetes || [])];
       newPaquetesErrors[index] = { ...newPaquetesErrors[index], [name]: error };
       return { ...prev, paquetes: newPaquetesErrors };
     });
 
-    console.log('Updated paquete:', updatedPaquetes[index]);
+    console.log("Updated paquete:", updatedPaquetes[index]);
   };
 
   const agregarPaquete = () => {
-    setPaquetes(prev => [...prev, {
-      id_tipo_paquete: '',
-      id_empaque: '',
-      peso: '',
-      descripcion: '',
-      precio: '',
-      tamano_paquete: '',
-    }]);
-    setErrors(prev => ({
+    setPaquetes((prev) => [
       ...prev,
-      paquetes: [...prev.paquetes, {}]
+      {
+        id_tipo_paquete: "",
+        id_empaque: "",
+        peso: "",
+        descripcion: "",
+        precio: "",
+        tamano_paquete: "",
+      },
+    ]);
+    setErrors((prev) => ({
+      ...prev,
+      paquetes: [...prev.paquetes, {}],
     }));
   };
 
   const removerPaquete = (index) => {
-    setPaquetes(prev => prev.filter((_, idx) => idx !== index));
-    setErrors(prev => ({
+    setPaquetes((prev) => prev.filter((_, idx) => idx !== index));
+    setErrors((prev) => ({
       ...prev,
-      paquetes: prev.paquetes.filter((_, idx) => idx !== index)
+      paquetes: prev.paquetes.filter((_, idx) => idx !== index),
     }));
   };
 
@@ -290,11 +337,11 @@ export default function DatosPaquete() {
     let isValid = true;
     let newErrors = {
       commonData: {},
-      paquetes: paquetes.map(() => ({}))
+      paquetes: paquetes.map(() => ({})),
     };
 
     // Validate common data
-    Object.keys(commonData).forEach(key => {
+    Object.keys(commonData).forEach((key) => {
       const error = validateField(key, commonData[key]);
       if (error) {
         newErrors.commonData[key] = error;
@@ -304,7 +351,7 @@ export default function DatosPaquete() {
 
     // Validate paquetes
     paquetes.forEach((paquete, index) => {
-      Object.keys(paquete).forEach(key => {
+      Object.keys(paquete).forEach((key) => {
         const error = validateField(key, paquete[key]);
         if (error) {
           newErrors.paquetes[index][key] = error;
@@ -316,70 +363,85 @@ export default function DatosPaquete() {
     setErrors(newErrors);
 
     if (!isValid) {
-      toast.error("Por favor, corrija los errores en el formulario antes de enviar.");
+      toast.error(
+        "Por favor, corrija los errores en el formulario antes de enviar."
+      );
       return;
     }
 
-    const detalles = paquetes.map(paquete => ({
+    const detalles = paquetes.map((paquete) => ({
       ...commonData,
       ...paquete,
-      id_direccion: selectedAddress ? selectedAddress.id : null
+      id_direccion: selectedAddress ? selectedAddress.id : null,
     }));
 
-    const totalPrice = detalles.reduce((sum, detalle) => sum + parseFloat(detalle.precio || 0), 0);
+    const totalPrice = detalles.reduce(
+      (sum, detalle) => sum + parseFloat(detalle.precio || 0),
+      0
+    );
 
-    console.log('Submitting form:', { detalles, totalPrice, commonData });
+    console.log("Submitting form:", { detalles, totalPrice, commonData });
 
-    navigate(`/GenerarOrden/${idCliente}`, { 
-      state: { 
+    navigate(`/GenerarOrden/${idCliente}`, {
+      state: {
         detalles: detalles,
         totalPrice: totalPrice,
-        commonData: commonData
-      } 
+        commonData: commonData,
+      },
     });
   };
 
   const [currentStep, setCurrentStep] = useState(3);
 
   const steps = [
-    { step: 1, label: '', icon: faSearch },
-    { step: 2, label: '', icon: faMapMarkerAlt },
-    { step: 3, label: '', icon: faBook },
-    { step: 4, label: '', icon: faDollarSign }
+    { step: 1, label: "", icon: faSearch },
+    { step: 2, label: "", icon: faMapMarkerAlt },
+    { step: 3, label: "", icon: faBook },
+    { step: 4, label: "", icon: faDollarSign },
   ];
 
   return (
     <Container fluid>
-      <h1 className='text-center titulo-pasos'>Agregar datos de los Paquetes</h1>        
-        <Row>
-          <Col lg={12}>
-            <Nav pills className="justify-content-center mb-4">
-              {steps.map(({ step, label, icon }) => (
-                <NavItem key={step}>
-                  <NavLink
-                    className={`stepperDark ${currentStep === step ? 'active' : ''}`}
-                    href="#"
-                    style={{
-                      borderRadius: '50%',
-                      padding: '10px 20px',
-                      margin: '0 5px',
-                    }}                    
-                  >
-                    <FontAwesomeIcon icon={icon} style={{ fontSize: '15px', marginBottom: '0px' }} />  
-                    {label}
-                  </NavLink>
-                </NavItem>
-              ))}
-            </Nav>                     
-            <Progress className="custom-progress barra-pasos" value={(0.75) * 100} />
-            <br></br>
-          </Col>
-        </Row>
+      <h1 className="text-center titulo-pasos">
+        Agregar datos de los Paquetes
+      </h1>
+      <Row>
+        <Col lg={12}>
+          <Nav pills className="justify-content-center mb-4">
+            {steps.map(({ step, label, icon }) => (
+              <NavItem key={step}>
+                <NavLink
+                  className={`stepperDark ${currentStep === step ? "active" : ""}`}
+                  href="#"
+                  style={{
+                    borderRadius: "50%",
+                    padding: "10px 20px",
+                    margin: "0 5px",
+                  }}
+                >
+                  <FontAwesomeIcon
+                    icon={icon}
+                    style={{ fontSize: "15px", marginBottom: "0px" }}
+                  />
+                  {label}
+                </NavLink>
+              </NavItem>
+            ))}
+          </Nav>
+          <Progress
+            className="custom-progress barra-pasos"
+            value={0.75 * 100}
+          />
+          <br></br>
+        </Col>
+      </Row>
       <ToastContainer />
       <Card>
-        <CardHeader className="CardHeaderDatosPAquetes">          
+        <CardHeader className="CardHeaderDatosPAquetes">
           {cliente && (
-            <h3>Cliente: {cliente.nombre} {cliente.apellido}</h3>
+            <h3>
+              Cliente: {cliente.nombre} {cliente.apellido}
+            </h3>
           )}
           {selectedAddress && (
             <h6>Dirección seleccionada: {selectedAddress.direccion}</h6>
@@ -405,22 +467,22 @@ export default function DatosPaquete() {
                   </Col>
                   <Col md={4}>
                     <FormGroup>
-                      <Label for="fecha_envio">Fecha de Envío</Label>
+                      <Label for="fecha_envio">Fecha de Recepción</Label>
                       <Input
                         type="date"
                         name="fecha_envio"
                         id="fecha_envio"
                         value={commonData.fecha_envio}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_envio}
+                        disabled
                         className="dark-mode-input-date"
                       />
-                      {errors.commonData.fecha_envio && <FormFeedback>{errors.commonData.fecha_envio}</FormFeedback>}
                     </FormGroup>
                   </Col>
                   <Col md={4}>
                     <FormGroup>
-                      <Label for="fecha_entrega_estimada">Fecha de Entrega Estimada</Label>
+                      <Label for="fecha_entrega_estimada">
+                        Fecha de Entrega Estimada
+                      </Label>
                       <Input
                         type="date"
                         name="fecha_entrega_estimada"
@@ -430,27 +492,16 @@ export default function DatosPaquete() {
                         invalid={!!errors.commonData.fecha_entrega_estimada}
                         className="dark-mode-input-date"
                       />
-                      {errors.commonData.fecha_entrega_estimada && <FormFeedback>{errors.commonData.fecha_entrega_estimada}</FormFeedback>}
+                      {errors.commonData.fecha_entrega_estimada && (
+                        <FormFeedback>
+                          {errors.commonData.fecha_entrega_estimada}
+                        </FormFeedback>
+                      )}
                     </FormGroup>
                   </Col>
                 </Row>
                 <Row>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label for="fecha_entrega">Fecha de Entrega</Label>
-                      <Input
-                        type="date"
-                        name="fecha_entrega"
-                        i d="fecha_entrega"
-                        value={commonData.fecha_entrega}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_entrega}
-                        className="dark-mode-input-date"
-                      />
-                      {errors.commonData.fecha_entrega && <FormFeedback>{errors.commonData.fecha_entrega}</FormFeedback>}
-                    </FormGroup>
-                  </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="id_tipo_entrega">Tipo de Entrega</Label>
                       <Input
@@ -462,9 +513,11 @@ export default function DatosPaquete() {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
-                      <Label for="instrucciones_entrega">Instrucciones de Entrega</Label>
+                      <Label for="instrucciones_entrega">
+                        Instrucciones de Entrega
+                      </Label>
                       <Input
                         type="text"
                         name="instrucciones_entrega"
@@ -473,7 +526,11 @@ export default function DatosPaquete() {
                         onChange={handleChangeCommonData}
                         invalid={!!errors.commonData.instrucciones_entrega}
                       />
-                      {errors.commonData.instrucciones_entrega && <FormFeedback>{errors.commonData.instrucciones_entrega}</FormFeedback>}
+                      {errors.commonData.instrucciones_entrega && (
+                        <FormFeedback>
+                          {errors.commonData.instrucciones_entrega}
+                        </FormFeedback>
+                      )}
                     </FormGroup>
                   </Col>
                 </Row>
@@ -487,23 +544,36 @@ export default function DatosPaquete() {
                   <Row>
                     <Col md={4}>
                       <FormGroup>
-                        <Label for={`id_tipo_paquete_${index}`}>Tipo de Paquete</Label>
+                        <Label for={`id_tipo_paquete_${index}`}>
+                          Tipo de Paquete
+                        </Label>
                         <Input
                           type="select"
                           name="id_tipo_paquete"
                           id={`id_tipo_paquete_${index}`}
                           value={paquete.id_tipo_paquete}
                           onChange={(e) => handleChangePaquete(index, e)}
-                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].id_tipo_paquete)}
+                          invalid={
+                            !!(
+                              errors.paquetes[index] &&
+                              errors.paquetes[index].id_tipo_paquete
+                            )
+                          }
                         >
-                          <option value="">Seleccione un tipo de paquete</option>
-                          {tiposPaquete.map(tipo => (
+                          <option value="">
+                            Seleccione un tipo de paquete
+                          </option>
+                          {tiposPaquete.map((tipo) => (
                             <option key={tipo.id} value={tipo.id}>
                               {tipo.nombre}
                             </option>
                           ))}
                         </Input>
-                        {errors.paquetes[index]?.id_tipo_paquete && <FormFeedback>{errors.paquetes[index].id_tipo_paquete}</FormFeedback>}
+                        {errors.paquetes[index]?.id_tipo_paquete && (
+                          <FormFeedback>
+                            {errors.paquetes[index].id_tipo_paquete}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                     <Col md={4}>
@@ -515,16 +585,25 @@ export default function DatosPaquete() {
                           id={`id_empaque_${index}`}
                           value={paquete.id_empaque}
                           onChange={(e) => handleChangePaquete(index, e)}
-                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].id_empaque)}
+                          invalid={
+                            !!(
+                              errors.paquetes[index] &&
+                              errors.paquetes[index].id_empaque
+                            )
+                          }
                         >
                           <option value="">Seleccione un empaque</option>
-                          {empaques.map(empaque => (
+                          {empaques.map((empaque) => (
                             <option key={empaque.id} value={empaque.id}>
                               {empaque.empaquetado}
                             </option>
                           ))}
                         </Input>
-                        {errors.paquetes[index]?.id_empaque && <FormFeedback>{errors.paquetes[index].id_empaque}</FormFeedback>}
+                        {errors.paquetes[index]?.id_empaque && (
+                          <FormFeedback>
+                            {errors.paquetes[index].id_empaque}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                     <Col md={4}>
@@ -536,9 +615,18 @@ export default function DatosPaquete() {
                           id={`peso_${index}`}
                           value={paquete.peso}
                           onChange={(e) => handleChangePaquete(index, e)}
-                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].peso)}
+                          invalid={
+                            !!(
+                              errors.paquetes[index] &&
+                              errors.paquetes[index].peso
+                            )
+                          }
                         />
-                        {errors.paquetes[index]?.peso && <FormFeedback>{errors.paquetes[index].peso}</FormFeedback>}
+                        {errors.paquetes[index]?.peso && (
+                          <FormFeedback>
+                            {errors.paquetes[index].peso}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                     <Col md={4}>
@@ -550,29 +638,49 @@ export default function DatosPaquete() {
                           id={`descripcion_${index}`}
                           value={paquete.descripcion}
                           onChange={(e) => handleChangePaquete(index, e)}
-                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].descripcion)}
+                          invalid={
+                            !!(
+                              errors.paquetes[index] &&
+                              errors.paquetes[index].descripcion
+                            )
+                          }
                         />
-                        {errors.paquetes[index]?.descripcion && <FormFeedback>{errors.paquetes[index].descripcion}</FormFeedback>}
+                        {errors.paquetes[index]?.descripcion && (
+                          <FormFeedback>
+                            {errors.paquetes[index].descripcion}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
-                 
+
                     <Col md={4}>
                       <FormGroup>
-                        <Label for={`tamano_paquete_${index}`}>Tamaño del Paquete</Label>
+                        <Label for={`tamano_paquete_${index}`}>
+                          Tamaño del Paquete
+                        </Label>
                         <Input
                           type="select"
                           name="tamano_paquete"
                           id={`tamano_paquete_${index}`}
                           value={paquete.tamano_paquete}
                           onChange={(e) => handleChangePaquete(index, e)}
-                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].tamano_paquete)}
+                          invalid={
+                            !!(
+                              errors.paquetes[index] &&
+                              errors.paquetes[index].tamano_paquete
+                            )
+                          }
                         >
                           <option value="">Seleccione un tamaño</option>
                           <option value="1">Pequeño</option>
                           <option value="2">Mediano</option>
                           <option value="3">Grande</option>
                         </Input>
-                        {errors.paquetes[index]?.tamano_paquete && <FormFeedback>{errors.paquetes[index].tamano_paquete}</FormFeedback>}
+                        {errors.paquetes[index]?.tamano_paquete && (
+                          <FormFeedback>
+                            {errors.paquetes[index].tamano_paquete}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                     <Col md={4}>
@@ -584,16 +692,28 @@ export default function DatosPaquete() {
                           id={`precio_${index}`}
                           value={paquete.precio}
                           readOnly
-                          invalid={!!(errors.paquetes[index] && errors.paquetes[index].precio)}
+                          invalid={
+                            !!(
+                              errors.paquetes[index] &&
+                              errors.paquetes[index].precio
+                            )
+                          }
                         />
-                        {errors.paquetes[index]?.precio && <FormFeedback>{errors.paquetes[index].precio}</FormFeedback>}
+                        {errors.paquetes[index]?.precio && (
+                          <FormFeedback>
+                            {errors.paquetes[index].precio}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                   </Row>
                   {index > 0 && (
                     <Row className="mt-3">
                       <Col>
-                        <Button color="danger" onClick={() => removerPaquete(index)}>
+                        <Button
+                          color="danger"
+                          onClick={() => removerPaquete(index)}
+                        >
                           Eliminar Paquete
                         </Button>
                       </Col>
@@ -611,7 +731,11 @@ export default function DatosPaquete() {
             </Row>
             <Row className="mb-3">
               <Col className="d-flex justify-content-start">
-                <Button className="btnGuardarDatosPaquete" color="success" type="submit">
+                <Button
+                  className="btnGuardarDatosPaquete"
+                  color="success"
+                  type="submit"
+                >
                   Guardar Paquetes
                 </Button>
               </Col>

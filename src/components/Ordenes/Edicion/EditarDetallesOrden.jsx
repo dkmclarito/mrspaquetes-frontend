@@ -47,10 +47,8 @@ const EditarDetallesOrden = ({
       const primerDetalle = orden.detalles[0];
       setCommonData({
         fecha_envio: formatDate(primerDetalle.fecha_envio),
-        fecha_entrega_estimada: formatDate(
-          primerDetalle.fecha_entrega_estimada
-        ),
-        fecha_entrega: formatDate(primerDetalle.fecha_entrega),
+        fecha_entrega_estimada: formatDate(primerDetalle.fecha_entrega),
+        fecha_entrega: formatDate(primerDetalle.fecha_entrega_estimada),
         id_tipo_entrega: primerDetalle.id_tipo_entrega,
         instrucciones_entrega: primerDetalle.instrucciones_entrega,
         id_estado_paquete: primerDetalle.id_estado_paquete,
@@ -133,7 +131,16 @@ const EditarDetallesOrden = ({
 
   const handleCommonDataChange = (e) => {
     const { name, value } = e.target;
-    setCommonData((prev) => ({ ...prev, [name]: value }));
+    setCommonData((prev) => {
+      const updatedData = { ...prev, [name]: value };
+
+      // Si se cambia la fecha de entrega estimada, actualizar también la fecha de entrega
+      if (name === "fecha_entrega_estimada") {
+        updatedData.fecha_entrega = value;
+      }
+
+      return updatedData;
+    });
 
     const error = validateField(name, value);
     setErrors((prev) => ({
@@ -487,24 +494,20 @@ const EditarDetallesOrden = ({
               <CardBody>
                 <h5 className="mb-3">Datos Comunes para todos los Paquetes</h5>
                 <Row>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
-                      <Label for="fecha_envio">Fecha de Envío</Label>
+                      <Label for="fecha_envio">Fecha de Recepción</Label>
                       <Input
                         type="date"
                         name="fecha_envio"
                         id="fecha_envio"
                         value={commonData.fecha_envio}
-                        onChange={handleCommonDataChange}
-                        invalid={!!errors.commonData.fecha_envio}
-                        min={today}
+                        readOnly
+                        className="dark-mode-input-date"
                       />
-                      <FormFeedback>
-                        {errors.commonData.fecha_envio}
-                      </FormFeedback>
                     </FormGroup>
                   </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="fecha_entrega_estimada">
                         Fecha de Entrega Estimada
@@ -516,33 +519,16 @@ const EditarDetallesOrden = ({
                         value={commonData.fecha_entrega_estimada}
                         onChange={handleCommonDataChange}
                         invalid={!!errors.commonData.fecha_entrega_estimada}
-                        min={today}
+                        className="dark-mode-input-date"
                       />
                       <FormFeedback>
                         {errors.commonData.fecha_entrega_estimada}
                       </FormFeedback>
                     </FormGroup>
                   </Col>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label for="fecha_entrega">Fecha de Entrega</Label>
-                      <Input
-                        type="date"
-                        name="fecha_entrega"
-                        id="fecha_entrega"
-                        value={commonData.fecha_entrega}
-                        onChange={handleCommonDataChange}
-                        invalid={!!errors.commonData.fecha_entrega}
-                        min={today}
-                      />
-                      <FormFeedback>
-                        {errors.commonData.fecha_entrega}
-                      </FormFeedback>
-                    </FormGroup>
-                  </Col>
                 </Row>
                 <Row>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="id_tipo_entrega">Tipo de Entrega</Label>
                       <Input
@@ -562,21 +548,7 @@ const EditarDetallesOrden = ({
                       </FormFeedback>
                     </FormGroup>
                   </Col>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label for="id_estado_paquete">Estado del Paquete</Label>
-                      <Input
-                        type="text"
-                        name="id_estado_paquete"
-                        id="id_estado_paquete"
-                        value={getEstadoPaqueteNombre(
-                          commonData.id_estado_paquete
-                        )}
-                        readOnly
-                      />
-                    </FormGroup>
-                  </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="instrucciones_entrega">
                         Instrucciones de Entrega

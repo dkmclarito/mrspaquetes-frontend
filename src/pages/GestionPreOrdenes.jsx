@@ -126,6 +126,18 @@ export default function GestionPreOrdenes() {
     );
   };
 
+  const handleProcesarPago = useCallback(
+    (idCliente, ruta) => {
+      if (!idCliente) {
+        console.error("Error: ID del cliente no disponible");
+        toast.error("Error: Información del cliente no disponible");
+        return;
+      }
+      navigate(ruta);
+    },
+    [navigate]
+  );
+
   const verDetallesOrden = (idOrden) => {
     navigate(`/VerDetallesOrden/${idOrden}`);
   };
@@ -207,6 +219,7 @@ export default function GestionPreOrdenes() {
                   navegarAEditar={navegarAEditar}
                   verDetallesOrden={verDetallesOrden}
                   actualizarOrden={actualizarOrdenLocal}
+                  procesarPago={handleProcesarPago}
                 />
               </CardBody>
             </Card>

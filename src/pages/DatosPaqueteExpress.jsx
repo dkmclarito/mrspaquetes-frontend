@@ -151,7 +151,16 @@ export default function DatosPaqueteExpress() {
 
   const handleChangeCommonData = (e) => {
     const { name, value } = e.target;
-    setCommonData((prev) => ({ ...prev, [name]: value }));
+    setCommonData((prev) => {
+      const updatedData = { ...prev, [name]: value };
+
+      // Si se cambia la fecha de entrega estimada, actualizar también la fecha de entrega
+      if (name === "fecha_entrega_estimada") {
+        updatedData.fecha_entrega = value;
+      }
+
+      return updatedData;
+    });
 
     const error = validateField(name, value);
     setErrors((prev) => ({
@@ -423,21 +432,15 @@ export default function DatosPaqueteExpress() {
                   </Col>
                   <Col md={4}>
                     <FormGroup>
-                      <Label for="fecha_envio">Fecha de Envío</Label>
+                      <Label for="fecha_envio">Fecha de Recepción</Label>
                       <Input
                         type="date"
                         name="fecha_envio"
                         id="fecha_envio"
                         value={commonData.fecha_envio}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_envio}
+                        disabled
                         className="dark-mode-input-date"
                       />
-                      {errors.commonData.fecha_envio && (
-                        <FormFeedback>
-                          {errors.commonData.fecha_envio}
-                        </FormFeedback>
-                      )}
                     </FormGroup>
                   </Col>
                   <Col md={4}>
@@ -463,39 +466,19 @@ export default function DatosPaqueteExpress() {
                   </Col>
                 </Row>
                 <Row>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label for="fecha_entrega">Fecha de Entrega</Label>
-                      <Input
-                        type="date"
-                        name="fecha_entrega"
-                        i
-                        d="fecha_entrega"
-                        value={commonData.fecha_entrega}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_entrega}
-                        className="dark-mode-input-date"
-                      />
-                      {errors.commonData.fecha_entrega && (
-                        <FormFeedback>
-                          {errors.commonData.fecha_entrega}
-                        </FormFeedback>
-                      )}
-                    </FormGroup>
-                  </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="id_tipo_entrega">Tipo de Entrega</Label>
                       <Input
                         type="text"
                         name="id_tipo_entrega"
                         id="id_tipo_entrega"
-                        value="Express"
+                        value="Normal"
                         disabled
                       />
                     </FormGroup>
                   </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="instrucciones_entrega">
                         Instrucciones de Entrega

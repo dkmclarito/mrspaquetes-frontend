@@ -599,7 +599,7 @@ export default function PreOrdenesDirecciones() {
                     color="success"
                     onClick={handleContinuar}
                   >
-                    Continuar con la Pre-Orden Express
+                    Continuar con la Pre-Orden
                   </Button>
                 </div>
               )}

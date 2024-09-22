@@ -1,10 +1,16 @@
 import React, { useState, useCallback } from "react";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTimes,
+  faPencilAlt,
+  faEye,
+  faCreditCard,
+} from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import ModalConfirmarCancelar from "./ModalConfirmarCancelar";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -13,9 +19,11 @@ const TablaOrdenes = ({
   navegarAEditar,
   verDetallesOrden,
   actualizarOrden,
+  procesarPago,
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [ordenIdACancelar, setOrdenIdACancelar] = useState(null);
+  const navigate = useNavigate();
 
   const toggleModal = useCallback(() => {
     setModalIsOpen((prevState) => !prevState);
@@ -55,6 +63,23 @@ const TablaOrdenes = ({
     [actualizarOrden, toggleModal]
   );
 
+  const handleProcesarPago = useCallback(
+    (orden) => {
+      if (!orden.id_cliente) {
+        console.error("Error: ID del cliente no disponible", orden);
+        toast.error("Error: Información del cliente no disponible");
+        return;
+      }
+      const ruta = orden.detalles.some(
+        (detalle) => detalle.tipo_entrega === "Entrega Express"
+      )
+        ? `/procesarpagoexpress/${orden.id_cliente}`
+        : `/procesarpago/${orden.id_cliente}`;
+      procesarPago(orden.id_cliente, ruta);
+    },
+    [procesarPago]
+  );
+
   return (
     <>
       <Table responsive striped>
@@ -74,7 +99,7 @@ const TablaOrdenes = ({
             ordenes.map((orden) => (
               <tr key={orden.id}>
                 <td>
-                  {orden.cliente.nombre} {orden.cliente.apellido}
+                  {orden.cliente?.nombre} {orden.cliente?.apellido}
                 </td>
                 <td>{orden.detalles[0]?.telefono || "N/A"}</td>
                 <td>{orden.tipo_pago}</td>
@@ -102,6 +127,15 @@ const TablaOrdenes = ({
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </Button>
+                    {orden.tipo_orden === "preorden" &&
+                      orden.estado_pago === "pendiente" && (
+                        <Button
+                          className="btn-sm me-2 btn-icon btn-primary"
+                          onClick={() => handleProcesarPago(orden)}
+                        >
+                          <FontAwesomeIcon icon={faCreditCard} />
+                        </Button>
+                      )}
                   </div>
                 </td>
               </tr>

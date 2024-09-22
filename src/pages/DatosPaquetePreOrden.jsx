@@ -39,7 +39,7 @@ export default function DatosPaquetePreOrden() {
   const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
   const [commonData, setCommonData] = useState({
     id_estado_paquete: "3", // Assuming '1' is the ID for "recepción"
-    fecha_envio: "",
+    fecha_envio: new Date().toISOString().split("T")[0],
     fecha_entrega_estimada: "",
     fecha_entrega: "",
     id_tipo_entrega: "1", // Set to '1' for "normal" delivery
@@ -191,7 +191,16 @@ export default function DatosPaquetePreOrden() {
 
   const handleChangeCommonData = (e) => {
     const { name, value } = e.target;
-    setCommonData((prev) => ({ ...prev, [name]: value }));
+    setCommonData((prev) => {
+      const updatedData = { ...prev, [name]: value };
+
+      // Si se cambia la fecha de entrega estimada, actualizar también la fecha de entrega
+      if (name === "fecha_entrega_estimada") {
+        updatedData.fecha_entrega = value;
+      }
+
+      return updatedData;
+    });
 
     const error = validateField(name, value);
     setErrors((prev) => ({
@@ -466,28 +475,22 @@ export default function DatosPaquetePreOrden() {
                         type="text"
                         name="id_estado_paquete"
                         id="id_estado_paquete"
-                        value="En espera de recoleccion"
+                        value="En Recepción"
                         disabled
                       />
                     </FormGroup>
                   </Col>
                   <Col md={4}>
                     <FormGroup>
-                      <Label for="fecha_envio">Fecha de Envío</Label>
+                      <Label for="fecha_envio">Fecha de Recepción</Label>
                       <Input
                         type="date"
                         name="fecha_envio"
                         id="fecha_envio"
                         value={commonData.fecha_envio}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_envio}
+                        disabled
                         className="dark-mode-input-date"
                       />
-                      {errors.commonData.fecha_envio && (
-                        <FormFeedback>
-                          {errors.commonData.fecha_envio}
-                        </FormFeedback>
-                      )}
                     </FormGroup>
                   </Col>
                   <Col md={4}>
@@ -513,27 +516,7 @@ export default function DatosPaquetePreOrden() {
                   </Col>
                 </Row>
                 <Row>
-                  <Col md={4}>
-                    <FormGroup>
-                      <Label for="fecha_entrega">Fecha de Entrega</Label>
-                      <Input
-                        type="date"
-                        name="fecha_entrega"
-                        i
-                        d="fecha_entrega"
-                        value={commonData.fecha_entrega}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_entrega}
-                        className="dark-mode-input-date"
-                      />
-                      {errors.commonData.fecha_entrega && (
-                        <FormFeedback>
-                          {errors.commonData.fecha_entrega}
-                        </FormFeedback>
-                      )}
-                    </FormGroup>
-                  </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="id_tipo_entrega">Tipo de Entrega</Label>
                       <Input
@@ -545,7 +528,7 @@ export default function DatosPaquetePreOrden() {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <FormGroup>
                       <Label for="instrucciones_entrega">
                         Instrucciones de Entrega
