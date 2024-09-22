@@ -52,7 +52,7 @@ const TablaUsuarios = ({ usuarios, incidencia, actualizarIncidencia }) => {
         if (error.response) {
             console.log("Respuesta de error del servidor:", error.response.data);
         }
-        alert("Error al asignar el usuario a la incidencia.");
+        navigate("/GestionIncidencias");
     }
 };
 

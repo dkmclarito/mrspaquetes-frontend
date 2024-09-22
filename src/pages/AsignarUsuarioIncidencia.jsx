@@ -113,11 +113,13 @@ const AsignarUsuarioIncidencia = () => {
                 },
             });
     
+            // Verifica si la respuesta tiene un status 200
             if (response.status === 200) {
-             
+                console.log("Usuario asignado correctamente:", response.data);
                 navigate("/GestionIncidencias");
             } else {
-                throw new Error('Error inesperado al asignar usuario.');
+                console.error("Error inesperado al asignar usuario. Estado de respuesta:", response.status);
+                alert("Error al asignar el usuario a la incidencia.");
             }
         } catch (error) {
             console.error("Error al asignar usuario:", error);
