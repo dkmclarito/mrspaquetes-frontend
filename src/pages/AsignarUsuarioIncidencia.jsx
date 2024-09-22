@@ -114,7 +114,7 @@ const AsignarUsuarioIncidencia = () => {
             });
     
             if (response.status === 200) {
-                alert("Usuario asignado exitosamente a la incidencia.");
+             
                 navigate("/GestionIncidencias");
             } else {
                 throw new Error('Error inesperado al asignar usuario.');

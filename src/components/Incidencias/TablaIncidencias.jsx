@@ -51,9 +51,19 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
         });
 
         if (response.data && Array.isArray(response.data.data)) {
-          const incidenciasFiltradas = response.data.data.filter(
-            (incidencia) => incidencia.id_usuario_asignado === usuarioLogueado?.id_empleado
-          );
+          let incidenciasFiltradas;
+
+          if (usuarioLogueado?.role_name === 'conductor') {
+            incidenciasFiltradas = response.data.data.filter(
+              (incidencia) => incidencia.id_usuario_asignado === usuarioLogueado?.id_empleado
+            );
+          } else if (usuarioLogueado?.role_name === 'admin') {
+            incidenciasFiltradas = response.data.data.filter(
+              (incidencia) => !incidencia.usuario_asignado
+            );
+          } else {
+            incidenciasFiltradas = []; // Por defecto, ninguna incidencia si no es admin o conductor
+          }
 
           setIncidenciasAsignadas(incidenciasFiltradas);
         }

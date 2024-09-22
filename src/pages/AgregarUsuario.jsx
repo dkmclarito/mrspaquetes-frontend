@@ -45,8 +45,6 @@ const AgregarUsuario = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-     // window.location.href = "/login";
     }
   }, []);
 
@@ -84,7 +82,9 @@ const AgregarUsuario = () => {
           }
         });
         if (response.data && Array.isArray(response.data)) {
-          setRoles(response.data); // Guardar los roles en el estado
+          // Filtrar para no mostrar el rol con id 2 (cliente)
+          const rolesFiltrados = response.data.filter(role => role.id !== 2);
+          setRoles(rolesFiltrados); // Guardar los roles filtrados en el estado
         }
       } catch (error) {
         console.error("Error al obtener roles:", error);

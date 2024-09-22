@@ -27,6 +27,7 @@ const ModalEditarUsuario = ({
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
   const [usuarios, setUsuarios] = useState([]);
+  const [roles, setRoles] = useState([]); // Estado para almacenar los roles
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -45,8 +46,27 @@ const ModalEditarUsuario = ({
       }
     };
 
+    const fetchRoles = async () => {
+      try {
+        const token = AuthService.getCurrentUser();
+        const response = await axios.get(`${API_URL}/roles`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (response.data && Array.isArray(response.data)) {
+          // Filtrar el rol con id 2 (cliente)
+          const rolesFiltrados = response.data.filter(rol => rol.id !== 2);
+          setRoles(rolesFiltrados);
+        }
+      } catch (error) {
+        console.error("Error al obtener roles:", error);
+      }
+    };
+
     if (modalEditar) {
       fetchUsuarios();
+      fetchRoles(); // Obtener los roles cuando se abre el modal
       setPassword("");
       setConfirmPassword("");
       setErrorEmail(null);
@@ -224,9 +244,11 @@ const ModalEditarUsuario = ({
             required
           >
             <option value="">Selecciona un rol</option>
-            <option value="1">Administrador</option>
-            <option value="3">Conductor</option>
-            <option value="4">Básico</option>
+            {roles.map(rol => (
+              <option key={rol.id} value={rol.id}>
+                {rol.name}
+              </option>
+            ))}
           </Input>
           {errorRol && <p className="text-white">{errorRol}</p>}
         </FormGroup>
@@ -300,4 +322,3 @@ ModalEditarUsuario.propTypes = {
 };
 
 export default ModalEditarUsuario;
-

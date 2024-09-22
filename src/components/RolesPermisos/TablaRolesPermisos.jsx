@@ -23,12 +23,6 @@ const TablaRolesPermisos = ({ roles, onAssignPermissions, onDeleteRole, onEditRo
               <Button className="btn btn-secondary me-2" onClick={() => onAssignPermissions(role.id, role.name)}>
                 Asignar Permisos
               </Button>
-              <Button className="me-1 btn-icon btn-danger" onClick={() => onDeleteRole(role.id)}>
-                <FontAwesomeIcon icon={faTimes} />
-              </Button>
-              <Button className="me-1 btn-icon btn-editar" onClick={() => onEditRole(role.id, role.name)}>
-              <FontAwesomeIcon icon={faPencilAlt} />
-              </Button>
               <Link
                 to={`/DataRol/${role.id}`}
                 className="btn btn-success btn-icon me-2"

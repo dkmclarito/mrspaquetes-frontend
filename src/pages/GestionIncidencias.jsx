@@ -25,6 +25,7 @@ const GestionIncidencias = () => {
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [tipoFiltro, setTipoFiltro] = useState(""); // Nuevo estado para el tipo de incidencia
   const [currentPage, setCurrentPage] = useState(1);
+  const [roleName, setRoleName] = useState("");
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
@@ -42,6 +43,9 @@ const GestionIncidencias = () => {
           window.location.href = "/login";
           return;
         }
+        // Guardar el role_name del usuario logueado
+        setRoleName(response.data.user.role_name);
+        console.log("Role Name del Usuario:", response.data.user.role_name); // Depuración
       }
     } catch (error) {
       console.error("Error al verificar estado del usuario:", error);
@@ -55,6 +59,7 @@ const GestionIncidencias = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data && Array.isArray(response.data.data)) {
+        console.log("Incidencias obtenidas:", response.data.data); // Depuración
         setIncidencias(response.data.data);
       } else {
         console.error("Datos inesperados al obtener incidencias:", response.data);
@@ -108,7 +113,21 @@ const GestionIncidencias = () => {
     });
   }, [incidencias, busqueda, estadoFiltro, tipoFiltro]);
 
-  const incidenciasFiltradas = useMemo(() => filtrarIncidencias(), [filtrarIncidencias]);
+  const filtrarIncidenciasAdmin = useCallback(() => {
+    // No filtrar, devolver todas las incidencias
+    console.log("Mostrando todas las incidencias para Admin:", incidencias); // Depuración
+    return incidencias;
+  }, [incidencias]);
+
+  const incidenciasFiltradas = useMemo(() => {
+    if (roleName === "conductor") {
+      return filtrarIncidencias();
+    } else if (roleName === "admin") {
+      return filtrarIncidenciasAdmin();
+    } else {
+      return incidencias; // Mostrar todas las incidencias si no es conductor ni admin
+    }
+  }, [roleName, filtrarIncidencias, filtrarIncidenciasAdmin, incidencias]);
 
   const paginatedIncidencias = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -166,12 +185,22 @@ const GestionIncidencias = () => {
                 <option value="En Proceso">En Proceso</option>
                 <option value="Cerrada">Cerrada</option>
               </Input>
-
-             
-           
-
+              <Label for="tipoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+                Tipo de Incidencia:
+              </Label>
+              <Input
+                type="select"
+                id="tipoFiltro"
+                value={tipoFiltro}
+                onChange={(e) => setTipoFiltro(e.target.value)}
+                style={{ width: "150px" }}
+              >
+                <option value="">Todos</option>
+                <option value="Tipo1">Tipo 1</option>
+                <option value="Tipo2">Tipo 2</option>
+                {/* Agregar más opciones de tipo de incidencia según sea necesario */}
+              </Input>
               <div style={{ marginLeft: "auto" }}>
-               
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
                 </Link>
@@ -179,7 +208,6 @@ const GestionIncidencias = () => {
             </div>
           </Col>
         </Row>
-     
         <br />
         <Row>
           <Col lg={12}>

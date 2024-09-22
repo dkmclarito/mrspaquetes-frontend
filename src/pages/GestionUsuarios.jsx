@@ -19,6 +19,7 @@ const GestionUsuarios = () => {
 
   const [usuarios, setUsuarios] = useState([]);
   const [empleados, setEmpleados] = useState([]);
+  const [roles, setRoles] = useState([]); // Estado para los roles
   const [modalEditar, setModalEditar] = useState(false);
   const [usuarioEditado, setUsuarioEditado] = useState(null);
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
@@ -28,37 +29,29 @@ const GestionUsuarios = () => {
   const [estadoFiltro, setEstadoFiltro] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-// Nueva función para verificar el estado del usuario logueado
-const verificarEstadoUsuarioLogueado = useCallback(async () => {
-  try {
-    const userId = localStorage.getItem("userId");
-   
-    const token = AuthService.getCurrentUser();
+  // Nueva función para verificar el estado del usuario logueado
+  const verificarEstadoUsuarioLogueado = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const token = AuthService.getCurrentUser();
 
-    if (userId && token) {
-      const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (userId && token) {
+        const response = await axios.get(`${API_URL}/auth/show/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-    //  console.log("Response Data:", response.data); 
-
-      // Verifica si el token es inválido
-      if (response.data.status === "Token is Invalid") {
-        console.error("Token is invalid. Logging out...");
-        AuthService.logout();
-        window.location.href = "/login"; // Redirige a login si el token es inválido
-        return;
+        if (response.data.status === "Token is Invalid") {
+          console.error("Token is invalid. Logging out...");
+          AuthService.logout();
+          window.location.href = "/login"; // Redirige a login si el token es inválido
+          return;
+        }
+        // Si el token es válido y el usuario está activo, no se hace nada
       }
-      // Si el token es válido y el usuario está activo, no se hace nada
+    } catch (error) {
+      console.error("Error 500 DKM:", error);
     }
-  } catch (error) {
-    console.error("Error 500 DKM:", );
-    //AuthService.logout();
-    //window.location.href = "/login";
-  }
-}, []);
-
-
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -91,10 +84,30 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
     }
   }, []);
 
+  const fetchRoles = useCallback(async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/roles`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data && Array.isArray(response.data)) {
+        // Filtrar para no mostrar el rol con id 2 (cliente)
+        const rolesFiltrados = response.data.filter(rol => rol.id !== 2);
+        setRoles(rolesFiltrados);
+      } else {
+        console.error("Datos inesperados al obtener roles:", response.data);
+      }
+    } catch (error) {
+      console.error("Error al obtener roles:", error);
+    }
+  }, []);
+
   useEffect(() => {
     verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
     fetchData();
-  }, [fetchData, verificarEstadoUsuarioLogueado]);
+    fetchRoles(); // Carga los roles al cargar la página
+  }, [fetchData, verificarEstadoUsuarioLogueado, fetchRoles]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -210,9 +223,9 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
                 style={{ width: "150px" }}
               >
                 <option value="">Todos</option>
-                <option value="1">Administrador</option>
-                <option value="3">Conductor</option>
-                <option value="4">Básico</option>
+                {roles.map(rol => (
+                  <option key={rol.id} value={rol.id}>{rol.name}</option>
+                ))}
               </Input>
               <Label for="estadoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
                 Estado:
@@ -284,3 +297,4 @@ const verificarEstadoUsuarioLogueado = useCallback(async () => {
 };
 
 export default GestionUsuarios;
+
