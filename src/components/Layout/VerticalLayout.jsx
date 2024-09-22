@@ -562,28 +562,18 @@ const VerticalLayout = () => {
               </>
             )}
 
-            {hasRole("conductor") && (
+            {hasRole("acompanante") && (
               <>
+
                 <li className="nav-item">
                   <NavLink
-                    to="/GestionPaquetes"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                  >
-                    <BiPackage className="nav-icon" />
-                    {!menuCollapsed && <span>Paquetes</span>}
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
-                    to="/rutas"
+                    to="/OrdenEntregada"
                     className={({ isActive }) =>
                       isActive ? "nav-link active" : "nav-link"
                     }
                   >
                     <BiMap className="nav-icon" />
-                    {!menuCollapsed && <span>Rutas</span>}
+                    {!menuCollapsed && <span>Validar entrega</span>}
                   </NavLink>
                 </li>
                 <li className="nav-item">
