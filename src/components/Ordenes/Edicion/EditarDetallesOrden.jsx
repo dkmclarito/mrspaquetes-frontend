@@ -399,6 +399,8 @@ const EditarDetallesOrden = ({
       precio: parseFloat(paquete.precio),
       fecha_ingreso: commonData.fecha_envio,
       fecha_entrega: commonData.fecha_entrega,
+      fecha_envio: commonData.fecha_envio,
+      fecha_entrega_estimada: commonData.fecha_entrega_estimada,
     };
 
     try {

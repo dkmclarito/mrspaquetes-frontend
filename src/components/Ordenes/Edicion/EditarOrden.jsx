@@ -43,13 +43,16 @@ export default function EditarOrden() {
   const actualizarOrden = useCallback(
     async (datosActualizados) => {
       try {
-        // Primero, actualizamos el estado local con los datos proporcionados
-        setOrden((prevOrden) => ({ ...prevOrden, ...datosActualizados }));
+        // Actualizar el estado local con los datos proporcionados
+        setOrden((prevOrden) => ({
+          ...prevOrden,
+          ...datosActualizados,
+          detalles: datosActualizados.detalles || prevOrden.detalles,
+        }));
 
-        // Luego, recargamos los datos completos de la orden
+        // Recargar los datos completos de la orden
         await fetchOrden();
 
-        // Mostramos un toast de éxito
         toast.success("Cambios guardados con éxito.");
       } catch (error) {
         console.error("Error al actualizar la orden:", error);

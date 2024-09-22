@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col, Card, CardBody, Table, Button } from "reactstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faPlay, faStop } from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -14,40 +14,38 @@ const DetallesRutaRecoleccion = () => {
   const [ruta, setRuta] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState({});
 
-  useEffect(() => {
-    const fetchRutaDetails = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `${API_URL}/rutas-recolecciones/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+  const fetchRutaDetails = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_URL}/rutas-recolecciones/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        const rutaConPaquetes = {
-          ...response.data,
-          ordenes_recolecciones: await Promise.all(
-            response.data.ordenes_recolecciones.map(async (orden) => {
-              const detallesOrden = await axios.get(
-                `${API_URL}/ordenes/${orden.id_orden}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                }
-              );
-              return { ...orden, paquetes: detallesOrden.data.detalles };
-            })
-          ),
-        };
+      const rutaConPaquetes = {
+        ...response.data,
+        ordenes_recolecciones: await Promise.all(
+          response.data.ordenes_recolecciones.map(async (orden) => {
+            const detallesOrden = await axios.get(
+              `${API_URL}/ordenes/${orden.id_orden}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            return { ...orden, paquetes: detallesOrden.data.detalles };
+          })
+        ),
+      };
 
-        setRuta(rutaConPaquetes);
-      } catch (error) {
-        console.error("Error al cargar los detalles de la ruta:", error);
-        toast.error("Error al cargar los detalles de la ruta");
-      }
-    };
-    fetchRutaDetails();
+      setRuta(rutaConPaquetes);
+    } catch (error) {
+      console.error("Error al cargar los detalles de la ruta:", error);
+      toast.error("Error al cargar los detalles de la ruta");
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchRutaDetails();
+  }, [fetchRutaDetails]);
 
   const toggleOrder = (orderId) => {
     setExpandedOrders((prev) => ({
@@ -93,6 +91,42 @@ const DetallesRutaRecoleccion = () => {
       (total, orden) => total + orden.paquetes.length,
       0
     );
+  };
+
+  const iniciarRecoleccionOrden = async (ordenId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/orden-recoleccion/asignar-recoleccion/${ordenId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Recolección iniciada para la orden");
+      await fetchRutaDetails();
+    } catch (error) {
+      console.error("Error al iniciar la recolección de la orden:", error);
+      toast.error("Error al iniciar la recolección de la orden");
+    }
+  };
+
+  const finalizarRecoleccionOrden = async (ordenId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/orden-recoleccion/finalizar-orden-recoleccion/${ordenId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Recolección finalizada para la orden");
+      await fetchRutaDetails();
+    } catch (error) {
+      console.error("Error al finalizar la recolección de la orden:", error);
+      toast.error("Error al finalizar la recolección de la orden");
+    }
   };
 
   if (!ruta) {
@@ -182,10 +216,22 @@ const DetallesRutaRecoleccion = () => {
                     <td>{obtenerNombreEstado(orden.estado)}</td>
                     <td>
                       <Button
-                        className="btn-sm btn-icon btn-success"
+                        className="btn-sm btn-icon btn-success me-2"
                         onClick={() => toggleOrder(orden.id)}
                       >
-                        <FontAwesomeIcon icon={faEye} /> Ver Paquetes
+                        <FontAwesomeIcon icon={faEye} />
+                      </Button>
+                      <Button
+                        className="btn-sm btn-icon btn-primary me-2"
+                        onClick={() => iniciarRecoleccionOrden(orden.id)}
+                      >
+                        <FontAwesomeIcon icon={faPlay} />
+                      </Button>
+                      <Button
+                        className="btn-sm btn-icon btn-warning"
+                        onClick={() => finalizarRecoleccionOrden(orden.id)}
+                      >
+                        <FontAwesomeIcon icon={faStop} />
                       </Button>
                     </td>
                   </tr>

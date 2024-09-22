@@ -75,17 +75,42 @@ const GestionOrdenesRecoleccion = () => {
       ]);
 
       const rutasData = rutasRes.data.data || [];
-      setRutasRecoleccion(rutasData);
+      const rutasConEstado = await Promise.all(
+        rutasData.map(async (ruta) => {
+          const ordenesRes = await axios.get(
+            `${API_URL}/rutas-recolecciones/${ruta.id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const ordenes = ordenesRes.data.ordenes_recolecciones || [];
+
+          const puedeIniciar = ordenes.some(
+            (orden) => orden.estado !== 0 && !orden.recoleccion_iniciada
+          );
+
+          const puedeFinalizar = ordenes.some(
+            (orden) =>
+              orden.estado !== 0 &&
+              orden.recoleccion_iniciada &&
+              !orden.recoleccion_finalizada
+          );
+
+          return { ...ruta, puedeIniciar, puedeFinalizar };
+        })
+      );
+
+      setRutasRecoleccion(rutasConEstado);
       setTotalItems(rutasRes.data.total || 0);
 
-      const totalOrdenes = rutasData.reduce(
+      const totalOrdenes = rutasConEstado.reduce(
         (total, ruta) => total + (ruta.ordenes_recolecciones?.length || 0),
         0
       );
       setTotalOrdenes(totalOrdenes);
 
       setVehiculos(vehiculosRes.data.vehiculos || []);
-      setEstados(estadosRes.data.estado_rutas || []); // Guardamos los estados
+      setEstados(estadosRes.data.estado_rutas || []);
     } catch (error) {
       console.error("Error al obtener datos:", error);
       toast.error("Error al cargar los datos.");
@@ -154,6 +179,173 @@ const GestionOrdenesRecoleccion = () => {
     }
   };
 
+  const iniciarRecoleccion = async (rutaId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/rutas-recolecciones/${rutaId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const rutaConPaquetes = {
+        ...response.data,
+        ordenes_recolecciones: await Promise.all(
+          response.data.ordenes_recolecciones.map(async (orden) => {
+            const detallesOrden = await axios.get(
+              `${API_URL}/ordenes/${orden.id_orden}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            return { ...orden, paquetes: detallesOrden.data.detalles };
+          })
+        ),
+      };
+
+      console.log("Información de la ruta y sus órdenes:", rutaConPaquetes);
+
+      if (
+        !rutaConPaquetes.ordenes_recolecciones ||
+        rutaConPaquetes.ordenes_recolecciones.length === 0
+      ) {
+        toast.warning("No hay órdenes de recolección asociadas a esta ruta.");
+        return;
+      }
+
+      let ordenesIniciadas = 0;
+      let errores = 0;
+
+      for (const orden of rutaConPaquetes.ordenes_recolecciones) {
+        try {
+          await axios.post(
+            `${API_URL}/orden-recoleccion/asignar-recoleccion/${orden.id}`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          ordenesIniciadas++;
+        } catch (ordenError) {
+          console.error(
+            `Error al iniciar la recolección para la orden ${orden.id}:`,
+            ordenError
+          );
+          errores++;
+        }
+      }
+
+      if (ordenesIniciadas > 0) {
+        toast.success(
+          `Recolección iniciada con éxito para ${ordenesIniciadas} órdenes de la ruta ${rutaConPaquetes.nombre}`
+        );
+      } else if (errores > 0) {
+        toast.error(
+          `No se pudo iniciar la recolección para ninguna orden. Se encontraron ${errores} errores.`
+        );
+      } else {
+        toast.info(
+          `No se iniciaron nuevas recolecciones para la ruta ${rutaConPaquetes.nombre}.`
+        );
+      }
+
+      fetchData(currentPage);
+    } catch (error) {
+      console.error("Error al iniciar la recolección:", error);
+      toast.error(
+        "Error al iniciar la recolección: " +
+          (error.response?.data?.message || error.message)
+      );
+    }
+  };
+
+  const finalizarRecoleccion = async (rutaId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/rutas-recolecciones/${rutaId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const rutaConPaquetes = {
+        ...response.data,
+        ordenes_recolecciones: await Promise.all(
+          response.data.ordenes_recolecciones.map(async (orden) => {
+            const detallesOrden = await axios.get(
+              `${API_URL}/ordenes/${orden.id_orden}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            return { ...orden, paquetes: detallesOrden.data.detalles };
+          })
+        ),
+      };
+
+      console.log(
+        "Información de la ruta y sus órdenes para finalizar:",
+        rutaConPaquetes
+      );
+
+      if (
+        !rutaConPaquetes.ordenes_recolecciones ||
+        rutaConPaquetes.ordenes_recolecciones.length === 0
+      ) {
+        toast.warning(
+          "No hay órdenes de recolección asociadas a esta ruta para finalizar."
+        );
+        return;
+      }
+
+      let ordenesFInalizadas = 0;
+      let errores = 0;
+
+      for (const orden of rutaConPaquetes.ordenes_recolecciones) {
+        try {
+          await axios.post(
+            `${API_URL}/orden-recoleccion/finalizar-orden-recoleccion/${orden.id}`,
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          ordenesFInalizadas++;
+        } catch (ordenError) {
+          console.error(
+            `Error al finalizar la recolección para la orden ${orden.id}:`,
+            ordenError
+          );
+          errores++;
+        }
+      }
+
+      if (ordenesFInalizadas > 0) {
+        toast.success(
+          `Recolección finalizada con éxito para ${ordenesFInalizadas} órdenes de la ruta ${rutaConPaquetes.nombre}`
+        );
+      } else if (errores > 0) {
+        toast.error(
+          `No se pudo finalizar la recolección para ninguna orden. Se encontraron ${errores} errores.`
+        );
+      } else {
+        toast.info(
+          `No se finalizaron nuevas recolecciones para la ruta ${rutaConPaquetes.nombre}.`
+        );
+      }
+
+      fetchData(currentPage);
+    } catch (error) {
+      console.error("Error al finalizar la recolección:", error);
+      toast.error(
+        "Error al finalizar la recolección: " +
+          (error.response?.data?.message || error.message)
+      );
+    }
+  };
+
   return (
     <div className="page-content">
       <Container fluid>
@@ -201,6 +393,8 @@ const GestionOrdenesRecoleccion = () => {
                   eliminarRuta={iniciarEliminarRuta}
                   verDetallesRuta={verDetallesRuta}
                   editarRuta={editarRuta}
+                  iniciarRecoleccion={iniciarRecoleccion}
+                  finalizarRecoleccion={finalizarRecoleccion}
                   totalOrdenes={totalOrdenes}
                 />
               </CardBody>
