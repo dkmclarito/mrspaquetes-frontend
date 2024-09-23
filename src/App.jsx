@@ -354,9 +354,6 @@ const App = () => {
                 }
               >
                 <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
-
-                <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
-                <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
                 <Route
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}

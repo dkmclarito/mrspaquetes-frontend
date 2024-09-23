@@ -82,7 +82,6 @@ const OrdenEntregada = () => {
             });
 
             toast.success("Paquete validado exitosamente!", { position: "bottom-right", autoClose: 5000 });
-            setTimeout(() => navigate('/GestionPaquetes'), 2000); // Redirigir después de 2 segundos
             resetForm();
         } catch (error) {
             handleError(error);
