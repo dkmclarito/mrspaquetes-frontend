@@ -35,11 +35,13 @@ export default function DatosPaqueteExpress() {
   const [empaques, setEmpaques] = useState([]);
   const [tarifas, setTarifas] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
+  const [useRecoleccion, setUseRecoleccion] = useState(false);
   const [commonData, setCommonData] = useState({
     id_estado_paquete: "1", // Assuming '1' is the ID for "recepción"
-    fecha_envio: "",
-    fecha_entrega_estimada: "",
-    fecha_entrega: "",
+    fecha_envio: new Date().toISOString().split("T")[0],
+    fecha_entrega_estimada: new Date().toISOString().split("T")[0],
+    fecha_entrega: new Date().toISOString().split("T")[0],
     id_tipo_entrega: "2", // Set to '1' for "normal" delivery
     instrucciones_entrega: "",
   });
@@ -87,10 +89,18 @@ export default function DatosPaqueteExpress() {
         setTarifas(tarifasRes.data || []);
 
         const storedAddress = JSON.parse(
-          localStorage.getItem("selectedAddress")
+          localStorage.getItem("selectedAddress") || "{}"
         );
+        const storedDireccionRecoleccion = JSON.parse(
+          localStorage.getItem("direccionRecoleccion") || "{}"
+        );
+        const storedUseRecoleccion = JSON.parse(
+          localStorage.getItem("useRecoleccion") || "false"
+        );
+
         setSelectedAddress(storedAddress);
-        console.log("Selected address:", storedAddress);
+        setDireccionRecoleccion(storedDireccionRecoleccion);
+        setUseRecoleccion(storedUseRecoleccion);
 
         console.log("Fetched data:", {
           cliente: clienteRes.data.cliente,
@@ -153,11 +163,6 @@ export default function DatosPaqueteExpress() {
     const { name, value } = e.target;
     setCommonData((prev) => {
       const updatedData = { ...prev, [name]: value };
-
-      // Si se cambia la fecha de entrega estimada, actualizar también la fecha de entrega
-      if (name === "fecha_entrega_estimada") {
-        updatedData.fecha_entrega = value;
-      }
 
       return updatedData;
     });
@@ -245,6 +250,32 @@ export default function DatosPaqueteExpress() {
   const handleChangePaquete = (index, e) => {
     const { name, value } = e.target;
     const updatedPaquetes = [...paquetes];
+
+    if (name === "tamano_paquete") {
+      const otherPaquete = updatedPaquetes.find((_, i) => i !== index);
+      const currentIsChangingToMedium = value === "2";
+
+      if (
+        currentIsChangingToMedium &&
+        otherPaquete &&
+        otherPaquete.tamano_paquete === "2"
+      ) {
+        toast.error("No se permiten dos paquetes medianos.");
+        return;
+      }
+
+      if (
+        currentIsChangingToMedium &&
+        otherPaquete &&
+        otherPaquete.tamano_paquete === "1"
+      ) {
+        toast.error(
+          "No se puede cambiar a mediano cuando ya hay un paquete pequeño."
+        );
+        return;
+      }
+    }
+
     updatedPaquetes[index] = { ...updatedPaquetes[index], [name]: value };
 
     if (name === "tamano_paquete") {
@@ -270,6 +301,19 @@ export default function DatosPaqueteExpress() {
   };
 
   const agregarPaquete = () => {
+    if (paquetes.length >= 2) {
+      toast.error("No se pueden agregar más de 2 paquetes.");
+      return;
+    }
+
+    const existingPackage = paquetes[0];
+    if (existingPackage && existingPackage.tamano_paquete === "2") {
+      toast.error(
+        "No se puede agregar otro paquete cuando ya hay un paquete mediano."
+      );
+      return;
+    }
+
     setPaquetes((prev) => [
       ...prev,
       {
@@ -337,7 +381,10 @@ export default function DatosPaqueteExpress() {
     const detalles = paquetes.map((paquete) => ({
       ...commonData,
       ...paquete,
-      id_direccion: selectedAddress ? selectedAddress.id : null,
+      id_direccion: useRecoleccion
+        ? direccionRecoleccion.id
+        : selectedAddress.id,
+      id_direccion_entrega: selectedAddress.id,
     }));
 
     const totalPrice = detalles.reduce(
@@ -352,6 +399,11 @@ export default function DatosPaqueteExpress() {
         detalles: detalles,
         totalPrice: totalPrice,
         commonData: commonData,
+        selectedAddress: selectedAddress,
+        direccionRecoleccion: useRecoleccion
+          ? direccionRecoleccion
+          : selectedAddress,
+        useRecoleccion: useRecoleccion,
       },
     });
   };
@@ -453,8 +505,7 @@ export default function DatosPaqueteExpress() {
                         name="fecha_entrega_estimada"
                         id="fecha_entrega_estimada"
                         value={commonData.fecha_entrega_estimada}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_entrega_estimada}
+                        disabled
                         className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_entrega_estimada && (
@@ -639,7 +690,6 @@ export default function DatosPaqueteExpress() {
                           <option value="">Seleccione un tamaño</option>
                           <option value="1">Pequeño</option>
                           <option value="2">Mediano</option>
-                          <option value="3">Grande</option>
                         </Input>
                         {errors.paquetes[index]?.tamano_paquete && (
                           <FormFeedback>

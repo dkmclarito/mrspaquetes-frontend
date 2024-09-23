@@ -541,7 +541,7 @@ const EditarDetallesOrden = ({
                         disabled
                       >
                         <option value="1">Normal</option>
-                        <option value="2">Urgente</option>
+                        <option value="2">Express</option>
                       </Input>
                       <FormFeedback>
                         {errors.commonData.id_tipo_entrega}

@@ -40,8 +40,8 @@ export default function DatosPaquetePreOrdenExpress() {
   const [commonData, setCommonData] = useState({
     id_estado_paquete: "3", // Assuming '1' is the ID for "recepción"
     fecha_envio: new Date().toISOString().split("T")[0],
-    fecha_entrega_estimada: "",
-    fecha_entrega: "",
+    fecha_entrega_estimada: new Date().toISOString().split("T")[0],
+    fecha_entrega: new Date().toISOString().split("T")[0],
     id_tipo_entrega: "2",
     instrucciones_entrega: "",
   });
@@ -194,11 +194,6 @@ export default function DatosPaquetePreOrdenExpress() {
     setCommonData((prev) => {
       const updatedData = { ...prev, [name]: value };
 
-      // Si se cambia la fecha de entrega estimada, actualizar también la fecha de entrega
-      if (name === "fecha_entrega_estimada") {
-        updatedData.fecha_entrega = value;
-      }
-
       return updatedData;
     });
 
@@ -285,6 +280,32 @@ export default function DatosPaquetePreOrdenExpress() {
   const handleChangePaquete = (index, e) => {
     const { name, value } = e.target;
     const updatedPaquetes = [...paquetes];
+
+    if (name === "tamano_paquete") {
+      const otherPaquete = updatedPaquetes.find((_, i) => i !== index);
+      const currentIsChangingToMedium = value === "2";
+
+      if (
+        currentIsChangingToMedium &&
+        otherPaquete &&
+        otherPaquete.tamano_paquete === "2"
+      ) {
+        toast.error("No se permiten dos paquetes medianos.");
+        return;
+      }
+
+      if (
+        currentIsChangingToMedium &&
+        otherPaquete &&
+        otherPaquete.tamano_paquete === "1"
+      ) {
+        toast.error(
+          "No se puede cambiar a mediano cuando ya hay un paquete pequeño."
+        );
+        return;
+      }
+    }
+
     updatedPaquetes[index] = { ...updatedPaquetes[index], [name]: value };
 
     if (name === "tamano_paquete") {
@@ -302,10 +323,7 @@ export default function DatosPaquetePreOrdenExpress() {
     const error = validateField(name, value);
     setErrors((prev) => {
       const newPaquetesErrors = [...(prev.paquetes || [])];
-      newPaquetesErrors[index] = {
-        ...newPaquetesErrors[index],
-        [name]: error,
-      };
+      newPaquetesErrors[index] = { ...newPaquetesErrors[index], [name]: error };
       return { ...prev, paquetes: newPaquetesErrors };
     });
 
@@ -313,6 +331,19 @@ export default function DatosPaquetePreOrdenExpress() {
   };
 
   const agregarPaquete = () => {
+    if (paquetes.length >= 2) {
+      toast.error("No se pueden agregar más de 2 paquetes.");
+      return;
+    }
+
+    const existingPackage = paquetes[0];
+    if (existingPackage && existingPackage.tamano_paquete === "2") {
+      toast.error(
+        "No se puede agregar otro paquete cuando ya hay un paquete mediano."
+      );
+      return;
+    }
+
     setPaquetes((prev) => [
       ...prev,
       {
@@ -506,8 +537,7 @@ export default function DatosPaquetePreOrdenExpress() {
                         name="fecha_entrega_estimada"
                         id="fecha_entrega_estimada"
                         value={commonData.fecha_entrega_estimada}
-                        onChange={handleChangeCommonData}
-                        invalid={!!errors.commonData.fecha_entrega_estimada}
+                        disabled
                         className="dark-mode-input-date"
                       />
                       {errors.commonData.fecha_entrega_estimada && (
@@ -692,7 +722,6 @@ export default function DatosPaquetePreOrdenExpress() {
                           <option value="">Seleccione un tamaño</option>
                           <option value="1">Pequeño</option>
                           <option value="2">Mediano</option>
-                          <option value="3">Grande</option>
                         </Input>
                         {errors.paquetes[index]?.tamano_paquete && (
                           <FormFeedback>
