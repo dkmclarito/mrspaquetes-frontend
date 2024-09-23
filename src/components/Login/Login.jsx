@@ -54,9 +54,7 @@ const Login = ({ logo }) => {
               required
             />
           </div>
-          <span className="forgot-password" onClick={handleForgotPassword}>
-            <FiLock className="password-icon" /> Olvidaste tu contraseña?
-          </span>
+          
         </div>
         <button type="submit">Iniciar Sesión</button>
       </form>
