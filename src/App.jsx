@@ -17,7 +17,6 @@ import GestionEmpleados from "./pages/GestionEmpleados";
 import AgregarEmpleado from "./pages/AgregarEmpleado";
 import AgregarEmpleadoUser from "./pages/AgregarEmpleado";
 import DetallesEmpleado from "./pages/DetallesEmpleado";
-import DetallesRutas from "./pages/DetallesRutas";
 import GestionClientes from "./pages/GestionClientes";
 import AgregarCliente from "./pages/AgregarCliente";
 import DetallesCliente from "./pages/DetallesCliente";
@@ -34,8 +33,6 @@ import GestionMarcas from "./pages/GestionMarcas";
 import AgregarMarca from "./pages/AgregarMarca";
 import GestionModelos from "./pages/GestionModelos";
 import AgregarModelo from "./pages/AgregarModelo";
-import GestionPaquetes from "./pages/GestionPaquetes";
-import AgregarPaquete from "./pages/AgregarPaquete";
 import { ToastContainer } from "react-toastify";
 import { AuthProvider } from "./services/AuthContext";
 import EmailVerification from "./pages/EmailVerification";
@@ -45,7 +42,6 @@ import DataUsuario from "./pages/DataUsuario";
 import GestionBodegas from "./pages/GestionBodega";
 import AgregarBodega from "./pages/AgregarBodega";
 import DetallesBodega from "./pages/DetallesBodega";
-import AgregarOrden from "./pages/AgregarOrden";
 import GestionOrdenes from "./pages/GestionOrdenes";
 import DatosPaquete from "./pages/DatosPaquete";
 import GenerarOrden from "./pages/GenerarOrden";
@@ -56,8 +52,6 @@ import DetallesOrden from "./pages/DetallesOrden";
 import TrackingPage from "./components/Tracking/Tracking";
 import VerDetallesOrden from "./pages/VerDetallesOrden";
 import EditarOrden from "./components/Ordenes/Edicion/EditarOrden";
-import GestionRutas from "./pages/GestionRutas";
-import AgregarRuta from "./pages/AgregarRuta";
 import GestionOrdenesExpress from "./pages/GestionOrdenesExpress";
 import OrdenesSeleccionarClienteExpress from "./pages/OrdenesSeleccionarClienteExpress";
 import OrdenesDireccionesExpress from "./pages/OrdenesDireccionesExpress";
@@ -193,7 +187,6 @@ const App = () => {
                   path="/DetallesEmpleado/:id"
                   element={<DetallesEmpleado />}
                 />
-                <Route path="/DetallesRutas/:id" element={<DetallesRutas />} />
                 <Route
                   path="/EditarAsignacionRuta/:codigo_unico_asignacion"
                   element={<EditarAsignacionRuta />}
@@ -253,7 +246,6 @@ const App = () => {
                   path="/DetallesBodega/:id"
                   element={<DetallesBodega />}
                 />
-                <Route path="/AgregarOrden" element={<AgregarOrden />} />
                 <Route
                   path="/OrdenesSeleccionarCliente"
                   element={<OrdenesSeleccionarCliente />}
@@ -308,8 +300,7 @@ const App = () => {
                   element={<VerDetallesOrden />}
                 />
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
-                <Route path="/GestionRutas" element={<GestionRutas />} />
-                <Route path="/AgregarRuta" element={<AgregarRuta />} />
+                
               </Route>
 
               <Route
@@ -363,8 +354,6 @@ const App = () => {
                   />
                 }
               >
-                <Route path="/GestionPaquetes" element={<GestionPaquetes />} />
-                <Route path="/AgregarPaquete" element={<AgregarPaquete />} />
                 <Route
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}

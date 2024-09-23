@@ -63,8 +63,7 @@ const VerticalLayout = () => {
   useEffect(() => {
     // Determine which menu should be active based on the current route
     if (
-      location.pathname.includes("/GestionOrdenes") ||
-      location.pathname.includes("/GestionPaquetes")
+      location.pathname.includes("/GestionOrdenes")
     ) {
       setActiveSubMenu("ordenes");
       setVisibleSubMenu(null);
@@ -76,7 +75,6 @@ const VerticalLayout = () => {
       setActiveSubMenu("vehicles");
       setVisibleSubMenu(null);
     } else if (
-      location.pathname.includes("/GestionRutas") ||
       location.pathname.includes("/RutasRecoleccion") ||
       location.pathname.includes("/OrdenesRecoleccion") ||
       location.pathname.includes("/GestionAsignarRutas")
@@ -284,17 +282,6 @@ const VerticalLayout = () => {
                     </li>
                     <li>
                       <NavLink
-                        to="/GestionPaquetes"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiPlus className="nav-icon sub-icon" />
-                        Paquetes
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
                         to="/TrackingPage"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
@@ -338,17 +325,6 @@ const VerticalLayout = () => {
                   <ul
                     className={`sub-menu ${visibleSubMenu === "rutas" ? "active" : ""}`}
                   >
-                    <li>
-                      <NavLink
-                        to="/GestionRutas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiMap className="nav-icon sub-icon" />
-                        Rutas
-                      </NavLink>
-                    </li>
                     <li>
                       <NavLink
                         to="/GestionAsignarRutas"
@@ -566,17 +542,6 @@ const VerticalLayout = () => {
               <>
                 <li className="nav-item">
                   <NavLink
-                    to="/GestionPaquetes"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                  >
-                    <BiPackage className="nav-icon" />
-                    {!menuCollapsed && <span>Paquetes</span>}
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink
                     to="/rutas"
                     className={({ isActive }) =>
                       isActive ? "nav-link active" : "nav-link"
@@ -630,20 +595,6 @@ const VerticalLayout = () => {
                   </ul>
                 </li>
               </>
-            )}
-
-            {hasRole("cliente") && (
-              <li className="nav-item">
-                <NavLink
-                  to="/GestionPaquetes"
-                  className={({ isActive }) =>
-                    isActive ? "nav-link active" : "nav-link"
-                  }
-                >
-                  <BiPackage className="nav-icon" />
-                  {!menuCollapsed && <span>Paquetes</span>}
-                </NavLink>
-              </li>
             )}
           </ul>
         </nav>
