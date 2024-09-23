@@ -278,10 +278,9 @@ const Dashboard = () => {
                         </Badge>
                       ) : (
                         <Badge color="danger">Sin entrega</Badge>
-                      )}  {' '}
-
+                      )}  {' '}                      
                       <Badge color={'secondary'}>
-                        {orden.numero_seguimiento || 'Desconocido'}
+                        {orden.numero_tracking || 'Desconocido'}
                       </Badge>
                     </ListGroupItem>
                     ))
