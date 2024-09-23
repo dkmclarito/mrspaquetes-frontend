@@ -441,7 +441,7 @@ export default function GenerarOrdenExpress() {
                           type="text"
                           name="id_estado_paquete"
                           id="id_estado_paquete"
-                          value="En Recepción"
+                          value="En Proceso"
                           disabled
                         />
                       </FormGroup>
