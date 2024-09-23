@@ -64,13 +64,18 @@ const OrdenEntregada = () => {
         e.preventDefault();
 
         if (!idPaquete || !imagen) {
-            setErrorMensaje("Por favor, proporciona el ID del paquete y selecciona una imagen.");
-            toast.error("Por favor, completa todos los campos requeridos.", { position: "bottom-right", autoClose: 5000 });
+            setErrorMensaje("Por favor, proporciona el codigo Qr del paquete y selecciona una imagen.");
+            toast.error("Por favor, completa todos los campos requeridos.", { position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true, });
             return;
         }
 
         const formData = new FormData();
-        formData.append("id", idPaquete);
+        formData.append("uuid", idPaquete);
         formData.append("validacion_entrega", imagen);
 
         try {
@@ -81,7 +86,12 @@ const OrdenEntregada = () => {
                 },
             });
 
-            toast.success("Paquete validado exitosamente!", { position: "bottom-right", autoClose: 5000 });
+            toast.success("Paquete validado exitosamente!", { position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true, });
             //setTimeout(() => navigate('/GestionPaquetes'), 2000); // Redirigir después de 2 segundos
             resetForm();
         } catch (error) {
