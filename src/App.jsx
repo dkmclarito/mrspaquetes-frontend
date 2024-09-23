@@ -9,6 +9,7 @@ import PrivateRoute from "./components/Login/PrivateRoute";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import LoginClientePage from "./pages/LoginClientePage";
+import LoadingPage from "./components/Login/LoadingPage";
 import RegisterCliente from "./pages/RegisterCliente";
 import Logout from "./components/Login/Logout";
 import AuthService from "./services/authService";
@@ -132,6 +133,7 @@ const App = () => {
           >
             <Route element={<VerticalLayout />}>
               <Route path="/home" element={<HomePage />} />
+              <Route path="/LoadingPage" element={<LoadingPage />} />
 
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />

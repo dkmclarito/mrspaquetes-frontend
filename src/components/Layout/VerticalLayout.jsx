@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -44,6 +44,8 @@ const VerticalLayout = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
   const menuRef = useRef(null); // Referencia al contenedor del menú
+  const navigate = useNavigate();
+  const [redirected, setRedirected] = useState(false);
 
   useEffect(() => {
     if (shouldReload && !loading) {
@@ -60,6 +62,21 @@ const VerticalLayout = () => {
     localStorage.setItem("menuCollapsed", JSON.stringify(menuCollapsed));
   }, [menuCollapsed]);
 
+  useEffect(() => {
+    if (!loading && user && !redirected) {
+      const currentPath = location.pathname;
+
+      // Solo redirige si no estás en la página correcta
+      if (hasRole('admin') && currentPath !== '/home') {
+        navigate('/home');
+        setRedirected(true); // Marcar como redirigido
+      } else if (hasRole('conductor') && currentPath !== '/OrdenEntregada') {
+        navigate('/OrdenEntregada');
+        setRedirected(true); // Marcar como redirigido
+      }
+    }
+  }, [loading, user, navigate, redirected]);
+  
   useEffect(() => {
     // Determine which menu should be active based on the current route
     if (
@@ -168,21 +185,22 @@ const VerticalLayout = () => {
           </div>
           <ul
             className={`nav flex-column ${menuCollapsed ? "icons-only" : ""}`}
-          >
-            <li className="nav-item">
-              <NavLink
-                to="/home"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <BiHome className="nav-icon" />
-                {!menuCollapsed && <span>Inicio</span>}
-              </NavLink>
-            </li>
+          >            
 
             {hasRole("admin") && (
               <>
+                <li className="nav-item">
+                  <NavLink
+                    to="/home"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiHome className="nav-icon" />
+                    {!menuCollapsed && <span>Inicio</span>}
+                  </NavLink>
+                </li>
+              
                 <li className="nav-item">
                   <NavLink
                     to="/GestionUsuarios"
