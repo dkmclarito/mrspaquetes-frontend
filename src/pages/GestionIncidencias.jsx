@@ -159,17 +159,7 @@ const GestionIncidencias = () => {
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center" }}>
-              <Label for="busqueda" style={{ marginRight: "10px", marginLeft: "20px" }}>
-                Buscar:
-              </Label>
-              <Input
-                type="text"
-                id="busqueda"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Escriba ID del paquete o usuario asignado"
-                style={{ width: "300px" }}
-              />
+         
               <Label for="estadoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
                 Estado:
               </Label>
@@ -196,7 +186,7 @@ const GestionIncidencias = () => {
                 style={{ width: "150px" }}
               >
                 <option value="">Todos</option>
-                <option value="Tipo1">Tipo 1</option>
+                <option value="Tipo1">Daño</option>
                 <option value="Tipo2">Tipo 2</option>
                 {/* Agregar más opciones de tipo de incidencia según sea necesario */}
               </Input>
