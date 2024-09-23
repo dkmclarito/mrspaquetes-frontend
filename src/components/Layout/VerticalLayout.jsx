@@ -527,7 +527,7 @@ const VerticalLayout = () => {
               </>
             )}
 
-            {hasRole("acompanante") && (
+            {hasRole("conductor") && (
               <>
 
                 <li className="nav-item">

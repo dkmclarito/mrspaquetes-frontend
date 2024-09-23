@@ -122,7 +122,7 @@ const App = () => {
               <PrivateRoute
                 allowedRoles={[
                   "admin",
-                  "acompanante",
+                  "conductor",
                   "cliente",
                   "coordinador_de_rutas",
                   "operador_de_almacen",
@@ -302,7 +302,7 @@ const App = () => {
               <Route
                 element={
                   <PrivateRoute
-                    allowedRoles={["admin", "acompanante", "cliente"]}
+                    allowedRoles={["admin", "conductor", "cliente"]}
                   />
                 }
               >
