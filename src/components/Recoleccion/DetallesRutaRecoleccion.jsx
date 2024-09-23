@@ -197,7 +197,7 @@ const DetallesRutaRecoleccion = () => {
                   <tr>
                     <th>ID Orden</th>
                     <th>Código Único</th>
-                    <th>Prioridad</th>
+                    <th>Orden de recoleccion</th>
                     <th>Destino</th>
                     <th>Estado</th>
                     <th>Acciones</th>

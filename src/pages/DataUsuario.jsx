@@ -4,8 +4,8 @@ import axios from "axios";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import AuthService from "../services/authService";
 import Breadcrumbs from "../components/Usuarios/Common/Breadcrumbs";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -35,8 +35,6 @@ const DataUsuario = () => {
       }
     } catch (error) {
       console.error("Error al verificar el estado del usuario:", error);
-      //AuthService.logout();
-      //window.location.href = "/login";
     }
   }, []);
 
@@ -74,11 +72,14 @@ const DataUsuario = () => {
 
   const fetchEmpleado = async (idEmpleado, token) => {
     try {
-      const empleadoResponse = await axios.get(`${API_URL}/empleados/${idEmpleado}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const empleadoResponse = await axios.get(
+        `${API_URL}/empleados/${idEmpleado}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setEmpleado(empleadoResponse.data.empleado);
     } catch (error) {
       console.error("Error al obtener los datos del empleado:", error);
@@ -94,14 +95,17 @@ const DataUsuario = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Fecha no disponible';
-    return new Date(dateString).toLocaleDateString('es-ES');
+    if (!dateString) return "Fecha no disponible";
+    return new Date(dateString).toLocaleDateString("es-ES");
   };
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Usuarios" breadcrumbItem="Datos de Usuario" />        
+        <Breadcrumbs
+          title="Gestión de Usuarios"
+          breadcrumbItem="Datos de Usuario"
+        />
         <Card>
           <CardBody>
             <h5 className="card-title">Detalles del Usuario</h5>
@@ -111,46 +115,70 @@ const DataUsuario = () => {
                   <table className="table table-bordered">
                     <tbody>
                       <tr>
-                        <th scope="row" style={{ width: '200px', whiteSpace: 'nowrap' }}>ID:</th>
+                        <th
+                          scope="row"
+                          style={{ width: "200px", whiteSpace: "nowrap" }}
+                        >
+                          ID:
+                        </th>
                         <td>
                           <Badge color="primary">{usuario?.id}</Badge>
                         </td>
                       </tr>
                       <tr>
                         <th scope="row">Email:</th>
-                        <td>{usuario?.email || 'N/A'}</td>
+                        <td>{usuario?.email || "N/A"}</td>
                       </tr>
                       <tr>
                         <th scope="row">Estado:</th>
                         <td>
-                          <Badge color={usuario?.status === 1 ? "success" : "danger"}>
+                          <Badge
+                            color={usuario?.status === 1 ? "success" : "danger"}
+                          >
                             {usuario?.status === 1 ? "Activo" : "Inactivo"}
                           </Badge>
                         </td>
                       </tr>
                       <tr>
                         <th scope="row">Empleado:</th>
-                        <td style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <td
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
                           {empleado ? (
                             <>
                               {`${empleado.nombres} ${empleado.apellidos}`}
-                              <Link to={`/DetallesEmpleado/${empleado.id}`} className="btn btn-info btn-sm ms-2">
-                                <FontAwesomeIcon icon={faEye} /> Ver detalles del empleado
+                              <Link
+                                to={`/DetallesEmpleado/${empleado.id}`}
+                                className="btn btn-info btn-sm ms-2"
+                              >
+                                <FontAwesomeIcon icon={faEye} /> Ver detalles
+                                del empleado
                               </Link>
                             </>
-                          ) : (
+                          ) : usuario?.role_name !== "admin" ? (
                             <>
                               No asignado
-                              <Button color="primary" size="sm" onClick={handleAgregarEmpleado} style={{ marginLeft: '10px' }}>
+                              <Button
+                                color="primary"
+                                size="sm"
+                                onClick={handleAgregarEmpleado}
+                                style={{ marginLeft: "10px" }}
+                              >
                                 Agregar Empleado
                               </Button>
                             </>
+                          ) : (
+                            "No aplicable para administradores"
                           )}
                         </td>
                       </tr>
                       <tr>
                         <th scope="row">Rol:</th>
-                        <td>{usuario?.role_name || 'Desconocido'}</td>
+                        <td>{usuario?.role_name || "Desconocido"}</td>
                       </tr>
                       <tr>
                         <th scope="row">Fecha de creación:</th>
@@ -166,9 +194,12 @@ const DataUsuario = () => {
               </Col>
             </Row>
             <div className="d-flex justify-content-between mt-4">
-            <Link to="/GestionUsuarios" className="btn btn-secondary btn-regresar">
-              <i className="fas fa-arrow-left"></i> Regresar
-            </Link>
+              <Link
+                to="/GestionUsuarios"
+                className="btn btn-secondary btn-regresar"
+              >
+                <i className="fas fa-arrow-left"></i> Regresar
+              </Link>
             </div>
           </CardBody>
         </Card>

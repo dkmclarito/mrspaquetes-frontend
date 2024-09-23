@@ -1,21 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  CardBody,
-  Input,
-  Label,
-  Button,
-} from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Breadcrumbs from "../components/Recoleccion/Common/Breadcrumbs";
 import TablaRutasRecoleccion from "../components/Recoleccion/TablaRutasRecoleccion";
 import Pagination from "react-js-pagination";
-import ModalConfirmarEliminar from "../components/Recoleccion/ModalConfirmarEliminar";
 import AuthService from "../services/authService";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -27,8 +17,6 @@ const GestionOrdenesRecoleccion = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [totalOrdenes, setTotalOrdenes] = useState(0);
-  const [modalEliminar, setModalEliminar] = useState(false);
-  const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
   const [vehiculos, setVehiculos] = useState([]);
   const [estados, setEstados] = useState([]);
 
@@ -149,34 +137,6 @@ const GestionOrdenesRecoleccion = () => {
 
   const editarRuta = (id) => {
     navigate(`/editar-ruta-recoleccion/${id}`);
-  };
-
-  const iniciarEliminarRuta = useCallback((id) => {
-    setRutaSeleccionada(id);
-    setModalEliminar(true);
-  }, []);
-
-  const confirmarEliminarRuta = async () => {
-    try {
-      const token = AuthService.getCurrentUser()?.token;
-      await axios.delete(`${API_URL}/rutas-recolecciones/${rutaSeleccionada}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      toast.success("Ruta de recolección eliminada con éxito.");
-
-      if (rutasRecoleccion.length === 1 && currentPage > 1) {
-        await fetchData(currentPage - 1);
-      } else {
-        await fetchData(currentPage);
-      }
-
-      setModalEliminar(false);
-      setRutaSeleccionada(null);
-    } catch (error) {
-      console.error("Error al eliminar la ruta de recolección:", error);
-      toast.error("Error al eliminar la ruta de recolección.");
-    }
   };
 
   const iniciarRecoleccion = async (rutaId) => {
@@ -390,7 +350,6 @@ const GestionOrdenesRecoleccion = () => {
                   rutas={rutasFiltradas}
                   vehiculos={vehiculos}
                   estados={estados}
-                  eliminarRuta={iniciarEliminarRuta}
                   verDetallesRuta={verDetallesRuta}
                   editarRuta={editarRuta}
                   iniciarRecoleccion={iniciarRecoleccion}
@@ -423,11 +382,6 @@ const GestionOrdenesRecoleccion = () => {
           </Col>
         </Row>
       </Container>
-      <ModalConfirmarEliminar
-        isOpen={modalEliminar}
-        toggle={() => setModalEliminar(!modalEliminar)}
-        confirmarEliminar={confirmarEliminarRuta}
-      />
     </div>
   );
 };

@@ -53,12 +53,17 @@ const CrearRutaRecoleccion = () => {
           ordenesRecoleccionRes.data.data.map((or) => or.id_orden)
         );
 
-        // Filtrar órdenes que están en estado de espera de recolección y no están asignadas
+        // Filtrar órdenes que son pre-órdenes normales, están en estado de espera de recolección y no están asignadas
         const ordenesFiltradas = ordenesRes.data.data.filter(
           (orden) =>
+            orden.tipo_orden === "preorden" &&
+            orden.detalles.every(
+              (detalle) => detalle.tipo_entrega === "Entrega Normal"
+            ) &&
             orden.detalles.some(
               (detalle) => detalle.id_estado_paquetes === 3
-            ) && !ordenesAsignadas.has(orden.id)
+            ) &&
+            !ordenesAsignadas.has(orden.id)
         );
         setOrdenes(ordenesFiltradas);
       } catch (error) {
@@ -211,7 +216,7 @@ const CrearRutaRecoleccion = () => {
                       <th>Número de Seguimiento</th>
                       <th>Cliente</th>
                       <th>Dirección de Recolección</th>
-                      <th>Prioridad</th>
+                      <th>Orden de recolección</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
