@@ -478,7 +478,7 @@ export default function DatosPaquetePreOrdenExpress() {
                         type="text"
                         name="id_estado_paquete"
                         id="id_estado_paquete"
-                        value="En Recepción"
+                        value="En Espera de Recolección"
                         disabled
                       />
                     </FormGroup>
@@ -526,7 +526,7 @@ export default function DatosPaquetePreOrdenExpress() {
                         type="text"
                         name="id_tipo_entrega"
                         id="id_tipo_entrega"
-                        value="Normal"
+                        value="Express"
                         disabled
                       />
                     </FormGroup>

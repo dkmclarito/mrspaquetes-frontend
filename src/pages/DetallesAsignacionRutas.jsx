@@ -149,7 +149,7 @@ export default function DetallesAsignacionRutas() {
 
   return (
     <div className="page-content">
-      <Breadcrumbs title="Gestión de Asignación de Rutas" breadcrumbItem="Detalles de Asignación" />
+      <Breadcrumbs title="Gestión de Asignación de Rutas de Entrega" breadcrumbItem="Detalles de Asignación" />
       <Card>
         <CardBody>
           <h5 className="card-title">Detalles de la Asignación de Ruta</h5>

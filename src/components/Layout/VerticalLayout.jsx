@@ -402,17 +402,6 @@ const VerticalLayout = () => {
                         Ubicaciones
                       </NavLink>
                     </li>
-                    <li>
-                      <NavLink
-                        to="/GestionInventario"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiBox className="nav-icon sub-icon" />
-                        Inventario
-                      </NavLink>
-                    </li>
                   </ul>
                 </li>
 
