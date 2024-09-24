@@ -41,7 +41,7 @@ const AgregarUbicacionPaquete = () => {
       setUbicaciones((ubicacionesResponse.data || []).filter(ubicacion => !ubicacion.paquete_asignado));
     } catch (error) {
       console.error("Error al obtener datos:", error);
-      toast.error("Error al cargar los datos");
+      //toast.error("Error al cargar los datos");
     }
   }, [token]);
 
@@ -227,7 +227,7 @@ const AgregarUbicacionPaquete = () => {
         <CardBody>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col md={6}>
+              <Col md={12}>
                 <FormGroup>
                   <Label for="codigoQR">Código QR del Paquete</Label>
                   <div className="d-flex">
@@ -238,6 +238,7 @@ const AgregarUbicacionPaquete = () => {
                       onChange={e => setCodigoQRPaquete(e.target.value)}
                       placeholder="Escanea el código QR"
                       required
+                      style={{height: '80%', width: '70%'}}
                     />
                     <Button color="primary" onClick={() => iniciarEscaneo('QR')} disabled={escaneandoQR} style={{ marginLeft: '10px' }}>
                       Escanear QR
@@ -245,7 +246,7 @@ const AgregarUbicacionPaquete = () => {
                   </div>
                 </FormGroup>
               </Col>
-              <Col md={6}>
+              <Col md={12}>
                 <FormGroup>
                   <Label for="codigoUbicacion">Código Nomenclatura Ubicación</Label>
                   <div className="d-flex">
@@ -256,6 +257,7 @@ const AgregarUbicacionPaquete = () => {
                       onChange={e => setCodigoNomenclaturaUbicacion(e.target.value)}
                       placeholder="Escanea el código de barras"
                       required
+                      style={{height: '80%', width: '70%'}}
                     />
                     <Button color="primary" onClick={() => iniciarEscaneo('Barcode')} disabled={escaneandoBarcode} style={{ marginLeft: '10px' }}>
                       Escanear Código de Barras
