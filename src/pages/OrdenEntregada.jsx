@@ -115,14 +115,14 @@ const OrdenEntregada = () => {
 
     return (
         <Container>
-            <Breadcrumbs title="Validación" breadcrumbItem="Validar Entrega" />
+            <Breadcrumbs title="Validación de Entrega del paquete" breadcrumbItem="Validar Entrega" />
             <Row>
                 <Col lg="12">
                     <Card>
                         <CardBody>
                             <Form onSubmit={handleSubmit}>
                                 <FormGroup>
-                                    <Label for="idPaquete">ID del Paquete</Label>
+                                    <Label for="idPaquete">Codigo Qr del Paquete</Label>
                                     <Input
                                         type="text"
                                         id="idPaquete"
