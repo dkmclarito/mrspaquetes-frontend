@@ -881,6 +881,34 @@ body {
   border-color: #1e1e1e;
 }
 
+.dark-mode .btn-regresar2{
+  background-color: #1e1e1e26;
+  color: #ba7703c3;
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.dark-mode .btn-regresar2:hover{
+  background-color: #825301c3;
+  color: rgba(212, 130, 15, 0.843);
+  border-color: rgba(255, 158, 21, 0.843);
+}
+
+.btn-regresar2{
+  background-color: #ba7703c3;
+  color: #ffffff;
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.btn-regresar2:hover{
+  background-color: #825301c3;
+  color: rgba(255, 255, 255, 0.843);
+  border-color: rgba(255, 158, 21, 0.843);
+}
+
 .dark-mode .btn-danger{
   background-color: #1e1e1e26;
   color: rgb(255, 45, 45);
@@ -906,6 +934,32 @@ body {
   background-color: rgba(18, 92, 29, 0.362);
   color: rgb(24, 137, 41);
   border-color: rgb(54, 138, 67);
+}
+
+.dark-mode .btn-success2{
+  background-color: #1e1e1e26;
+  color: rgba(253, 177, 24, 0.746);
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
+}
+.dark-mode .btn-success2:hover{
+  background-color: rgba(233, 162, 20, 0.58);
+  color: rgba(253, 177, 24, 0.746);
+  border-color: rgba(253, 177, 24, 0.746);
+}
+
+.btn-success2{
+  background-color: rgba(253, 177, 24, 0.746);
+  color: rgb(255, 255, 255);
+  border-color: rgb(154, 154, 154);
+  border-width: 1px;
+  border-style: solid;
+}
+.btn-success2:hover{
+  background-color: rgba(233, 162, 20, 0.58);
+  color: rgb(255, 255, 255);
+  border-color: rgba(253, 177, 24, 0.746);
 }
 
 .dark-mode .btn-custom-red {

@@ -134,14 +134,14 @@ const DetallesRutaRecoleccion = () => {
   }
 
   return (
-    <Container fluid className="bg-dark text-light">
+    <Container fluid className=" ">
       <h2 className="mb-4">Detalles de Ruta de Recolección</h2>
-      <Card className="bg-secondary mb-4">
+      <Card className=" mb-4">
         <CardBody>
           <Row>
             <Col md={6}>
               <h4>Información General</h4>
-              <Table borderless className="text-light">
+              <Table borderless className="">
                 <tbody>
                   <tr>
                     <th scope="row">Código de Ruta:</th>
@@ -163,7 +163,7 @@ const DetallesRutaRecoleccion = () => {
               </Table>
             </Col>
             <Col md={6}>
-              <Table borderless className="text-light mt-4">
+              <Table borderless className=" mt-4">
                 <tbody>
                   <tr>
                     <th scope="row">Estado:</th>
@@ -184,7 +184,7 @@ const DetallesRutaRecoleccion = () => {
         </CardBody>
       </Card>
 
-      <Card className="bg-secondary">
+      <Card className="">
         <CardBody>
           <h4 className="mb-4">Órdenes de Recolección Asociadas</h4>
           {ruta.ordenes_recolecciones.map((orden, index) => (
@@ -216,19 +216,19 @@ const DetallesRutaRecoleccion = () => {
                     <td>{obtenerNombreEstado(orden.estado)}</td>
                     <td>
                       <Button
-                        className="btn-sm btn-icon btn-success me-2"
+                        className="btn-sm btn-icon btn-direcciones me-2"
                         onClick={() => toggleOrder(orden.id)}
                       >
                         <FontAwesomeIcon icon={faEye} />
                       </Button>
                       <Button
-                        className="btn-sm btn-icon btn-primary me-2"
+                        className="btn-sm btn-icon btn-success  me-2"
                         onClick={() => iniciarRecoleccionOrden(orden.id)}
                       >
                         <FontAwesomeIcon icon={faPlay} />
                       </Button>
                       <Button
-                        className="btn-sm btn-icon btn-warning"
+                        className="btn-sm btn-icon btn-danger"
                         onClick={() => finalizarRecoleccionOrden(orden.id)}
                       >
                         <FontAwesomeIcon icon={faStop} />
@@ -271,8 +271,8 @@ const DetallesRutaRecoleccion = () => {
               Editar Ruta
             </Button>
             <Button
-              color="secondary"
-              className="ml-2"
+              
+              className="btn-regresar ml-2"
               onClick={() => navigate("/gestion-ordenes-recoleccion")}
             >
               Volver al Listado

@@ -74,14 +74,14 @@ const TablaRutasRecoleccion = ({
                       <FontAwesomeIcon icon={faEye} />
                     </Button>
                     <Button
-                      className="btn-icon btn-primary"
+                      className="btn-icon btn-direcciones"
                       onClick={() => iniciarRecoleccion(ruta.id)}
                       disabled={!ruta.puedeIniciar}
                     >
                       <FontAwesomeIcon icon={faPlay} />
                     </Button>
                     <Button
-                      className="btn-icon btn-warning"
+                      className="btn-icon btn-danger"
                       onClick={() => finalizarRecoleccion(ruta.id)}
                       disabled={!ruta.puedeFinalizar}
                     >
