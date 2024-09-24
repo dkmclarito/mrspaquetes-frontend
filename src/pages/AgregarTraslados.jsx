@@ -27,25 +27,25 @@ const API_URL = import.meta.env.VITE_API_URL;
 const customStyles = {
   control: (provided) => ({
     ...provided,
-    backgroundColor: '#333',
-    borderColor: '#666',
+    backgroundColor: "#333",
+    borderColor: "#666",
   }),
   singleValue: (provided) => ({
     ...provided,
-    color: '#fff',
+    color: "#fff",
   }),
   option: (provided, state) => ({
     ...provided,
-    backgroundColor: state.isFocused ? '#555' : '#333',
-    color: '#fff',
+    backgroundColor: state.isFocused ? "#555" : "#333",
+    color: "#fff",
   }),
   menu: (provided) => ({
     ...provided,
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   }),
   input: (provided) => ({
     ...provided,
-    color: '#fff',
+    color: "#fff",
   }),
 };
 
@@ -53,13 +53,15 @@ const AgregarTraslado = () => {
   const navigate = useNavigate();
   const [bodegas, setBodegas] = useState([]);
   const [formData, setFormData] = useState(() => {
-    const savedFormData = localStorage.getItem('trasladoFormData');
-    return savedFormData ? JSON.parse(savedFormData) : {
-      bodega_origen: "",
-      bodega_destino: "",
-      codigos_qr: [],
-      fecha_traslado: new Date().toISOString().split('T')[0],
-    };
+    const savedFormData = localStorage.getItem("trasladoFormData");
+    return savedFormData
+      ? JSON.parse(savedFormData)
+      : {
+          bodega_origen: "",
+          bodega_destino: "",
+          codigos_qr: [],
+          fecha_traslado: new Date().toISOString().split("T")[0],
+        };
   });
   const [codigoQR, setCodigoQR] = useState("");
   const [errors, setErrors] = useState({});
@@ -112,7 +114,9 @@ const AgregarTraslado = () => {
           setBodegas(bodegasOptions);
         } else {
           console.error("Unexpected API response format:", response.data);
-          toast.error("Error al cargar las bodegas: formato de respuesta inesperado");
+          toast.error(
+            "Error al cargar las bodegas: formato de respuesta inesperado"
+          );
         }
       } catch (error) {
         console.error("Error al obtener bodegas:", error);
@@ -124,7 +128,7 @@ const AgregarTraslado = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('trasladoFormData', JSON.stringify(formData));
+    localStorage.setItem("trasladoFormData", JSON.stringify(formData));
   }, [formData]);
 
   const handleInputChange = (e) => {
@@ -134,14 +138,16 @@ const AgregarTraslado = () => {
   };
 
   const handleSelectChange = (selectedOption, { name }) => {
-    const otherFieldName = name === "bodega_origen" ? "bodega_destino" : "bodega_origen";
+    const otherFieldName =
+      name === "bodega_origen" ? "bodega_destino" : "bodega_origen";
     const otherFieldValue = formData[otherFieldName];
 
     if (selectedOption.value === otherFieldValue) {
       setErrors({
         ...errors,
         [name]: "La bodega de origen y destino no pueden ser la misma",
-        [otherFieldName]: "La bodega de origen y destino no pueden ser la misma"
+        [otherFieldName]:
+          "La bodega de origen y destino no pueden ser la misma",
       });
     } else {
       setFormData({ ...formData, [name]: selectedOption.value });
@@ -180,7 +186,7 @@ const AgregarTraslado = () => {
   const validateDate = (date) => {
     const selectedDate = new Date(date);
     const currentDate = new Date();
-    
+
     selectedDate.setHours(0, 0, 0, 0);
     currentDate.setHours(0, 0, 0, 0);
 
@@ -188,19 +194,19 @@ const AgregarTraslado = () => {
       return "La fecha no puede ser anterior a la fecha actual";
     }
 
-    const [year, month, day] = date.split('-').map(Number);
+    const [year, month, day] = date.split("-").map(Number);
     const currentYear = currentDate.getFullYear();
 
     if (year < currentYear || year > currentYear + 1) {
       return `El año debe ser ${currentYear} o ${currentYear + 1}`;
     }
     if (month < 1 || month > 12) {
-      return 'El mes debe estar entre 1 y 12';
+      return "El mes debe estar entre 1 y 12";
     }
     if (day < 1 || day > 31) {
-      return 'El día debe estar entre 1 y 31';
+      return "El día debe estar entre 1 y 31";
     }
-    return '';
+    return "";
   };
 
   const handleAddCodigoQR = () => {
@@ -209,7 +215,10 @@ const AgregarTraslado = () => {
       return;
     }
     if (formData.codigos_qr.includes(codigoQR)) {
-      setErrors({ ...errors, codigoQR: "El código ya está ingresado en su lista." });
+      setErrors({
+        ...errors,
+        codigoQR: "El código ya está ingresado en su lista.",
+      });
       return;
     }
 
@@ -236,40 +245,53 @@ const AgregarTraslado = () => {
     }
     try {
       const token = AuthService.getCurrentUser();
-      await axios.post(`${API_URL}/traslados`, formData, {
+      const dataToSend = {
+        bodega_origen: parseInt(formData.bodega_origen),
+        bodega_destino: parseInt(formData.bodega_destino),
+        codigos_qr: formData.codigos_qr,
+        fecha_traslado: formData.fecha_traslado,
+      };
+      console.log("Datos a enviar:", dataToSend);
+      const response = await axios.post(`${API_URL}/traslados`, dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
+      console.log("Respuesta de la API:", response.data);
       toast.success("Traslado registrado con éxito", {
         onClose: () => {
-          localStorage.removeItem('trasladoFormData');
+          localStorage.removeItem("trasladoFormData");
           navigate("/GestionTraslados");
-        }
+        },
       });
     } catch (error) {
-      console.error("Error al registrar traslado:", error);
+      console.error("Error al registrar traslado:", error.response ? error.response.data : error.message);
       toast.error("Error al registrar el traslado");
     }
   };
 
   const validateForm = () => {
     const formErrors = {};
-    if (!formData.bodega_origen) formErrors.bodega_origen = "Este campo es requerido";
-    if (!formData.bodega_destino) formErrors.bodega_destino = "Este campo es requerido";
+    if (!formData.bodega_origen)
+      formErrors.bodega_origen = "Este campo es requerido";
+    if (!formData.bodega_destino)
+      formErrors.bodega_destino = "Este campo es requerido";
     if (formData.bodega_origen === formData.bodega_destino) {
-      formErrors.bodega_origen = "La bodega de origen y destino no pueden ser la misma";
-      formErrors.bodega_destino = "La bodega de origen y destino no pueden ser la misma";
+      formErrors.bodega_origen =
+        "La bodega de origen y destino no pueden ser la misma";
+      formErrors.bodega_destino =
+        "La bodega de origen y destino no pueden ser la misma";
     }
     const dateError = validateDate(formData.fecha_traslado);
     if (dateError) formErrors.fecha_traslado = dateError;
-    if (formData.codigos_qr.length === 0) formErrors.codigos_qr = "Debe agregar al menos un código QR";
+    if (formData.codigos_qr.length === 0)
+      formErrors.codigos_qr = "Debe agregar al menos un código QR";
     return formErrors;
   };
 
   const handleExit = () => {
-    localStorage.removeItem('trasladoFormData');
+    localStorage.removeItem("trasladoFormData");
     navigate("/GestionTraslados");
   };
 
@@ -278,8 +300,10 @@ const AgregarTraslado = () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
         .then(function(stream) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+          }
           requestAnimationFrame(escanearFrame);
         })
         .catch(function(error) {
@@ -310,18 +334,34 @@ const AgregarTraslado = () => {
       });
 
       if (code) {
+        console.log("¡Código QR detectado!", code.data);
         setCodigoQR(code.data);
         detenerEscaneo();
+        toast.success("Código QR escaneado con éxito");
       } else {
         requestAnimationFrame(escanearFrame);
       }
+    } else if (escaneando) {
+      requestAnimationFrame(escanearFrame);
     }
   }, [escaneando, detenerEscaneo]);
+
+  useEffect(() => {
+    if (escaneando) {
+      const intervalId = setInterval(() => {
+        escanearFrame();
+      }, 100); // Escanea cada 100ms
+      return () => clearInterval(intervalId);
+    }
+  }, [escaneando, escanearFrame]);
 
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Agregar Paquetes a Traslados" breadcrumbItem="Agregar Traslado" />
+        <Breadcrumbs
+          title="Agregar Paquetes a Traslados"
+          breadcrumbItem="Agregar Traslado"
+        />
         <Row>
           <Col lg={12}>
             <Card>
@@ -335,13 +375,23 @@ const AgregarTraslado = () => {
                           id="bodega_origen"
                           name="bodega_origen"
                           options={bodegas}
-                          onChange={(option) => handleSelectChange(option, { name: "bodega_origen" })}
-                          value={bodegas.find((option) => option.value === formData.bodega_origen)}
+                          onChange={(option) =>
+                            handleSelectChange(option, {
+                              name: "bodega_origen",
+                            })
+                          }
+                          value={bodegas.find(
+                            (option) => option.value === formData.bodega_origen
+                          )}
                           styles={customStyles}
                           isInvalid={!!errors.bodega_origen}
                           isSearchable={true}
                         />
-                        {errors.bodega_origen && <FormFeedback className="d-block">{errors.bodega_origen}</FormFeedback>}
+                        {errors.bodega_origen && (
+                          <FormFeedback className="d-block">
+                            {errors.bodega_origen}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                     <Col lg={4}>
@@ -351,13 +401,23 @@ const AgregarTraslado = () => {
                           id="bodega_destino"
                           name="bodega_destino"
                           options={bodegas}
-                          onChange={(option) => handleSelectChange(option, { name: "bodega_destino" })}
-                          value={bodegas.find((option) => option.value === formData.bodega_destino)}
+                          onChange={(option) =>
+                            handleSelectChange(option, {
+                              name: "bodega_destino",
+                            })
+                          }
+                          value={bodegas.find(
+                            (option) => option.value === formData.bodega_destino
+                          )}
                           styles={customStyles}
                           isInvalid={!!errors.bodega_destino}
                           isSearchable={true}
                         />
-                        {errors.bodega_destino && <FormFeedback className="d-block">{errors.bodega_destino}</FormFeedback>}
+                        {errors.bodega_destino && (
+                          <FormFeedback className="d-block">
+                            {errors.bodega_destino}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                     <Col lg={4}>
@@ -372,7 +432,10 @@ const AgregarTraslado = () => {
                           invalid={!!errors.fecha_traslado}
                         />
                         {errors.fecha_traslado && (
-                          <FormFeedback className="d-block" style={{ color: 'red' }}>
+                          <FormFeedback
+                            className="d-block"
+                            style={{ color: "red" }}
+                          >
                             {errors.fecha_traslado}
                           </FormFeedback>
                         )}
@@ -393,14 +456,26 @@ const AgregarTraslado = () => {
                             className="mr-2"
                             invalid={!!errors.codigoQR}
                           />
-                          <Button color="primary" onClick={handleAddCodigoQR} style={{ marginLeft: '1rem' }}>
+                          <Button
+                            color="primary"
+                            onClick={handleAddCodigoQR}
+                            style={{ marginLeft: "1rem" }}
+                          >
                             Agregar
                           </Button>
-                          <Button color="secondary" onClick={iniciarEscaneo} style={{ marginLeft: '1rem' }}>
+                          <Button
+                            color="secondary"
+                            onClick={iniciarEscaneo}
+                            style={{ marginLeft: "1rem" }}
+                          >
                             Escanear
                           </Button>
                         </div>
-                        {errors.codigoQR && <FormFeedback className="d-block">{errors.codigoQR}</FormFeedback>}
+                        {errors.codigoQR && (
+                          <FormFeedback className="d-block">
+                            {errors.codigoQR}
+                          </FormFeedback>
+                        )}
                       </FormGroup>
                     </Col>
                   </Row>
@@ -411,6 +486,7 @@ const AgregarTraslado = () => {
                           <video 
                             ref={videoRef} 
                             style={{ width: '100%', maxWidth: '400px', display: 'block' }}
+                            playsInline
                           ></video>
                           <canvas 
                             ref={canvasRef} 
@@ -420,7 +496,7 @@ const AgregarTraslado = () => {
                               left: 0, 
                               width: '100%', 
                               height: '100%',
-                              display: 'none'
+                              opacity: 0.5
                             }}
                           ></canvas>
                         </div>
@@ -447,7 +523,11 @@ const AgregarTraslado = () => {
                                 <td>{index + 1}</td>
                                 <td>{codigo}</td>
                                 <td>
-                                  <Button color="danger" size="sm" onClick={() => handleRemoveCodigoQR(index)}>
+                                  <Button
+                                    color="danger"
+                                    size="sm"
+                                    onClick={() => handleRemoveCodigoQR(index)}
+                                  >
                                     Eliminar
                                   </Button>
                                 </td>
@@ -458,12 +538,19 @@ const AgregarTraslado = () => {
                       </Col>
                     </Row>
                   )}
-                  {errors.codigos_qr && <FormFeedback className="d-block">{errors.codigos_qr}</FormFeedback>}
+                  {errors.codigos_qr && (
+                    <FormFeedback className="d-block">
+                      {errors.codigos_qr}
+                    </FormFeedback>
+                  )}
                   <Col md="12" className="mt-4">
                     <Button color="primary" type="submit">
                       Registrar Traslado
                     </Button>
-                    <Button className="ms-2 btn-custom-red" onClick={handleExit}>
+                    <Button
+                      className="ms-2 btn-custom-red"
+                      onClick={handleExit}
+                    >
                       Salir
                     </Button>
                   </Col>
