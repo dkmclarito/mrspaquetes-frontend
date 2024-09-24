@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import {
   Container,
@@ -20,6 +20,7 @@ import AuthService from "../services/authService";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Select from "react-select";
+import jsQR from 'jsqr';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -62,6 +63,9 @@ const AgregarTraslado = () => {
   });
   const [codigoQR, setCodigoQR] = useState("");
   const [errors, setErrors] = useState({});
+  const [escaneando, setEscaneando] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
@@ -269,6 +273,51 @@ const AgregarTraslado = () => {
     navigate("/GestionTraslados");
   };
 
+  const iniciarEscaneo = useCallback(() => {
+    setEscaneando(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+          requestAnimationFrame(escanearFrame);
+        })
+        .catch(function(error) {
+          console.error("No se pudo acceder a la cámara", error);
+          toast.error("No se pudo acceder a la cámara");
+        });
+    }
+  }, []);
+
+  const detenerEscaneo = useCallback(() => {
+    setEscaneando(false);
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+    }
+  }, []);
+
+  const escanearFrame = useCallback(() => {
+    if (videoRef.current && canvasRef.current && escaneando) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code) {
+        setCodigoQR(code.data);
+        detenerEscaneo();
+      } else {
+        requestAnimationFrame(escanearFrame);
+      }
+    }
+  }, [escaneando, detenerEscaneo]);
+
   return (
     <div className="page-content">
       <Container fluid>
@@ -340,18 +389,47 @@ const AgregarTraslado = () => {
                             id="codigo_qr"
                             value={codigoQR}
                             onChange={(e) => setCodigoQR(e.target.value)}
-                            placeholder="Ingrese código QR"
+                            placeholder="Escanee o ingrese código QR"
                             className="mr-2"
                             invalid={!!errors.codigoQR}
                           />
                           <Button color="primary" onClick={handleAddCodigoQR} style={{ marginLeft: '1rem' }}>
                             Agregar
                           </Button>
+                          <Button color="secondary" onClick={iniciarEscaneo} style={{ marginLeft: '1rem' }}>
+                            Escanear
+                          </Button>
                         </div>
                         {errors.codigoQR && <FormFeedback className="d-block">{errors.codigoQR}</FormFeedback>}
                       </FormGroup>
                     </Col>
                   </Row>
+                  {escaneando && (
+                    <Row>
+                      <Col lg={12}>
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+                          <video 
+                            ref={videoRef} 
+                            style={{ width: '100%', maxWidth: '400px', display: 'block' }}
+                          ></video>
+                          <canvas 
+                            ref={canvasRef} 
+                            style={{ 
+                              position: 'absolute', 
+                              top: 0, 
+                              left: 0, 
+                              width: '100%', 
+                              height: '100%',
+                              display: 'none'
+                            }}
+                          ></canvas>
+                        </div>
+                        <Button color="danger" onClick={detenerEscaneo} style={{ marginTop: '1rem' }}>
+                          Detener Escaneo
+                        </Button>
+                      </Col>
+                    </Row>
+                  )}
                   {formData.codigos_qr.length > 0 && (
                     <Row>
                       <Col lg={6}>
