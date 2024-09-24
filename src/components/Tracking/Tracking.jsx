@@ -66,7 +66,7 @@ const TrackingPaquetes = () => {
                 <CardTitle tag="h5">Buscar Orden</CardTitle>
                 <Input
                   type="text"
-                  placeholder="Número de seguimiento"
+                  placeholder="Número de rastreo"
                   value={numeroSeguimiento}
                   onChange={(e) => setNumeroSeguimientp(e.target.value)}
                 />
@@ -97,9 +97,9 @@ const TrackingPaquetes = () => {
                   {orden.paquetes.map((paquete, index) => (
                      <NavLink 
                      key={index} 
-                     to={`/PaquetesTrackingScreen/${paquete.id}`} // Cambia la ruta según tus necesidades
+                     to={`/PaquetesTrackingScreen/${paquete.id}`}
                      onClick={() => handleTracking(paquete.id, orden.numero_seguimiento)}
-                     style={{ textDecoration: 'none' }} // Para quitar el subrayado
+                     style={{ textDecoration: 'none' }}
                    >
                      <DetailsCard
                        title={`Descripción: ${paquete.descripcion_contenido}`}

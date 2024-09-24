@@ -60,6 +60,8 @@ const VerticalLayout = () => {
     localStorage.setItem("menuCollapsed", JSON.stringify(menuCollapsed));
   }, [menuCollapsed]);
 
+  
+  
   useEffect(() => {
     // Determine which menu should be active based on the current route
     if (
@@ -168,21 +170,21 @@ const VerticalLayout = () => {
           </div>
           <ul
             className={`nav flex-column ${menuCollapsed ? "icons-only" : ""}`}
-          >
-            <li className="nav-item">
-              <NavLink
-                to="/home"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <BiHome className="nav-icon" />
-                {!menuCollapsed && <span>Inicio</span>}
-              </NavLink>
-            </li>
+          >            
 
             {hasRole("admin") && (
               <>
+              <li className="nav-item">
+                  <NavLink
+                    to="/home"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiHome className="nav-icon" />
+                    {!menuCollapsed && <span>Inicio</span>}
+                  </NavLink>
+                </li>
                 <li className="nav-item">
                   <NavLink
                     to="/GestionUsuarios"
