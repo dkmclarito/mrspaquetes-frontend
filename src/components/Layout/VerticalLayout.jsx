@@ -62,20 +62,7 @@ const VerticalLayout = () => {
     localStorage.setItem("menuCollapsed", JSON.stringify(menuCollapsed));
   }, [menuCollapsed]);
 
-  useEffect(() => {
-    if (!loading && user && !redirected) {
-      const currentPath = location.pathname;
-
-      // Solo redirige si no estás en la página correcta
-      if (hasRole('admin') && currentPath !== '/home') {
-        navigate('/home');
-        setRedirected(true); // Marcar como redirigido
-      } else if (hasRole('conductor') && currentPath !== '/OrdenEntregada') {
-        navigate('/OrdenEntregada');
-        setRedirected(true); // Marcar como redirigido
-      }
-    }
-  }, [loading, user, navigate, redirected]);
+  
   
   useEffect(() => {
     // Determine which menu should be active based on the current route
