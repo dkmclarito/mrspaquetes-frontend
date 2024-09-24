@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
-import { Container, Card, CardBody, Form, FormGroup, Label, Input, Button } from "reactstrap";
+import { Container, Card, CardBody, Form, FormGroup, Label, Input, Button, Row, Col } from "reactstrap";
 import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs";
 import AuthService from "../services/authService";
 import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
+import jsQR from "jsqr";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -14,8 +15,14 @@ const AgregarUbicacionPaquete = () => {
   const [codigoNomenclaturaUbicacion, setCodigoNomenclaturaUbicacion] = useState("");
   const [paquetesDisponibles, setPaquetesDisponibles] = useState([]);
   const [ubicaciones, setUbicaciones] = useState([]);
+  const [escaneandoQR, setEscaneandoQR] = useState(false);
+  const [escaneandoBarcode, setEscaneandoBarcode] = useState(false);
   const token = AuthService.getCurrentUser();
   const navigate = useNavigate();
+  const videoRefQR = useRef(null);
+  const canvasRefQR = useRef(null);
+  const videoRefBarcode = useRef(null);
+  const canvasRefBarcode = useRef(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -32,6 +39,7 @@ const AgregarUbicacionPaquete = () => {
       setUbicaciones((ubicacionesResponse.data || []).filter(ubicacion => !ubicacion.paquete_asignado));
     } catch (error) {
       console.error("Error al obtener datos:", error);
+      toast.error("Error al cargar los datos");
     }
   }, [token]);
 
@@ -39,37 +47,94 @@ const AgregarUbicacionPaquete = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleScannerInput = (e) => {
-    const value = e.target.value;
-    if (value.includes(';')) {
-      const [uuid, codigoNomenclatura] = value.split(';');
-      setCodigoQRPaquete(uuid.trim());
-      setCodigoNomenclaturaUbicacion(codigoNomenclatura.trim());
+  const iniciarEscaneo = useCallback((tipo) => {
+    const setEscaneando = tipo === 'QR' ? setEscaneandoQR : setEscaneandoBarcode;
+    const videoRef = tipo === 'QR' ? videoRefQR : videoRefBarcode;
+
+    setEscaneando(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(stream) {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+          }
+        })
+        .catch(function(error) {
+          console.error(`No se pudo acceder a la cámara para ${tipo}`, error);
+          toast.error(`No se pudo acceder a la cámara para escaneo de ${tipo}`);
+        });
     }
-  };
+  }, []);
+
+  const detenerEscaneo = useCallback((tipo) => {
+    const setEscaneando = tipo === 'QR' ? setEscaneandoQR : setEscaneandoBarcode;
+    const videoRef = tipo === 'QR' ? videoRefQR : videoRefBarcode;
+
+    setEscaneando(false);
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+    }
+  }, []);
+
+  const escanearFrame = useCallback((tipo) => {
+    const videoRef = tipo === 'QR' ? videoRefQR : videoRefBarcode;
+    const canvasRef = tipo === 'QR' ? canvasRefQR : canvasRefBarcode;
+    const escaneando = tipo === 'QR' ? escaneandoQR : escaneandoBarcode;
+    const setCodigo = tipo === 'QR' ? setCodigoQRPaquete : setCodigoNomenclaturaUbicacion;
+
+    if (videoRef.current && canvasRef.current && escaneando) {
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      canvas.height = video.videoHeight;
+      canvas.width = video.videoWidth;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code) {
+        console.log(`Código ${tipo} detectado:`, code.data);
+        if (tipo === 'QR' || (tipo === 'Barcode' && /^B\d+P\d+E\d+AN\d+_[A-Z]+$/.test(code.data))) {
+          setCodigo(code.data);
+          detenerEscaneo(tipo);
+          toast.success(`Código ${tipo} escaneado con éxito`);
+        } else if (tipo === 'Barcode') {
+          console.log("Código de barras no válido:", code.data);
+          toast.warning("Código de barras no válido, intente de nuevo");
+        }
+      }
+    }
+  }, [escaneandoQR, escaneandoBarcode, detenerEscaneo, setCodigoQRPaquete, setCodigoNomenclaturaUbicacion]);
+
+  useEffect(() => {
+    let intervalId;
+    if (escaneandoQR || escaneandoBarcode) {
+      intervalId = setInterval(() => {
+        escanearFrame(escaneandoQR ? 'QR' : 'Barcode');
+      }, 100); // Escanea cada 100ms
+    }
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [escaneandoQR, escaneandoBarcode, escanearFrame]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const paqueteDisponible = paquetesDisponibles?.find(paquete => paquete.uuid === codigoQRPaquete);
     if (!paqueteDisponible) {
-      toast.error("El paquete no está disponible o ya está asignado.", { position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true, });
+      toast.error("El paquete no está disponible o ya está asignado.");
       return;
     }
 
     const ubicacionDisponible = ubicaciones?.find(ubicacion => ubicacion.nomenclatura === codigoNomenclaturaUbicacion);
     if (!ubicacionDisponible) {
-      toast.error("La ubicación no existe o ya está en uso.", { position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,});
+      toast.error("La ubicación no existe o ya está en uso.");
       return;
     }
 
@@ -95,27 +160,13 @@ const AgregarUbicacionPaquete = () => {
       }
 
       toast.success("¡Ubicación registrada con éxito!", {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
         onClose: () => navigate('/GestionUbicacion'),
       });
-      //setTimeout(() => navigate("/GestionUbicacion"), 2000);
       
       setCodigoQRPaquete("");
       setCodigoNomenclaturaUbicacion("");
-      //fetchData();
     } catch (error) {
-      toast.error(`Error: ${error.message}`, { 
-      position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,});
+      toast.error(`Error: ${error.message}`);
     }
   };
 
@@ -125,36 +176,81 @@ const AgregarUbicacionPaquete = () => {
       <Card>
         <CardBody>
           <Form onSubmit={handleSubmit}>
-            <FormGroup>
-              <Label for="codigoQR">Código QR del Paquete</Label>
-              <Input
-                type="text"
-                id="codigoQR"
-                value={codigoQRPaquete}
-                onChange={e => setCodigoQRPaquete(e.target.value)}
-                onKeyDown={handleScannerInput}
-                placeholder="Escanea el código QR"
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label for="codigoUbicacion">Código Nomenclatura Ubicación</Label>
-              <Input
-                type="text"
-                id="codigoUbicacion"
-                value={codigoNomenclaturaUbicacion}
-                onChange={e => setCodigoNomenclaturaUbicacion(e.target.value)}
-                onKeyDown={handleScannerInput}
-                placeholder="Escanea el código de ubicación"
-                required
-              />
-            </FormGroup>
-            <Button color="primary" type="submit">Guardar</Button>
-            <Button color="secondary" onClick={() => navigate('/GestionUbicacion')} style={{ marginLeft: '10px' }}>Salir</Button>
+            <Row>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="codigoQR">Código QR del Paquete</Label>
+                  <div className="d-flex">
+                    <Input
+                      type="text"
+                      id="codigoQR"
+                      value={codigoQRPaquete}
+                      onChange={e => setCodigoQRPaquete(e.target.value)}
+                      placeholder="Escanea el código QR"
+                      required
+                    />
+                    <Button color="primary" onClick={() => iniciarEscaneo('QR')} disabled={escaneandoQR} style={{ marginLeft: '10px' }}>
+                      Escanear QR
+                    </Button>
+                  </div>
+                </FormGroup>
+              </Col>
+              <Col md={6}>
+                <FormGroup>
+                  <Label for="codigoUbicacion">Código Nomenclatura Ubicación</Label>
+                  <div className="d-flex">
+                    <Input
+                      type="text"
+                      id="codigoUbicacion"
+                      value={codigoNomenclaturaUbicacion}
+                      onChange={e => setCodigoNomenclaturaUbicacion(e.target.value)}
+                      placeholder="Escanea el código de barras"
+                      required
+                    />
+                    <Button color="primary" onClick={() => iniciarEscaneo('Barcode')} disabled={escaneandoBarcode} style={{ marginLeft: '10px' }}>
+                      Escanear Código de Barras
+                    </Button>
+                  </div>
+                </FormGroup>
+              </Col>
+            </Row>
+            {(escaneandoQR || escaneandoBarcode) && (
+              <Row className="mt-3">
+                <Col md={12}>
+                  <div style={{ position: 'relative', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+                    <video 
+                      ref={escaneandoQR ? videoRefQR : videoRefBarcode} 
+                      style={{ width: '100%', maxWidth: '400px', display: 'block' }}
+                      playsInline
+                    ></video>
+                    <canvas 
+                      ref={escaneandoQR ? canvasRefQR : canvasRefBarcode} 
+                      style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        width: '100%', 
+                        height: '100%',
+                        opacity: 0.5
+                      }}
+                    ></canvas>
+                  </div>
+                  <Button color="danger" onClick={() => detenerEscaneo(escaneandoQR ? 'QR' : 'Barcode')} style={{ marginTop: '10px' }}>
+                    Detener Escaneo {escaneandoQR ? 'QR' : 'Barcode'}
+                  </Button>
+                </Col>
+              </Row>
+            )}
+            <Row className="mt-3">
+              <Col md={12}>
+                <Button color="primary" type="submit">Guardar</Button>
+                <Button color="secondary" onClick={() => navigate('/GestionUbicacion')} style={{ marginLeft: '10px' }}>Salir</Button>
+              </Col>
+            </Row>
           </Form>
         </CardBody>
       </Card>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" autoClose={5000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
     </Container>
   );
 };
