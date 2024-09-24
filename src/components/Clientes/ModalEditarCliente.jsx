@@ -479,23 +479,7 @@ const ModalEditarCliente = ({
                 />
               </FormGroup>
             </Col>
-            <Col md={6}>
-              <FormGroup>
-                <Label for="fecha_registro">Fecha de Registro</Label>
-                <Input
-                  type="date"
-                  id="fecha_registro"
-                  value={
-                    clienteEditado
-                      ? formatDate(clienteEditado.fecha_registro)
-                      : ""
-                  }
-                  onChange={handleFechaRegistroChange}
-                  min={minDate}
-                  max={maxDate}
-                />
-              </FormGroup>
-            </Col>
+
           </Row>
         </form>
       </ModalBody>
