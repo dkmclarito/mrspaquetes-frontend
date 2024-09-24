@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import { Button, Table } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faTimes,
   faPencilAlt,
   faEye,
   faPlay,
@@ -14,7 +13,6 @@ const TablaRutasRecoleccion = ({
   rutas,
   vehiculos,
   estados,
-  eliminarRuta,
   verDetallesRuta,
   editarRuta,
   iniciarRecoleccion,
@@ -64,12 +62,6 @@ const TablaRutasRecoleccion = ({
                 <td>
                   <div className="button-container">
                     <Button
-                      className="me-2 btn-icon btn-danger"
-                      onClick={() => eliminarRuta(ruta.id)}
-                    >
-                      <FontAwesomeIcon icon={faTimes} />
-                    </Button>
-                    <Button
                       className="btn-icon btn-editar"
                       onClick={() => editarRuta(ruta.id)}
                     >
@@ -116,7 +108,6 @@ TablaRutasRecoleccion.propTypes = {
   rutas: PropTypes.array.isRequired,
   vehiculos: PropTypes.array.isRequired,
   estados: PropTypes.array.isRequired,
-  eliminarRuta: PropTypes.func.isRequired,
   verDetallesRuta: PropTypes.func.isRequired,
   editarRuta: PropTypes.func.isRequired,
   iniciarRecoleccion: PropTypes.func.isRequired,

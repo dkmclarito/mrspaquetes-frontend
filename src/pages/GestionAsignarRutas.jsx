@@ -154,7 +154,7 @@ export default function GestionAsignarRutas() {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Asignación de Rutas" breadcrumbItem="Listado de Asignaciones" />
+        <Breadcrumbs title="Gestión de Asignación de Rutas de Entrega" breadcrumbItem="Listado de Asignaciones" />
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center" }}>

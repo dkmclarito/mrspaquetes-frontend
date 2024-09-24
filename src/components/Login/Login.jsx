@@ -15,7 +15,7 @@ const Login = ({ logo }) => {
     try {
       const token = await AuthService.login(email, password);
       if (token) {
-        navigate("/home");
+        navigate("/LoadingPage");
       } else {
         setError("Credenciales inválidas");
       }

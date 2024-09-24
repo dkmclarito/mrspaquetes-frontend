@@ -84,7 +84,6 @@ import EditarPaquetesAsignacion from "./components/AsignacionRutas/EdicionRutaAs
 import EditarAsignacionRuta from "./components/AsignacionRutas/EdicionRutaAsignada/EditarAsignacionRuta";
 import EditarDatosAsignacion from "./components/AsignacionRutas/EdicionRutaAsignada/EditarDatosAsignacion";
 import GestionTraslados from "./pages/GestionTraslados";
-import GestionInventario from "./pages/GestionInventario";
 import TrackingPaquetes from "./pages/TrackingPaquetes";
 import IncidenciasUbicadas from "./pages/IncidenciasUbicadas";
 import GestionOrdenesRecoleccion from "./pages/GestionOrdenesRecoleccion";
@@ -157,10 +156,6 @@ const App = () => {
                 <Route path="/DetallesTraslados/:id" element={<DetallesTraslados />} />
                 <Route path="/EditarTraslados/:id" element={<EditarTraslados />} />
 
-                <Route
-                  path="/GestionInventario"
-                  element={<GestionInventario />}
-                />
                 <Route
                   path="/GestionAsignarRutas"
                   element={<GestionAsignarRutas />}

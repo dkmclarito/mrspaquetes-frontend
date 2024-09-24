@@ -91,9 +91,11 @@ const EditarRutaRecoleccion = () => {
         ordenesRecoleccionRes.data.data.map((or) => or.id_orden)
       );
 
-      // Filtrar preórdenes disponibles (no asignadas a ninguna ruta y en estado de espera)
+      // Filtrar preórdenes disponibles (no asignadas a ninguna ruta, en estado de espera y de tipo entrega normal)
       const preordenesFiltradas = preordenesRes.data.data.filter(
         (p) =>
+          p.tipo_orden === "preorden" &&
+          p.detalles.every((d) => d.tipo_entrega === "Entrega Normal") &&
           p.detalles.some((d) => d.id_estado_paquetes === 3) &&
           !todasOrdenesAsignadasIds.has(p.id)
       );
@@ -237,7 +239,7 @@ const EditarRutaRecoleccion = () => {
                       <th>Cliente</th>
                       <th>Dirección de Recolección</th>
                       <th>Estado</th>
-                      <th>Prioridad</th>
+                      <th>Orden de recoleccion</th>
                     </tr>
                   </thead>
                   <tbody>

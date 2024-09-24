@@ -53,7 +53,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
         if (response.data && Array.isArray(response.data.data)) {
           let incidenciasFiltradas;
 
-          if (usuarioLogueado?.role_name === 'acompanante') {
+          if (usuarioLogueado?.role_name === 'conductor') {
             incidenciasFiltradas = response.data.data.filter(
               (incidencia) => incidencia.id_usuario_asignado === usuarioLogueado?.id_empleado
             );

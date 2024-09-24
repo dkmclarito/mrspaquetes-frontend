@@ -1,23 +1,38 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Button, FormFeedback, Row, Col } from "reactstrap";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
-import AuthService from "../../services/authService";  // Servicio de autenticación para obtener el token
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  FormGroup,
+  Label,
+  Input,
+  Button,
+  FormFeedback,
+  Row,
+  Col,
+} from "reactstrap";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import AuthService from "../../services/authService";
 import "/src/styles/Clientes.css";
 
-const API_URL = import.meta.env.VITE_API_URL;  // Definir la URL de la API
+const API_URL = import.meta.env.VITE_API_URL;
 
 const formatDate = (date) => {
   if (!date) return "";
-  const [year, month, day] = date.split(' ')[0].split('-');
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  const [year, month, day] = date.split(" ")[0].split("-");
+  return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 };
 
-const isValidDUI = (formattedDui) => formattedDui.length === 10 && formattedDui.match(/^0\d{7}-\d{1}$/);
-const isValidTelefono = (telefono) => telefono.length === 9 && telefono.match(/^\d{4}-\d{4}$/);
-const isValidNIT = (nit) => nit.length === 14 && nit.match(/^\d{4}-\d{6}-\d{3}-\d$/);
+const isValidDUI = (formattedDui) =>
+  formattedDui.length === 10 && formattedDui.match(/^0\d{7}-\d{1}$/);
+const isValidTelefono = (telefono) =>
+  telefono.length === 9 && telefono.match(/^\d{4}-\d{4}$/);
+const isValidNIT = (nit) =>
+  nit.length === 14 && nit.match(/^\d{4}-\d{6}-\d{3}-\d$/);
 
 const generateErrorMessage = (errorData) => {
   let errorMessage = "Error al guardar los cambios.";
@@ -52,7 +67,7 @@ const ModalEditarCliente = ({
   clienteEditado,
   setClienteEditado,
   guardarCambiosCliente,
-  setModalEditar
+  setModalEditar,
 }) => {
   const [telefonoError, setTelefonoError] = useState("");
   const [error, setError] = useState("");
@@ -60,10 +75,9 @@ const ModalEditarCliente = ({
   const [isTelefonoValid, setIsTelefonoValid] = useState(true);
   const [isNitValid, setIsNitValid] = useState(true);
 
-  // Estados relacionados con el giro
   const [giros, setGiros] = useState([]);
   const [filteredGiros, setFilteredGiros] = useState([]);
-  const [searchGiro, setSearchGiro] = useState(""); // Mostrar el giro seleccionado inicialmente
+  const [searchGiro, setSearchGiro] = useState("");
   const [selectedGiro, setSelectedGiro] = useState(clienteEditado?.giro || "");
 
   useEffect(() => {
@@ -71,23 +85,25 @@ const ModalEditarCliente = ({
       const esPersonaJuridica = clienteEditado.id_tipo_persona === 2;
       setIsDuiValid(!esPersonaJuridica || isValidDUI(clienteEditado.dui || ""));
       setIsTelefonoValid(isValidTelefono(clienteEditado.telefono || ""));
-      setIsNitValid(esPersonaJuridica || !clienteEditado.nit || isValidNIT(clienteEditado.nit || ""));
+      setIsNitValid(
+        esPersonaJuridica ||
+          !clienteEditado.nit ||
+          isValidNIT(clienteEditado.nit || "")
+      );
       setError("");
 
-      // Aquí estableces el valor inicial del giro
-      setSearchGiro(clienteEditado.giro || ""); 
+      setSearchGiro(clienteEditado.giro || "");
       setSelectedGiro(clienteEditado.giro || "");
     }
   }, [clienteEditado]);
 
-  // Cargar giros desde la API usando el token de autenticación
   useEffect(() => {
     const cargarGiros = async () => {
       try {
-        const token = AuthService.getCurrentUser();  // Obtener el token desde el servicio de autenticación
+        const token = AuthService.getCurrentUser();
         const response = await axios.get(`${API_URL}/dropdown/giros`, {
           headers: {
-            Authorization: `Bearer ${token}`,  // Añadir el token en los headers
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -96,12 +112,15 @@ const ModalEditarCliente = ({
         if (Array.isArray(response.data.actividadEconomica)) {
           setGiros(response.data.actividadEconomica);
         } else {
-          console.error("Formato inesperado de la respuesta de giros:", response.data);
-          setGiros([]);  // En caso de error, asignar un array vacío
+          console.error(
+            "Formato inesperado de la respuesta de giros:",
+            response.data
+          );
+          setGiros([]);
         }
       } catch (error) {
         console.error("Error al cargar los giros", error);
-        setGiros([]);  // Asignar un array vacío en caso de error
+        setGiros([]);
       }
     };
 
@@ -112,7 +131,7 @@ const ModalEditarCliente = ({
     setSelectedGiro(`${giro.st_codigo} - ${giro.st_descripcion}`);
     setSearchGiro(giro.st_descripcion);
     setClienteEditado((prev) => ({ ...prev, giro: giro.st_descripcion }));
-    setFilteredGiros([]);  // Limpiar los giros después de la selección
+    setFilteredGiros([]);
   };
 
   const handleSearchGiro = (e) => {
@@ -120,9 +139,10 @@ const ModalEditarCliente = ({
     setSearchGiro(searchTerm);
 
     if (Array.isArray(giros) && searchTerm.length > 0) {
-      const filtered = giros.filter((giro) =>
-        giro.st_codigo.toString().toLowerCase().includes(searchTerm) ||  // Convertir st_codigo a string antes de usar toLowerCase
-        giro.st_descripcion.toLowerCase().includes(searchTerm)
+      const filtered = giros.filter(
+        (giro) =>
+          giro.st_codigo.toString().toLowerCase().includes(searchTerm) ||
+          giro.st_descripcion.toLowerCase().includes(searchTerm)
       );
       setFilteredGiros(filtered);
     } else {
@@ -137,13 +157,13 @@ const ModalEditarCliente = ({
   };
 
   const handleDuiChange = (e) => {
-    if (clienteEditado?.id_tipo_persona === 2) return; // No permitir cambios en el DUI si es persona jurídica
+    if (clienteEditado?.id_tipo_persona === 2) return;
 
     let duiValue = e.target.value.replace(/[^\d]/g, "");
     if (duiValue.length > 9) {
       duiValue = duiValue.slice(0, 8) + "-" + duiValue.slice(8, 9);
     }
-    duiValue = duiValue.startsWith('0') ? duiValue : '0' + duiValue;
+    duiValue = duiValue.startsWith("0") ? duiValue : "0" + duiValue;
     setClienteEditado((prev) => ({ ...prev, dui: duiValue }));
 
     const isValid = isValidDUI(duiValue);
@@ -156,7 +176,7 @@ const ModalEditarCliente = ({
   };
 
   const handleNitChange = (e) => {
-    if (clienteEditado?.id_tipo_persona === 1) return; // No permitir cambios en el NIT si es persona natural
+    if (clienteEditado?.id_tipo_persona === 1) return;
 
     let nitValue = e.target.value.replace(/[^\d]/g, "");
 
@@ -192,7 +212,8 @@ const ModalEditarCliente = ({
       setIsTelefonoValid(true);
 
       if (telefonoValue.length > 4) {
-        telefonoValue = telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
+        telefonoValue =
+          telefonoValue.slice(0, 4) + "-" + telefonoValue.slice(4);
       }
 
       setClienteEditado((prev) => ({ ...prev, telefono: telefonoValue }));
@@ -216,7 +237,10 @@ const ModalEditarCliente = ({
   };
 
   const handleNombreComercialChange = (e) => {
-    setClienteEditado((prev) => ({ ...prev, nombre_comercial: e.target.value }));
+    setClienteEditado((prev) => ({
+      ...prev,
+      nombre_comercial: e.target.value,
+    }));
   };
 
   const handleDireccionChange = (e) => {
@@ -233,18 +257,24 @@ const ModalEditarCliente = ({
 
     if (clienteEditado?.id_tipo_persona === 2) {
       if (!isNitValid) {
-        setError("El NIT ingresado no es válido. Por favor, revisa el formato.");
+        setError(
+          "El NIT ingresado no es válido. Por favor, revisa el formato."
+        );
         return;
       }
     } else {
       if (!isDuiValid) {
-        setError("El DUI ingresado no es válido. Por favor, revisa el formato.");
+        setError(
+          "El DUI ingresado no es válido. Por favor, revisa el formato."
+        );
         return;
       }
     }
 
     if (!isTelefonoValid) {
-      setError("El teléfono ingresado no es válido. Por favor, revisa el formato.");
+      setError(
+        "El teléfono ingresado no es válido. Por favor, revisa el formato."
+      );
       return;
     }
 
@@ -261,9 +291,11 @@ const ModalEditarCliente = ({
 
   const esPersonaJuridica = clienteEditado?.id_tipo_persona === 2;
   const currentYear = new Date().getFullYear();
-  const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const currentMonth = String(new Date().getMonth() + 1).padStart(2, "0");
   const minDate = `${currentYear}-${currentMonth}-01`;
-  const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
+  const maxDate = new Date(currentYear, new Date().getMonth() + 1, 0)
+    .toISOString()
+    .split("T")[0];
 
   return (
     <Modal
@@ -271,8 +303,11 @@ const ModalEditarCliente = ({
       toggle={() => setModalEditar(false)}
       size="lg"
       className="modal-custom"
+      fade={false} // Desactivar la animación de fade
     >
-      <ModalHeader toggle={() => setModalEditar(false)}>Editar Cliente</ModalHeader>
+      <ModalHeader toggle={() => setModalEditar(false)}>
+        Editar Cliente
+      </ModalHeader>
       <ModalBody>
         <form onSubmit={handleSubmit}>
           <Row>
@@ -283,7 +318,12 @@ const ModalEditarCliente = ({
                   type="text"
                   id="nombre"
                   value={clienteEditado ? clienteEditado.nombre : ""}
-                  onChange={(e) => setClienteEditado({ ...clienteEditado, nombre: e.target.value })}
+                  onChange={(e) =>
+                    setClienteEditado({
+                      ...clienteEditado,
+                      nombre: e.target.value,
+                    })
+                  }
                 />
               </FormGroup>
             </Col>
@@ -294,7 +334,12 @@ const ModalEditarCliente = ({
                   type="text"
                   id="apellido"
                   value={clienteEditado ? clienteEditado.apellido : ""}
-                  onChange={(e) => setClienteEditado({ ...clienteEditado, apellido: e.target.value })}
+                  onChange={(e) =>
+                    setClienteEditado({
+                      ...clienteEditado,
+                      apellido: e.target.value,
+                    })
+                  }
                 />
               </FormGroup>
             </Col>
@@ -362,7 +407,9 @@ const ModalEditarCliente = ({
                     <Input
                       type="text"
                       id="nombre_empresa"
-                      value={clienteEditado ? clienteEditado.nombre_empresa : ""}
+                      value={
+                        clienteEditado ? clienteEditado.nombre_empresa : ""
+                      }
                       onChange={handleNombreEmpresaChange}
                     />
                   </FormGroup>
@@ -373,7 +420,9 @@ const ModalEditarCliente = ({
                     <Input
                       type="text"
                       id="nombre_comercial"
-                      value={clienteEditado ? clienteEditado.nombre_comercial : ""}
+                      value={
+                        clienteEditado ? clienteEditado.nombre_comercial : ""
+                      }
                       onChange={handleNombreComercialChange}
                     />
                   </FormGroup>
@@ -385,21 +434,24 @@ const ModalEditarCliente = ({
                       <Input
                         type="text"
                         id="searchGiro"
-                        value={searchGiro}  // Aquí se muestra el valor del giro del cliente o el valor buscado
+                        value={searchGiro}
                         onChange={handleSearchGiro}
                         placeholder="Buscar giro por código o descripción"
                       />
                       {searchGiro && (
                         <Button
                           className="position-absolute top-0 end-0 btn-sm"
-                          style={{ marginTop: '5px' }}
+                          style={{ marginTop: "5px" }}
                           onClick={clearGiroSelection}
                         >
                           X
                         </Button>
                       )}
                       {filteredGiros.length > 0 && (
-                        <div className="dropdown-menu show" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                        <div
+                          className="dropdown-menu show"
+                          style={{ maxHeight: "200px", overflowY: "auto" }}
+                        >
                           {filteredGiros.map((giro) => (
                             <Button
                               key={giro.sk_actividadeco}
@@ -433,7 +485,11 @@ const ModalEditarCliente = ({
                 <Input
                   type="date"
                   id="fecha_registro"
-                  value={clienteEditado ? formatDate(clienteEditado.fecha_registro) : ""}
+                  value={
+                    clienteEditado
+                      ? formatDate(clienteEditado.fecha_registro)
+                      : ""
+                  }
                   onChange={handleFechaRegistroChange}
                   min={minDate}
                   max={maxDate}
@@ -444,8 +500,12 @@ const ModalEditarCliente = ({
         </form>
       </ModalBody>
       <ModalFooter>
-        <Button color="secondary" onClick={() => setModalEditar(false)}>Cancelar</Button>
-        <Button color="primary" onClick={handleSubmit}>Guardar Cambios</Button>
+        <Button color="secondary" onClick={() => setModalEditar(false)}>
+          Cancelar
+        </Button>
+        <Button color="primary" onClick={handleSubmit}>
+          Guardar Cambios
+        </Button>
       </ModalFooter>
     </Modal>
   );
@@ -465,11 +525,11 @@ ModalEditarCliente.propTypes = {
     direccion: PropTypes.string,
     fecha_registro: PropTypes.string,
     nombre: PropTypes.string,
-    apellido: PropTypes.string
+    apellido: PropTypes.string,
   }),
   setClienteEditado: PropTypes.func.isRequired,
   guardarCambiosCliente: PropTypes.func.isRequired,
-  setModalEditar: PropTypes.func.isRequired
+  setModalEditar: PropTypes.func.isRequired,
 };
 
 export default ModalEditarCliente;

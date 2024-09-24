@@ -55,6 +55,8 @@ export default function GenerarOrdenExpress() {
   const [currentStep, setCurrentStep] = useState(4);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressChanged, setAddressChanged] = useState(false);
+  const [useRecoleccion, setUseRecoleccion] = useState(false);
+  const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,13 +74,24 @@ export default function GenerarOrdenExpress() {
         const storedAddress = JSON.parse(
           localStorage.getItem("selectedAddress") || "{}"
         );
+        const storedDireccionRecoleccion = JSON.parse(
+          localStorage.getItem("direccionRecoleccion") || "{}"
+        );
+        const storedUseRecoleccion = JSON.parse(
+          localStorage.getItem("useRecoleccion") || "false"
+        );
+
         setSelectedAddress(storedAddress);
+        setDireccionRecoleccion(storedDireccionRecoleccion);
+        setUseRecoleccion(storedUseRecoleccion);
 
         setFormData((prevState) => ({
           ...prevState,
           nombre_contacto: storedAddress.nombre_contacto || "",
           telefono: storedAddress.telefono || "",
-          id_direccion: Number(storedAddress.id) || "",
+          id_direccion: useRecoleccion
+            ? Number(storedDireccionRecoleccion.id)
+            : Number(storedAddress.id),
           total_pagar: location.state?.totalPrice || 0,
           detalles:
             location.state?.detalles?.map((detalle) => ({
@@ -89,7 +102,9 @@ export default function GenerarOrdenExpress() {
               id_estado_paquete: 1,
               id_tamano_paquete: Number(detalle.tamano_paquete),
               id_tipo_entrega: 1,
-              id_direccion: Number(storedAddress.id),
+              id_direccion:
+                Number(location.state?.direccionRecoleccion?.id) ||
+                Number(storedAddress.id),
               precio: Number(detalle.precio),
               fecha_envio: detalle.fecha_envio
                 ? new Date(detalle.fecha_envio).toISOString().split("T")[0] +
@@ -108,6 +123,8 @@ export default function GenerarOrdenExpress() {
             })) || [],
           ...location.state?.commonData,
         }));
+
+        setUseRecoleccion(location.state?.useRecoleccion || false);
 
         console.log("Datos iniciales del formulario:", formData);
       } catch (error) {
@@ -261,7 +278,9 @@ export default function GenerarOrdenExpress() {
         id_cliente: Number(formData.id_cliente),
         nombre_contacto: formData.nombre_contacto,
         telefono: formData.telefono,
-        id_direccion: Number(formData.id_direccion),
+        id_direccion: useRecoleccion
+          ? Number(direccionRecoleccion.id)
+          : Number(selectedAddress.id),
         id_tipo_pago: Number(formData.id_tipo_pago),
         total_pagar: Number(formData.total_pagar),
         costo_adicional: Number(formData.costo_adicional) || 0,
@@ -280,7 +299,8 @@ export default function GenerarOrdenExpress() {
           fecha_entrega: detalle.fecha_entrega,
           descripcion_contenido: detalle.descripcion_contenido,
           id_tipo_entrega: 2, // Mantenemos 2 para express
-          id_direccion: Number(detalle.id_direccion),
+          id_direccion: Number(selectedAddress.id),
+          id_direccion_entrega: Number(selectedAddress.id),
           instrucciones_entrega: detalle.instrucciones_entrega,
           descripcion: detalle.descripcion,
           precio: Number(detalle.precio),
@@ -441,7 +461,7 @@ export default function GenerarOrdenExpress() {
                           type="text"
                           name="id_estado_paquete"
                           id="id_estado_paquete"
-                          value="En Recepción"
+                          value="En Proceso"
                           disabled
                         />
                       </FormGroup>

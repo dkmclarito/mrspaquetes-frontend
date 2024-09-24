@@ -475,7 +475,7 @@ export default function DatosPaquetePreOrden() {
                         type="text"
                         name="id_estado_paquete"
                         id="id_estado_paquete"
-                        value="En Recepción"
+                        value="En Espera de Recolección"
                         disabled
                       />
                     </FormGroup>

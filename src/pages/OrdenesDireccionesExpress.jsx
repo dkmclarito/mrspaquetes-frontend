@@ -24,7 +24,6 @@ import {
   faBook,
   faDollarSign,
 } from "@fortawesome/free-solid-svg-icons";
-import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -43,8 +42,10 @@ export default function OrdenesDireccionesExpress() {
   const [departamentos, setDepartamentos] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [selectedDireccion, setSelectedDireccion] = useState(null);
+  const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const [cliente, setCliente] = useState(null);
+  const [useRecoleccion, setUseRecoleccion] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -58,7 +59,6 @@ export default function OrdenesDireccionesExpress() {
 
       const direccionesWithDetails = await Promise.all(
         direccionesData.map(async (direccion) => {
-          // Obtener los municipios relacionados con el departamento
           const municipiosResponse = await axios.get(
             `${API_URL}/dropdown/get_municipio/${direccion.id_departamento}`,
             {
@@ -69,7 +69,6 @@ export default function OrdenesDireccionesExpress() {
             (m) => m.id === direccion.id_municipio
           );
 
-          // Obtener el nombre del departamento desde el endpoint
           const departamentoResponse = await axios.get(
             `${API_URL}/dropdown/get_departamentos`,
             {
@@ -79,10 +78,6 @@ export default function OrdenesDireccionesExpress() {
           const departamento = departamentoResponse.data.find(
             (d) => d.id === direccion.id_departamento
           );
-
-          // Log para verificar
-          console.log("Municipio encontrado:", municipio);
-          console.log("Departamento encontrado:", departamento);
 
           return {
             ...direccion,
@@ -116,7 +111,6 @@ export default function OrdenesDireccionesExpress() {
         setCliente(responseCliente.data.cliente || {});
         setDepartamentos(responseDepartamentos.data || []);
 
-        // Fetch direcciones after setting departamentos
         await fetchDirecciones();
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -213,20 +207,33 @@ export default function OrdenesDireccionesExpress() {
     setSelectedDireccion(direccion);
   };
 
+  const handleSeleccionarDireccionRecoleccion = (direccion) => {
+    setDireccionRecoleccion(direccion);
+  };
+
   const handleContinuar = () => {
     if (selectedDireccion) {
       localStorage.setItem(
         "selectedAddress",
         JSON.stringify(selectedDireccion)
       );
+      localStorage.setItem(
+        "direccionRecoleccion",
+        JSON.stringify(
+          useRecoleccion ? direccionRecoleccion : selectedDireccion
+        )
+      );
+      localStorage.setItem("useRecoleccion", JSON.stringify(useRecoleccion));
       localStorage.setItem("clienteData", JSON.stringify(cliente));
       navigate(`/DatosPaqueteExpress/${idCliente}`);
     } else {
-      toast.warn("Por favor, seleccione una dirección antes de continuar");
+      toast.warn(
+        "Por favor, seleccione una dirección de entrega antes de continuar"
+      );
     }
   };
 
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep] = useState(2);
   const steps = [
     { step: 1, label: "", icon: faSearch },
     { step: 2, label: "", icon: faMapMarkerAlt },
@@ -262,8 +269,6 @@ export default function OrdenesDireccionesExpress() {
               </NavItem>
             ))}
           </Nav>
-          {/*<Breadcrumbs breadcrumbItem="Seleccionar Cliente" />*/}
-          {/*<Progress value={(currentStep / steps.length) * 100} color="primary" />*/}
           <Progress className="custom-progress barra-pasos" value={0.5 * 100} />
           <br></br>
         </Col>
@@ -333,15 +338,15 @@ export default function OrdenesDireccionesExpress() {
                       onChange={(e) =>
                         setNuevaDireccion((prev) => ({
                           ...prev,
-                          id_departamento: e.target.value, // Actualiza el id_departamento
-                          id_municipio: "", // Limpia el municipio al cambiar el departamento
+                          id_departamento: e.target.value,
+                          id_municipio: "",
                         }))
                       }
                       aria-label="Seleccione un departamento"
                     >
                       <option value="">Seleccione un departamento</option>
                       {departamentos
-                        .filter((d) => [12].includes(d.id)) // Filtra los departamentos para incluir solo los IDs deseados
+                        .filter((d) => [12].includes(d.id))
                         .map((departamento) => (
                           <option key={departamento.id} value={departamento.id}>
                             {departamento.nombre}
@@ -349,7 +354,6 @@ export default function OrdenesDireccionesExpress() {
                         ))}
                     </Input>
                   </FormGroup>
-
                   <FormGroup>
                     <Label for="municipio">Municipio:</Label>
                     <Input
@@ -476,23 +480,110 @@ export default function OrdenesDireccionesExpress() {
               </Table>
               {selectedDireccion && (
                 <div>
-                  <h5>Dirección Seleccionada:</h5>
+                  <h5>Dirección de Entrega Seleccionada:</h5>
                   <p>
                     {selectedDireccion.direccion || "Dirección no disponible"}
                   </p>
-                  <Button
-                    className="btnGuardarDatosPaquete"
-                    color="success"
-                    onClick={handleContinuar}
-                  >
-                    Continuar con la Orden
-                  </Button>
+                  <FormGroup check>
+                    <Label check>
+                      <Input
+                        type="checkbox"
+                        onChange={() => setUseRecoleccion(!useRecoleccion)}
+                        checked={useRecoleccion}
+                      />{" "}
+                      ¿Desea seleccionar una dirección de recolección diferente?
+                    </Label>
+                  </FormGroup>
                 </div>
               )}
             </Col>
           </Row>
         </CardBody>
       </Card>
+      {useRecoleccion && selectedDireccion && (
+        <Card>
+          <CardBody>
+            <h4>Seleccionar Dirección de Recolección</h4>
+            <Table responsive>
+              <thead>
+                <tr>
+                  <th>Dirección</th>
+                  <th>Referencia</th>
+                  <th>Departamento</th>
+                  <th>Municipio</th>
+                  <th>Nombre de Contacto</th>
+                  <th>Teléfono</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {direcciones.length > 0 ? (
+                  direcciones
+                    .filter(
+                      (direccion) =>
+                        direccion.id_departamento === 12 &&
+                        direccion.id_municipio === 215 &&
+                        direccion !== selectedDireccion
+                    )
+                    .map((direccion, index) => (
+                      <tr key={index}>
+                        <td>
+                          {direccion.direccion || "Dirección no disponible"}
+                        </td>
+                        <td>{direccion.referencia || "N/A"}</td>
+                        <td>{direccion.departamento_nombre}</td>
+                        <td>{direccion.municipio_nombre}</td>
+                        <td>{direccion.nombre_contacto || "No disponible"}</td>
+                        <td>{direccion.telefono || "No disponible"}</td>
+                        <td>
+                          <Button
+                            color={
+                              direccionRecoleccion === direccion
+                                ? "success"
+                                : "primary"
+                            }
+                            onClick={() =>
+                              handleSeleccionarDireccionRecoleccion(direccion)
+                            }
+                          >
+                            {direccionRecoleccion === direccion
+                              ? "Seleccionada"
+                              : "Seleccionar"}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center">
+                      No hay direcciones disponibles para recolección
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+            {direccionRecoleccion && (
+              <div>
+                <h5>Dirección de Recolección Seleccionada:</h5>
+                <p>
+                  {direccionRecoleccion.direccion || "Dirección no disponible"}
+                </p>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+      )}
+      {selectedDireccion && (
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <Button
+            className="btnGuardarDatosPaquete"
+            color="success"
+            onClick={handleContinuar}
+          >
+            Continuar con la Orden
+          </Button>
+        </div>
+      )}
     </Container>
   );
 }
