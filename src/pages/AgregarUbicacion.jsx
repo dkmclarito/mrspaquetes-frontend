@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import jsQR from "jsqr";
+import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -23,6 +24,7 @@ const AgregarUbicacionPaquete = () => {
   const canvasRefQR = useRef(null);
   const videoRefBarcode = useRef(null);
   const canvasRefBarcode = useRef(null);
+  const codeReaderRef = useRef(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -39,12 +41,21 @@ const AgregarUbicacionPaquete = () => {
       setUbicaciones((ubicacionesResponse.data || []).filter(ubicacion => !ubicacion.paquete_asignado));
     } catch (error) {
       console.error("Error al obtener datos:", error);
-      toast.error("Error al cargar los datos");
+      //toast.error("Error al cargar los datos");
     }
   }, [token]);
 
   useEffect(() => {
     fetchData();
+    const hints = new Map();
+    const formats = [BarcodeFormat.QR_CODE, BarcodeFormat.CODE_128, BarcodeFormat.EAN_13, BarcodeFormat.CODE_39];
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, formats);
+    codeReaderRef.current = new BrowserMultiFormatReader(hints);
+    return () => {
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset();
+      }
+    };
   }, [fetchData]);
 
   const iniciarEscaneo = useCallback((tipo) => {
@@ -58,6 +69,7 @@ const AgregarUbicacionPaquete = () => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
             videoRef.current.play();
+            console.log(`Cámara activada para escaneo de ${tipo}`);
           }
         })
         .catch(function(error) {
@@ -75,7 +87,18 @@ const AgregarUbicacionPaquete = () => {
     if (videoRef.current && videoRef.current.srcObject) {
       videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     }
+    console.log(`Escaneo de ${tipo} detenido`);
   }, []);
+
+  const validarCodigoBarras = (codigo) => {
+    console.log("Validando código:", codigo);
+    if (/^B\d+P\d+E\d+AN\d+_[A-Z]+$/.test(codigo) || /^\d+$/.test(codigo)) {
+      console.log("Código válido");
+      return true;
+    }
+    console.log("Código no válido");
+    return false;
+  };
 
   const escanearFrame = useCallback((tipo) => {
     const videoRef = tipo === 'QR' ? videoRefQR : videoRefBarcode;
@@ -86,24 +109,48 @@ const AgregarUbicacionPaquete = () => {
     if (videoRef.current && canvasRef.current && escaneando) {
       const canvas = canvasRef.current;
       const video = videoRef.current;
-      canvas.height = video.videoHeight;
-      canvas.width = video.videoWidth;
-      const ctx = canvas.getContext('2d', { willReadFrequently: true });
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height, {
-        inversionAttempts: "dontInvert",
-      });
 
-      if (code) {
-        console.log(`Código ${tipo} detectado:`, code.data);
-        if (tipo === 'QR' || (tipo === 'Barcode' && /^B\d+P\d+E\d+AN\d+_[A-Z]+$/.test(code.data))) {
-          setCodigo(code.data);
-          detenerEscaneo(tipo);
-          toast.success(`Código ${tipo} escaneado con éxito`);
-        } else if (tipo === 'Barcode') {
-          console.log("Código de barras no válido:", code.data);
-          toast.warning("Código de barras no válido, intente de nuevo");
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        console.log("Video no listo aún");
+        return;
+      }
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        if (tipo === 'QR') {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+          });
+
+          if (code) {
+            console.log("Código QR detectado:", code.data);
+            setCodigo(code.data);
+            detenerEscaneo(tipo);
+           // toast.success("Código QR escaneado con éxito");
+          }
+        } else if (codeReaderRef.current) {
+          codeReaderRef.current.decodeOnce(video)
+            .then((result) => {
+              const codigoDetectado = result.getText();
+              console.log("Código de barras detectado:", codigoDetectado);
+              if (validarCodigoBarras(codigoDetectado)) {
+                setCodigo(codigoDetectado);
+                detenerEscaneo(tipo);
+                //toast.success("Código de barras escaneado con éxito");
+              } else {
+                console.log("Código de barras no válido:", codigoDetectado);
+                toast.warning("Código de barras no válido, intente de nuevo");
+              }
+            })
+            .catch((err) => {
+              console.log("Error en decodeOnce:", err);
+            });
         }
       }
     }
@@ -160,7 +207,10 @@ const AgregarUbicacionPaquete = () => {
       }
 
       toast.success("¡Ubicación registrada con éxito!", {
-        onClose: () => navigate('/GestionUbicacion'),
+        autoClose: 3000,
+        onClose: () => {
+          navigate('/GestionUbicacion');
+        }
       });
       
       setCodigoQRPaquete("");
@@ -177,7 +227,7 @@ const AgregarUbicacionPaquete = () => {
         <CardBody>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col md={6}>
+              <Col md={12}>
                 <FormGroup>
                   <Label for="codigoQR">Código QR del Paquete</Label>
                   <div className="d-flex">
@@ -188,6 +238,7 @@ const AgregarUbicacionPaquete = () => {
                       onChange={e => setCodigoQRPaquete(e.target.value)}
                       placeholder="Escanea el código QR"
                       required
+                      style={{height: '80%', width: '70%'}}
                     />
                     <Button color="primary" onClick={() => iniciarEscaneo('QR')} disabled={escaneandoQR} style={{ marginLeft: '10px' }}>
                       Escanear QR
@@ -195,7 +246,7 @@ const AgregarUbicacionPaquete = () => {
                   </div>
                 </FormGroup>
               </Col>
-              <Col md={6}>
+              <Col md={12}>
                 <FormGroup>
                   <Label for="codigoUbicacion">Código Nomenclatura Ubicación</Label>
                   <div className="d-flex">
@@ -206,6 +257,7 @@ const AgregarUbicacionPaquete = () => {
                       onChange={e => setCodigoNomenclaturaUbicacion(e.target.value)}
                       placeholder="Escanea el código de barras"
                       required
+                      style={{height: '80%', width: '70%'}}
                     />
                     <Button color="primary" onClick={() => iniciarEscaneo('Barcode')} disabled={escaneandoBarcode} style={{ marginLeft: '10px' }}>
                       Escanear Código de Barras
