@@ -121,7 +121,7 @@ const App = () => {
 
           <Route
             element={
-              <PrivateRoute allowedRoles={["admin", "acompanante", "cliente"]} />
+              <PrivateRoute allowedRoles={["admin", "acompanante", "conductor", "cliente", "operador_de_almacen"]} />
             }
           >
             <Route element={<VerticalLayout />}>
@@ -346,11 +346,10 @@ const App = () => {
               <Route
                 element={
                   <PrivateRoute
-                    allowedRoles={["admin", "acompanante", "cliente"]}
+                    allowedRoles={["admin", "acompanante","conductor", "operador_de_almacen"]}
                   />
                 }
               >
-                <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
                 <Route
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}
@@ -443,8 +442,11 @@ const App = () => {
               />
               <Route path="/reportes" element={<Reportes />} />
 
-              <Route element={<PrivateRoute allowedRoles={["cliente"]} />}>
-                <Route path="/PerfilCliente" element={<AgregarDatos />} />
+              <Route element={<PrivateRoute allowedRoles={["conductor", "acompanante"]} />}>
+                <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
+              </Route>
+              <Route element={<PrivateRoute allowedRoles={["operador_de_almacen"]} />}>
+                <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
               </Route>
             </Route>
           </Route>
