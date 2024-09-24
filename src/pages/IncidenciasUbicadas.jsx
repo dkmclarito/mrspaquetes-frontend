@@ -74,7 +74,7 @@ const IncidenciasUbicadas = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Incidencias" breadcrumbItem="Incidencias Ubicadas" />
+        <Breadcrumbs title="Gestión de Paquetes con incidencias" breadcrumbItem="Paquetes Ubicados" />
         <Row>
           <Col lg={12}>
             <Card>

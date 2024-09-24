@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import PropTypes from "prop-types";
-import { Button, Table, Tooltip } from "reactstrap";
+import { Button, Table, Tooltip, Input, Label } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt, faEye, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import "/src/styles/usuarios.css";
@@ -19,6 +19,11 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
   const [tooltipOpen, setTooltipOpen] = useState({});
   const [modalUbicar, setModalUbicar] = useState({ open: false, paqueteUuid: null }); // Modal state
   const navigate = useNavigate();
+
+  const [busqueda, setBusqueda] = useState(""); // Filtro búsqueda
+  const [estadoFiltro, setEstadoFiltro] = useState(""); // Filtro estado
+  const [tipoFiltro, setTipoFiltro] = useState(""); // Filtro tipo de incidencia
+  const [tiposIncidencia, setTiposIncidencia] = useState([]); // Tipos de incidencia
 
   // Obtener ID del usuario logueado
   const userId = localStorage.getItem("userId");
@@ -53,7 +58,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
         if (response.data && Array.isArray(response.data.data)) {
           let incidenciasFiltradas;
 
-          if (usuarioLogueado?.role_name === 'conductor') {
+          if (usuarioLogueado?.role_name === 'acompanante') {
             incidenciasFiltradas = response.data.data.filter(
               (incidencia) => incidencia.id_usuario_asignado === usuarioLogueado?.id_empleado
             );
@@ -62,7 +67,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
               (incidencia) => !incidencia.usuario_asignado
             );
           } else {
-            incidenciasFiltradas = []; // Por defecto, ninguna incidencia si no es admin o conductor
+            incidenciasFiltradas = []; // Por defecto, ninguna incidencia si no es admin o acompañante
           }
 
           setIncidenciasAsignadas(incidenciasFiltradas);
@@ -111,6 +116,24 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
       }
     };
     fetchPaquetesUbicados();
+  }, []);
+
+  // Obtener tipos de incidencia
+  useEffect(() => {
+    const fetchTiposIncidencia = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/dropdown/get_tipo_incidencia`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data && Array.isArray(response.data.tipo_incidencia)) {
+          setTiposIncidencia(response.data.tipo_incidencia);
+        }
+      } catch (error) {
+        console.error("Error al obtener tipos de incidencia:", error);
+      }
+    };
+    fetchTiposIncidencia();
   }, []);
 
   const getUUIDByPaqueteId = (id_paquete) => {
@@ -191,7 +214,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
           <Button
             color="primary"
             size="sm"
-            onClick={() => navigate(`/AsignarUsuarioIncidencia/${incidencia.id}`)} 
+            onClick={() => navigate(`/AsignarUsuarioIncidencia/${incidencia.id}`)}
             style={{ marginLeft: '10px' }}
           >
             Asignar
@@ -237,16 +260,59 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
 
   const handleCloseModal = () => {
     setModalUbicar({ open: false, paqueteUuid: null });
-    // Refrescar la página después de ubicar un paquete
-   // window.location.reload();
   };
+
+  // Filtrado de incidencias
+  const incidenciasFiltradas = useMemo(() => {
+    return incidenciasAsignadas.filter(incidencia => {
+      const cumpleBusqueda = !busqueda ||
+        (incidencia.uuid && incidencia.uuid.toLowerCase().includes(busqueda.toLowerCase())) ||
+        (incidencia.usuario_reporta && incidencia.usuario_reporta.toLowerCase().includes(busqueda.toLowerCase()));
+      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro;
+      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro;
+
+      return cumpleBusqueda && cumpleEstado && cumpleTipo;
+    });
+  }, [incidenciasAsignadas, busqueda, estadoFiltro, tipoFiltro]);
 
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
-      <div className="d-flex justify-content-between mb-3">
-        <Button color="primary" onClick={() => navigate('/MisIncidencias')}>
-          Mis incidencias reportadas
-        </Button>
+  
+
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center" }}>
+    
+        <Label for="estadoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+          Estado:
+        </Label>
+        <Input
+          type="select"
+          id="estadoFiltro"
+          value={estadoFiltro}
+          onChange={(e) => setEstadoFiltro(e.target.value)}
+          style={{ width: "150px" }}
+        >
+          <option value="">Todos</option>
+          <option value="Abierta">Abierta</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Cerrada">Cerrada</option>
+        </Input>
+        <Label for="tipoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+          Tipo de Incidencia:
+        </Label>
+        <Input
+          type="select"
+          id="tipoFiltro"
+          value={tipoFiltro}
+          onChange={(e) => setTipoFiltro(e.target.value)}
+          style={{ width: "150px" }}
+        >
+          <option value="">Todos</option>
+          {tiposIncidencia.map(tipo => (
+            <option key={tipo.id} value={tipo.nombre}>
+              {tipo.nombre}
+            </option>
+          ))}
+        </Input>
       </div>
 
       <h5>Incidencias a dar solución</h5>
@@ -260,13 +326,15 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
             <th style={{ width: '10%' }} className="text-center">Estado</th>
             <th style={{ width: '20%' }} className="text-center">Empleado asignado</th>
             <th style={{ width: '10%' }} className="text-center">Usuario Reporta</th>
-            <th style={{ width: '20%' }} className="text-center">Solución</th>
+            {usuarioLogueado?.role_name === "acompanante" && (
+              <th style={{ width: '20%' }} className="text-center">Solución</th>
+            )}
             <th style={{ width: '15%' }} className="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {incidenciasAsignadas.length > 0 ? (
-            incidenciasAsignadas.map(incidencia => {
+          {incidenciasFiltradas.length > 0 ? (
+            incidenciasFiltradas.map(incidencia => {
               const uuid = getUUIDByPaqueteId(incidencia.id_paquete);
               return (
                 <tr key={incidencia.id}>
@@ -296,7 +364,9 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
                   <td style={{ width: '10%' }} className="text-center">{renderEstado(incidencia.estado)}</td>
                   <td style={{ width: '20%' }} className="text-center">{renderUsuarioAsignado(incidencia)}</td>
                   <td style={{ width: '10%' }} className="text-center">{incidencia.usuario_reporta}</td>
-                  <td style={{ width: '20%' }} className="text-center">{renderSolucion(incidencia)}</td>
+                  {usuarioLogueado?.role_name === "acompanante" && (
+                    <td style={{ width: '20%' }} className="text-center">{renderSolucion(incidencia)}</td>
+                  )}
                   <td style={{ width: '15%' }} className="text-center">
                     <div className="button-container">
                       <Link

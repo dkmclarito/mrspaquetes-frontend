@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import PropTypes from "prop-types";
-import { Button, Table, Tooltip } from "reactstrap";
+import { Button, Table, Tooltip, Input, Label } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt, faEye, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faCopy } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import "/src/styles/usuarios.css";
@@ -19,6 +19,10 @@ const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
   const [tooltipOpen, setTooltipOpen] = useState({});
   const [modalUbicar, setModalUbicar] = useState({ open: false, paqueteUuid: null }); 
   const navigate = useNavigate();
+
+  const [estadoFiltro, setEstadoFiltro] = useState(""); // Filtro de estado
+  const [tipoFiltro, setTipoFiltro] = useState(""); // Filtro de tipo de incidencia
+  const [tiposIncidencia, setTiposIncidencia] = useState([]); // Tipos de incidencia
 
   // Obtener ID del usuario logueado
   const userId = localStorage.getItem("userId");
@@ -101,6 +105,24 @@ const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
       }
     };
     fetchPaquetesUbicados();
+  }, []);
+
+  // Obtener tipos de incidencia
+  useEffect(() => {
+    const fetchTiposIncidencia = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/dropdown/get_tipo_incidencia`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.data && Array.isArray(response.data.tipo_incidencia)) {
+          setTiposIncidencia(response.data.tipo_incidencia);
+        }
+      } catch (error) {
+        console.error("Error al obtener tipos de incidencia:", error);
+      }
+    };
+    fetchTiposIncidencia();
   }, []);
 
   const getUUIDByPaqueteId = (id_paquete) => {
@@ -232,9 +254,56 @@ const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
     window.location.reload();
   };
 
+  // Filtrado de incidencias
+  const incidenciasFiltradas = useMemo(() => {
+    return incidenciasReportadas.filter(incidencia => {
+      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro;
+      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro;
+
+      // Filtrando incidencias por estado y tipo, excluyendo cerradas
+      return cumpleEstado && cumpleTipo && incidencia.estado !== "Cerrada";
+    });
+  }, [incidenciasReportadas, estadoFiltro, tipoFiltro]);
+
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <h5>Incidencias reportadas</h5>
+
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center" }}>
+        <Label for="estadoFiltro" style={{ marginRight: "10px" }}>
+          Estado:
+        </Label>
+        <Input
+          type="select"
+          id="estadoFiltro"
+          value={estadoFiltro}
+          onChange={(e) => setEstadoFiltro(e.target.value)}
+          style={{ width: "150px" }}
+        >
+          <option value="">Todos</option>
+          <option value="Abierta">Abierta</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="Cerrada">Cerrada</option>
+        </Input>
+        <Label for="tipoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
+          Tipo de Incidencia:
+        </Label>
+        <Input
+          type="select"
+          id="tipoFiltro"
+          value={tipoFiltro}
+          onChange={(e) => setTipoFiltro(e.target.value)}
+          style={{ width: "150px" }}
+        >
+          <option value="">Todos</option>
+          {tiposIncidencia.map(tipo => (
+            <option key={tipo.id} value={tipo.nombre}>
+              {tipo.nombre}
+            </option>
+          ))}
+        </Input>
+      </div>
+
       <Table striped className="table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
@@ -249,8 +318,8 @@ const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
           </tr>
         </thead>
         <tbody>
-          {incidenciasReportadas.length > 0 ? (
-            incidenciasReportadas.map(incidencia => {
+          {incidenciasFiltradas.length > 0 ? (
+            incidenciasFiltradas.map(incidencia => {
               const uuid = getUUIDByPaqueteId(incidencia.id_paquete);
               return (
                 <tr key={incidencia.id}>
@@ -280,7 +349,6 @@ const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
                   <td style={{ width: '10%' }} className="text-center">{renderEstado(incidencia.estado)}</td>
                   <td style={{ width: '20%' }} className="text-center">{renderUsuarioAsignado(incidencia)}</td>
                   <td style={{ width: '10%' }} className="text-center">{incidencia.usuario_reporta}</td>
-                
                   <td style={{ width: '15%' }} className="text-center">
                     <div className="button-container">
                       <Link
@@ -298,13 +366,12 @@ const TablaIncidencias2 = ({ eliminarIncidencia, toggleModalEditar }) => {
             })
           ) : (
             <tr>
-              <td colSpan="9" className="text-center">Sin incidencias reportadas.</td>
+              <td colSpan="8" className="text-center">Sin incidencias reportadas.</td>
             </tr>
           )}
         </tbody>
       </Table>
 
-      {/* Modal para ubicar paquete */}
       {modalUbicar.open && (
         <UbicarPaqueteModal
           isOpen={modalUbicar.open}
