@@ -196,7 +196,7 @@ const Dashboard = () => {
             </Card>
           </Col>
       </Row>
-<br></br>
+<br></br>{/*
           <Card>
           <CardBody style={{ textAlign: 'center' }}>
             <CardTitle tag="h4">Órdenes Mensuales</CardTitle>
@@ -234,7 +234,7 @@ const Dashboard = () => {
               </Col>          
             </Row>
           </CardBody>
-        </Card>
+        </Card>*/}
 
         <Row className="mt-4">
         <Col md="6">
