@@ -71,8 +71,13 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       setDireccionEntrega(direccionEntrega);
       setDireccionSeleccionada(direccionEntrega);
 
-      // Seleccionar la dirección de recolección (solo para preordenes)
-      if (orden.tipo_orden === "preorden") {
+      // Seleccionar la dirección de recolección para preórdenes y órdenes express con recolección
+      if (
+        orden.tipo_orden === "preorden" ||
+        (orden.tipo_orden === "orden" &&
+          orden.detalles[0].id_tipo_entrega === 2 &&
+          orden.id_direccion !== orden.detalles[0].id_direccion_entrega)
+      ) {
         const direccionRecoleccion = direcciones.find(
           (d) => d.id === orden.id_direccion
         );
@@ -150,6 +155,8 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+
+      // Actualizar dirección de entrega
       await axios.put(
         `${API_URL}/direcciones/${direccionSeleccionada.id}`,
         direccionSeleccionada,
@@ -157,7 +164,9 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (orden.tipo_orden === "preorden" && direccionRecoleccionSeleccionada) {
+
+      // Actualizar dirección de recolección si existe
+      if (direccionRecoleccionSeleccionada) {
         await axios.put(
           `${API_URL}/direcciones/${direccionRecoleccionSeleccionada.id}`,
           direccionRecoleccionSeleccionada,
@@ -166,10 +175,13 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           }
         );
       }
+
       toast.success("Dirección(es) actualizada(s) con éxito");
       actualizarOrden({
         direccion_emisor: direccionSeleccionada,
-        id_direccion: direccionSeleccionada.id,
+        id_direccion: direccionRecoleccionSeleccionada
+          ? direccionRecoleccionSeleccionada.id
+          : direccionSeleccionada.id,
         direccion_recoleccion: direccionRecoleccionSeleccionada
           ? direccionRecoleccionSeleccionada.id
           : null,
@@ -178,34 +190,31 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       setEditandoRecoleccion(false);
       fetchDirecciones();
     } catch (error) {
-      console.error("Error al actualizar la dirección:", error);
-      toast.error("Error al actualizar la dirección");
+      console.error("Error al actualizar la(s) dirección(es):", error);
+      toast.error("Error al actualizar la(s) dirección(es)");
     }
   };
 
   const seleccionarDireccion = async (direccion, esRecoleccion = false) => {
-    if (orden.tipo_orden === "preorden") {
-      if (esRecoleccion && direccion.id === direccionEntrega?.id) {
-        toast.error(
-          "La dirección de recolección no puede ser la misma que la de entrega"
-        );
-        return;
-      }
-      if (!esRecoleccion && direccion.id === direccionRecoleccion?.id) {
-        toast.error(
-          "La dirección de entrega no puede ser la misma que la de recolección"
-        );
-        return;
-      }
+    if (
+      (orden.tipo_orden === "preorden" ||
+        (orden.tipo_orden === "orden" &&
+          orden.detalles[0].id_tipo_entrega === 2)) &&
+      ((esRecoleccion && direccion.id === direccionEntrega?.id) ||
+        (!esRecoleccion && direccion.id === direccionRecoleccion?.id))
+    ) {
+      toast.error(
+        "La dirección de recolección no puede ser la misma que la de entrega"
+      );
+      return;
     }
 
     try {
       const token = localStorage.getItem("token");
-
       let nuevaOrden = { ...orden };
 
-      if (orden.tipo_orden === "preorden" && esRecoleccion) {
-        // Actualizar dirección de recolección para preórdenes
+      if (esRecoleccion) {
+        // Actualizar dirección de recolección
         nuevaOrden.id_direccion = direccion.id;
       } else {
         // Actualizar dirección de entrega en todos los detalles
@@ -213,11 +222,6 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           ...detalle,
           id_direccion_entrega: direccion.id,
         }));
-
-        // Para órdenes normales, actualizar también id_direccion
-        if (orden.tipo_orden === "orden") {
-          nuevaOrden.id_direccion = direccion.id;
-        }
 
         // Actualizar los detalles en el backend
         for (let detalle of nuevaOrden.detalles) {
@@ -233,11 +237,10 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       const dataToSend = {
         id_cliente: nuevaOrden.id_cliente,
         id_tipo_pago: nuevaOrden.id_tipo_pago,
-        id_direccion: nuevaOrden.id_direccion,
-        direccion_recoleccion:
-          orden.tipo_orden === "preorden" && esRecoleccion
-            ? direccion.id
-            : nuevaOrden.direccion_recoleccion,
+        id_direccion: esRecoleccion ? direccion.id : nuevaOrden.id_direccion,
+        direccion_recoleccion: esRecoleccion
+          ? direccion.id
+          : nuevaOrden.direccion_recoleccion,
         total_pagar: nuevaOrden.total_pagar,
         costo_adicional: nuevaOrden.costo_adicional,
         concepto: nuevaOrden.concepto,
@@ -256,7 +259,7 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
       );
 
       if (response.status === 200) {
-        if (orden.tipo_orden === "preorden" && esRecoleccion) {
+        if (esRecoleccion) {
           setDireccionRecoleccion(direccion);
           setDireccionRecoleccionSeleccionada(direccion);
         } else {
@@ -267,11 +270,11 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
         actualizarOrden(nuevaOrden);
 
         toast.success(
-          `Dirección de ${orden.tipo_orden === "preorden" && esRecoleccion ? "recolección" : "entrega"} actualizada con éxito`
+          `Dirección de ${esRecoleccion ? "recolección" : "entrega"} actualizada con éxito`
         );
       } else {
         toast.error(
-          `Error al actualizar la dirección de ${orden.tipo_orden === "preorden" && esRecoleccion ? "recolección" : "entrega"}`
+          `Error al actualizar la dirección de ${esRecoleccion ? "recolección" : "entrega"}`
         );
       }
     } catch (error) {
@@ -361,7 +364,10 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           </tbody>
         </Table>
 
-        {orden.tipo_orden === "preorden" && (
+        {(orden.tipo_orden === "preorden" ||
+          (orden.tipo_orden === "orden" &&
+            orden.detalles[0].id_tipo_entrega === 2 &&
+            orden.id_direccion !== orden.detalles[0].id_direccion_entrega)) && (
           <div>
             <h4>Direcciones de Recolección Disponibles</h4>
             <Table responsive>
@@ -478,7 +484,7 @@ const EditarDireccion = ({ orden, actualizarOrden }) => {
           </div>
         )}
 
-        {orden.tipo_orden === "preorden" && direccionRecoleccion && (
+        {direccionRecoleccion && (
           <div>
             <h4>Dirección de Recolección Seleccionada</h4>
             {editandoRecoleccion ? (

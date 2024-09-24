@@ -47,15 +47,18 @@ const EditarDetallesOrden = ({
       const primerDetalle = orden.detalles[0];
       setCommonData({
         fecha_envio: formatDate(primerDetalle.fecha_envio),
-        fecha_entrega_estimada: formatDate(primerDetalle.fecha_entrega),
-        fecha_entrega: formatDate(primerDetalle.fecha_entrega_estimada),
+        fecha_entrega_estimada: formatDate(
+          primerDetalle.fecha_entrega_estimada
+        ),
+        fecha_entrega: formatDate(primerDetalle.fecha_entrega),
         id_tipo_entrega: primerDetalle.id_tipo_entrega,
         instrucciones_entrega: primerDetalle.instrucciones_entrega,
-        id_estado_paquete: primerDetalle.id_estado_paquete,
+        id_estado_paquete: primerDetalle.id_estado_paquetes,
       });
 
       const paquetesFormateados = orden.detalles.map((detalle) => ({
         id: detalle.id,
+        id_paquete: detalle.id_paquete, // Asegúrate de incluir esto
         id_tipo_paquete: detalle.id_tipo_paquete,
         id_tamano_paquete: detalle.id_tamano_paquete,
         tipo_caja: detalle.tipo_caja,
@@ -318,17 +321,21 @@ const EditarDetallesOrden = ({
         }
       }
 
-      const updatedPaquetes = [...paquetes];
+      const updatedPaquetes = [];
 
       for (let i = 0; i < paquetes.length; i++) {
         const paquete = paquetes[i];
         try {
-          if (paquete.id) {
-            const updatedPaquete = await actualizarDetalle(paquete, token);
-            updatedPaquetes[i] = { ...paquete, ...updatedPaquete };
+          if (paquete.id_paquete) {
+            const result = await actualizarDetalle(paquete, token);
+            updatedPaquetes.push({
+              ...paquete,
+              ...result.paquete,
+              ...result.detalle,
+            });
           } else {
             const newPaquete = await crearNuevoDetalle(paquete, token);
-            updatedPaquetes[i] = { ...paquete, ...newPaquete };
+            updatedPaquetes.push({ ...paquete, ...newPaquete });
           }
         } catch (error) {
           console.error(
@@ -379,7 +386,6 @@ const EditarDetallesOrden = ({
           total_pagar: nuevoTotalPagar,
         });
 
-        // Llamar a la función de actualización proporcionada por el componente padre
         if (onOrdenActualizada) {
           onOrdenActualizada();
         }
@@ -397,33 +403,93 @@ const EditarDetallesOrden = ({
   };
 
   const actualizarDetalle = async (paquete, token) => {
-    const detalleActualizado = {
-      id_tipo_entrega: parseInt(commonData.id_tipo_entrega),
-      id_estado_paquetes: parseInt(commonData.id_estado_paquete),
-      id_direccion_entrega: orden.id_direccion,
-      instrucciones_entrega: commonData.instrucciones_entrega,
-      descripcion: paquete.descripcion_contenido,
-      precio: parseFloat(paquete.precio),
-      fecha_ingreso: commonData.fecha_envio,
-      fecha_entrega: commonData.fecha_entrega,
-      fecha_envio: commonData.fecha_envio,
-      fecha_entrega_estimada: commonData.fecha_entrega_estimada,
-    };
-
     try {
-      const response = await axios.put(
+      // Verificar si tenemos un ID de paquete válido
+      if (!paquete.id_paquete) {
+        throw new Error("ID de paquete no definido");
+      }
+
+      // Primero, actualizar el paquete
+      const paqueteActualizado = {
+        id_tipo_paquete: parseInt(paquete.id_tipo_paquete),
+        id_tamano_paquete: parseInt(paquete.id_tamano_paquete),
+        id_empaque: parseInt(paquete.tipo_caja),
+        peso: parseFloat(paquete.peso),
+        id_estado_paquete: parseInt(commonData.id_estado_paquete),
+        fecha_envio: commonData.fecha_envio,
+        fecha_entrega_estimada: commonData.fecha_entrega_estimada,
+        descripcion_contenido: paquete.descripcion_contenido,
+      };
+
+      console.log(
+        "Datos a enviar para actualizar el paquete:",
+        paqueteActualizado
+      );
+      console.log("ID del paquete a actualizar:", paquete.id_paquete);
+
+      const responsePaquete = await axios.put(
+        `${API_URL}/paquete/${paquete.id_paquete}`,
+        paqueteActualizado,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log(
+        "Respuesta del servidor después de actualizar el paquete:",
+        responsePaquete.data
+      );
+
+      // Luego, actualizar el detalle de la orden
+      const detalleActualizado = {
+        id_tipo_entrega: parseInt(commonData.id_tipo_entrega),
+        id_estado_paquetes: parseInt(commonData.id_estado_paquete),
+        id_direccion_entrega: parseInt(orden.id_direccion),
+        validacion_entrega: 0,
+        instrucciones_entrega: commonData.instrucciones_entrega,
+        descripcion: paquete.descripcion_contenido,
+        precio: parseFloat(paquete.precio),
+        fecha_ingreso: commonData.fecha_envio,
+        fecha_entrega: commonData.fecha_entrega,
+      };
+
+      console.log(
+        "Datos a enviar para actualizar el detalle:",
+        detalleActualizado
+      );
+
+      const responseDetalle = await axios.put(
         `${API_URL}/ordenes/actualizar-detalle-orden/${paquete.id}`,
         detalleActualizado,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      return response.data;
+
+      console.log(
+        "Respuesta del servidor después de actualizar el detalle:",
+        responseDetalle.data
+      );
+
+      return { paquete: responsePaquete.data, detalle: responseDetalle.data };
     } catch (error) {
-      if (error.response && error.response.status === 422) {
-        setErrors((prevErrors) => ({
-          ...prevErrors,
-          [paquete.id]: error.response.data.errors,
-        }));
-        toast.error(`Error de validación en paquete ${paquete.id}`);
+      console.error("Error al actualizar el paquete o el detalle:", error);
+      if (error.response) {
+        console.error("Datos de la respuesta de error:", error.response.data);
+        console.error("Estado de la respuesta:", error.response.status);
+        console.error("Cabeceras de la respuesta:", error.response.headers);
+
+        if (error.response.status === 422) {
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            [paquete.id]: error.response.data.errors,
+          }));
+          toast.error(
+            `Error de validación en paquete ${paquete.id}: ${JSON.stringify(error.response.data.errors)}`
+          );
+        }
+      } else if (error.request) {
+        console.error("La petición fue hecha pero no se recibió respuesta");
+        toast.error("No se recibió respuesta del servidor");
+      } else {
+        console.error("Error al configurar la petición:", error.message);
+        toast.error(`Error al configurar la petición: ${error.message}`);
       }
       throw error;
     }
