@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -44,8 +44,6 @@ const VerticalLayout = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
   const menuRef = useRef(null); // Referencia al contenedor del menú
-  const navigate = useNavigate();
-  const [redirected, setRedirected] = useState(false);
 
   useEffect(() => {
     if (shouldReload && !loading) {
@@ -62,21 +60,6 @@ const VerticalLayout = () => {
     localStorage.setItem("menuCollapsed", JSON.stringify(menuCollapsed));
   }, [menuCollapsed]);
 
-  useEffect(() => {
-    if (!loading && user && !redirected) {
-      const currentPath = location.pathname;
-
-      // Solo redirige si no estás en la página correcta
-      if (hasRole('admin') && currentPath !== '/home') {
-        navigate('/home');
-        setRedirected(true); // Marcar como redirigido
-      } else if (hasRole('conductor') && currentPath !== '/OrdenEntregada') {
-        navigate('/OrdenEntregada');
-        setRedirected(true); // Marcar como redirigido
-      }
-    }
-  }, [loading, user, navigate, redirected]);
-  
   useEffect(() => {
     // Determine which menu should be active based on the current route
     if (
@@ -101,7 +84,7 @@ const VerticalLayout = () => {
     } else if (
       location.pathname.includes("/GestionBodegas") ||
       location.pathname.includes("/GestionUbicacion") ||
-      location.pathname.includes("/GestionTraslados")
+      location.pathname.includes("/GestionBodegas")
     ) {
       setActiveSubMenu("bodegas");
       setVisibleSubMenu(null);
@@ -185,22 +168,21 @@ const VerticalLayout = () => {
           </div>
           <ul
             className={`nav flex-column ${menuCollapsed ? "icons-only" : ""}`}
-          >            
+          >
+            <li className="nav-item">
+              <NavLink
+                to="/home"
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+              >
+                <BiHome className="nav-icon" />
+                {!menuCollapsed && <span>Inicio</span>}
+              </NavLink>
+            </li>
 
             {hasRole("admin") && (
               <>
-                <li className="nav-item">
-                  <NavLink
-                    to="/home"
-                    className={({ isActive }) =>
-                      isActive ? "nav-link active" : "nav-link"
-                    }
-                  >
-                    <BiHome className="nav-icon" />
-                    {!menuCollapsed && <span>Inicio</span>}
-                  </NavLink>
-                </li>
-              
                 <li className="nav-item">
                   <NavLink
                     to="/GestionUsuarios"
@@ -365,6 +347,17 @@ const VerticalLayout = () => {
                         Recolección
                       </NavLink>
                     </li>
+                    <li>
+                      <NavLink
+                        to="/GestionTraslados"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBus className="nav-icon sub-icon" />
+                        Traslados
+                      </NavLink>
+                    </li>
                   </ul>
                 </li>
 
@@ -409,17 +402,7 @@ const VerticalLayout = () => {
                         Ubicaciones
                       </NavLink>
                     </li>
-                    <li>
-                      <NavLink
-                        to="/GestionTraslados"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiBus className="nav-icon sub-icon" />
-                        Traslados
-                      </NavLink>
-                    </li>
+                    
                   </ul>
                 </li>
 
@@ -545,7 +528,7 @@ const VerticalLayout = () => {
               </>
             )}
 
-            {hasRole("conductor") && (
+            {hasRole("acompanante") && (
               <>
 
                 <li className="nav-item">
@@ -598,110 +581,6 @@ const VerticalLayout = () => {
                       >
                         <BiMap className="nav-icon sub-icon" />
                         Paquetes dañados ubicados
-                      </NavLink>
-                    </li>
-                  </ul>
-                </li>
-              </>
-            )}
-            {hasRole("operador_de_almacen") && (
-              <>
-              {/* Submenu for Bodegas */}
-              <li className="nav-item">
-                  <div
-                    className={`nav-link text-white ${activeSubMenu === "bodegas" ? "active" : ""}`}
-                    onClick={() => handleSubMenuClick("bodegas")}
-                  >
-                    <BiBuilding className="nav-icon" />
-                    {(!menuCollapsed || visibleSubMenu === "bodegas") && (
-                      <span>Bodegas</span>
-                    )}
-                    {visibleSubMenu === "bodegas" ? (
-                      <BiDirections className="sub-menu-icon" />
-                    ) : (
-                      <BiPlus className="sub-menu-icon" />
-                    )}
-                  </div>
-                  <ul
-                    className={`sub-menu ${visibleSubMenu === "bodegas" ? "active" : ""}`}
-                  >
-                    <li>
-                      <NavLink
-                        to="/GestionBodegas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiBuilding className="nav-icon sub-icon" />
-                        Bodegas
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/GestionUbicacion"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiLayer className="nav-icon sub-icon" />
-                        Ubicaciones
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/GestionTraslados"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiBus className="nav-icon sub-icon" />
-                        Traslados
-                      </NavLink>
-                    </li>
-                  </ul>
-                </li>
-              </>
-            )}
-            {hasRole("coordinador_de_rutas") && (
-              <>
-                <li className="nav-item">
-                  <div
-                    className={`nav-link text-white ${activeSubMenu === "rutas" ? "active" : ""}`}
-                    onClick={() => handleSubMenuClick("rutas")}
-                  >
-                    <BiMap className="nav-icon" />
-                    {(!menuCollapsed || visibleSubMenu === "rutas") && (
-                      <span>Rutas</span>
-                    )}
-                    {visibleSubMenu === "rutas" ? (
-                      <BiDirections className="sub-menu-icon" />
-                    ) : (
-                      <BiPlus className="sub-menu-icon" />
-                    )}
-                  </div>
-                  <ul
-                    className={`sub-menu ${visibleSubMenu === "rutas" ? "active" : ""}`}
-                  >
-                    <li>
-                      <NavLink
-                        to="/GestionAsignarRutas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiReceipt className="nav-icon sub-icon" />
-                        Asignar rutas
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/gestion-ordenes-recoleccion"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiReceipt className="nav-icon sub-icon" />
-                        Recolección
                       </NavLink>
                     </li>
                   </ul>
