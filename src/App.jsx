@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import LoginClientePage from "./pages/LoginClientePage";
 import RegisterCliente from "./pages/RegisterCliente";
 import Logout from "./components/Login/Logout";
+import LoadingPage from "./components/Login/LoadingPage";
 import AuthService from "./services/authService";
 import "bootstrap/dist/css/bootstrap.min.css";
 import GestionEmpleados from "./pages/GestionEmpleados";
@@ -125,6 +126,7 @@ const App = () => {
           >
             <Route element={<VerticalLayout />}>
               <Route path="/home" element={<HomePage />} />
+              <Route path="/LoadingPage" element={<LoadingPage />} />
 
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
