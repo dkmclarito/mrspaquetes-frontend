@@ -19,7 +19,6 @@ const ModalEditarUsuario = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorEmail, setErrorEmail] = useState(null);
   const [errorPassword, setErrorPassword] = useState(null);
-  const [errorEmpleado, setErrorEmpleado] = useState(null);
   const [errorRol, setErrorRol] = useState(null);
   const [errorStatus, setErrorStatus] = useState(null);
   const [errorGeneral, setErrorGeneral] = useState(null);
@@ -71,7 +70,6 @@ const ModalEditarUsuario = ({
       setConfirmPassword("");
       setErrorEmail(null);
       setErrorPassword(null);
-      setErrorEmpleado(null);
       setErrorRol(null);
       setErrorStatus(null);
       setErrorGeneral(null);
@@ -92,7 +90,6 @@ const ModalEditarUsuario = ({
   const handleGuardarCambios = async () => {
     setErrorEmail(null);
     setErrorPassword(null);
-    setErrorEmpleado(null);
     setErrorRol(null);
     setErrorStatus(null);
     setErrorGeneral(null);
@@ -109,11 +106,6 @@ const ModalEditarUsuario = ({
 
     if (mostrarCamposContrasena && (password !== confirmPassword)) {
       setErrorPassword("Las contraseñas no coinciden.");
-      return;
-    }
-
-    if (!usuarioEditado.id_empleado) {
-      setErrorEmpleado("El empleado es obligatorio.");
       return;
     }
 
@@ -135,12 +127,13 @@ const ModalEditarUsuario = ({
 
     const empleadoExistente = usuarios.find(user => user.id_empleado === parseInt(usuarioEditado.id_empleado, 10) && user.id !== usuarioEditado.id);
     if (empleadoExistente) {
-      setErrorEmpleado("El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
+      setErrorGeneral("El empleado seleccionado ya tiene un usuario asociado.");
       return;
     }
 
     const usuarioActualizado = {
       ...usuarioEditado,
+      id_empleado: usuarioEditado.id_empleado ? parseInt(usuarioEditado.id_empleado, 10) : null, // Enviar null si no hay empleado seleccionado
       password: mostrarCamposContrasena ? password : usuarioEditado.password,
       password_confirmation: mostrarCamposContrasena ? confirmPassword : usuarioEditado.password
     };
@@ -151,7 +144,7 @@ const ModalEditarUsuario = ({
         email: usuarioActualizado.email,
         password: usuarioActualizado.password,
         role_id: parseInt(usuarioActualizado.role_id, 10),
-        id_empleado: parseInt(usuarioActualizado.id_empleado, 10),
+        id_empleado: usuarioActualizado.id_empleado,
         status: usuarioActualizado.status
       };
 
@@ -188,7 +181,7 @@ const ModalEditarUsuario = ({
         } else if (errors.role_id) {
           setErrorRol("El rol es obligatorio.");
         } else if (errors.id_empleado && errors.id_empleado[0] === "Este empleado ya tiene su usuario.") {
-          setErrorEmpleado("El empleado seleccionado ya tiene un usuario asociado. Seleccione un empleado diferente.");
+          setErrorGeneral("El empleado seleccionado ya tiene un usuario asociado.");
         } else {
           setErrorGeneral("Error al actualizar usuario.");
         }
@@ -214,26 +207,13 @@ const ModalEditarUsuario = ({
           />
           {errorEmail && <p className="text-white">{errorEmail}</p>}
         </FormGroup>
-        <FormGroup>
-          <Label for="empleadoId">Empleado</Label>
-          <Input
-            type="select"
-            id="empleadoId"
-            value={usuarioEditado ? usuarioEditado.id_empleado : ""}
-            onChange={(e) => setUsuarioEditado(prevState => ({ ...prevState, id_empleado: e.target.value }))}
-            required
-            disabled // Deshabilita el campo de selección
-             className="custom-select-modalEditarUsuario"
-          >
-            <option value="">Seleccione un empleado</option>
-            {empleados.map(empleado => (
-              <option key={empleado.id} value={empleado.id}>
-                {empleado.nombres} {empleado.apellidos}
-              </option>
-            ))}
-          </Input>
-          {errorEmpleado && <p className="text-white">{errorEmpleado}</p>}
-        </FormGroup>
+        {/* Select de Empleado oculto */}
+        <Input
+          type="hidden"
+          id="empleadoId"
+          value={usuarioEditado ? usuarioEditado.id_empleado : ""}
+          onChange={(e) => setUsuarioEditado(prevState => ({ ...prevState, id_empleado: e.target.value }))}
+        />
         <FormGroup>
           <Label for="rol">Rol</Label>
           <Input
@@ -322,3 +302,4 @@ ModalEditarUsuario.propTypes = {
 };
 
 export default ModalEditarUsuario;
+

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
+import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Incidencias/Common/Breadcrumbs";
 import TablaIncidencias from "../components/Incidencias/TablaIncidencias";
@@ -17,13 +17,14 @@ const GestionIncidencias = () => {
   const navigate = useNavigate();
 
   const [incidencias, setIncidencias] = useState([]);
+  const [tiposIncidencia, setTiposIncidencia] = useState([]); // Estado para los tipos de incidencia
   const [confirmarEliminar, setConfirmarEliminar] = useState(false);
   const [incidenciaAEliminar, setIncidenciaAEliminar] = useState(null);
   const [incidenciaEditada, setIncidenciaEditada] = useState(null);
   const [modalEditar, setModalEditar] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("");
-  const [tipoFiltro, setTipoFiltro] = useState(""); // Nuevo estado para el tipo de incidencia
+  const [tipoFiltro, setTipoFiltro] = useState(""); // Estado para el filtro de tipo de incidencia
   const [currentPage, setCurrentPage] = useState(1);
   const [roleName, setRoleName] = useState("");
 
@@ -43,9 +44,8 @@ const GestionIncidencias = () => {
           window.location.href = "/login";
           return;
         }
-        // Guardar el role_name del usuario logueado
         setRoleName(response.data.user.role_name);
-        console.log("Role Name del Usuario:", response.data.user.role_name); // Depuración
+        console.log("Role Name:", response.data.user.role_name); // Depuración
       }
     } catch (error) {
       console.error("Error al verificar estado del usuario:", error);
@@ -59,8 +59,8 @@ const GestionIncidencias = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data && Array.isArray(response.data.data)) {
-        console.log("Incidencias obtenidas:", response.data.data); // Depuración
         setIncidencias(response.data.data);
+        console.log("Incidencias obtenidas:", response.data.data); // Depuración
       } else {
         console.error("Datos inesperados al obtener incidencias:", response.data);
       }
@@ -69,10 +69,28 @@ const GestionIncidencias = () => {
     }
   }, []);
 
+  const fetchTiposIncidencia = useCallback(async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const response = await axios.get(`${API_URL}/dropdown/get_tipo_incidencia`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.data && Array.isArray(response.data.tipo_incidencia)) {
+        setTiposIncidencia(response.data.tipo_incidencia);
+        console.log("Tipos de Incidencia obtenidos:", response.data.tipo_incidencia); // Depuración
+      } else {
+        console.error("Datos inesperados al obtener tipos de incidencia:", response.data);
+      }
+    } catch (error) {
+      console.error("Error al obtener tipos de incidencia:", error);
+    }
+  }, []);
+
   useEffect(() => {
     verificarEstadoUsuarioLogueado();
     fetchData();
-  }, [fetchData, verificarEstadoUsuarioLogueado]);
+    fetchTiposIncidencia(); // Cargar los tipos de incidencia
+  }, [fetchData, fetchTiposIncidencia, verificarEstadoUsuarioLogueado]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -103,31 +121,21 @@ const GestionIncidencias = () => {
   }, [incidenciaAEliminar]);
 
   const filtrarIncidencias = useCallback(() => {
+    console.log("Filtro Busqueda:", busqueda); // Depuración
+    console.log("Filtro Estado:", estadoFiltro); // Depuración
+    console.log("Filtro Tipo:", tipoFiltro); // Depuración
     return incidencias.filter(incidencia => {
       const cumpleBusqueda = !busqueda ||
-        incidencia.id_paquete.toString().includes(busqueda) ||
-        (incidencia.usuario_asignado && incidencia.usuario_asignado.toString().includes(busqueda));
-      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro; // Ajustar aquí para comparar correctamente el estado
-      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro; // Nuevo filtro para tipo de incidencia
+        (incidencia.uuid && incidencia.uuid.toLowerCase().includes(busqueda.toLowerCase())) ||
+        (incidencia.usuario_reporta && incidencia.usuario_reporta.toLowerCase().includes(busqueda.toLowerCase()));
+      const cumpleEstado = !estadoFiltro || incidencia.estado === estadoFiltro;
+      const cumpleTipo = !tipoFiltro || incidencia.tipo_incidencia === tipoFiltro;
+      console.log("Incidencia:", incidencia); // Depuración
       return cumpleBusqueda && cumpleEstado && cumpleTipo;
     });
   }, [incidencias, busqueda, estadoFiltro, tipoFiltro]);
 
-  const filtrarIncidenciasAdmin = useCallback(() => {
-    // No filtrar, devolver todas las incidencias
-    console.log("Mostrando todas las incidencias para Admin:", incidencias); // Depuración
-    return incidencias;
-  }, [incidencias]);
-
-  const incidenciasFiltradas = useMemo(() => {
-    if (roleName === "conductor") {
-      return filtrarIncidencias();
-    } else if (roleName === "admin") {
-      return filtrarIncidenciasAdmin();
-    } else {
-      return incidencias; // Mostrar todas las incidencias si no es conductor ni admin
-    }
-  }, [roleName, filtrarIncidencias, filtrarIncidenciasAdmin, incidencias]);
+  const incidenciasFiltradas = useMemo(() => filtrarIncidencias(), [filtrarIncidencias]);
 
   const paginatedIncidencias = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -138,19 +146,35 @@ const GestionIncidencias = () => {
     setCurrentPage(1);
   }, [busqueda, estadoFiltro, tipoFiltro]);
 
-  const toggleModalEditar = (incidencia) => {
+  const toggleModalEditar = useCallback((incidencia) => {
     setIncidenciaEditada(incidencia);
     setModalEditar(true);
-  };
+  }, []);
 
-  const guardarCambiosIncidencia = (incidenciaActualizada) => {
-    setIncidencias((prevIncidencias) =>
-      prevIncidencias.map((incidencia) =>
-        incidencia.id === incidenciaActualizada.id ? incidenciaActualizada : incidencia
-      )
-    );
-    setModalEditar(false);
-  };
+  const guardarCambiosIncidencia = useCallback(async (incidenciaActualizada) => {
+    try {
+      const token = AuthService.getCurrentUser();
+      const { id, estado, tipo_incidencia, solucion } = incidenciaActualizada;
+      const data = { estado, tipo_incidencia, solucion };
+
+      const response = await axios.put(`${API_URL}/incidencias/${id}`, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.status === 200) {
+        setIncidencias(prevIncidencias =>
+          prevIncidencias.map(incidencia => incidencia.id === id ? incidenciaActualizada : incidencia)
+        );
+        setModalEditar(false);
+        setIncidenciaEditada(null);
+      }
+    } catch (error) {
+      console.error("Error al actualizar incidencia:", error);
+    }
+  }, []);
 
   return (
     <div className="page-content">
@@ -158,44 +182,26 @@ const GestionIncidencias = () => {
         <Breadcrumbs title="Gestión de Incidencias" breadcrumbItem="Lista de incidencias" />
         <Row>
           <Col lg={12}>
-            <div style={{ marginTop: "10px", display: "flex", alignItems: "center" }}>
-         
-              <Label for="estadoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
-                Estado:
-              </Label>
-              <Input
-                type="select"
-                id="estadoFiltro"
-                value={estadoFiltro}
-                onChange={(e) => setEstadoFiltro(e.target.value)}
-                style={{ width: "150px" }}
-              >
-                <option value="">Todos</option>
-                <option value="Abierta">Abierta</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Cerrada">Cerrada</option>
-              </Input>
-              <Label for="tipoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
-                Tipo de Incidencia:
-              </Label>
-              <Input
-                type="select"
-                id="tipoFiltro"
-                value={tipoFiltro}
-                onChange={(e) => setTipoFiltro(e.target.value)}
-                style={{ width: "150px" }}
-              >
-                <option value="">Todos</option>
-                <option value="Tipo1">Daño</option>
-                <option value="Tipo2">Tipo 2</option>
-                {/* Agregar más opciones de tipo de incidencia según sea necesario */}
-              </Input>
-              <div style={{ marginLeft: "auto" }}>
-                <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
-                  <i className="fas fa-plus"></i> Agregar Incidencia
-                </Link>
-              </div>
-            </div>
+          <div style={{ marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+  {roleName === "acompanante" && (
+    <>
+      <Link
+        to="/MisIncidencias"
+        className="btn btn-primary"
+        style={{ marginRight: "10px" }}
+      >
+        Mis incidencias reportadas
+      </Link>
+      <Link
+        to="/AgregarIncidencia"
+        className="btn btn-primary"
+      >
+        <i className="fas fa-plus"></i> Agregar Incidencia
+      </Link>
+    </>
+  )}
+</div>
+
           </Col>
         </Row>
         <br />
