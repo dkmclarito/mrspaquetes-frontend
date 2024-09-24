@@ -143,21 +143,7 @@ const App = () => {
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
                 />
-                <Route
-                  path="/GestionTraslados"
-                  element={<GestionTraslados />}
-                />
-                <Route
-                  path="/GestionTraslados"
-                  element={<GestionTraslados />}
-                />
-                 <Route
-                  path="/AgregarTraslados"
-                  element={<AgregarTraslados />}
-                />
-                <Route path="/DetallesTraslados/:id" element={<DetallesTraslados />} />
-                <Route path="/EditarTraslados/:id" element={<EditarTraslados />} />
-
+                
                 <Route
                   path="/GestionAsignarRutas"
                   element={<GestionAsignarRutas />}
@@ -205,10 +191,7 @@ const App = () => {
                   path="/DetallesVehiculo/:id"
                   element={<DetallesVehiculo />}
                 />
-                <Route
-                  path="/DetallesUbicacion/:id"
-                  element={<DetallesUbicacion />}
-                />
+                
                 <Route
                   path="/GestionVehiculos"
                   element={<GestionVehiculos />}
@@ -228,20 +211,7 @@ const App = () => {
                   path="/PaquetesTrackingScreen/:id"
                   element={<PaquetesTrackingScreen />}
                 />
-                <Route
-                  path="/GestionUbicacion"
-                  element={<GestionUbicacion />}
-                />
-                <Route
-                  path="/AgregarUbicacion"
-                  element={<AgregarUbicacion />}
-                />
-                <Route path="/GestionBodegas" element={<GestionBodegas />} />
-                <Route path="/AgregarBodega" element={<AgregarBodega />} />
-                <Route
-                  path="/DetallesBodega/:id"
-                  element={<DetallesBodega />}
-                />
+                
                 <Route
                   path="/OrdenesSeleccionarCliente"
                   element={<OrdenesSeleccionarCliente />}
@@ -442,11 +412,40 @@ const App = () => {
               />
               <Route path="/reportes" element={<Reportes />} />
 
-              <Route element={<PrivateRoute allowedRoles={["conductor", "acompanante"]} />}>
+              <Route element={<PrivateRoute allowedRoles={["conductor", "acompanante", "admin"]} />}>
                 <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
               </Route>
-              <Route element={<PrivateRoute allowedRoles={["operador_de_almacen"]} />}>
-                <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
+              <Route element={<PrivateRoute allowedRoles={["operador_de_almacen", "admin"]} />}>
+                <Route path="/GestionBodegas" element={<GestionBodegas />} />
+                <Route path="/AgregarBodega" element={<AgregarBodega />} />
+
+                <Route
+                  path="/DetallesBodega/:id"
+                  element={<DetallesBodega />}
+                />
+              <Route
+                  path="/GestionUbicacion"
+                  element={<GestionUbicacion />}
+                />
+                <Route
+                  path="/AgregarUbicacion"
+                  element={<AgregarUbicacion />}
+                />
+                <Route
+                  path="/DetallesUbicacion/:id"
+                  element={<DetallesUbicacion />}
+                />
+              <Route
+                  path="/GestionTraslados"
+                  element={<GestionTraslados />}
+                />
+                 <Route
+                  path="/AgregarTraslados"
+                  element={<AgregarTraslados />}
+                />
+                <Route path="/DetallesTraslados/:id" element={<DetallesTraslados />} />
+                <Route path="/EditarTraslados/:id" element={<EditarTraslados />} />
+
               </Route>
             </Route>
           </Route>
