@@ -12,7 +12,7 @@ import Pagination from 'react-js-pagination';
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 5;
 
-const GestionIncidencias = () => {
+const MisIncidencias = () => {
   document.title = "Incidencias | Mr. Paquetes";
   const navigate = useNavigate();
 
@@ -150,48 +150,6 @@ const GestionIncidencias = () => {
         <Row>
           <Col lg={12}>
             <div style={{ marginTop: "10px", display: "flex", alignItems: "center" }}>
-              <Label for="busqueda" style={{ marginRight: "10px", marginLeft: "20px" }}>
-                Buscar:
-              </Label>
-              <Input
-                type="text"
-                id="busqueda"
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                placeholder="Escriba ID del paquete o usuario asignado"
-                style={{ width: "300px" }}
-              />
-              <Label for="estadoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
-                Estado:
-              </Label>
-              <Input
-                type="select"
-                id="estadoFiltro"
-                value={estadoFiltro}
-                onChange={(e) => setEstadoFiltro(e.target.value)}
-                style={{ width: "150px" }}
-              >
-                <option value="">Todos</option>
-                <option value="Abierta">Abierta</option>
-                <option value="En Proceso">En Proceso</option>
-                <option value="Cerrada">Cerrada</option>
-              </Input>
-              <Label for="tipoFiltro" style={{ marginRight: "10px", marginLeft: "20px" }}>
-                Tipo de Incidencia:
-              </Label>
-              <Input
-                type="select"
-                id="tipoFiltro"
-                value={tipoFiltro}
-                onChange={(e) => setTipoFiltro(e.target.value)}
-                style={{ width: "150px" }}
-              >
-                <option value="">Todos</option>
-                <option value="Paquete Dañado">Paquete Dañado</option>
-                <option value="Entrega Fallida">Entrega Fallida</option>
-                <option value="Otro">Otro</option>
-              </Input>
-
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
@@ -249,4 +207,4 @@ const GestionIncidencias = () => {
   );
 };
 
-export default GestionIncidencias;
+export default MisIncidencias;

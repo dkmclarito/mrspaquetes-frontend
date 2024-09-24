@@ -99,10 +99,9 @@ import PaquetesTrackingScreen from "./components/Tracking/PaquetesTrackingScreen
 import OrdenEntregada from "./pages/OrdenEntregada";
 import MisIncidencias from "./pages/MisIncidencias";
 import Reportes from "./pages/Reportes";
-import AgregarTraslados from './pages/AgregarTraslados';
-import DetallesTraslados from './pages/DetallesTraslados';
-import EditarTraslados from './components/Traslados/EditarTraslados/EditarTraslados';
-
+import AgregarTraslados from "./pages/AgregarTraslados";
+import DetallesTraslados from "./pages/DetallesTraslados";
+import EditarTraslados from "./components/Traslados/EditarTraslados/EditarTraslados";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -121,7 +120,17 @@ const App = () => {
 
           <Route
             element={
-              <PrivateRoute allowedRoles={["admin", "acompanante", "cliente"]} />
+              <PrivateRoute
+                allowedRoles={[
+                  "admin",
+                  "acompanante",
+                  "conductor",
+                  "cliente",
+                  "operador_de_almacen",
+                  "coordinador_de_rutas",
+                  "atencion_al_cliente"
+                ]}
+              />
             }
           >
             <Route element={<VerticalLayout />}>
@@ -129,96 +138,46 @@ const App = () => {
               <Route path="/LoadingPage" element={<LoadingPage />} />
 
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
                 <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
-                <Route
-                  path="/GestionRolesPermisos"
-                  element={<GestionRolesPermisos />}
-                />
-                <Route
-                  path="/AgregarRolesPermisos/:id"
-                  element={<AgregarRolesPermisos />}
-                />
-                <Route
-                  path="/GestionEmpleados"
-                  element={<GestionEmpleados />}
-                />
-                <Route
-                  path="/GestionTraslados"
-                  element={<GestionTraslados />}
-                />
-                <Route
-                  path="/GestionTraslados"
-                  element={<GestionTraslados />}
-                />
-                 <Route
-                  path="/AgregarTraslados"
-                  element={<AgregarTraslados />}
-                />
-                <Route path="/DetallesTraslados/:id" element={<DetallesTraslados />} />
-                <Route path="/EditarTraslados/:id" element={<EditarTraslados />} />
-
-                <Route
-                  path="/GestionAsignarRutas"
-                  element={<GestionAsignarRutas />}
-                />
-                <Route
-                  path="/AgregarAsignacionRuta"
-                  element={<AgregarAsignacionRuta />}
-                />
-                <Route
-                  path="/DetallesAsignacionRutas/:id"
-                  element={<DetallesAsignacionRutas />}
-                />
-                <Route
-                  path="/SeleccionarPaquetes"
-                  element={<SeleccionarPaquetes />}
-                />
+              
+                <Route path="/GestionEmpleados" element={<GestionEmpleados />} />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
-                <Route
-                  path="/AgregarEmpleado/:id"
-                  element={<AgregarEmpleadoUser />}
-                />
-                <Route
-                  path="/DetallesEmpleado/:id"
-                  element={<DetallesEmpleado />}
-                />
-                <Route
-                  path="/EditarAsignacionRuta/:codigo_unico_asignacion"
-                  element={<EditarAsignacionRuta />}
-                />
-                <Route
-                  path="/EditarDatosAsignacion/:codigo_unico_asignacion"
-                  element={<EditarDatosAsignacion />}
-                />
-                <Route
-                  path="/EditarPaquetesAsignacion/:codigo_unico_asignacion"
-                  element={<EditarPaquetesAsignacion />}
-                />
-                <Route path="/GestionClientes" element={<GestionClientes />} />
-                <Route path="/AgregarCliente" element={<AgregarCliente />} />
-                <Route
-                  path="/DetallesCliente/:id"
-                  element={<DetallesCliente />}
-                />
-                <Route
-                  path="/DetallesVehiculo/:id"
-                  element={<DetallesVehiculo />}
-                />
-                <Route
-                  path="/DetallesUbicacion/:id"
-                  element={<DetallesUbicacion />}
-                />
-                <Route
-                  path="/GestionVehiculos"
-                  element={<GestionVehiculos />}
-                />
+                <Route path="/AgregarEmpleado/:id" element={<AgregarEmpleadoUser />} />
+                <Route path="/DetallesEmpleado/:id" element={<DetallesEmpleado />} />
+
+                <Route path="/AgregarNuevoRol" element={<AgregarNuevoRol />} />
+                <Route path="/GestionRolesPermisos" element={<GestionRolesPermisos />} />
+                <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />
+                <Route path="/DataRol/:id" element={<DataRol />} />
+                
+                <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
+                <Route path="/DetallesVehiculo/:id" element={<DetallesVehiculo />} />
+
+                
                 <Route path="/AgregarVehiculo" element={<AgregarVehiculo />} />
                 <Route path="/GestionMarcas" element={<GestionMarcas />} />
                 <Route path="/AgregarMarca" element={<AgregarMarca />} />
                 <Route path="/GestionModelos" element={<GestionModelos />} />
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
+
+              </Route>
+              {/* MODULO DE ORDENES Y CLIENTES */}
+              <Route
+                element={
+                  <PrivateRoute
+                    allowedRoles={["atencion_al_cliente", "admin"]}
+                  />
+                }
+              >
+                <Route path="/GestionClientes" element={<GestionClientes />} />
+                <Route path="/AgregarCliente" element={<AgregarCliente />} />
+                <Route
+                  path="/DetallesCliente/:id"
+                  element={<DetallesCliente />}
+                />
                 <Route path="/TrackingPage" element={<TrackingPage />} />
                 <Route
                   path="/TrackingPaquetes"
@@ -228,20 +187,7 @@ const App = () => {
                   path="/PaquetesTrackingScreen/:id"
                   element={<PaquetesTrackingScreen />}
                 />
-                <Route
-                  path="/GestionUbicacion"
-                  element={<GestionUbicacion />}
-                />
-                <Route
-                  path="/AgregarUbicacion"
-                  element={<AgregarUbicacion />}
-                />
-                <Route path="/GestionBodegas" element={<GestionBodegas />} />
-                <Route path="/AgregarBodega" element={<AgregarBodega />} />
-                <Route
-                  path="/DetallesBodega/:id"
-                  element={<DetallesBodega />}
-                />
+
                 <Route
                   path="/OrdenesSeleccionarCliente"
                   element={<OrdenesSeleccionarCliente />}
@@ -296,61 +242,177 @@ const App = () => {
                   element={<VerDetallesOrden />}
                 />
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
-                
+
+                <Route
+                  path="/GestionPreOrdenes"
+                  element={<GestionPreOrdenes />}
+                />
+                <Route
+                  path="/GestionPreOrdenesExpress"
+                  element={<GestionPreOrdenesExpress />}
+                />
+                <Route
+                  path="/GenerarPreOrden/:idCliente"
+                  element={<GenerarPreOrden />}
+                />
+                <Route
+                  path="/GenerarPreOrdenExpress/:idCliente"
+                  element={<GenerarPreOrdenExpress />}
+                />
+
+                <Route
+                  path="/PreOrdenesSeleccionarCliente"
+                  element={<PreOrdenesSeleccionarCliente />}
+                />
+                <Route
+                  path="/PreOrdenesDirecciones/:idCliente"
+                  element={<PreOrdenesDirecciones />}
+                />
+
+                <Route
+                  path="/PreOrdenesSeleccionarClienteExpress"
+                  element={<PreOrdenesSeleccionarClienteExpress />}
+                />
+                <Route
+                  path="/PreOrdenesDireccionesExpress/:idCliente"
+                  element={<PreOrdenesDireccionesExpress />}
+                />
+
+                <Route
+                  path="/DatosPaquetePreOrden/:idCliente"
+                  element={<DatosPaquetePreOrden />}
+                />
+                <Route
+                  path="/DatosPaquetePreOrdenExpress/:idCliente"
+                  element={<DatosPaquetePreOrdenExpress />}
+                />
+                <Route path="/reportes" element={<Reportes />} />
               </Route>
-
-              <Route
-                path="/GestionPreOrdenes"
-                element={<GestionPreOrdenes />}
-              />
-              <Route
-                path="/GestionPreOrdenesExpress"
-                element={<GestionPreOrdenesExpress />}
-              />
-              <Route
-                path="/GenerarPreOrden/:idCliente"
-                element={<GenerarPreOrden />}
-              />
-              <Route
-                path="/GenerarPreOrdenExpress/:idCliente"
-                element={<GenerarPreOrdenExpress />}
-              />
-
-              <Route
-                path="/PreOrdenesSeleccionarCliente"
-                element={<PreOrdenesSeleccionarCliente />}
-              />
-              <Route
-                path="/PreOrdenesDirecciones/:idCliente"
-                element={<PreOrdenesDirecciones />}
-              />
-
-              <Route
-                path="/PreOrdenesSeleccionarClienteExpress"
-                element={<PreOrdenesSeleccionarClienteExpress />}
-              />
-              <Route
-                path="/PreOrdenesDireccionesExpress/:idCliente"
-                element={<PreOrdenesDireccionesExpress />}
-              />
-
-              <Route
-                path="/DatosPaquetePreOrden/:idCliente"
-                element={<DatosPaquetePreOrden />}
-              />
-              <Route
-                path="/DatosPaquetePreOrdenExpress/:idCliente"
-                element={<DatosPaquetePreOrdenExpress />}
-              />
-
+                {/* Paquete entregado*/}
               <Route
                 element={
                   <PrivateRoute
-                    allowedRoles={["admin", "acompanante", "cliente"]}
+                    allowedRoles={["conductor", "acompanante", "admin"]}
                   />
                 }
               >
                 <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
+              </Route>
+
+              {/* MODULO DE BODEGAS */}
+              <Route
+                element={
+                  <PrivateRoute
+                    allowedRoles={["operador_de_almacen", "admin"]}
+                  />
+                }
+              >
+                <Route path="/GestionBodegas" element={<GestionBodegas />} />
+                <Route path="/AgregarBodega" element={<AgregarBodega />} />
+
+                <Route
+                  path="/DetallesBodega/:id"
+                  element={<DetallesBodega />}
+                />
+                <Route
+                  path="/GestionUbicacion"
+                  element={<GestionUbicacion />}
+                />
+                <Route
+                  path="/AgregarUbicacion"
+                  element={<AgregarUbicacion />}
+                />
+                <Route
+                  path="/DetallesUbicacion/:id"
+                  element={<DetallesUbicacion />}
+                />
+                <Route
+                  path="/GestionTraslados"
+                  element={<GestionTraslados />}
+                />
+                <Route
+                  path="/AgregarTraslados"
+                  element={<AgregarTraslados />}
+                />
+                <Route
+                  path="/DetallesTraslados/:id"
+                  element={<DetallesTraslados />}
+                />
+                <Route
+                  path="/EditarTraslados/:id"
+                  element={<EditarTraslados />}
+                />
+              </Route>
+              {/* MODULO DE RUTAS */}
+              <Route
+                element={
+                  <PrivateRoute
+                    allowedRoles={["coordinador_de_rutas", "admin"]}
+                  />
+                }
+              >
+                <Route
+                  path="/GestionAsignarRutas"
+                  element={<GestionAsignarRutas />}
+                />
+                <Route
+                  path="/AgregarAsignacionRuta"
+                  element={<AgregarAsignacionRuta />}
+                />
+                <Route
+                  path="/DetallesAsignacionRutas/:id"
+                  element={<DetallesAsignacionRutas />}
+                />
+                <Route
+                  path="/SeleccionarPaquetes"
+                  element={<SeleccionarPaquetes />}
+                />
+
+                <Route
+                  path="/gestion-ordenes-recoleccion"
+                  element={<GestionOrdenesRecoleccion />}
+                />
+                <Route
+                  path="/crear-ruta-recoleccion"
+                  element={<CrearRutaRecoleccion />}
+                />
+                <Route
+                  path="/editar-ruta-recoleccion/:id"
+                  element={<EditarRutaRecoleccion />}
+                />
+                <Route
+                  path="/detalles-ruta-recoleccion/:id"
+                  element={<DetallesRutaRecoleccion />}
+                />
+                <Route
+                  path="/EditarAsignacionRuta/:codigo_unico_asignacion"
+                  element={<EditarAsignacionRuta />}
+                />
+                <Route
+                  path="/EditarDatosAsignacion/:codigo_unico_asignacion"
+                  element={<EditarDatosAsignacion />}
+                />
+                <Route
+                  path="/EditarPaquetesAsignacion/:codigo_unico_asignacion"
+                  element={<EditarPaquetesAsignacion />}
+                />
+              </Route>
+
+              {/*USUARIOS CON MODULO DE INCIDENCIAS*/}
+              <Route
+                element={
+                  <PrivateRoute
+                    allowedRoles={[
+                      "admin",
+                      "acompanante",
+                      "conductor",
+                      "operador_de_almacen",
+                      "coordinador_de_rutas",
+                      "atencion_al_cliente",
+                    ]}
+                  />
+                }
+              >
                 <Route
                   path="/GestionIncidencias"
                   element={<GestionIncidencias />}
@@ -421,30 +483,8 @@ const App = () => {
                   path="/DataIncidencia/:idIncidencia"
                   element={<DataIncidencia />}
                 />
-                <Route path="/AgregarNuevoRol" element={<AgregarNuevoRol />} />
-                <Route path="/DataRol/:id" element={<DataRol />} />
-                <Route path="/MisIncidencias" element={<MisIncidencias />} />
-              </Route>
-              <Route
-                path="/gestion-ordenes-recoleccion"
-                element={<GestionOrdenesRecoleccion />}
-              />
-              <Route
-                path="/crear-ruta-recoleccion"
-                element={<CrearRutaRecoleccion />}
-              />
-              <Route
-                path="/editar-ruta-recoleccion/:id"
-                element={<EditarRutaRecoleccion />}
-              />
-              <Route
-                path="/detalles-ruta-recoleccion/:id"
-                element={<DetallesRutaRecoleccion />}
-              />
-              <Route path="/reportes" element={<Reportes />} />
 
-              <Route element={<PrivateRoute allowedRoles={["cliente"]} />}>
-                <Route path="/PerfilCliente" element={<AgregarDatos />} />
+                <Route path="/MisIncidencias" element={<MisIncidencias />} />
               </Route>
             </Route>
           </Route>

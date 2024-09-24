@@ -219,7 +219,7 @@ const DetallesCliente = () => {
                         <tr>
                           <th scope="row">Contribuyente:</th>
                           <td>
-                            {cliente.es_contribuyente === 0 ? (
+                            {cliente.es_contribuyente === 1 ? (
                               <FontAwesomeIcon icon={faCheck} style={{ color: 'green' }} />
                             ) : (
                               <FontAwesomeIcon icon={faTimes} style={{ color: 'red' }} />

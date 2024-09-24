@@ -9,7 +9,7 @@ import {
   BiUser,
   BiReceipt,
   BiGroup,
-  BiPackage,
+  BiCamera,
   BiBuilding,
   BiDirections,
   BiCar,
@@ -462,6 +462,7 @@ const VerticalLayout = () => {
                     </li>
                   </ul>
                 </li>
+                {/* Submenu for Incidencias */}
                 <li className="nav-item">
                   <div
                     className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
@@ -505,6 +506,7 @@ const VerticalLayout = () => {
                     </li>
                   </ul>
                 </li>
+
                 <li className="nav-item">
                   <NavLink
                     to="/GestionRolesPermisos"
@@ -529,7 +531,155 @@ const VerticalLayout = () => {
                 </li>
               </>
             )}
+            {hasRole("atencion_al_cliente") && (
+              <>
+                <li className="nav-item">
+                  <NavLink
+                    to="/GestionClientes"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiGroup className="nav-icon" />
+                    {!menuCollapsed && <span>Clientes</span>}
+                  </NavLink>
+                </li>
 
+                {/* Submenu for Ordenes */}
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "ordenes" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("ordenes")}
+                  >
+                    <BiReceipt className="nav-icon" />
+                    {(!menuCollapsed || visibleSubMenu === "ordenes") && (
+                      <span>Ordenes</span>
+                    )}
+                    {visibleSubMenu === "ordenes" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "ordenes" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionPreOrdenes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Pre-Orden Normal
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionPreOrdenesExpress"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Pre-Orden Express
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionOrdenes"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Normal
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionOrdenesExpress"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Express
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/TrackingPage"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiPlus className="nav-icon sub-icon" />
+                        Tracking
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+
+                {/* Submenu for Incidencias */}
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("incidencias")}
+                  >
+                    <BiErrorCircle className="nav-icon" />{" "}
+                    {/* Ícono principal para Incidencias */}
+                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
+                      <span>Incidencias</span>
+                    )}
+                    {visibleSubMenu === "incidencias" ? (
+                      <BiChevronUp className="sub-menu-icon" />
+                    ) : (
+                      <BiChevronDown className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionIncidencias"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiErrorCircle className="nav-icon sub-icon" />
+                        Gestión de Incidencias
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/IncidenciasUbicadas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiMap className="nav-icon sub-icon" />
+                        Paquetes dañados ubicados
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+
+                <li className="nav-item">
+                  <NavLink
+                    to="/reportes"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiChart className="nav-icon" />
+                    {!menuCollapsed && <span>Reportes</span>}
+                  </NavLink>
+                </li>
+              </>
+            )}
             {hasRole("acompanante") && (
               <>
 
@@ -540,10 +690,263 @@ const VerticalLayout = () => {
                       isActive ? "nav-link active" : "nav-link"
                     }
                   >
-                    <BiMap className="nav-icon" />
+                    <BiCamera className="nav-icon" />
                     {!menuCollapsed && <span>Validar entrega</span>}
                   </NavLink>
                 </li>
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("incidencias")}
+                  >
+                    <BiErrorCircle className="nav-icon" />{" "}
+                    {/* Ícono principal para Incidencias */}
+                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
+                      <span>Incidencias</span>
+                    )}
+                    {visibleSubMenu === "incidencias" ? (
+                      <BiChevronUp className="sub-menu-icon" />
+                    ) : (
+                      <BiChevronDown className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionIncidencias"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiErrorCircle className="nav-icon sub-icon" />
+                        Gestión de Incidencias
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/IncidenciasUbicadas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiMap className="nav-icon sub-icon" />
+                        Paquetes dañados ubicados
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+              </>
+            )}
+            {hasRole("conductor") && (
+              <>
+
+                <li className="nav-item">
+                  <NavLink
+                    to="/OrdenEntregada"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiCamera className="nav-icon" />
+                    {!menuCollapsed && <span>Validar entrega</span>}
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("incidencias")}
+                  >
+                    <BiErrorCircle className="nav-icon" />{" "}
+                    {/* Ícono principal para Incidencias */}
+                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
+                      <span>Incidencias</span>
+                    )}
+                    {visibleSubMenu === "incidencias" ? (
+                      <BiChevronUp className="sub-menu-icon" />
+                    ) : (
+                      <BiChevronDown className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionIncidencias"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiErrorCircle className="nav-icon sub-icon" />
+                        Gestión de Incidencias
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/IncidenciasUbicadas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiMap className="nav-icon sub-icon" />
+                        Paquetes dañados ubicados
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+              </>
+            )}
+            {hasRole("operador_de_almacen") && (
+              <>
+                {/* Submenu for Bodegas */}
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "bodegas" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("bodegas")}
+                  >
+                    <BiBuilding className="nav-icon" />
+                    {(!menuCollapsed || visibleSubMenu === "bodegas") && (
+                      <span>Bodegas</span>
+                    )}
+                    {visibleSubMenu === "bodegas" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "bodegas" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionBodegas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBuilding className="nav-icon sub-icon" />
+                        Bodegas
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionUbicacion"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiLayer className="nav-icon sub-icon" />
+                        Ubicaciones
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionTraslados"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBus className="nav-icon sub-icon" />
+                        Traslados
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+                {/* Submenu for Incidencias */}
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("incidencias")}
+                  >
+                    <BiErrorCircle className="nav-icon" />{" "}
+                    {/* Ícono principal para Incidencias */}
+                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
+                      <span>Incidencias</span>
+                    )}
+                    {visibleSubMenu === "incidencias" ? (
+                      <BiChevronUp className="sub-menu-icon" />
+                    ) : (
+                      <BiChevronDown className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionIncidencias"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiErrorCircle className="nav-icon sub-icon" />
+                        Gestión de Incidencias
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/IncidenciasUbicadas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiMap className="nav-icon sub-icon" />
+                        Paquetes dañados ubicados
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+              </>
+            )}
+            {hasRole("coordinador_de_rutas") && (
+              <>
+                {/* Nuevo submenú para Rutas */}
+                <li className="nav-item">
+                  <div
+                    className={`nav-link text-white ${activeSubMenu === "rutas" ? "active" : ""}`}
+                    onClick={() => handleSubMenuClick("rutas")}
+                  >
+                    <BiMap className="nav-icon" />
+                    {(!menuCollapsed || visibleSubMenu === "rutas") && (
+                      <span>Rutas</span>
+                    )}
+                    {visibleSubMenu === "rutas" ? (
+                      <BiDirections className="sub-menu-icon" />
+                    ) : (
+                      <BiPlus className="sub-menu-icon" />
+                    )}
+                  </div>
+                  <ul
+                    className={`sub-menu ${visibleSubMenu === "rutas" ? "active" : ""}`}
+                  >
+                    <li>
+                      <NavLink
+                        to="/GestionAsignarRutas"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiReceipt className="nav-icon sub-icon" />
+                        Asignar rutas
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/gestion-ordenes-recoleccion"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiReceipt className="nav-icon sub-icon" />
+                        Recolección
+                      </NavLink>
+                    </li>
+                    
+                  </ul>
+                </li>
+                {/* Submenu for Incidencias */}
                 <li className="nav-item">
                   <div
                     className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
