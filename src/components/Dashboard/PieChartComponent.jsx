@@ -84,14 +84,14 @@ const PieChartComponent = () => {
   return (
     <Card>
       <CardBody className='graficaPastel'>
-        <CardTitle style={{ textAlign: 'center', fontSize: '20px' }} tag="h5">Tipos de Órdenes</CardTitle>
+        <CardTitle style={{ textAlign: 'center', fontSize: '20px' }} tag="h5">Órdenes Mensuales</CardTitle>
         <ResponsiveContainer width="100%" height={394}>
           <PieChart className='pieG'>
             <Pie
               data={formattedData}
               dataKey="cantidad"
               nameKey="estado"
-              outerRadius={170}
+              outerRadius={130}
               fill="#8884d8"
               label              
             >

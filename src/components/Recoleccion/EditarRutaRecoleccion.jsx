@@ -313,9 +313,9 @@ const EditarRutaRecoleccion = () => {
               Actualizar Ruta y Agregar Preórdenes
             </Button>
             <Button
-              color="secondary"
+              
               onClick={() => navigate("/gestion-ordenes-recoleccion")}
-              className="ml-2"
+              className="ml-2 btn-regresar"
             >
               Volver a Gestión de Órdenes de Recolección
             </Button>
