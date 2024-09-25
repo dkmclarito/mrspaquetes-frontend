@@ -130,7 +130,7 @@ const TablaOrdenes = ({
                     {orden.tipo_orden === "preorden" &&
                       orden.estado_pago === "pendiente" && (
                         <Button
-                          className="btn-sm me-2 btn-icon btn-primary"
+                          className="btn-sm me-2 btn-icon btn-regresar2"
                           onClick={() => handleProcesarPago(orden)}
                         >
                           <FontAwesomeIcon icon={faCreditCard} />
