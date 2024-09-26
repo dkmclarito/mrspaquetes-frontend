@@ -113,6 +113,9 @@ const AgregarMarca = () => {
         draggable: true, });
     };
 
+    const handleExit = () => {    
+        navigate("/GestionMarcas");
+      };
     return (
         <Container>
             <Breadcrumbs title="Marcas" breadcrumbItem="Agregar Marca" />
@@ -144,6 +147,9 @@ const AgregarMarca = () => {
                                     />
                                 </FormGroup>
                                 <Button type="submit" color="primary">Agregar Marca</Button>
+                                <Button className="ms-2 btn-custom-red" onClick={handleExit}>
+                                Salir
+                                </Button>
                             </Form>
                         </CardBody>
                     </Card>

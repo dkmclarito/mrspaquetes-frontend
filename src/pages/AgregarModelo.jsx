@@ -146,6 +146,9 @@ const AgregarModelo = () => {
         pauseOnHover: true,
         draggable: true, });
     };
+    const handleExit = () => {    
+        navigate("/GestionModelos");
+      };
 
     return (
         <Container>
@@ -196,6 +199,9 @@ const AgregarModelo = () => {
                                     </Input>
                                 </FormGroup>
                                 <Button type="submit" color="primary">Agregar Modelo</Button>
+                                <Button className="ms-2 btn-custom-red" onClick={handleExit}>
+                                Salir
+                                </Button>
                             </Form>
                         </CardBody>
                     </Card>

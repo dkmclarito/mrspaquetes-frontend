@@ -709,8 +709,7 @@ const AgregarVehiculo = () => {
                   Guardar
                 </Button>
                 <Button
-                  color="secondary"
-                  className="ms-2"
+                  className="ms-2 btn-custom-red"
                   onClick={() => (window.location.href = "/GestionVehiculos")}
                 >
                   Salir
