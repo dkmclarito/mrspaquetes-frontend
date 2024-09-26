@@ -183,7 +183,7 @@ const GestionIncidencias = () => {
         <Row>
           <Col lg={12}>
           <div style={{ marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-  {roleName === "acompanante" && (
+  {roleName !== "admin" && (
     <>
       <Link
         to="/MisIncidencias"
