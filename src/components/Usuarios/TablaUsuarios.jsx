@@ -70,7 +70,6 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             <th style={{ width: '20%' }} className="text-center">Empleado</th>
             <th style={{ width: '10%' }} className="text-center">Rol</th>
             <th style={{ width: '10%' }} className="text-center">Creación</th>
-            <th style={{ width: '10%' }} className="text-center">Actualización</th>
             <th style={{ width: '15%' }} className="text-center">Acciones</th>
           </tr>
         </thead>
@@ -84,7 +83,6 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                 <td style={{ width: '20%' }} className="text-center">{renderEmpleado(usuario)}</td>
                 <td style={{ width: '10%' }} className="text-center">{usuario.role_name}</td>
                 <td style={{ width: '10%' }} className="text-center">{formatDate(usuario.created_at)}</td>
-                <td style={{ width: '10%' }} className="text-center">{formatDate(usuario.updated_at)}</td>
                 <td style={{ width: '15%' }} className="text-center">
                   <div className="button-container">
                     <Button

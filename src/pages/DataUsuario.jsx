@@ -184,10 +184,6 @@ const DataUsuario = () => {
                         <th scope="row">Fecha de creación:</th>
                         <td>{formatDate(usuario?.created_at)}</td>
                       </tr>
-                      <tr>
-                        <th scope="row">Última actualización:</th>
-                        <td>{formatDate(usuario?.updated_at)}</td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
