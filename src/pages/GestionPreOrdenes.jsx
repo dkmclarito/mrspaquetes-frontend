@@ -18,6 +18,8 @@ export default function GestionPreOrdenes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [modalCancelar, setModalCancelar] = useState(false);
   const [ordenACancelar, setOrdenACancelar] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
 
   const navigate = useNavigate();
 
@@ -49,29 +51,55 @@ export default function GestionPreOrdenes() {
     }
   }, []);
 
-  const fetchOrdenes = async () => {
+  const fetchOrdenes = useCallback(async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/ordenes`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Ordenes recibidas desde API:", response.data);
+      let allOrdenes = [];
+      let currentPage = 1;
+      let hasNextPage = true;
 
-      // Filtrar las órdenes para mostrar solo las pre-órdenes normales
-      const preOrdenesNormales = response.data.data.filter(
-        (orden) =>
-          orden.tipo_orden === "preorden" &&
-          orden.detalles.every(
-            (detalle) => detalle.tipo_entrega === "Entrega Normal"
-          )
+      while (hasNextPage) {
+        const response = await axios.get(`${API_URL}/ordenes`, {
+          params: { page: currentPage },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log(
+          `Ordenes recibidas de la página ${currentPage}:`,
+          response.data
+        );
+
+        const preOrdenesNormales = response.data.data.filter(
+          (orden) =>
+            orden.tipo_orden === "preorden" &&
+            orden.detalles.every(
+              (detalle) => detalle.tipo_entrega === "Entrega Normal"
+            )
+        );
+
+        allOrdenes = [...allOrdenes, ...preOrdenesNormales];
+
+        if (response.data.next_page_url) {
+          currentPage++;
+        } else {
+          hasNextPage = false;
+        }
+      }
+
+      console.log(
+        "Total de pre-órdenes normales filtradas:",
+        allOrdenes.length
       );
-
-      setOrdenes(preOrdenesNormales);
+      setOrdenes(allOrdenes);
+      setTotalItems(allOrdenes.length);
     } catch (error) {
       console.error("Error al obtener órdenes:", error);
-      toast.error("Error al cargar las pre-órdenes");
+      toast.error("Error al cargar las órdenes");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
@@ -151,14 +179,22 @@ export default function GestionPreOrdenes() {
     setCurrentPage(1);
   };
 
-  const filtrarOrdenes = (ordenes) => {
-    if (!busqueda) return ordenes;
-    return ordenes.filter(
-      (orden) =>
-        orden.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        orden.numero_seguimiento.toLowerCase().includes(busqueda.toLowerCase())
-    );
-  };
+  const filtrarOrdenes = useCallback(
+    (ordenes) => {
+      if (!busqueda) return ordenes;
+      return ordenes.filter(
+        (orden) =>
+          orden.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+          orden.cliente.apellido
+            .toLowerCase()
+            .includes(busqueda.toLowerCase()) ||
+          orden.numero_seguimiento
+            .toLowerCase()
+            .includes(busqueda.toLowerCase())
+      );
+    },
+    [busqueda]
+  );
 
   const ordenesFiltradas = filtrarOrdenes(ordenes);
   const paginatedOrdenes = ordenesFiltradas.slice(
@@ -213,14 +249,18 @@ export default function GestionPreOrdenes() {
           <Col lg={12}>
             <Card>
               <CardBody>
-                <TablaOrdenes
-                  ordenes={paginatedOrdenes}
-                  cancelarOrden={iniciarCancelarOrden}
-                  navegarAEditar={navegarAEditar}
-                  verDetallesOrden={verDetallesOrden}
-                  actualizarOrden={actualizarOrdenLocal}
-                  procesarPago={handleProcesarPago}
-                />
+                {loading ? (
+                  <p>Cargando órdenes...</p>
+                ) : (
+                  <TablaOrdenes
+                    ordenes={paginatedOrdenes}
+                    cancelarOrden={iniciarCancelarOrden}
+                    navegarAEditar={navegarAEditar}
+                    verDetallesOrden={verDetallesOrden}
+                    actualizarOrden={actualizarOrdenLocal}
+                    procesarPago={handleProcesarPago}
+                  />
+                )}
               </CardBody>
             </Card>
           </Col>
@@ -237,7 +277,7 @@ export default function GestionPreOrdenes() {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={ordenesFiltradas.length}
+              totalItemsCount={totalItems}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"

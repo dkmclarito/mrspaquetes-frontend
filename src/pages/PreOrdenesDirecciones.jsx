@@ -14,6 +14,7 @@ import {
   NavItem,
   NavLink,
   Progress,
+  FormFeedback,
 } from "reactstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -49,6 +50,7 @@ export default function PreOrdenesDirecciones() {
   const [cliente, setCliente] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [errors, setErrors] = useState({});
 
   // Nueva función para verificar el estado del usuario logueado
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
@@ -189,32 +191,60 @@ export default function PreOrdenesDirecciones() {
     fetchMunicipios();
   }, [nuevaDireccion.id_departamento, token]);
 
-  const handleAgregarDireccion = async () => {
-    const {
-      direccion,
-      referencia,
-      id_departamento,
-      id_municipio,
-      nombre_contacto,
-      telefono,
-    } = nuevaDireccion;
+  const formatPhoneNumber = (value) => {
+    if (!value) return value;
+    const phoneNumber = value.replace(/[^\d]/g, "");
+    if (phoneNumber.length <= 4) return phoneNumber;
+    return `${phoneNumber.slice(0, 4)}-${phoneNumber.slice(4, 8)}`;
+  };
 
-    if (
-      direccion.trim() &&
-      id_departamento &&
-      id_municipio &&
-      nombre_contacto &&
-      telefono
-    ) {
+  const validateForm = () => {
+    const newErrors = {};
+    if (!nuevaDireccion.direccion.trim()) {
+      newErrors.direccion = "La dirección es requerida";
+    }
+    if (!nuevaDireccion.id_departamento) {
+      newErrors.id_departamento = "El departamento es requerido";
+    }
+    if (!nuevaDireccion.id_municipio) {
+      newErrors.id_municipio = "El municipio es requerido";
+    }
+    if (!nuevaDireccion.nombre_contacto.trim()) {
+      newErrors.nombre_contacto = "El nombre de contacto es requerido";
+    }
+    if (!nuevaDireccion.telefono.trim()) {
+      newErrors.telefono = "El teléfono es requerido";
+    } else {
+      const phoneDigits = nuevaDireccion.telefono.replace(/\D/g, "");
+      if (phoneDigits.length !== 8) {
+        newErrors.telefono = "El teléfono debe tener 8 dígitos";
+      } else if (!/^[267]/.test(phoneDigits)) {
+        newErrors.telefono = "El teléfono debe comenzar con 2, 6 o 7";
+      }
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePhoneChange = (e) => {
+    const formattedPhoneNumber = formatPhoneNumber(e.target.value);
+    setNuevaDireccion((prev) => ({
+      ...prev,
+      telefono: formattedPhoneNumber,
+    }));
+  };
+
+  const handleAgregarDireccion = async () => {
+    if (validateForm()) {
       try {
         const dataToSend = {
           id_cliente: Number(idCliente),
-          direccion,
-          referencia,
-          id_departamento: Number(id_departamento),
-          id_municipio: Number(id_municipio),
-          nombre_contacto,
-          telefono,
+          direccion: nuevaDireccion.direccion,
+          referencia: nuevaDireccion.referencia,
+          id_departamento: Number(nuevaDireccion.id_departamento),
+          id_municipio: Number(nuevaDireccion.id_municipio),
+          nombre_contacto: nuevaDireccion.nombre_contacto,
+          telefono: nuevaDireccion.telefono,
         };
 
         await axios.post(`${API_URL}/direcciones`, dataToSend, {
@@ -244,7 +274,7 @@ export default function PreOrdenesDirecciones() {
         );
       }
     } else {
-      toast.warn("Todos los campos son requeridos");
+      toast.warn("Por favor, corrija los errores en el formulario");
     }
   };
 
@@ -354,7 +384,9 @@ export default function PreOrdenesDirecciones() {
                       }
                       placeholder="Ingrese la dirección"
                       aria-label="Dirección"
+                      invalid={!!errors.direccion}
                     />
+                    <FormFeedback>{errors.direccion}</FormFeedback>
                   </FormGroup>
                   <FormGroup>
                     <Label for="referencia">Referencia:</Label>
@@ -381,23 +413,24 @@ export default function PreOrdenesDirecciones() {
                       onChange={(e) =>
                         setNuevaDireccion((prev) => ({
                           ...prev,
-                          id_departamento: e.target.value, // Actualiza el id_departamento
-                          id_municipio: "", // Limpia el municipio al cambiar el departamento
+                          id_departamento: e.target.value,
+                          id_municipio: "",
                         }))
                       }
                       aria-label="Seleccione un departamento"
+                      invalid={!!errors.id_departamento}
                     >
                       <option value="">Seleccione un departamento</option>
                       {departamentos
-                        .filter((d) => [11, 12, 13, 14].includes(d.id)) // Filtra los departamentos para incluir solo los IDs deseados
+                        .filter((d) => [11, 12, 13, 14].includes(d.id))
                         .map((departamento) => (
                           <option key={departamento.id} value={departamento.id}>
                             {departamento.nombre}
                           </option>
                         ))}
                     </Input>
+                    <FormFeedback>{errors.id_departamento}</FormFeedback>
                   </FormGroup>
-
                   <FormGroup>
                     <Label for="municipio">Municipio:</Label>
                     <Input
@@ -412,6 +445,7 @@ export default function PreOrdenesDirecciones() {
                       }
                       disabled={!nuevaDireccion.id_departamento}
                       aria-label="Seleccione un municipio"
+                      invalid={!!errors.id_municipio}
                     >
                       <option value="">Seleccione un municipio</option>
                       {municipios.map((municipio) => (
@@ -420,6 +454,7 @@ export default function PreOrdenesDirecciones() {
                         </option>
                       ))}
                     </Input>
+                    <FormFeedback>{errors.id_municipio}</FormFeedback>
                   </FormGroup>
                   <FormGroup>
                     <Label for="nombre_contacto">Nombre de Contacto:</Label>
@@ -435,7 +470,9 @@ export default function PreOrdenesDirecciones() {
                       }
                       placeholder="Ingrese el nombre de contacto"
                       aria-label="Nombre de Contacto"
+                      invalid={!!errors.nombre_contacto}
                     />
+                    <FormFeedback>{errors.nombre_contacto}</FormFeedback>
                   </FormGroup>
                   <FormGroup>
                     <Label for="telefono">Teléfono:</Label>
@@ -443,15 +480,13 @@ export default function PreOrdenesDirecciones() {
                       type="text"
                       id="telefono"
                       value={nuevaDireccion.telefono}
-                      onChange={(e) =>
-                        setNuevaDireccion((prev) => ({
-                          ...prev,
-                          telefono: e.target.value,
-                        }))
-                      }
-                      placeholder="Ingrese el teléfono"
+                      onChange={handlePhoneChange}
+                      placeholder="Ej: 2222-2222"
+                      maxLength="9"
                       aria-label="Teléfono"
+                      invalid={!!errors.telefono}
                     />
+                    <FormFeedback>{errors.telefono}</FormFeedback>
                   </FormGroup>
                   <Button
                     color="success"
