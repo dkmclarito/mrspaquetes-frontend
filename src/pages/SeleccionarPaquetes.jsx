@@ -262,7 +262,7 @@ export default function SeleccionarPaquetes() {
                 <Button color="primary" onClick={handleAsignarRuta} className="me-2">
                   <i className="fas fa-plus"></i> Asignar Ruta
                 </Button>
-                <Button color="secondary" onClick={handleCancelar}>
+                <Button className='btn-custom-red' onClick={handleCancelar}>
                   Cancelar
                 </Button>
               </div>

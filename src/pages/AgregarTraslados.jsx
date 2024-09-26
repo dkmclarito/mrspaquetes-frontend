@@ -551,7 +551,7 @@ const AgregarTraslado = () => {
                       className="ms-2 btn-custom-red"
                       onClick={handleExit}
                     >
-                      Salir
+                      Cancelar
                     </Button>
                   </Col>
                 </Form>

@@ -164,6 +164,9 @@ const CrearRutaRecoleccion = () => {
   const verDetallesOrden = (idOrden) => {
     navigate(`/VerDetallesOrden/${idOrden}`);
   };
+  const handleExit = () => {    
+    navigate("/gestion-ordenes-recoleccion");
+  };
 
   return (
     <Container>
@@ -270,6 +273,9 @@ const CrearRutaRecoleccion = () => {
             </Row>
             <Button color="primary" type="submit">
               Crear Ruta y Asignar Órdenes
+            </Button>
+            <Button className="ms-2 btn-custom-red" onClick={handleExit}>
+              Cancelar
             </Button>
           </Form>
         </CardBody>
