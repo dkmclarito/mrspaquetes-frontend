@@ -41,6 +41,15 @@ const VerDetallesOrden = () => {
         setTiposPaquete(tiposPaqueteRes.data.tipo_paquete || []);
         setTiposCaja(tiposCajaRes.data.empaques || []);
         setEstadosPaquete(estadosPaqueteRes.data.estado_paquetes || []);
+
+        // Imprimir los datos en la consola
+        console.log("Datos de la orden:", ordenRes.data);
+        console.log("Tipos de paquete:", tiposPaqueteRes.data.tipo_paquete);
+        console.log("Tipos de caja:", tiposCajaRes.data.empaques);
+        console.log(
+          "Estados de paquete:",
+          estadosPaqueteRes.data.estado_paquetes
+        );
       } catch (error) {
         console.error("Error al cargar los datos:", error);
         toast.error("Error al cargar los datos de la orden");
@@ -62,6 +71,39 @@ const VerDetallesOrden = () => {
       return esExpress ? "/GestionPreOrdenesExpress" : "/GestionPreOrdenes";
     } else {
       return esExpress ? "/GestionOrdenesExpress" : "/GestionOrdenes";
+    }
+  };
+
+  const obtenerDireccionEntrega = (orden) => {
+    if (orden && orden.detalles && orden.detalles.length > 0) {
+      const primerDetalle = orden.detalles[0];
+      return {
+        direccion: primerDetalle.direccion,
+        nombre_contacto: primerDetalle.recibe,
+        telefono: primerDetalle.telefono,
+        departamento: primerDetalle.departamento,
+        municipio: primerDetalle.municipio,
+        instrucciones_entrega: primerDetalle.instrucciones_entrega,
+      };
+    }
+    return null;
+  };
+
+  const obtenerNumeroSeguimientoOTracking = (orden) => {
+    const tieneEntregaExpress = orden.detalles.some(
+      (detalle) => detalle.tipo_entrega === "Entrega Express"
+    );
+
+    if (tieneEntregaExpress) {
+      return {
+        titulo: "Número de Seguimiento",
+        numero: orden.numero_seguimiento || "N/A",
+      };
+    } else {
+      return {
+        titulo: "Número de Tracking",
+        numero: orden.numero_tracking || "N/A",
+      };
     }
   };
 
@@ -127,6 +169,9 @@ const VerDetallesOrden = () => {
   );
   const costoAdicional = parseFloat(orden.costo_adicional || 0);
   const totalOrden = parseFloat(orden.total_pagar);
+  const direccionEntrega = obtenerDireccionEntrega(orden);
+  const { titulo: tituloNumero, numero: numeroMostrado } =
+    obtenerNumeroSeguimientoOTracking(orden);
 
   return (
     <div className="page-content">
@@ -150,9 +195,9 @@ const VerDetallesOrden = () => {
                     <tbody>
                       <tr>
                         <th scope="row" style={{ width: "40%" }}>
-                          Número de Seguimiento:
+                          {tituloNumero}:
                         </th>
-                        <td>{orden.numero_seguimiento}</td>
+                        <td>{numeroMostrado}</td>
                       </tr>
                       <tr>
                         <th scope="row">Cliente:</th>
@@ -194,26 +239,28 @@ const VerDetallesOrden = () => {
                         <th scope="row" style={{ width: "30%" }}>
                           Dirección:
                         </th>
-                        <td>{orden.direccion_emisor?.direccion}</td>
+                        <td>{direccionEntrega?.direccion || "N/A"}</td>
                       </tr>
                       <tr>
                         <th scope="row">Contacto:</th>
-                        <td>{orden.direccion_emisor?.nombre_contacto}</td>
+                        <td>{direccionEntrega?.nombre_contacto || "N/A"}</td>
                       </tr>
                       <tr>
                         <th scope="row">Teléfono:</th>
-                        <td>{orden.direccion_emisor?.telefono}</td>
+                        <td>{direccionEntrega?.telefono || "N/A"}</td>
                       </tr>
                       <tr>
                         <th scope="row">Ubicación:</th>
                         <td>
-                          {orden.direccion_emisor?.id_municipio},{" "}
-                          {orden.direccion_emisor?.id_departamento}
+                          {direccionEntrega?.municipio},{" "}
+                          {direccionEntrega?.departamento}
                         </td>
                       </tr>
                       <tr>
-                        <th scope="row">Referencia:</th>
-                        <td>{orden.direccion_emisor?.referencia}</td>
+                        <th scope="row">Instrucciones:</th>
+                        <td>
+                          {direccionEntrega?.instrucciones_entrega || "N/A"}
+                        </td>
                       </tr>
                     </tbody>
                   </Table>

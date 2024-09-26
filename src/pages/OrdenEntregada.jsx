@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import "../styles/Vehiculos.css";
+import { FaUpload,FaQrcode,FaCamera } from 'react-icons/fa';
 import jsQR from "jsqr";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -180,6 +181,7 @@ const OrdenEntregada = () => {
                         <CardBody>
                             <Form onSubmit={handleSubmit}>
                                 <FormGroup>
+                                <FaQrcode style={{ marginRight: '8px' }}/>
                                     <Label for="idPaquete">Codigo Qr del Paquete</Label>
                                     <div className="d-flex">
                                         <Input
@@ -190,12 +192,18 @@ const OrdenEntregada = () => {
                                             required
                                             style={{ width: '60%'}}
                                         />
-                                        <Button color="primary" onClick={iniciarEscaneoQR} disabled={escaneandoQR} style={{ marginLeft: '10px' }}>
-                                            Escanear QR
+                                        <Button 
+                                        color="primary" 
+                                        onClick={iniciarEscaneoQR} 
+                                        disabled={escaneandoQR} 
+                                        style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>
+                                        <FaCamera style={{ marginRight: '5px' }} />
+                                        Escanear QR
                                         </Button>
                                     </div>
                                 </FormGroup>
                                 <FormGroup>
+                                <FaUpload style={{ marginRight: '8px' }} />
                                     <Label for="imagen">Imagen de Entrega</Label>
                                     <Input
                                         type="file"

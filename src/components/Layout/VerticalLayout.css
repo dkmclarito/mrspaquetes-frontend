@@ -883,7 +883,7 @@ body {
 
 .dark-mode .btn-regresar2{
   background-color: #1e1e1e26;
-  color: #ba7703c3;
+  color: #dc8c02e4;
   border-color: rgb(154, 154, 154);
   border-width: 1px;
   border-style: solid;
@@ -896,7 +896,7 @@ body {
 }
 
 .btn-regresar2{
-  background-color: #ba7703c3;
+  background-color: #dc8c02e4;
   color: #ffffff;
   border-color: rgb(154, 154, 154);
   border-width: 1px;
@@ -904,7 +904,7 @@ body {
 }
 
 .btn-regresar2:hover{
-  background-color: #825301c3;
+  background-color: #bd7800ea;
   color: rgba(255, 255, 255, 0.843);
   border-color: rgba(255, 158, 21, 0.843);
 }

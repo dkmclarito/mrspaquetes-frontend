@@ -102,6 +102,7 @@ import Reportes from "./pages/Reportes";
 import AgregarTraslados from "./pages/AgregarTraslados";
 import DetallesTraslados from "./pages/DetallesTraslados";
 import EditarTraslados from "./components/Traslados/EditarTraslados/EditarTraslados";
+import GestionKardex from "./pages/GestionKardex";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -307,6 +308,7 @@ const App = () => {
                   />
                 }
               >
+                <Route path="/GestionKardex" element={<GestionKardex />} />
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
 

@@ -296,7 +296,7 @@ const AgregarUbicacionPaquete = () => {
             <Row className="mt-3">
               <Col md={12}>
                 <Button color="primary" type="submit">Guardar</Button>
-                <Button color="secondary" onClick={() => navigate('/GestionUbicacion')} style={{ marginLeft: '10px' }}>Salir</Button>
+                <Button className="btn-custom-red" onClick={() => navigate('/GestionUbicacion')} style={{ marginLeft: '10px' }}>Salir</Button>
               </Col>
             </Row>
           </Form>

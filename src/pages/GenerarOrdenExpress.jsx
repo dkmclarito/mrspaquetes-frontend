@@ -57,6 +57,7 @@ export default function GenerarOrdenExpress() {
   const [addressChanged, setAddressChanged] = useState(false);
   const [useRecoleccion, setUseRecoleccion] = useState(false);
   const [direccionRecoleccion, setDireccionRecoleccion] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -252,6 +253,8 @@ export default function GenerarOrdenExpress() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return; // Previene múltiples envíos
+
     let newErrors = {};
     Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
@@ -268,6 +271,8 @@ export default function GenerarOrdenExpress() {
       );
       return;
     }
+
+    setIsSubmitting(true); // Deshabilita el botón
 
     try {
       const token = AuthService.getCurrentUser();
@@ -344,6 +349,7 @@ export default function GenerarOrdenExpress() {
             (error.response?.data?.message || error.message)
         );
       }
+      setIsSubmitting(false); // Habilita el botón nuevamente en caso de error
     }
   };
 
@@ -535,8 +541,8 @@ export default function GenerarOrdenExpress() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Button color="primary" type="submit">
-                    Registrar Orden
+                  <Button color="primary" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Procesando..." : "Registrar Orden"}
                   </Button>
                 </Form>
               </CardBody>

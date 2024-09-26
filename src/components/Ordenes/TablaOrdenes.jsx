@@ -6,6 +6,7 @@ import {
   faPencilAlt,
   faEye,
   faCreditCard,
+  faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import ModalConfirmarCancelar from "./ModalConfirmarCancelar";
@@ -20,6 +21,7 @@ const TablaOrdenes = ({
   verDetallesOrden,
   actualizarOrden,
   procesarPago,
+  finalizarOrden,
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [ordenIdACancelar, setOrdenIdACancelar] = useState(null);
@@ -127,13 +129,29 @@ const TablaOrdenes = ({
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </Button>
-                    {orden.tipo_orden === "preorden" &&
-                      orden.estado_pago === "pendiente" && (
+                    {orden.estado_pago === "pendiente" && procesarPago && (
+                      <Button
+                        className="btn-sm me-2 btn-icon btn-regresar2"
+                        onClick={() =>
+                          procesarPago(
+                            orden.id_cliente,
+                            orden.detalles[0].tipo_entrega === "Entrega Express"
+                              ? `/procesarpagoexpress/${orden.id_cliente}`
+                              : `/procesarpago/${orden.id_cliente}`
+                          )
+                        }
+                      >
+                        <FontAwesomeIcon icon={faCreditCard} />
+                      </Button>
+                    )}
+                    {orden.estado_pago === "pagado" &&
+                      orden.estado !== "Completada" &&
+                      !orden.finished && (
                         <Button
-                          className="btn-sm me-2 btn-icon btn-primary"
-                          onClick={() => handleProcesarPago(orden)}
+                          className="me-2 btn-icon btn-editar"
+                          onClick={() => finalizarOrden(orden)}
                         >
-                          <FontAwesomeIcon icon={faCreditCard} />
+                          <FontAwesomeIcon icon={faCheck} />
                         </Button>
                       )}
                   </div>

@@ -262,6 +262,9 @@ const AgregarBodega = () => {
     }
   };
 
+  const handleExit = () => {    
+    navigate("/GestionBodegas");
+  };
   return (
     <Container>
       <Breadcrumbs
@@ -375,7 +378,7 @@ const AgregarBodega = () => {
             <Button type="submit" color="primary">
               Agregar Bodega
             </Button>
-            <Button className="ms-2 btn-custom-red" onClick={() => window.location.href = '/GestionBodegas'}>
+            <Button className="ms-2 btn-custom-red" onClick={handleExit}>
               Salir
             </Button>
           </Form>

@@ -83,6 +83,7 @@ export default function GenerarPreOrden() {
   const [currentStep, setCurrentStep] = useState(4);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressChanged, setAddressChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -265,6 +266,9 @@ export default function GenerarPreOrden() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (isSubmitting) return; // Previene múltiples envíos
+
     let newErrors = {};
     Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
@@ -281,6 +285,8 @@ export default function GenerarPreOrden() {
       );
       return;
     }
+
+    setIsSubmitting(true); // Deshabilita el botón
 
     try {
       const token = AuthService.getCurrentUser();
@@ -346,6 +352,7 @@ export default function GenerarPreOrden() {
         "Error al registrar la pre-orden: " +
           (error.response?.data?.message || error.message)
       );
+      setIsSubmitting(false); // Habilita el botón nuevamente en caso de error
     }
   };
 
@@ -537,8 +544,8 @@ export default function GenerarPreOrden() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Button color="primary" type="submit">
-                    Registrar Pre-Orden
+                  <Button color="primary" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Procesando..." : "Registrar Preorden"}
                   </Button>
                 </Form>
               </CardBody>
