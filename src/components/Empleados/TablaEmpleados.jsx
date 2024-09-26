@@ -106,7 +106,7 @@ const TablaEmpleados = ({ empleados, cargos, verDetallesEmpleado, eliminarEmplea
                 <td>{obtenerNombreCargo(empleado.id_cargo)}</td>
                 <td>{obtenerNombreRol(empleado.id)}</td>
                 <td>{formatearTelefono(empleado.telefono)}</td>
-                <td>{formatearFecha(empleado.fecha_contratacion)}</td>
+                <td>{new Date(empleado.fecha_contratacion).toLocaleDateString('es-ES')}</td>
                 <td>
                   <div className="button-container">
                     <Button

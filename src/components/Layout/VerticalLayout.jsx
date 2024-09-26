@@ -5,6 +5,7 @@ import Header from "./Header";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./VerticalLayout.css";
 import {
+  BiBook,
   BiHome,
   BiUser,
   BiReceipt,
@@ -65,7 +66,12 @@ const VerticalLayout = () => {
   useEffect(() => {
     // Determine which menu should be active based on the current route
     if (
-      location.pathname.includes("/GestionOrdenes")
+      location.pathname.includes("/GestionPreOrdenes")||
+      location.pathname.includes("/GestionPreOrdenesExpress") ||
+      location.pathname.includes("/GestionOrdenes")||
+      location.pathname.includes("/GestionOrdenesExpress") ||
+      location.pathname.includes("/TrackingPage")||
+      location.pathname.includes("/OrdenEntregada")
     ) {
       setActiveSubMenu("ordenes");
       setVisibleSubMenu(null);
@@ -77,8 +83,7 @@ const VerticalLayout = () => {
       setActiveSubMenu("vehicles");
       setVisibleSubMenu(null);
     } else if (
-      location.pathname.includes("/RutasRecoleccion") ||
-      location.pathname.includes("/OrdenesRecoleccion") ||
+      location.pathname.includes("/gestion-ordenes-recoleccion") ||
       location.pathname.includes("/GestionAsignarRutas")
     ) {
       setActiveSubMenu("rutas");
@@ -86,9 +91,16 @@ const VerticalLayout = () => {
     } else if (
       location.pathname.includes("/GestionBodegas") ||
       location.pathname.includes("/GestionUbicacion") ||
-      location.pathname.includes("/GestionBodegas")
+      location.pathname.includes("/GestionTraslados")||
+      location.pathname.includes("/GestionKardex")
     ) {
       setActiveSubMenu("bodegas");
+      setVisibleSubMenu(null);
+    }else if (
+      location.pathname.includes("/GestionIncidencias") ||
+      location.pathname.includes("/IncidenciasUbicadas")
+    ) {
+      setActiveSubMenu("incidencias");
       setVisibleSubMenu(null);
     } else {
       setActiveSubMenu(null);
@@ -403,6 +415,17 @@ const VerticalLayout = () => {
                       >
                         <BiBus className="nav-icon sub-icon" />
                         Traslados
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionKardex"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBook className="nav-icon sub-icon" />
+                        Kardex
                       </NavLink>
                     </li>
                   </ul>
@@ -850,6 +873,17 @@ const VerticalLayout = () => {
                       >
                         <BiBus className="nav-icon sub-icon" />
                         Traslados
+                      </NavLink>
+                    </li>
+                    <li>
+                      <NavLink
+                        to="/GestionKardex"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiBook className="nav-icon sub-icon" />
+                        Kardex
                       </NavLink>
                     </li>
                   </ul>
