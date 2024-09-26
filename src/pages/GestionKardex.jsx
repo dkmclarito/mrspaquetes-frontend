@@ -21,6 +21,7 @@ import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import Breadcrumbs from "../components/Bodegas/Common/Breadcrumbs"
 import AuthService from "../services/authService"
+import { debounce } from "lodash"
 
 const API_URL = import.meta.env.VITE_API_URL
 const ITEMS_PER_PAGE = 10
@@ -86,36 +87,24 @@ export default function GestionKardex() {
   }, [fetchPagedData])
 
   const handleFilterChange = (e) => {
+    const { name, value } = e.target
     setFilters((prevFilters) => ({
       ...prevFilters,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }))
   }
 
-  const applyFilters = () => {
-    setIsFiltered(true)
-    setCurrentPage(1)
+  const filterData = useCallback(() => {
     if (allKardexData.length === 0) {
       fetchAllData().then(() => {
-        filterData()
+        applyFilters()
       })
     } else {
-      filterData()
+      applyFilters()
     }
-  }
+  }, [allKardexData, filters, fetchAllData])
 
-  const resetFilters = () => {
-    setFilters({
-      searchQuery: "",
-      startDate: "",
-      endDate: "",
-    })
-    setIsFiltered(false)
-    setCurrentPage(1)
-    fetchPagedData(1)
-  }
-
-  const filterData = () => {
+  const applyFilters = () => {
     const filtered = allKardexData.filter((item) => {
       const matchesSearch =
         !filters.searchQuery ||
@@ -131,6 +120,25 @@ export default function GestionKardex() {
 
     setFilteredData(filtered)
     setTotalItems(filtered.length)
+    setIsFiltered(true)
+    setCurrentPage(1)
+  }
+
+  const debouncedFilterData = useCallback(debounce(filterData, 300), [filterData])
+
+  useEffect(() => {
+    debouncedFilterData()
+  }, [filters, debouncedFilterData])
+
+  const resetFilters = () => {
+    setFilters({
+      searchQuery: "",
+      startDate: "",
+      endDate: "",
+    })
+    setIsFiltered(false)
+    setCurrentPage(1)
+    fetchPagedData(1)
   }
 
   const handlePageChange = (pageNumber) => {
@@ -193,28 +201,16 @@ export default function GestionKardex() {
                         />
                       </FormGroup>
                     </Col>
-                    <Col md={1}>
-                      <FormGroup style={{ marginTop: "32px" }}>
-                        <Button color="primary" onClick={applyFilters} className="mr-2">
-                          Buscar
-                        </Button>
-                      </FormGroup>
-                    </Col>
-                    <Col md={1}>
+                    <Col md={2}>
                       <FormGroup style={{ marginTop: "32px" }}>
                         <Button color="secondary" onClick={resetFilters}>
-                          Limpiar
+                          Limpiar Filtros
                         </Button>
                       </FormGroup>
                     </Col>
                   </Row>
                 </Form>
 
-                {isLoading ? (
-                  <div className="text-center">
-                    <Spinner color="primary" />
-                  </div>
-                ) : (
                   <Table responsive striped className="table-centered">
                     <thead>
                       <tr>
@@ -255,8 +251,7 @@ export default function GestionKardex() {
                       )}
                     </tbody>
                   </Table>
-                )}
-                <div className="d-flex justify-content-center mt-4">
+                  <div className="d-flex justify-content-center mt-4">
                   <Pagination
                     activePage={currentPage}
                     itemsCountPerPage={ITEMS_PER_PAGE}
