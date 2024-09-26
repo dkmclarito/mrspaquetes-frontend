@@ -83,6 +83,7 @@ export default function GenerarOrden() {
   const [currentStep, setCurrentStep] = useState(4);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [addressChanged, setAddressChanged] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -266,6 +267,8 @@ export default function GenerarOrden() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return; // Previene múltiples envíos
+
     let newErrors = {};
     Object.keys(formData).forEach((key) => {
       const error = validateField(key, formData[key]);
@@ -282,6 +285,8 @@ export default function GenerarOrden() {
       );
       return;
     }
+
+    setIsSubmitting(true); // Deshabilita el botón
 
     try {
       const token = AuthService.getCurrentUser();
@@ -363,6 +368,7 @@ export default function GenerarOrden() {
       } else {
         toast.error("Error al registrar la orden: Problema de conexión");
       }
+      setIsSubmitting(false); // Habilita el botón nuevamente en caso de error
     }
   };
 
@@ -554,8 +560,8 @@ export default function GenerarOrden() {
                       </FormGroup>
                     </Col>
                   </Row>
-                  <Button color="primary" type="submit">
-                    Registrar Orden
+                  <Button color="primary" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Procesando..." : "Registrar Orden"}
                   </Button>
                 </Form>
               </CardBody>

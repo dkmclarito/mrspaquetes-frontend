@@ -1,6 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Input,
+  Label,
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaOrdenes from "../components/Ordenes/TablaOrdenes";
@@ -19,6 +32,11 @@ export default function GestionOrdenes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [modalCancelar, setModalCancelar] = useState(false);
   const [ordenACancelar, setOrdenACancelar] = useState(null);
+  const [modalFinalizar, setModalFinalizar] = useState(false);
+  const [ordenAFinalizar, setOrdenAFinalizar] = useState(null);
+  const [numeroSeguimiento, setNumeroSeguimiento] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
 
   const navigate = useNavigate();
 
@@ -50,29 +68,52 @@ export default function GestionOrdenes() {
     }
   }, []);
 
-  const fetchOrdenes = async () => {
+  const fetchOrdenes = useCallback(async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${API_URL}/ordenes`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("Ordenes recibidas desde API:", response.data);
+      let allOrdenes = [];
+      let currentPage = 1;
+      let hasNextPage = true;
 
-      // Filtrar las órdenes para mostrar solo las de tipo entrega normal
-      const ordenesNormales = response.data.data.filter(
-        (orden) =>
-          orden.tipo_orden === "orden" &&
-          orden.detalles.some(
-            (detalle) => detalle.tipo_entrega === "Entrega Normal"
-          )
-      );
+      while (hasNextPage) {
+        const response = await axios.get(`${API_URL}/ordenes`, {
+          params: { page: currentPage },
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      setOrdenes(ordenesNormales);
+        console.log(
+          `Ordenes recibidas de la página ${currentPage}:`,
+          response.data
+        );
+
+        const ordenesNormales = response.data.data.filter(
+          (orden) =>
+            orden.tipo_orden === "orden" &&
+            orden.detalles.every(
+              (detalle) => detalle.tipo_entrega === "Entrega Normal"
+            )
+        );
+
+        allOrdenes = [...allOrdenes, ...ordenesNormales];
+
+        if (response.data.next_page_url) {
+          currentPage++;
+        } else {
+          hasNextPage = false;
+        }
+      }
+
+      console.log("Total de órdenes normales filtradas:", allOrdenes.length);
+      setOrdenes(allOrdenes);
+      setTotalItems(allOrdenes.length);
     } catch (error) {
       console.error("Error al obtener órdenes:", error);
       toast.error("Error al cargar las órdenes");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     verificarEstadoUsuarioLogueado(); // Verifica el estado del usuario al cargar la página
@@ -127,6 +168,85 @@ export default function GestionOrdenes() {
     );
   };
 
+  const toggleModalFinalizar = () => {
+    setModalFinalizar(!modalFinalizar);
+  };
+
+  const iniciarFinalizarOrden = (orden) => {
+    setOrdenAFinalizar(orden);
+    setNumeroSeguimiento(orden.numero_seguimiento || "");
+    toggleModalFinalizar();
+  };
+
+  const confirmarFinalizarOrden = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        `${API_URL}/finalizar-orden`,
+        { numero_seguimiento: numeroSeguimiento },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        const { orden } = response.data;
+        toast.success(response.data.message || "Orden finalizada con éxito");
+        actualizarOrdenLocal(ordenAFinalizar.id, {
+          estado: "Completada",
+          finished: 1,
+          fecha_entrega: orden.fecha_entrega,
+        });
+        toggleModalFinalizar();
+        fetchOrdenes(); // Actualizar la lista de órdenes
+      }
+    } catch (error) {
+      console.error("Error al finalizar la orden:", error);
+
+      if (error.response) {
+        const errorMessage = error.response.data.message;
+        switch (error.response.status) {
+          case 400:
+            toast.error(errorMessage || "Error al finalizar la orden");
+            break;
+          case 404:
+            toast.error("Orden no encontrada.");
+            break;
+          case 403:
+            toast.error("No tienes permiso para finalizar esta orden.");
+            break;
+          default:
+            toast.error(
+              "Error al finalizar la orden. Por favor, intente de nuevo."
+            );
+        }
+      } else if (error.request) {
+        toast.error(
+          "No se recibió respuesta del servidor. Por favor, intente de nuevo."
+        );
+      } else {
+        toast.error(
+          "Error al preparar la solicitud. Por favor, intente de nuevo."
+        );
+      }
+    }
+  };
+
+  const handleProcesarPago = useCallback(
+    (idCliente, ruta) => {
+      if (!idCliente) {
+        console.error("Error: ID del cliente no disponible");
+        toast.error("Error: Información del cliente no disponible");
+        return;
+      }
+      navigate(ruta);
+    },
+    [navigate]
+  );
+
   const verDetallesOrden = (idOrden) => {
     navigate(`/VerDetallesOrden/${idOrden}`);
   };
@@ -140,14 +260,22 @@ export default function GestionOrdenes() {
     setCurrentPage(1);
   };
 
-  const filtrarOrdenes = (ordenes) => {
-    if (!busqueda) return ordenes;
-    return ordenes.filter(
-      (orden) =>
-        orden.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-        orden.numero_seguimiento.toLowerCase().includes(busqueda.toLowerCase())
-    );
-  };
+  const filtrarOrdenes = useCallback(
+    (ordenes) => {
+      if (!busqueda) return ordenes;
+      return ordenes.filter(
+        (orden) =>
+          orden.cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+          orden.cliente.apellido
+            .toLowerCase()
+            .includes(busqueda.toLowerCase()) ||
+          orden.numero_seguimiento
+            .toLowerCase()
+            .includes(busqueda.toLowerCase())
+      );
+    },
+    [busqueda]
+  );
 
   const ordenesFiltradas = filtrarOrdenes(ordenes);
   const paginatedOrdenes = ordenesFiltradas.slice(
@@ -202,13 +330,19 @@ export default function GestionOrdenes() {
           <Col lg={12}>
             <Card>
               <CardBody>
-                <TablaOrdenes
-                  ordenes={paginatedOrdenes}
-                  cancelarOrden={iniciarCancelarOrden}
-                  navegarAEditar={navegarAEditar}
-                  verDetallesOrden={verDetallesOrden}
-                  actualizarOrden={actualizarOrdenLocal}
-                />
+                {loading ? (
+                  <p>Cargando órdenes...</p>
+                ) : (
+                  <TablaOrdenes
+                    ordenes={paginatedOrdenes}
+                    cancelarOrden={iniciarCancelarOrden}
+                    navegarAEditar={navegarAEditar}
+                    verDetallesOrden={verDetallesOrden}
+                    actualizarOrden={actualizarOrdenLocal}
+                    procesarPago={handleProcesarPago}
+                    finalizarOrden={iniciarFinalizarOrden}
+                  />
+                )}
               </CardBody>
             </Card>
           </Col>
@@ -225,7 +359,7 @@ export default function GestionOrdenes() {
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={ordenesFiltradas.length}
+              totalItemsCount={totalItems}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"
@@ -241,6 +375,23 @@ export default function GestionOrdenes() {
         ordenId={ordenACancelar}
         confirmarCancelar={confirmarCancelarOrden}
       />
+      <Modal isOpen={modalFinalizar} toggle={toggleModalFinalizar}>
+        <ModalHeader toggle={toggleModalFinalizar}>
+          Finalizar Orden Express
+        </ModalHeader>
+        <ModalBody>
+          <p>¿Está seguro que desea finalizar la orden express?</p>
+          <p>Número de Seguimiento: {numeroSeguimiento}</p>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={toggleModalFinalizar}>
+            Cancelar
+          </Button>
+          <Button color="primary" onClick={confirmarFinalizarOrden}>
+            Finalizar Orden
+          </Button>
+        </ModalFooter>
+      </Modal>
     </div>
   );
 }
