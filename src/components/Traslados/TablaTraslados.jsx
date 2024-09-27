@@ -3,7 +3,12 @@ import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faPencilAlt, faEye } from "@fortawesome/free-solid-svg-icons";
 
-const TablaTraslados = ({ traslados, verDetallesTraslado, editarTraslado, eliminarTraslado }) => {
+const TablaTraslados = ({
+  traslados,
+  verDetallesTraslado,
+  editarTraslado,
+  eliminarTraslado,
+}) => {
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <Table striped className="table-centered table-nowrap mb-0">
@@ -34,13 +39,21 @@ const TablaTraslados = ({ traslados, verDetallesTraslado, editarTraslado, elimin
                       className="me-2 btn-icon btn-danger"
                       onClick={() => eliminarTraslado(traslado.id)}
                       aria-label="Eliminar Traslado"
+                      disabled={
+                        traslado.estado === "Completado" ||
+                        traslado.estado === "Cancelado"
+                      }
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </Button>
                     <Button
-                      className="btn-icon btn-editar"
+                      className="btn-icon btn-editar me-2"
                       onClick={() => editarTraslado(traslado.id)}
                       aria-label="Editar Traslado"
+                      disabled={
+                        traslado.estado === "Completado" ||
+                        traslado.estado === "Cancelado"
+                      }
                     >
                       <FontAwesomeIcon icon={faPencilAlt} />
                     </Button>
