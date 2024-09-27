@@ -9,6 +9,7 @@ import {
   faPlay,
   faStop,
   faCreditCard,
+  faTag,
 } from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -161,6 +162,49 @@ const DetallesRutaRecoleccion = () => {
     }
   };
 
+  const generarVineta = async (ordenId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/ordenes/${ordenId}/vineta?format=json`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "json",
+        }
+      );
+
+      if (response.data.success) {
+        // Crear un Blob con el PDF en base64
+        const byteCharacters = atob(response.data.data.pdf_base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Crear un URL para el Blob
+        const fileURL = URL.createObjectURL(blob);
+
+        // Crear un enlace temporal y hacer clic en él para descargar
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.download = response.data.data.filename;
+        link.click();
+
+        // Liberar el URL del objeto
+        URL.revokeObjectURL(fileURL);
+
+        toast.success("Viñeta generada exitosamente");
+      } else {
+        toast.error("Error al generar la viñeta");
+      }
+    } catch (error) {
+      console.error("Error al generar viñeta:", error);
+      toast.error("Error al generar viñeta");
+    }
+  };
+
   if (!ruta) {
     return <div>Cargando...</div>;
   }
@@ -269,6 +313,12 @@ const DetallesRutaRecoleccion = () => {
                         disabled={orden.estado_pago !== "pendiente"}
                       >
                         <FontAwesomeIcon icon={faCreditCard} />
+                      </Button>
+                      <Button
+                        className="btn-sm me-2 btn-icon btn-regresar2"
+                        onClick={() => generarVineta(orden.id_orden)}
+                      >
+                        <FontAwesomeIcon icon={faTag} />
                       </Button>
                     </td>
                   </tr>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Card, CardBody, Col, Row, Table, Badge } from "reactstrap";
+import { Card, CardBody, Col, Row, Table, Badge, Button } from "reactstrap";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import { toast } from "react-toastify";
 
@@ -42,7 +42,6 @@ const VerDetallesOrden = () => {
         setTiposCaja(tiposCajaRes.data.empaques || []);
         setEstadosPaquete(estadosPaqueteRes.data.estado_paquetes || []);
 
-        // Imprimir los datos en la consola
         console.log("Datos de la orden:", ordenRes.data);
         console.log("Tipos de paquete:", tiposPaqueteRes.data.tipo_paquete);
         console.log("Tipos de caja:", tiposCajaRes.data.empaques);
@@ -152,6 +151,65 @@ const VerDetallesOrden = () => {
     return estado.toLowerCase() === "pagado" ? "success" : "warning";
   };
 
+  const reenviarComprobante = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/ordenes/reenviar_comprobante/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error("Error al reenviar comprobante:", error);
+      toast.error("Error al reenviar comprobante");
+    }
+  };
+
+  const generarVineta = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/ordenes/${id}/vineta?format=json`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "json",
+        }
+      );
+
+      if (response.data.success) {
+        // Crear un Blob con el PDF en base64
+        const byteCharacters = atob(response.data.data.pdf_base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Crear un URL para el Blob
+        const fileURL = URL.createObjectURL(blob);
+
+        // Crear un enlace temporal y hacer clic en él para descargar
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.download = response.data.data.filename;
+        link.click();
+
+        // Liberar el URL del objeto
+        URL.revokeObjectURL(fileURL);
+
+        toast.success("Viñeta generada exitosamente");
+      } else {
+        toast.error("Error al generar la viñeta");
+      }
+    } catch (error) {
+      console.error("Error al generar viñeta:", error);
+      toast.error("Error al generar viñeta");
+    }
+  };
+
   if (cargando)
     return (
       <div className="text-center mt-5">
@@ -172,6 +230,8 @@ const VerDetallesOrden = () => {
   const direccionEntrega = obtenerDireccionEntrega(orden);
   const { titulo: tituloNumero, numero: numeroMostrado } =
     obtenerNumeroSeguimientoOTracking(orden);
+
+  const ordenPagada = orden.estado_pago.toLowerCase() === "pagado";
 
   return (
     <div className="page-content">
@@ -354,10 +414,24 @@ const VerDetallesOrden = () => {
           </Row>
 
           <div className="text-center mt-4">
-            <Link to={determinarRutaVolver()} className="btn btn-primary">
+            <Link to={determinarRutaVolver()} className="btn btn-primary me-2">
               Volver a la lista de{" "}
               {orden.tipo_orden === "preorden" ? "pre-órdenes" : "órdenes"}
             </Link>
+            {ordenPagada && (
+              <>
+                <Button
+                  color="success"
+                  className="me-2"
+                  onClick={reenviarComprobante}
+                >
+                  Reenviar Comprobante
+                </Button>
+                <Button color="info" onClick={generarVineta}>
+                  Generar Viñeta
+                </Button>
+              </>
+            )}
           </div>
         </CardBody>
       </Card>
