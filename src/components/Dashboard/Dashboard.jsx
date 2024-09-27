@@ -21,10 +21,10 @@ const Dashboard = () => {
   const [totalBodegas, setTotalBodegas] = useState(0);  
   const [empleados, setEmpleados] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
-  const [estado1, setEstado1] = useState([]);
-  const [estado2, setEstado2] = useState([]);
-  const [estado3, setEstado3] = useState([]);
-  const [estado4, setEstado4] = useState([]);
+  //const [estado1, setEstado1] = useState([]);
+  //const [estado2, setEstado2] = useState([]);
+  //const [estado3, setEstado3] = useState([]);
+  //const [estado4, setEstado4] = useState([]);
   const navigate = useNavigate();  
   const [packageData, setPackageData] = useState([]);
 
@@ -39,46 +39,37 @@ const Dashboard = () => {
           }
         }); 
 
-        const empleadosResponse = await axios.get(`${API_URL}/empleados`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const ordenesResponse = await axios.get(`${API_URL}/ordenes`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const Totales = await axios.get(`${API_URL}/dashboard/card_summary`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        const porcentajes = await axios.get(`${API_URL}/dashboard/packages_by_status`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const [empleadosResponse, ordenesResponse, totalesResponse, porcentajesResponse] = await Promise.all([
+          axios.get(`${API_URL}/dashboard/last_employees`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_URL}/dashboard/last_orders`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_URL}/dashboard/card_summary`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get(`${API_URL}/dashboard/packages_by_status`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
 
 
-        //console.log('Datos del Dashboard:', porcentajes.data.estados[9].paquetes);
+        //console.log('Datos del Dashboard:', porcentajesResponse.data.estados);
         //console.log('Respuesta de la API: ',ordenesResponse);
 
         //console.log('Respuesta de la API:', porcentajes.data);
 
         setTotalUsuarios(usuarios.data.users.length);
-        setTotalClientes(Totales.data.totales.clientes);   
-        setTotalBodegas(Totales.data.totales.bodegas);   
-        setTotalEmpleados(Totales.data.totales.empleados);
+        setTotalClientes(totalesResponse.data.totales.clientes);
+        setTotalEmpleados(totalesResponse.data.totales.empleados);
+        setTotalBodegas(totalesResponse.data.totales.bodegas);
         setEmpleados(empleadosResponse.data.empleados);
-        setOrdenes(ordenesResponse.data.data);
-        setEstado1(porcentajes.data.estados[9].paquetes);
-        setEstado2(porcentajes.data.estados[7].paquetes);
-        setEstado3(porcentajes.data.estados[4].paquetes);
-        setEstado4(porcentajes.data.estados[8].paquetes);
+        setOrdenes(ordenesResponse.data.ordenes);
+        //setEstado1(porcentajesResponse.data.estados[9].paquetes);
+        //setEstado2(porcentajesResponse.data.estados[7].paquetes);
+        //setEstado3(porcentajesResponse.data.estados[4].paquetes);
+        //setEstado4(porcentajesResponse.data.estados[8].paquetes);
       } catch (error) {
         console.error("Error al obtener los datos:", error);
       }
@@ -104,8 +95,8 @@ const Dashboard = () => {
     navigate('/GestionBodegas');
   };
 
-  const empleadosRecientes = empleados.slice(-4);
-  const ordenesRecientes =ordenes.slice(-4);
+  const empleadosRecientes = empleados.slice(0, 4);
+  const ordenesRecientes = ordenes.slice(0, 4);
 
   return (
     <div className="page-content">      
@@ -242,19 +233,19 @@ const Dashboard = () => {
               <CardBody>
                 <CardTitle tag="h5">Empleados Recientes</CardTitle>
                 <ListGroup>
-                  {empleadosRecientes.length > 0 ? (
-                    empleadosRecientes.map((empleado) => (
-                      <ListGroupItem key={empleado.id}>
-                        {empleado.nombres} {empleado.apellidos} -{' '}
-                        <Badge color={empleado.activo ? 'danger' : 'success'}>
-                          {empleado.activo ? 'Inactivo' : 'Activo'}
-                        </Badge>
-                      </ListGroupItem>
-                    ))
-                  ) : (
-                    <ListGroupItem>No hay empleados recientes</ListGroupItem>
-                  )}
-                </ListGroup>
+          {empleadosRecientes.length > 0 ? (
+            empleadosRecientes.map((empleado) => (
+              <ListGroupItem key={empleado.id}>
+                {empleado.empleado} -{' '}
+                <Badge color={empleado.estado === 'Activo' ? 'success' : 'danger'}>
+                  {empleado.estado}
+                </Badge>
+              </ListGroupItem>
+            ))
+          ) : (
+            <ListGroupItem>No hay empleados recientes</ListGroupItem>
+          )}
+        </ListGroup>
               </CardBody>
             </Card>
           </Col>
@@ -264,30 +255,23 @@ const Dashboard = () => {
               <CardBody>
                 <CardTitle tag="h5">Órdenes Recientes</CardTitle>
                 <ListGroup>
-                  {ordenesRecientes.length > 0 ? (
-                    ordenesRecientes.map((orden) => (
-                      <ListGroupItem key={orden.id}>
-                        {orden.cliente.nombre} {orden.cliente.apellido} - {' '}
-                        {orden.tipo_orden}    {' '}
-                        {orden.detalles.length > 0 ? (
-                        <Badge color={
-                          orden.detalles[0].tipo_entrega === 'Entrega Normal' ? 'success' :
-                          orden.detalles[0].tipo_entrega === 'Entrega Express' ? 'primary' : 'secondary'
-                        }>
-                          {orden.detalles[0].tipo_entrega}
-                        </Badge>
-                      ) : (
-                        <Badge color="danger">Sin entrega</Badge>
-                      )}  {' '}                      
-                      <Badge color={'secondary'}>
-                        {orden.numero_tracking || 'Desconocido'}
-                      </Badge>
-                    </ListGroupItem>
-                    ))
-                  ) : (
-                    <ListGroupItem>No hay paquetes recientes</ListGroupItem>
-                  )}
-                </ListGroup>
+          {ordenesRecientes.length > 0 ? (
+            ordenesRecientes.map((orden) => (
+              <ListGroupItem key={orden.id}>
+                {orden.cliente} -{' '}
+                {orden.tipo_orden} {' '}
+                <Badge color={orden.tipo_entrega === 'Entrega Normal' ? 'success' : 'primary'}>
+                  {orden.tipo_entrega}
+                </Badge> {' '}
+                <Badge color="secondary">
+                  {orden.numero_tracking || 'Desconocido'}
+                </Badge>
+              </ListGroupItem>
+            ))
+          ) : (
+            <ListGroupItem>No hay órdenes recientes</ListGroupItem>
+          )}
+        </ListGroup>
               </CardBody>
             </Card>
           </Col>

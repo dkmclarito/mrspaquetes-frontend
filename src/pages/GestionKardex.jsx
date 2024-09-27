@@ -157,7 +157,7 @@ export default function GestionKardex() {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Kardex" breadcrumbItem="Listado de Kardex" />
+        <Breadcrumbs title="Visualización de Kardex" breadcrumbItem="Listado de Kardex" />
         <Row>
           <Col lg={12}>
             <Card>
@@ -214,11 +214,9 @@ export default function GestionKardex() {
                   <Table responsive striped className="table-centered">
                     <thead>
                       <tr>
-                        <th>ID</th>
-                        <th>ID Orden</th>
-                        <th>Cantidad</th>
                         <th>Número de Ingreso</th>
                         <th>Código QR del Paquete</th>
+                        <th>Cantidad</th>
                         <th>Tipo de Movimiento</th>
                         <th>Tipo de Transacción</th>
                         <th>Fecha</th>
@@ -234,11 +232,9 @@ export default function GestionKardex() {
                       ) : (
                         currentItems.map((item) => (
                           <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>{item.id_orden}</td>
-                            <td>{item.cantidad}</td>
                             <td>{item.numero_ingreso}</td>
                             <td>{item.uuid}</td>
+                            <td>{item.cantidad}</td>
                             <td>{item.tipo_movimiento}</td>
                             <td>{item.tipo_transaccion}</td>
                             <td>

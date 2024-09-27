@@ -144,16 +144,14 @@ const TablaOrdenes = ({
                         <FontAwesomeIcon icon={faCreditCard} />
                       </Button>
                     )}
-                    {orden.estado_pago === "pagado" &&
-                      orden.estado !== "Completada" &&
-                      !orden.finished && (
-                        <Button
-                          className="me-2 btn-icon btn-editar"
-                          onClick={() => finalizarOrden(orden)}
-                        >
-                          <FontAwesomeIcon icon={faCheck} />
-                        </Button>
-                      )}
+                    {orden.estado_pago === "pagado" && !orden.finished && (
+                      <Button
+                        className="me-2 btn-icon btn-editar"
+                        onClick={() => finalizarOrden(orden)}
+                      >
+                        <FontAwesomeIcon icon={faCheck} />
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>
