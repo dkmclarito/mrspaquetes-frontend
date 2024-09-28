@@ -411,6 +411,13 @@ body {
   border: 1px solid #ddd;
 }
 
+.table .thEntrada{
+  background-color: #025d0d;
+}
+.table .thSalida{
+  background-color: #840101;
+}
+
 /*Botones*/
 
 .btn-regresar{
@@ -608,6 +615,13 @@ body {
 .dark-mode .table td {
   background-color: #555;
   color: #ffffff;
+}
+
+.dark-mode  .table .thEntrada{
+  background-color: #025d0d4c;
+}
+.dark-mode  .table .thSalida{
+  background-color: #8401014f;
 }
 
 .dark-mode .tabla-datosusuario{
