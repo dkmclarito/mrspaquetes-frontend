@@ -855,17 +855,6 @@ const VerticalLayout = () => {
                   >
                     <li>
                       <NavLink
-                        to="/GestionBodegas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiBuilding className="nav-icon sub-icon" />
-                        Bodegas
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
                         to="/GestionUbicacion"
                         className={({ isActive }) =>
                           isActive ? "nav-link active" : "nav-link"
@@ -884,17 +873,6 @@ const VerticalLayout = () => {
                       >
                         <BiBus className="nav-icon sub-icon" />
                         Traslados
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/GestionKardex"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiBook className="nav-icon sub-icon" />
-                        Kardex
                       </NavLink>
                     </li>
                   </ul>

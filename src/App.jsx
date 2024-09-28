@@ -156,7 +156,15 @@ const App = () => {
                 <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
                 <Route path="/DetallesVehiculo/:id" element={<DetallesVehiculo />} />
 
-                
+                <Route path="/GestionBodegas" element={<GestionBodegas />} />
+                <Route path="/AgregarBodega" element={<AgregarBodega />} />
+
+                <Route
+                  path="/DetallesBodega/:id"
+                  element={<DetallesBodega />}
+                />
+                <Route path="/GestionKardex" element={<GestionKardex />} />
+
                 <Route path="/AgregarVehiculo" element={<AgregarVehiculo />} />
                 <Route path="/GestionMarcas" element={<GestionMarcas />} />
                 <Route path="/AgregarMarca" element={<AgregarMarca />} />
@@ -339,14 +347,7 @@ const App = () => {
                   />
                 }
               >
-                <Route path="/GestionKardex" element={<GestionKardex />} />
-                <Route path="/GestionBodegas" element={<GestionBodegas />} />
-                <Route path="/AgregarBodega" element={<AgregarBodega />} />
-
-                <Route
-                  path="/DetallesBodega/:id"
-                  element={<DetallesBodega />}
-                />
+                
                 <Route
                   path="/GestionUbicacion"
                   element={<GestionUbicacion />}
