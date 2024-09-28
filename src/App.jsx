@@ -238,12 +238,7 @@ const App = () => {
                   path="/ProcesarPagoExpress/:idCliente"
                   element={<ProcesarPagoExpress />}
                 />
-                <Route
-                  path="/VerDetallesOrden/:id"
-                  element={<VerDetallesOrden />}
-                />
                 <Route path="/editar-orden/:id" element={<EditarOrden />} />
-
                 <Route
                   path="/GestionPreOrdenes"
                   element={<GestionPreOrdenes />}
@@ -298,6 +293,19 @@ const App = () => {
                 }
               >
                 <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
+              </Route>
+
+              <Route
+                element={
+                  <PrivateRoute
+                    allowedRoles={["coordinador_de_rutas", "atencion_al_cliente", "admin"]}
+                  />
+                }
+              >
+                <Route
+                  path="/VerDetallesOrden/:id"
+                  element={<VerDetallesOrden />}
+                />
               </Route>
 
               {/* MODULO DE BODEGAS */}

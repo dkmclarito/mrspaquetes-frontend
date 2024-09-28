@@ -11,7 +11,7 @@ import "../styles/usuarios.css";
 import Pagination from 'react-js-pagination';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 const GestionUsuarios = () => {
   document.title = "Usuarios | Mr. Paquetes";
