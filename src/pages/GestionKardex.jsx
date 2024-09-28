@@ -24,7 +24,7 @@ import AuthService from "../services/authService";
 import { debounce } from "lodash";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 10;
 
 export default function GestionKardex() {
   document.title = "Kardex | Gestión";
@@ -62,19 +62,26 @@ export default function GestionKardex() {
 
   const applyFilters = useCallback(() => {
     const filtered = allKardexData.filter((item) => {
+      // Filtrar por búsqueda
       const matchesSearch =
         !filters.searchQuery ||
-        item.numero_entrada.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
-        item.paquete_entrada.toLowerCase().includes(filters.searchQuery.toLowerCase());
-
+        (item.numero_entrada && item.numero_entrada.toLowerCase().includes(filters.searchQuery.toLowerCase())) ||
+        (item.paquete_entrada && item.paquete_entrada.toLowerCase().includes(filters.searchQuery.toLowerCase())) ||
+        (item.numero_salida && item.numero_salida.toLowerCase().includes(filters.searchQuery.toLowerCase())) ||
+        (item.paquete_salida && item.paquete_salida.toLowerCase().includes(filters.searchQuery.toLowerCase()));
+  
+      // Filtrar por fechas
       const itemDateEntrada = item.fecha_entrada ? new Date(item.fecha_entrada) : null;
-
-      const matchesStartDate = !filters.startDate || (itemDateEntrada && itemDateEntrada >= new Date(filters.startDate));
-      const matchesEndDate = !filters.endDate || (itemDateEntrada && itemDateEntrada <= new Date(filters.endDate));
-
+      const itemDateSalida = item.fecha_salida ? new Date(item.fecha_salida) : null;
+  
+      const matchesStartDate = (!filters.startDate || (itemDateEntrada && itemDateEntrada >= new Date(filters.startDate))) || 
+                                (!filters.startDate || (itemDateSalida && itemDateSalida >= new Date(filters.startDate)));
+      const matchesEndDate = (!filters.endDate || (itemDateEntrada && itemDateEntrada <= new Date(filters.endDate))) || 
+                              (!filters.endDate || (itemDateSalida && itemDateSalida <= new Date(filters.endDate)));
+  
       return matchesSearch && matchesStartDate && matchesEndDate;
     });
-
+  
     setFilteredData(filtered);
     setTotalItems(filtered.length);
     setCurrentPage(1); // Reinicia a la primera página al filtrar
@@ -119,7 +126,7 @@ export default function GestionKardex() {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Visualización de Kardex" breadcrumbItem="Listado de Kardex" />
+        <Breadcrumbs title="Gestión de Kardex" breadcrumbItem="Listado de Kardex" />
         <Row>
           <Col lg={12}>
             <Card>
@@ -211,18 +218,31 @@ export default function GestionKardex() {
                         ) : (
                           currentItems.map((item) => (
                             <tr key={item.id}>
-                              <td>{item.id}</td>
-                              <td>{item.numero_entrada}</td>
-                              <td>{item.paquete_entrada}</td>
-                              <td>{item.cantidad_entrada}</td>
-                              <td>{item.tipo_transaccion_entrada}</td>
-                              <td>{format(parseISO(item.fecha_entrada), "dd/MM/yyyy", { locale: es })}</td>
-                              <td></td>
-                              <td></td>
-                              <td></td>
-                              <td></td>
-                              <td></td>
-                              <td></td>
+                              {item.numero_entrada ? (
+                                <>
+                                  <td>{item.id}</td>
+                                  <td>{item.numero_entrada}</td>
+                                  <td>{item.paquete_entrada}</td>
+                                  <td>{item.cantidad_entrada}</td>
+                                  <td>{item.tipo_transaccion_entrada}</td>
+                                  <td>{format(parseISO(item.fecha_entrada), "dd/MM/yyyy", { locale: es })}</td>
+                                </>
+                              ) : (
+                                <td colSpan="6"></td>
+                              )}
+
+                              {item.numero_salida ? (
+                                <>
+                                  <td>{item.id}</td>
+                                  <td>{item.numero_salida}</td>
+                                  <td>{item.paquete_salida}</td>
+                                  <td>{item.cantidad_salida}</td>
+                                  <td>{item.tipo_transaccion_salida}</td>
+                                  <td>{format(parseISO(item.fecha_salida), "dd/MM/yyyy", { locale: es })}</td>
+                                </>
+                              ) : (
+                                <td colSpan="6"></td>
+                              )}
                             </tr>
                           ))
                         )}
