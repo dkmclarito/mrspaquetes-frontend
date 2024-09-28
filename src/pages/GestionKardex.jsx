@@ -24,7 +24,7 @@ import AuthService from "../services/authService";
 import { debounce } from "lodash";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 export default function GestionKardex() {
   document.title = "Kardex | Gestión";
