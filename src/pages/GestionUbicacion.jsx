@@ -219,7 +219,7 @@ const GestionUbicacion = () => {
                 id="busqueda"
                 value={busqueda}
                 onChange={handleSearchChange}
-                placeholder="Buscar por ID de ubicación"
+                placeholder="Buscar:"
                 style={{ width: "300px" }}
               />
               <div style={{ marginLeft: "auto" }}>

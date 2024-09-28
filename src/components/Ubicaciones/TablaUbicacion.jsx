@@ -10,7 +10,6 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
       <Table striped className="table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
-            <th className="text-center">ID</th>
             <th className="text-center">Numero de orden</th>
             <th className="text-center">Código QR del Paquete</th>
             <th className="text-center">Descripción</th>
