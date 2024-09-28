@@ -717,6 +717,17 @@ const VerticalLayout = () => {
                     {!menuCollapsed && <span>Validar entrega</span>}
                   </NavLink>
                 </li>
+                <li>
+                      <NavLink
+                        to="/gestion-ordenes-recoleccion"
+                        className={({ isActive }) =>
+                          isActive ? "nav-link active" : "nav-link"
+                        }
+                      >
+                        <BiReceipt className="nav-icon sub-icon" />
+                        Recolección
+                      </NavLink>
+                    </li>
                 <li className="nav-item">
                   <div
                     className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
@@ -977,7 +988,6 @@ const VerticalLayout = () => {
                         Recolección
                       </NavLink>
                     </li>
-                    
                   </ul>
                 </li>
               </>

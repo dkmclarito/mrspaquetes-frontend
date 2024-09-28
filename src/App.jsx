@@ -298,6 +298,30 @@ const App = () => {
               <Route
                 element={
                   <PrivateRoute
+                    allowedRoles={["acompanante", "coordinador_de_rutas", "admin"]}
+                  />
+                }
+              >
+                <Route
+                  path="/gestion-ordenes-recoleccion"
+                  element={<GestionOrdenesRecoleccion />}
+                />
+                <Route
+                  path="/crear-ruta-recoleccion"
+                  element={<CrearRutaRecoleccion />}
+                />
+                <Route
+                  path="/editar-ruta-recoleccion/:id"
+                  element={<EditarRutaRecoleccion />}
+                />
+                <Route
+                  path="/detalles-ruta-recoleccion/:id"
+                  element={<DetallesRutaRecoleccion />}
+                />
+              </Route>
+              <Route
+                element={
+                  <PrivateRoute
                     allowedRoles={["coordinador_de_rutas", "atencion_al_cliente", "admin"]}
                   />
                 }
@@ -307,7 +331,6 @@ const App = () => {
                   element={<VerDetallesOrden />}
                 />
               </Route>
-
               {/* MODULO DE BODEGAS */}
               <Route
                 element={
@@ -378,22 +401,6 @@ const App = () => {
                   element={<SeleccionarPaquetes />}
                 />
 
-                <Route
-                  path="/gestion-ordenes-recoleccion"
-                  element={<GestionOrdenesRecoleccion />}
-                />
-                <Route
-                  path="/crear-ruta-recoleccion"
-                  element={<CrearRutaRecoleccion />}
-                />
-                <Route
-                  path="/editar-ruta-recoleccion/:id"
-                  element={<EditarRutaRecoleccion />}
-                />
-                <Route
-                  path="/detalles-ruta-recoleccion/:id"
-                  element={<DetallesRutaRecoleccion />}
-                />
                 <Route
                   path="/EditarAsignacionRuta/:codigo_unico_asignacion"
                   element={<EditarAsignacionRuta />}
