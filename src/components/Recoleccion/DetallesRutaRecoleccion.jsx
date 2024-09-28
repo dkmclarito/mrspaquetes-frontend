@@ -4,7 +4,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faPlay, faStop } from "@fortawesome/free-solid-svg-icons";
+import {
+  faEye,
+  faPlay,
+  faStop,
+  faCreditCard,
+  faTag,
+} from "@fortawesome/free-solid-svg-icons";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -31,7 +37,16 @@ const DetallesRutaRecoleccion = () => {
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
-            return { ...orden, paquetes: detallesOrden.data.detalles };
+            return {
+              ...orden,
+              paquetes: detallesOrden.data.detalles,
+              puedeIniciar: orden.estado !== 0 && !orden.recoleccion_iniciada,
+              puedeFinalizar:
+                orden.estado !== 0 &&
+                orden.recoleccion_iniciada &&
+                !orden.recoleccion_finalizada,
+              estado_pago: detallesOrden.data.estado_pago,
+            };
           })
         ),
       };
@@ -80,7 +95,7 @@ const DetallesRutaRecoleccion = () => {
       1: "Activo",
       2: "Inactivo",
       3: "En Proceso",
-      4: "Completado",
+      0: "Recolectada",
       5: "Cancelado",
     };
     return estados[id] || "Estado desconocido";
@@ -126,6 +141,67 @@ const DetallesRutaRecoleccion = () => {
     } catch (error) {
       console.error("Error al finalizar la recolección de la orden:", error);
       toast.error("Error al finalizar la recolección de la orden");
+    }
+  };
+
+  const procesarPagoOrden = async (ordenId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${API_URL}/ordenes/${ordenId}/procesar-pago`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      toast.success("Pago procesado con éxito");
+      await fetchRutaDetails();
+    } catch (error) {
+      console.error("Error al procesar el pago de la orden:", error);
+      toast.error("Error al procesar el pago de la orden");
+    }
+  };
+
+  const generarVineta = async (ordenId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_URL}/ordenes/${ordenId}/vineta?format=json`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "json",
+        }
+      );
+
+      if (response.data.success) {
+        // Crear un Blob con el PDF en base64
+        const byteCharacters = atob(response.data.data.pdf_base64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+
+        // Crear un URL para el Blob
+        const fileURL = URL.createObjectURL(blob);
+
+        // Crear un enlace temporal y hacer clic en él para descargar
+        const link = document.createElement("a");
+        link.href = fileURL;
+        link.download = response.data.data.filename;
+        link.click();
+
+        // Liberar el URL del objeto
+        URL.revokeObjectURL(fileURL);
+
+        toast.success("Viñeta generada exitosamente");
+      } else {
+        toast.error("Error al generar la viñeta");
+      }
+    } catch (error) {
+      console.error("Error al generar viñeta:", error);
+      toast.error("Error al generar viñeta");
     }
   };
 
@@ -206,11 +282,7 @@ const DetallesRutaRecoleccion = () => {
                 <tbody>
                   <tr>
                     <td>{orden.id}</td>
-                    <td>
-                      <span className="text-warning">
-                        {orden.codigo_unico_recoleccion}
-                      </span>
-                    </td>
+                    <td>{orden.codigo_unico_recoleccion}</td>
                     <td>{orden.prioridad}</td>
                     <td>{orden.destino}</td>
                     <td>{obtenerNombreEstado(orden.estado)}</td>
@@ -222,16 +294,31 @@ const DetallesRutaRecoleccion = () => {
                         <FontAwesomeIcon icon={faEye} />
                       </Button>
                       <Button
-                        className="btn-sm btn-icon btn-success  me-2"
+                        className="btn-sm btn-icon btn-success me-2"
                         onClick={() => iniciarRecoleccionOrden(orden.id)}
+                        disabled={!orden.puedeIniciar}
                       >
                         <FontAwesomeIcon icon={faPlay} />
                       </Button>
                       <Button
-                        className="btn-sm btn-icon btn-danger"
+                        className="btn-sm btn-icon btn-danger me-2"
                         onClick={() => finalizarRecoleccionOrden(orden.id)}
+                        disabled={!orden.puedeFinalizar}
                       >
                         <FontAwesomeIcon icon={faStop} />
+                      </Button>
+                      <Button
+                        className="me-2 btn-icon btn-editar"
+                        onClick={() => procesarPagoOrden(orden.id_orden)}
+                        disabled={orden.estado_pago !== "pendiente"}
+                      >
+                        <FontAwesomeIcon icon={faCreditCard} />
+                      </Button>
+                      <Button
+                        className="btn-sm me-2 btn-icon btn-regresar2"
+                        onClick={() => generarVineta(orden.id_orden)}
+                      >
+                        <FontAwesomeIcon icon={faTag} />
                       </Button>
                     </td>
                   </tr>
@@ -265,13 +352,6 @@ const DetallesRutaRecoleccion = () => {
 
           <div className="mt-4">
             <Button
-              color="primary"
-              onClick={() => navigate(`/editar-ruta-recoleccion/${id}`)}
-            >
-              Editar Ruta
-            </Button>
-            <Button
-              
               className="btn-regresar ml-2"
               onClick={() => navigate("/gestion-ordenes-recoleccion")}
             >

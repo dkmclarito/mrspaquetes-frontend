@@ -119,7 +119,7 @@ export default function GestionKardex() {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Kardex" breadcrumbItem="Listado de Kardex" />
+        <Breadcrumbs title="Visualización de Kardex" breadcrumbItem="Listado de Kardex" />
         <Row>
           <Col lg={12}>
             <Card>

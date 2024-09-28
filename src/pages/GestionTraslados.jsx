@@ -148,10 +148,7 @@ const GestionTraslados = () => {
                 style={{ width: "300px" }}
               />
               <div className="ms-auto">
-                <Link
-                  to="/AgregarTraslados"
-                  className="btn btn-primary"
-                >
+                <Link to="/AgregarTraslados" className="btn btn-primary">
                   <i className="fas fa-plus me-1"></i> Agregar Traslado
                 </Link>
               </div>

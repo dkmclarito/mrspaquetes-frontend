@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Container,
   Row,
@@ -28,51 +28,98 @@ const CrearRutaRecoleccion = () => {
   const [vehiculos, setVehiculos] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const fetchAllData = async (url, token) => {
+    let allData = [];
+    let currentPage = 1;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      try {
+        const response = await axios.get(url, {
+          params: { page: currentPage },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        allData = [...allData, ...response.data.data];
+
+        if (response.data.next_page_url) {
+          currentPage++;
+        } else {
+          hasNextPage = false;
+        }
+      } catch (error) {
+        console.error(
+          `Error al obtener datos de la página ${currentPage}:`,
+          error
+        );
+        hasNextPage = false;
+      }
+    }
+
+    return allData;
+  };
+
+  const fetchOrdenes = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const [allOrdenes, allOrdenesRecoleccion] = await Promise.all([
+        fetchAllData(`${API_URL}/ordenes`, token),
+        fetchAllData(`${API_URL}/orden-recoleccion`, token),
+      ]);
+
+      console.log("Todas las órdenes:", allOrdenes);
+      console.log("Todas las órdenes de recolección:", allOrdenesRecoleccion);
+
+      // Obtener todos los IDs de órdenes ya asignadas a cualquier ruta de recolección
+      const ordenesAsignadasIds = new Set(
+        allOrdenesRecoleccion.flatMap((or) => or.id_orden)
+      );
+
+      // Filtrar preórdenes disponibles
+      const preordenesFiltradas = allOrdenes.filter(
+        (orden) =>
+          orden.tipo_orden === "preorden" &&
+          orden.detalles &&
+          orden.detalles.every(
+            (detalle) => detalle.tipo_entrega === "Entrega Normal"
+          ) &&
+          orden.detalles.some((detalle) => detalle.id_estado_paquetes === 3) &&
+          !ordenesAsignadasIds.has(orden.id)
+      );
+
+      console.log("Preórdenes filtradas:", preordenesFiltradas);
+      setOrdenes(preordenesFiltradas);
+    } catch (error) {
+      console.error("Error al obtener órdenes:", error);
+      toast.error("Error al cargar las órdenes");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        const [vehiculosRes, ordenesRes, ordenesRecoleccionRes] =
-          await Promise.all([
-            axios.get(`${API_URL}/dropdown/get_vehiculos`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/ordenes?tipo_orden=preorden`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/orden-recoleccion`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ]);
+        const [vehiculosRes] = await Promise.all([
+          axios.get(`${API_URL}/dropdown/get_vehiculos`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
         setVehiculos(vehiculosRes.data.vehiculos || []);
 
-        // Obtener IDs de órdenes ya asignadas a órdenes de recolección
-        const ordenesAsignadas = new Set(
-          ordenesRecoleccionRes.data.data.map((or) => or.id_orden)
-        );
-
-        // Filtrar órdenes que son pre-órdenes normales, están en estado de espera de recolección y no están asignadas
-        const ordenesFiltradas = ordenesRes.data.data.filter(
-          (orden) =>
-            orden.tipo_orden === "preorden" &&
-            orden.detalles.every(
-              (detalle) => detalle.tipo_entrega === "Entrega Normal"
-            ) &&
-            orden.detalles.some(
-              (detalle) => detalle.id_estado_paquetes === 3
-            ) &&
-            !ordenesAsignadas.has(orden.id)
-        );
-        setOrdenes(ordenesFiltradas);
+        await fetchOrdenes();
       } catch (error) {
         console.error("Error al cargar datos:", error);
         toast.error("Error al cargar los datos necesarios");
       }
     };
     fetchData();
-  }, []);
+  }, [fetchOrdenes]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -164,7 +211,8 @@ const CrearRutaRecoleccion = () => {
   const verDetallesOrden = (idOrden) => {
     navigate(`/VerDetallesOrden/${idOrden}`);
   };
-  const handleExit = () => {    
+
+  const handleExit = () => {
     navigate("/gestion-ordenes-recoleccion");
   };
 
@@ -212,63 +260,67 @@ const CrearRutaRecoleccion = () => {
             <Row>
               <Col md={12}>
                 <h4>Seleccionar Órdenes para Recolección</h4>
-                <Table responsive striped>
-                  <thead>
-                    <tr>
-                      <th>Seleccionar</th>
-                      <th>Número de Seguimiento</th>
-                      <th>Cliente</th>
-                      <th>Dirección de Recolección</th>
-                      <th>Orden de recolección</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ordenes.map((orden) => (
-                      <tr key={orden.id}>
-                        <td>
-                          <Input
-                            type="checkbox"
-                            checked={ordenesSeleccionadas.some(
-                              (o) => o.id === orden.id
-                            )}
-                            onChange={() => handleOrdenToggle(orden.id)}
-                          />
-                        </td>
-                        <td>{orden.numero_seguimiento}</td>
-                        <td>{`${orden.cliente.nombre} ${orden.cliente.apellido}`}</td>
-                        <td>{orden.direccion_emisor?.direccion || "N/A"}</td>
-                        <td>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={
-                              ordenesSeleccionadas.find(
-                                (o) => o.id === orden.id
-                              )?.prioridad || ""
-                            }
-                            onChange={(e) =>
-                              handlePrioridadChange(orden.id, e.target.value)
-                            }
-                            disabled={
-                              !ordenesSeleccionadas.some(
-                                (o) => o.id === orden.id
-                              )
-                            }
-                          />
-                        </td>
-                        <td>
-                          <Button
-                            className="btn-sm btn-icon btn-success"
-                            onClick={() => verDetallesOrden(orden.id)}
-                          >
-                            <FontAwesomeIcon icon={faEye} />
-                          </Button>
-                        </td>
+                {loading ? (
+                  <p>Cargando órdenes...</p>
+                ) : (
+                  <Table responsive striped>
+                    <thead>
+                      <tr>
+                        <th>Seleccionar</th>
+                        <th>Número de Seguimiento</th>
+                        <th>Cliente</th>
+                        <th>Dirección de Recolección</th>
+                        <th>Orden de recolección</th>
+                        <th>Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    </thead>
+                    <tbody>
+                      {ordenes.map((orden) => (
+                        <tr key={orden.id}>
+                          <td>
+                            <Input
+                              type="checkbox"
+                              checked={ordenesSeleccionadas.some(
+                                (o) => o.id === orden.id
+                              )}
+                              onChange={() => handleOrdenToggle(orden.id)}
+                            />
+                          </td>
+                          <td>{orden.numero_seguimiento}</td>
+                          <td>{`${orden.cliente.nombre} ${orden.cliente.apellido}`}</td>
+                          <td>{orden.direccion_emisor?.direccion || "N/A"}</td>
+                          <td>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={
+                                ordenesSeleccionadas.find(
+                                  (o) => o.id === orden.id
+                                )?.prioridad || ""
+                              }
+                              onChange={(e) =>
+                                handlePrioridadChange(orden.id, e.target.value)
+                              }
+                              disabled={
+                                !ordenesSeleccionadas.some(
+                                  (o) => o.id === orden.id
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <Button
+                              className="btn-sm btn-icon btn-success"
+                              onClick={() => verDetallesOrden(orden.id)}
+                            >
+                              <FontAwesomeIcon icon={faEye} />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </Col>
             </Row>
             <Button color="primary" type="submit">

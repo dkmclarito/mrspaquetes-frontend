@@ -1,5 +1,14 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Card, CardBody, Col, Row, Badge, Spinner, Table } from "reactstrap";
+import {
+  Card,
+  CardBody,
+  Col,
+  Row,
+  Badge,
+  Spinner,
+  Table,
+  Button,
+} from "reactstrap";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Traslados/Common/Breadcrumbs";
 import axios from "axios";
@@ -61,17 +70,18 @@ export default function DetallesTraslados() {
           throw new Error("No se encontró el token de autenticación");
         }
 
-        const [trasladoResponse, paquetesResponse, bodegasResponse] = await Promise.all([
-          axios.get(`${API_URL}/traslados/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/paquete`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/bodegas`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+        const [trasladoResponse, paquetesResponse, bodegasResponse] =
+          await Promise.all([
+            axios.get(`${API_URL}/traslados/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/paquete`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${API_URL}/bodegas`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
         if (trasladoResponse.data && trasladoResponse.data.id_traslado) {
           setTraslado(trasladoResponse.data);
@@ -82,13 +92,16 @@ export default function DetallesTraslados() {
         setPaquetes(paquetesResponse.data.data || []);
 
         const bodegasMap = {};
-        bodegasResponse.data.bodegas.forEach(bodega => {
+        bodegasResponse.data.bodegas.forEach((bodega) => {
           bodegasMap[bodega.id] = bodega;
         });
         setBodegas(bodegasMap);
       } catch (error) {
         console.error("Error al obtener los datos:", error);
-        setError(error.message || "Error al obtener los datos. Por favor, intente nuevamente.");
+        setError(
+          error.message ||
+            "Error al obtener los datos. Por favor, intente nuevamente."
+        );
         toast.error("Error al cargar los datos");
       } finally {
         setLoading(false);
@@ -97,6 +110,27 @@ export default function DetallesTraslados() {
 
     fetchData();
   }, [id]);
+
+  const finalizarTraslado = async () => {
+    try {
+      const token = AuthService.getCurrentUser();
+      await axios.post(
+        `${API_URL}/finalizar-traslado`,
+        { id_traslado: id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success("Traslado finalizado con éxito");
+      setTraslado((prevTraslado) => ({
+        ...prevTraslado,
+        estado: "Completado",
+      }));
+    } catch (error) {
+      console.error("Error al finalizar el traslado:", error);
+      toast.error(
+        error.response?.data?.message || "Error al finalizar el traslado"
+      );
+    }
+  };
 
   if (loading) {
     return (
@@ -129,55 +163,86 @@ export default function DetallesTraslados() {
     );
   }
 
-  const paquetesDelTraslado = paquetes.filter(paquete => 
-    traslado.paquetes && traslado.paquetes.some(p => p.id_paquete === paquete.id)
+  const paquetesDelTraslado = paquetes.filter(
+    (paquete) =>
+      traslado.paquetes &&
+      traslado.paquetes.some((p) => p.id_paquete === paquete.id)
   );
 
   return (
     <div className="page-content">
-      <Breadcrumbs title="Gestión de Traslados" breadcrumbItem="Detalles de Traslado" />
+      <Breadcrumbs
+        title="Gestión de Traslados"
+        breadcrumbItem="Detalles de Traslado"
+      />
       <Card>
         <CardBody>
-          <h5 className="card-title">Detalles del Traslado</h5>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h5 className="card-title mb-0">Detalles del Traslado</h5>
+            {traslado &&
+              traslado.estado !== "Completado" &&
+              traslado.estado !== "Cancelado" && (
+                <Button color="primary" onClick={finalizarTraslado}>
+                  Finalizar Traslado
+                </Button>
+              )}
+          </div>
           <Row>
             <Col sm="12">
               <div className="table-responsive">
                 <table className="table table-bordered">
                   <tbody>
                     <tr>
-                      <th scope="row" style={{ width: '200px', whiteSpace: 'nowrap' }}>ID:</th>
+                      <th
+                        scope="row"
+                        style={{ width: "200px", whiteSpace: "nowrap" }}
+                      >
+                        ID:
+                      </th>
                       <td>
                         <Badge color="primary">{traslado.id_traslado}</Badge>
                       </td>
                     </tr>
                     <tr>
                       <th scope="row">Número de Traslado:</th>
-                      <td>{traslado.numero_traslado || 'N/A'}</td>
+                      <td>{traslado.numero_traslado || "N/A"}</td>
                     </tr>
                     <tr>
                       <th scope="row">Bodega de Origen:</th>
                       <td>
-                        {bodegas[traslado.bodega_origen] 
-                          ? `${bodegas[traslado.bodega_origen].nombre} (${bodegas[traslado.bodega_origen].tipo_bodega})` 
-                          : 'N/A'}
+                        {bodegas[traslado.bodega_origen]
+                          ? `${bodegas[traslado.bodega_origen].nombre} (${bodegas[traslado.bodega_origen].tipo_bodega})`
+                          : "N/A"}
                       </td>
                     </tr>
                     <tr>
                       <th scope="row">Bodega de Destino:</th>
                       <td>
-                        {bodegas[traslado.bodega_destino] 
-                          ? `${bodegas[traslado.bodega_destino].nombre} (${bodegas[traslado.bodega_destino].tipo_bodega})` 
-                          : 'N/A'}
+                        {bodegas[traslado.bodega_destino]
+                          ? `${bodegas[traslado.bodega_destino].nombre} (${bodegas[traslado.bodega_destino].tipo_bodega})`
+                          : "N/A"}
                       </td>
                     </tr>
                     <tr>
                       <th scope="row">Fecha de Traslado:</th>
-                      <td>{traslado.fecha_traslado ? new Date(traslado.fecha_traslado).toLocaleDateString('es-ES') : 'N/A'}</td>
+                      <td>
+                        {traslado.fecha_traslado
+                          ? new Date(
+                              traslado.fecha_traslado
+                            ).toLocaleDateString("es-ES")
+                          : "N/A"}
+                      </td>
                     </tr>
                     <tr>
                       <th scope="row">Estado:</th>
                       <td>
-                        <Badge color={traslado.estado === "Pendiente" ? "warning" : "success"}>
+                        <Badge
+                          color={
+                            traslado.estado === "Pendiente"
+                              ? "warning"
+                              : "success"
+                          }
+                        >
                           {traslado.estado}
                         </Badge>
                       </td>
@@ -220,14 +285,30 @@ export default function DetallesTraslados() {
                         <td>{paquete.empaque}</td>
                         <td>{paquete.peso}</td>
                         <td>{paquete.estado_paquete}</td>
-                        <td>{paquete.fecha_envio ? new Date(paquete.fecha_envio).toLocaleDateString('es-ES') : 'N/A'}</td>
-                        <td>{paquete.fecha_entrega_estimada ? new Date(paquete.fecha_entrega_estimada).toLocaleDateString('es-ES') : 'N/A'}</td>
-                        <td>{paquete.descripcion_contenido || 'Sin descripción'}</td>
+                        <td>
+                          {paquete.fecha_envio
+                            ? new Date(paquete.fecha_envio).toLocaleDateString(
+                                "es-ES"
+                              )
+                            : "N/A"}
+                        </td>
+                        <td>
+                          {paquete.fecha_entrega_estimada
+                            ? new Date(
+                                paquete.fecha_entrega_estimada
+                              ).toLocaleDateString("es-ES")
+                            : "N/A"}
+                        </td>
+                        <td>
+                          {paquete.descripcion_contenido || "Sin descripción"}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="10" className="text-center">No hay paquetes asociados a este traslado</td>
+                      <td colSpan="10" className="text-center">
+                        No hay paquetes asociados a este traslado
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -235,7 +316,10 @@ export default function DetallesTraslados() {
             </Col>
           </Row>
           <div className="d-flex justify-content-between mt-4">
-            <Link to="/GestionTraslados" className="btn btn-secondary btn-regresar">
+            <Link
+              to="/GestionTraslados"
+              className="btn btn-secondary btn-regresar"
+            >
               <i className="fas fa-arrow-left"></i> Regresar
             </Link>
           </div>

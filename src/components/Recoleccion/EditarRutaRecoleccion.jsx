@@ -20,7 +20,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const EditarRutaRecoleccion = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     id_vehiculo: "",
     fecha_asignacion: "",
@@ -31,28 +30,60 @@ const EditarRutaRecoleccion = () => {
   const [preordenesSeleccionadas, setPreordenesSeleccionadas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  const fetchAllData = async (url, token) => {
+    let allData = [];
+    let currentPage = 1;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      try {
+        const response = await axios.get(url, {
+          params: { page: currentPage },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        allData = [...allData, ...response.data.data];
+
+        if (response.data.next_page_url) {
+          currentPage++;
+        } else {
+          hasNextPage = false;
+        }
+      } catch (error) {
+        console.error(
+          `Error al obtener datos de la página ${currentPage}:`,
+          error
+        );
+        hasNextPage = false;
+      }
+    }
+
+    return allData;
+  };
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const [rutaRes, vehiculosRes, preordenesRes, ordenesRecoleccionRes] =
-        await Promise.all([
-          axios.get(`${API_URL}/rutas-recolecciones/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/dropdown/get_vehiculos`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/ordenes?tipo_orden=preorden`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/orden-recoleccion`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+      const [rutaRes, vehiculosRes] = await Promise.all([
+        axios.get(`${API_URL}/rutas-recolecciones/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/dropdown/get_vehiculos`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      const allOrdenes = await fetchAllData(`${API_URL}/ordenes`, token);
+      const allOrdenesRecoleccion = await fetchAllData(
+        `${API_URL}/orden-recoleccion`,
+        token
+      );
 
       console.log("Datos de la ruta recibidos:", rutaRes.data);
+      console.log("Todas las órdenes de recolección:", allOrdenesRecoleccion);
 
       setFormData({
         id_vehiculo: rutaRes.data.id_vehiculo,
@@ -60,25 +91,19 @@ const EditarRutaRecoleccion = () => {
       });
       setVehiculos(vehiculosRes.data.vehiculos || []);
 
-      // Obtener detalles completos de las órdenes y clientes
+      // Ordenar las órdenes asignadas por prioridad
+      const ordenesAsignadasOrdenadas = [
+        ...rutaRes.data.ordenes_recolecciones,
+      ].sort((a, b) => a.prioridad - b.prioridad);
+
+      // Obtener detalles completos de las órdenes asignadas
       const ordenesDetalladas = await Promise.all(
-        rutaRes.data.ordenes_recolecciones.map(async (orden) => {
-          const ordenDetalle = await axios.get(
-            `${API_URL}/orden-recoleccion/${orden.id}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          const clienteDetalle = await axios.get(
-            `${API_URL}/clientes/${ordenDetalle.data.orden.id_cliente}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
+        ordenesAsignadasOrdenadas.map(async (orden) => {
+          const ordenCompleta = allOrdenes.find((o) => o.id === orden.id_orden);
           return {
-            ...ordenDetalle.data,
-            cliente: clienteDetalle.data,
-            prioridad: orden.prioridad,
+            ...orden,
+            cliente: ordenCompleta?.cliente,
+            numero_seguimiento: ordenCompleta?.numero_seguimiento,
           };
         })
       );
@@ -88,20 +113,27 @@ const EditarRutaRecoleccion = () => {
 
       // Obtener todos los IDs de órdenes ya asignadas a cualquier ruta de recolección
       const todasOrdenesAsignadasIds = new Set(
-        ordenesRecoleccionRes.data.data.map((or) => or.id_orden)
+        allOrdenesRecoleccion.flatMap((or) => or.id_orden)
       );
 
-      // Filtrar preórdenes disponibles (no asignadas a ninguna ruta, en estado de espera y de tipo entrega normal)
-      const preordenesFiltradas = preordenesRes.data.data.filter(
-        (p) =>
+      // Filtrar preórdenes disponibles
+      const preordenesFiltradas = allOrdenes.filter((p) => {
+        return (
           p.tipo_orden === "preorden" &&
+          p.detalles &&
           p.detalles.every((d) => d.tipo_entrega === "Entrega Normal") &&
           p.detalles.some((d) => d.id_estado_paquetes === 3) &&
           !todasOrdenesAsignadasIds.has(p.id)
-      );
+        );
+      });
+
+      console.log("Preórdenes filtradas:", preordenesFiltradas);
       setPreordenesDisponibles(preordenesFiltradas);
     } catch (error) {
       console.error("Error al cargar datos:", error);
+      if (error.response) {
+        console.error("Respuesta del servidor:", error.response.data);
+      }
       setError("Error al cargar los datos de la ruta");
       toast.error("Error al cargar los datos de la ruta");
     } finally {
@@ -128,11 +160,13 @@ const EditarRutaRecoleccion = () => {
 
   const handlePrioridadChange = (ordenId, nuevaPrioridad) => {
     setOrdenesAsignadas((prevOrdenes) =>
-      prevOrdenes.map((orden) =>
-        orden.id === ordenId
-          ? { ...orden, prioridad: parseInt(nuevaPrioridad) }
-          : orden
-      )
+      prevOrdenes
+        .map((orden) =>
+          orden.id === ordenId
+            ? { ...orden, prioridad: parseInt(nuevaPrioridad) }
+            : orden
+        )
+        .sort((a, b) => a.prioridad - b.prioridad)
     );
   };
 
@@ -149,7 +183,7 @@ const EditarRutaRecoleccion = () => {
         })),
         ...preordenesSeleccionadas.map((id, index) => ({
           id: id,
-          prioridad: ordenesAsignadas.length + index + 1, // Asignar prioridades a las nuevas órdenes
+          prioridad: ordenesAsignadas.length + index + 1,
         })),
       ];
 
@@ -175,7 +209,7 @@ const EditarRutaRecoleccion = () => {
       console.log("Respuesta del servidor:", response.data);
 
       toast.success("Ruta de recolección actualizada con éxito");
-      navigate("/gestion-ordenes-recoleccion");
+      fetchData(); // Recargar los datos
     } catch (error) {
       console.error("Error al actualizar la ruta:", error);
       if (error.response) {
@@ -235,27 +269,23 @@ const EditarRutaRecoleccion = () => {
                 <Table>
                   <thead>
                     <tr>
-                      <th>ID Orden</th>
+                      <th>Número de seguimiento</th>
                       <th>Cliente</th>
                       <th>Dirección de Recolección</th>
                       <th>Estado</th>
-                      <th>Orden de recoleccion</th>
+                      <th>Orden de recolección</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ordenesAsignadas.map((orden) => (
                       <tr key={orden.id}>
-                        <td>{orden.id_orden}</td>
+                        <td>{orden.numero_seguimiento}</td>
                         <td>
-                          {orden.cliente?.cliente
-                            ? `${orden.cliente.cliente.nombre} ${orden.cliente.cliente.apellido}`
+                          {orden.cliente
+                            ? `${orden.cliente.nombre} ${orden.cliente.apellido}`
                             : "N/A"}
                         </td>
-                        <td>
-                          {orden.destino ||
-                            orden.detalleOrden?.direccion_emisor?.direccion ||
-                            "N/A"}
-                        </td>
+                        <td>{orden.destino || "N/A"}</td>
                         <td>{orden.estado === 1 ? "Activo" : "Inactivo"}</td>
                         <td>
                           <Input
@@ -276,48 +306,51 @@ const EditarRutaRecoleccion = () => {
             <Row>
               <Col md={12}>
                 <h4>Agregar Nuevas Preórdenes</h4>
-                <Table>
-                  <thead>
-                    <tr>
-                      <th>Seleccionar</th>
-                      <th>ID Preorden</th>
-                      <th>Cliente</th>
-                      <th>Dirección de Recolección</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {preordenesDisponibles.map((preorden) => (
-                      <tr key={preorden.id}>
-                        <td>
-                          <Input
-                            type="checkbox"
-                            checked={preordenesSeleccionadas.includes(
-                              preorden.id
-                            )}
-                            onChange={() => handlePreordenToggle(preorden.id)}
-                          />
-                        </td>
-                        <td>{preorden.id}</td>
-                        <td>
-                          {preorden.cliente?.nombre}{" "}
-                          {preorden.cliente?.apellido}
-                        </td>
-                        <td>{preorden.direccion_emisor?.direccion}</td>
+                {preordenesDisponibles.length > 0 ? (
+                  <Table>
+                    <thead>
+                      <tr>
+                        <th>Seleccionar</th>
+                        <th>Número de seguimiento</th>
+                        <th>Cliente</th>
+                        <th>Dirección de Recolección</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    </thead>
+                    <tbody>
+                      {preordenesDisponibles.map((preorden) => (
+                        <tr key={preorden.id}>
+                          <td>
+                            <Input
+                              type="checkbox"
+                              checked={preordenesSeleccionadas.includes(
+                                preorden.id
+                              )}
+                              onChange={() => handlePreordenToggle(preorden.id)}
+                            />
+                          </td>
+                          <td>{preorden.numero_seguimiento}</td>
+                          <td>
+                            {preorden.cliente?.nombre}{" "}
+                            {preorden.cliente?.apellido}
+                          </td>
+                          <td>{preorden.direccion_emisor?.direccion}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                ) : (
+                  <p>No hay preórdenes disponibles para agregar.</p>
+                )}
               </Col>
             </Row>
             <Button color="primary" type="submit">
-              Actualizar Ruta y Agregar Preórdenes
+              Actualizar Ruta
             </Button>
             <Button
-              
               onClick={() => navigate("/gestion-ordenes-recoleccion")}
               className="ml-2 btn-regresar"
             >
-              Volver a Gestión de Órdenes de Recolección
+              Volver a Gestión de Recolección
             </Button>
           </Form>
         </CardBody>
