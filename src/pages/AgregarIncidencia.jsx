@@ -17,7 +17,6 @@ const AgregarIncidencia = () => {
   const navigate = useNavigate();
 
   const [uuidPaquete, setUuidPaquete] = useState(null);
-  const [idTipoIncidencia, setIdTipoIncidencia] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [tipoIncidencias, setTipoIncidencias] = useState([]);
   const [paquetesDanio, setPaquetesDanio] = useState([]);
@@ -200,13 +199,13 @@ const AgregarIncidencia = () => {
 
     const incidenciaData = {
       id_paquete: uuidPaquete ? uuidPaquete.value : '',
-      id_tipo_incidencia: idTipoIncidencia,
+      id_tipo_incidencia: 2,
       descripcion,
       estado: '1',
       fecha_hora: fechaHoraActual,
       fecha_resolucion: null,
       id_usuario_reporta: userId,
-      id_usuario_asignado: null,
+      id_usuario_asignado: userId,
       solucion: 'Pendiente',
     };
 
@@ -222,7 +221,7 @@ const AgregarIncidencia = () => {
         setAlertaExito(true);
         setTimeout(() => {
           setAlertaExito(false);
-          navigate('/MisIncidencias', { replace: true });
+          navigate('/GestionIncidencias', { replace: true });
         }, 3000);
       } else {
         setAlertaError(true);
@@ -266,26 +265,7 @@ const AgregarIncidencia = () => {
           {alertaError && <Alert color="danger">{errorMensaje}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col md="6">
-                <FormGroup>
-                  <Label for="id_tipo_incidencia">Tipo de Incidencia</Label>
-                  <Input
-                    type="select"
-                    id="id_tipo_incidencia"
-                    value={idTipoIncidencia}
-                    onChange={(e) => setIdTipoIncidencia(e.target.value)}
-                    required
-                  >
-                    <option value="">Seleccione un tipo de incidencia</option>
-                    {tipoIncidencias.map((tipo) => (
-                      <option key={tipo.id} value={tipo.id}>
-                        {tipo.nombre}
-                      </option>
-                    ))}
-                  </Input>
-                </FormGroup>
-              </Col>
-
+           
               <Col md="6">
                 {roleName === "acompanante" ? (
                   <FormGroup>
@@ -364,7 +344,7 @@ const AgregarIncidencia = () => {
             )}
 
             <Row>
-              <Col md="12">
+              <Col md="6">
                 <FormGroup>
                   <Label for="descripcion">Descripción</Label>
                   <Input
