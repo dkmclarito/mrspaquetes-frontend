@@ -21,7 +21,7 @@ const TablaUbicacion = ({ ubicaciones, eliminarUbicacion, toggleModalEditar, ver
           {ubicaciones.length > 0 ? (
             ubicaciones.map(ubicacion => (
               <tr key={ubicacion.id}>
-                <td>{ubicacion.id}</td>
+                
                 <td>{ubicacion.numero_orden || 'N/A'}</td>
                 <td>{ubicacion.qr_paquete || 'N/A'}</td>
                 <td>{ubicacion.descripcion_paquete || 'N/A'}</td>
