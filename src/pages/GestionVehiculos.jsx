@@ -1,13 +1,22 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Container, Row, Col, Card, CardBody, Input, Label, Button } from "reactstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  CardBody,
+  Input,
+  Label,
+  Button,
+} from "reactstrap";
 import { Link } from "react-router-dom";
 import Breadcrumbs from "../components/Vehiculos/Common/Breadcrumbs";
 import TablaVehiculos from "../components/Vehiculos/TablaVehiculos";
 import ModalEditarVehiculo from "../components/Vehiculos/ModalEditarVehiculo";
 import ModalConfirmarEliminar from "../components/Vehiculos/ModalConfirmarEliminarVehiculo";
 import AuthService from "../services/authService";
-import Pagination from 'react-js-pagination';
+import Pagination from "react-js-pagination";
 import "../styles/Vehiculos.css";
 import { useNavigate } from "react-router-dom";
 
@@ -50,7 +59,7 @@ const GestionVehiculos = () => {
   }, []);
 
   useEffect(() => {
-    verificarEstadoUsuarioLogueado(); 
+    verificarEstadoUsuarioLogueado();
 
     const interval = setInterval(() => {
       verificarEstadoUsuarioLogueado();
@@ -71,14 +80,14 @@ const GestionVehiculos = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const config = { headers: { 'Authorization': `Bearer ${token}` } };
+        const token = localStorage.getItem("token");
+        const config = { headers: { Authorization: `Bearer ${token}` } };
         const response = await axios.get(`${API_URL}/vehiculo`, {
           params: {
             page: 1,
-            per_page: 1000 // Cargar una gran cantidad de vehículos para buscar en todos
+            per_page: 1000, // Cargar una gran cantidad de vehículos para buscar en todos
           },
-          ...config
+          ...config,
         });
 
         if (response.data && Array.isArray(response.data)) {
@@ -106,11 +115,13 @@ const GestionVehiculos = () => {
       const token = AuthService.getCurrentUser();
       await axios.delete(`${API_URL}/vehiculo/${vehiculoAEliminar}`, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      setVehiculos(vehiculos.filter(vehiculo => vehiculo.id !== vehiculoAEliminar));
+      setVehiculos(
+        vehiculos.filter((vehiculo) => vehiculo.id !== vehiculoAEliminar)
+      );
       setConfirmarEliminar(false);
       setVehiculoAEliminar(null);
     } catch (error) {
@@ -124,27 +135,44 @@ const GestionVehiculos = () => {
     setModalEditar(true);
   };
 
-  const guardarCambiosVehiculo = async () => {
+  const guardarCambiosVehiculo = async (vehiculoActualizado) => {
     try {
       const token = AuthService.getCurrentUser();
-      await axios.put(`${API_URL}/vehiculo/${vehiculoEditado.id}`, vehiculoEditado, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+      const response = await axios.put(
+        `${API_URL}/vehiculo/${vehiculoActualizado.id}`,
+        vehiculoActualizado,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
-      setVehiculos(vehiculos.map(vehiculo => vehiculo.id === vehiculoEditado.id ? vehiculoEditado : vehiculo));
+      if (response.data && response.data.vehiculo) {
+        setVehiculos(
+          vehiculos.map((v) =>
+            v.id === response.data.vehiculo.id ? response.data.vehiculo : v
+          )
+        );
+      } else {
+        console.error("Respuesta inesperada del servidor:", response.data);
+      }
+
       setModalEditar(false);
       setVehiculoEditado(null);
     } catch (error) {
       console.error("Error al actualizar vehículo:", error);
+      if (error.response) {
+        console.error("Respuesta del servidor:", error.response.data);
+      }
+      throw error;
     }
   };
 
   const filtrarVehiculos = (vehiculos) => {
     if (!busqueda) return vehiculos;
-    return vehiculos.filter(vehiculo =>
+    return vehiculos.filter((vehiculo) =>
       (vehiculo.placa || "").toLowerCase().includes(busqueda.toLowerCase())
     );
   };
@@ -163,11 +191,22 @@ const GestionVehiculos = () => {
   return (
     <div className="page-content">
       <Container fluid>
-        <Breadcrumbs title="Gestión de Vehículos" breadcrumbItem="Listado de Vehículos" />
+        <Breadcrumbs
+          title="Gestión de Vehículos"
+          breadcrumbItem="Listado de Vehículos"
+        />
         <Row>
           <Col lg={12}>
-            <div style={{ marginTop: "10px", display: 'flex', alignItems: 'center' }}>
-              <Label for="busqueda" style={{ marginRight: "10px" }}>Buscar:</Label>
+            <div
+              style={{
+                marginTop: "10px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Label for="busqueda" style={{ marginRight: "10px" }}>
+                Buscar:
+              </Label>
               <Input
                 type="text"
                 id="busqueda"
@@ -177,7 +216,10 @@ const GestionVehiculos = () => {
                 style={{ width: "300px" }}
               />
               <div style={{ marginLeft: "auto" }}>
-                <Link to="/AgregarVehiculo" className="btn btn-primary custom-button">
+                <Link
+                  to="/AgregarVehiculo"
+                  className="btn btn-primary custom-button"
+                >
                   <i className="fas fa-plus"></i> Agregar Vehículo
                 </Link>
               </div>
@@ -201,7 +243,14 @@ const GestionVehiculos = () => {
         </Row>
 
         <Row>
-          <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
+          <Col
+            lg={12}
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <Pagination
               activePage={currentPage}
               itemsCountPerPage={ITEMS_PER_PAGE}
