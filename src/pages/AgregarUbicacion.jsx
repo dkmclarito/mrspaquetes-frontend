@@ -179,12 +179,6 @@ const AgregarUbicacionPaquete = () => {
       return;
     }
 
-    const ubicacionDisponible = ubicaciones?.find(ubicacion => ubicacion.nomenclatura === codigoNomenclaturaUbicacion);
-    if (!ubicacionDisponible) {
-      toast.error("La ubicación no existe o ya está en uso.");
-      return;
-    }
-
     const ubicacionPaqueteData = {
       codigo_qr_paquete: codigoQRPaquete,
       codigo_nomenclatura_ubicacion: codigoNomenclaturaUbicacion,
