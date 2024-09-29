@@ -372,6 +372,7 @@ const AgregarTraslado = () => {
                       <FormGroup>
                         <Label for="bodega_origen">Bodega de Origen</Label>
                         <Select
+                          classNamePrefix="custom-select"
                           id="bodega_origen"
                           name="bodega_origen"
                           options={bodegas}
@@ -383,7 +384,7 @@ const AgregarTraslado = () => {
                           value={bodegas.find(
                             (option) => option.value === formData.bodega_origen
                           )}
-                          styles={customStyles}
+                          
                           isInvalid={!!errors.bodega_origen}
                           isSearchable={true}
                         />
@@ -398,6 +399,7 @@ const AgregarTraslado = () => {
                       <FormGroup>
                         <Label for="bodega_destino">Bodega de Destino</Label>
                         <Select
+                          classNamePrefix="custom-select"
                           id="bodega_destino"
                           name="bodega_destino"
                           options={bodegas}
@@ -409,7 +411,6 @@ const AgregarTraslado = () => {
                           value={bodegas.find(
                             (option) => option.value === formData.bodega_destino
                           )}
-                          styles={customStyles}
                           isInvalid={!!errors.bodega_destino}
                           isSearchable={true}
                         />

@@ -284,6 +284,7 @@ const AgregarIncidencia = () => {
                         required
                         styles={customStyles}
                         className="flex-grow-1"
+                        classNamePrefix="custom-select"
                       />
                       <Button color="primary" onClick={iniciarEscaneoQR} disabled={escaneandoQR} style={{ marginLeft: '10px' }}>
                         Escanear QR
