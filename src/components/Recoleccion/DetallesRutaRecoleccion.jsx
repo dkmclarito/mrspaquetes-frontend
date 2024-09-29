@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col, Card, CardBody, Table, Button } from "reactstrap";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,6 +17,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const DetallesRutaRecoleccion = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [ruta, setRuta] = useState(null);
   const [expandedOrders, setExpandedOrders] = useState({});
 
@@ -205,6 +206,11 @@ const DetallesRutaRecoleccion = () => {
     }
   };
 
+  const handleVolver = () => {
+    const fromPath = location.state?.from || "/gestion-ordenes-recoleccion";
+    navigate(fromPath);
+  };
+
   if (!ruta) {
     return <div>Cargando...</div>;
   }
@@ -226,7 +232,8 @@ const DetallesRutaRecoleccion = () => {
                   <tr>
                     <th scope="row">Vehículo:</th>
                     <td>
-                      {ruta.vehiculo?.placa} - {ruta.vehiculo?.modelo}
+                      {ruta.vehiculo?.placa} - {ruta.vehiculo?.capacidad_carga}{" "}
+                      {"Paquetes"}
                     </td>
                   </tr>
                   <tr>
@@ -351,10 +358,7 @@ const DetallesRutaRecoleccion = () => {
           ))}
 
           <div className="mt-4">
-            <Button
-              className="btn-regresar ml-2"
-              onClick={() => navigate("/gestion-ordenes-recoleccion")}
-            >
+            <Button className="btn-regresar ml-2" onClick={handleVolver}>
               Volver al Listado
             </Button>
           </div>

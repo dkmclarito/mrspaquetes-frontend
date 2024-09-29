@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Container, Row, Col, Card, CardBody, Input, Label } from "reactstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Breadcrumbs from "../components/Recoleccion/Common/Breadcrumbs";
@@ -11,7 +11,7 @@ import AuthService from "../services/authService";
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
-const GestionOrdenesRecoleccion = () => {
+const GestionOrdenesDeRecoleccion = () => {
   const [rutasRecoleccion, setRutasRecoleccion] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +21,7 @@ const GestionOrdenesRecoleccion = () => {
   const [estados, setEstados] = useState([]);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const verificarEstadoUsuarioLogueado = useCallback(async () => {
     try {
@@ -133,12 +134,8 @@ const GestionOrdenesRecoleccion = () => {
 
   const verDetallesRuta = (id) => {
     navigate(`/detalles-ruta-recoleccion/${id}`, {
-      state: { from: "/gestion-ordenes-recoleccion" },
+      state: { from: "/gestion-de-ordenes-recoleccion" },
     });
-  };
-
-  const editarRuta = (id) => {
-    navigate(`/editar-ruta-recoleccion/${id}`);
   };
 
   const iniciarRecoleccion = async (rutaId) => {
@@ -335,11 +332,6 @@ const GestionOrdenesRecoleccion = () => {
                 placeholder="Buscar por código de ruta"
                 style={{ width: "300px" }}
               />
-              <div style={{ marginLeft: "auto" }}>
-                <Link to="/crear-ruta-recoleccion" className="btn btn-primary">
-                  <i className="fas fa-plus"></i> Crear Ruta de Recolección
-                </Link>
-              </div>
             </div>
           </Col>
         </Row>
@@ -353,10 +345,10 @@ const GestionOrdenesRecoleccion = () => {
                   vehiculos={vehiculos}
                   estados={estados}
                   verDetallesRuta={verDetallesRuta}
-                  editarRuta={editarRuta}
                   iniciarRecoleccion={iniciarRecoleccion}
                   finalizarRecoleccion={finalizarRecoleccion}
                   totalOrdenes={totalOrdenes}
+                  userPermissions="acompanante"
                 />
               </CardBody>
             </Card>
@@ -388,4 +380,4 @@ const GestionOrdenesRecoleccion = () => {
   );
 };
 
-export default GestionOrdenesRecoleccion;
+export default GestionOrdenesDeRecoleccion;

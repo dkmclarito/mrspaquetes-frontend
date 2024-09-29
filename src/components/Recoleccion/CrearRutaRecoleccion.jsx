@@ -29,6 +29,8 @@ const CrearRutaRecoleccion = () => {
   const [ordenes, setOrdenes] = useState([]);
   const [ordenesSeleccionadas, setOrdenesSeleccionadas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [capacidadVehiculo, setCapacidadVehiculo] = useState(0);
+  const [totalPaquetes, setTotalPaquetes] = useState(0);
   const navigate = useNavigate();
 
   const fetchAllData = async (url, token) => {
@@ -74,12 +76,10 @@ const CrearRutaRecoleccion = () => {
       console.log("Todas las órdenes:", allOrdenes);
       console.log("Todas las órdenes de recolección:", allOrdenesRecoleccion);
 
-      // Obtener todos los IDs de órdenes ya asignadas a cualquier ruta de recolección
       const ordenesAsignadasIds = new Set(
         allOrdenesRecoleccion.flatMap((or) => or.id_orden)
       );
 
-      // Filtrar preórdenes disponibles
       const preordenesFiltradas = allOrdenes.filter(
         (orden) =>
           orden.tipo_orden === "preorden" &&
@@ -124,14 +124,39 @@ const CrearRutaRecoleccion = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (name === "id_vehiculo") {
+      const vehiculoSeleccionado = vehiculos.find(
+        (v) => v.id === parseInt(value)
+      );
+      setCapacidadVehiculo(
+        vehiculoSeleccionado ? vehiculoSeleccionado.capacidad_carga : 0
+      );
+    }
   };
 
   const handleOrdenToggle = (ordenId) => {
-    setOrdenesSeleccionadas((prev) =>
-      prev.some((orden) => orden.id === ordenId)
-        ? prev.filter((orden) => orden.id !== ordenId)
-        : [...prev, { id: ordenId, prioridad: prev.length + 1 }]
-    );
+    const orden = ordenes.find((o) => o.id === ordenId);
+    const cantidadPaquetes = orden?.detalles?.length || 0;
+
+    setOrdenesSeleccionadas((prev) => {
+      if (prev.some((o) => o.id === ordenId)) {
+        // Si la orden ya está seleccionada, la quitamos
+        setTotalPaquetes(totalPaquetes - cantidadPaquetes);
+        return prev.filter((o) => o.id !== ordenId);
+      } else {
+        // Si la orden no está seleccionada, verificamos si hay capacidad
+        const nuevoTotal = totalPaquetes + cantidadPaquetes;
+        if (nuevoTotal > capacidadVehiculo) {
+          toast.warning(
+            "No hay suficiente capacidad en el vehículo para esta orden."
+          );
+          return prev; // No se añade la orden
+        }
+        // Si hay capacidad, añadimos la orden
+        setTotalPaquetes(nuevoTotal);
+        return [...prev, { id: ordenId, prioridad: prev.length + 1 }];
+      }
+    });
   };
 
   const handlePrioridadChange = (ordenId, prioridad) => {
@@ -155,6 +180,11 @@ const CrearRutaRecoleccion = () => {
         "Por favor, complete todos los campos y seleccione al menos una orden."
       );
       return;
+    }
+    if (totalPaquetes > capacidadVehiculo) {
+      toast.warning(
+        "La cantidad de paquetes excede la capacidad del vehículo. ¿Está seguro de que desea continuar?"
+      );
     }
     try {
       const token = localStorage.getItem("token");
@@ -237,7 +267,8 @@ const CrearRutaRecoleccion = () => {
                     <option value="">Seleccione un vehículo</option>
                     {vehiculos.map((vehiculo) => (
                       <option key={vehiculo.id} value={vehiculo.id}>
-                        {vehiculo.placa} - {vehiculo.modelo}
+                        {vehiculo.placa} - {vehiculo.capacidad_carga}{" "}
+                        {"Paquetes"}
                       </option>
                     ))}
                   </Input>
@@ -259,7 +290,10 @@ const CrearRutaRecoleccion = () => {
             </Row>
             <Row>
               <Col md={12}>
-                <h4>Seleccionar Órdenes para Recolección</h4>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h4>Seleccionar Órdenes para Recolección</h4>
+                  <h5>Paquetes: {totalPaquetes}</h5>
+                </div>
                 {loading ? (
                   <p>Cargando órdenes...</p>
                 ) : (

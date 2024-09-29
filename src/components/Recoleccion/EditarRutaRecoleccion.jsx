@@ -30,6 +30,8 @@ const EditarRutaRecoleccion = () => {
   const [preordenesSeleccionadas, setPreordenesSeleccionadas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [capacidadVehiculo, setCapacidadVehiculo] = useState(0);
+  const [totalPaquetes, setTotalPaquetes] = useState(0);
   const navigate = useNavigate();
 
   const fetchAllData = async (url, token) => {
@@ -91,12 +93,17 @@ const EditarRutaRecoleccion = () => {
       });
       setVehiculos(vehiculosRes.data.vehiculos || []);
 
-      // Ordenar las órdenes asignadas por prioridad
+      const vehiculoSeleccionado = vehiculosRes.data.vehiculos.find(
+        (v) => v.id === rutaRes.data.id_vehiculo
+      );
+      setCapacidadVehiculo(
+        vehiculoSeleccionado ? vehiculoSeleccionado.capacidad_carga : 0
+      );
+
       const ordenesAsignadasOrdenadas = [
         ...rutaRes.data.ordenes_recolecciones,
       ].sort((a, b) => a.prioridad - b.prioridad);
 
-      // Obtener detalles completos de las órdenes asignadas
       const ordenesDetalladas = await Promise.all(
         ordenesAsignadasOrdenadas.map(async (orden) => {
           const ordenCompleta = allOrdenes.find((o) => o.id === orden.id_orden);
@@ -104,6 +111,7 @@ const EditarRutaRecoleccion = () => {
             ...orden,
             cliente: ordenCompleta?.cliente,
             numero_seguimiento: ordenCompleta?.numero_seguimiento,
+            paquetes: ordenCompleta?.detalles || [],
           };
         })
       );
@@ -111,12 +119,16 @@ const EditarRutaRecoleccion = () => {
       console.log("Órdenes detalladas:", ordenesDetalladas);
       setOrdenesAsignadas(ordenesDetalladas);
 
-      // Obtener todos los IDs de órdenes ya asignadas a cualquier ruta de recolección
+      const totalPaquetesAsignados = ordenesDetalladas.reduce(
+        (total, orden) => total + orden.paquetes.length,
+        0
+      );
+      setTotalPaquetes(totalPaquetesAsignados);
+
       const todasOrdenesAsignadasIds = new Set(
         allOrdenesRecoleccion.flatMap((or) => or.id_orden)
       );
 
-      // Filtrar preórdenes disponibles
       const preordenesFiltradas = allOrdenes.filter((p) => {
         return (
           p.tipo_orden === "preorden" &&
@@ -148,14 +160,39 @@ const EditarRutaRecoleccion = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (name === "id_vehiculo") {
+      const vehiculoSeleccionado = vehiculos.find(
+        (v) => v.id === parseInt(value)
+      );
+      setCapacidadVehiculo(
+        vehiculoSeleccionado ? vehiculoSeleccionado.capacidad_carga : 0
+      );
+    }
   };
 
   const handlePreordenToggle = (preordenId) => {
-    setPreordenesSeleccionadas((prev) =>
-      prev.includes(preordenId)
-        ? prev.filter((id) => id !== preordenId)
-        : [...prev, preordenId]
-    );
+    const preorden = preordenesDisponibles.find((p) => p.id === preordenId);
+    const cantidadPaquetes = preorden?.detalles?.length || 0;
+
+    setPreordenesSeleccionadas((prev) => {
+      if (prev.includes(preordenId)) {
+        // Si la preorden ya está seleccionada, la quitamos
+        setTotalPaquetes(totalPaquetes - cantidadPaquetes);
+        return prev.filter((id) => id !== preordenId);
+      } else {
+        // Si la preorden no está seleccionada, verificamos si hay capacidad
+        const nuevoTotal = totalPaquetes + cantidadPaquetes;
+        if (nuevoTotal > capacidadVehiculo) {
+          toast.warning(
+            "No hay suficiente capacidad en el vehículo para esta orden."
+          );
+          return prev; // No se añade la preorden
+        }
+        // Si hay capacidad, añadimos la preorden
+        setTotalPaquetes(nuevoTotal);
+        return [...prev, preordenId];
+      }
+    });
   };
 
   const handlePrioridadChange = (ordenId, nuevaPrioridad) => {
@@ -172,10 +209,12 @@ const EditarRutaRecoleccion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (totalPaquetes > capacidadVehiculo) {
+      toast.warning("La cantidad de paquetes excede la capacidad del vehículo");
+    }
     try {
       const token = localStorage.getItem("token");
 
-      // Combinar órdenes existentes y nuevas
       const todasLasOrdenes = [
         ...ordenesAsignadas.map((orden) => ({
           id: orden.id_orden,
@@ -209,7 +248,7 @@ const EditarRutaRecoleccion = () => {
       console.log("Respuesta del servidor:", response.data);
 
       toast.success("Ruta de recolección actualizada con éxito");
-      fetchData(); // Recargar los datos
+      fetchData();
     } catch (error) {
       console.error("Error al actualizar la ruta:", error);
       if (error.response) {
@@ -243,7 +282,8 @@ const EditarRutaRecoleccion = () => {
                     <option value="">Seleccione un vehículo</option>
                     {vehiculos.map((vehiculo) => (
                       <option key={vehiculo.id} value={vehiculo.id}>
-                        {vehiculo.placa} - {vehiculo.modelo}
+                        {vehiculo.placa} - {vehiculo.capacidad_carga}{" "}
+                        {"Paquetes"}
                       </option>
                     ))}
                   </Input>
@@ -265,7 +305,10 @@ const EditarRutaRecoleccion = () => {
             </Row>
             <Row>
               <Col md={12}>
-                <h4>Órdenes Asignadas a esta Ruta</h4>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <h4>Órdenes Asignadas a esta Ruta</h4>
+                  <h5>Paquetes: {totalPaquetes}</h5>
+                </div>
                 <Table>
                   <thead>
                     <tr>

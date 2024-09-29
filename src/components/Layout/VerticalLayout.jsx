@@ -61,16 +61,14 @@ const VerticalLayout = () => {
     localStorage.setItem("menuCollapsed", JSON.stringify(menuCollapsed));
   }, [menuCollapsed]);
 
-  
-  
   useEffect(() => {
     // Determine which menu should be active based on the current route
     if (
-      location.pathname.includes("/GestionPreOrdenes")||
+      location.pathname.includes("/GestionPreOrdenes") ||
       location.pathname.includes("/GestionPreOrdenesExpress") ||
-      location.pathname.includes("/GestionOrdenes")||
+      location.pathname.includes("/GestionOrdenes") ||
       location.pathname.includes("/GestionOrdenesExpress") ||
-      location.pathname.includes("/TrackingPage")||
+      location.pathname.includes("/TrackingPage") ||
       location.pathname.includes("/OrdenEntregada")
     ) {
       setActiveSubMenu("ordenes");
@@ -91,12 +89,12 @@ const VerticalLayout = () => {
     } else if (
       location.pathname.includes("/GestionBodegas") ||
       location.pathname.includes("/GestionUbicacion") ||
-      location.pathname.includes("/GestionTraslados")||
+      location.pathname.includes("/GestionTraslados") ||
       location.pathname.includes("/GestionKardex")
     ) {
       setActiveSubMenu("bodegas");
       setVisibleSubMenu(null);
-    }else if (
+    } else if (
       location.pathname.includes("/GestionIncidencias") ||
       location.pathname.includes("/IncidenciasUbicadas")
     ) {
@@ -182,11 +180,10 @@ const VerticalLayout = () => {
           </div>
           <ul
             className={`nav flex-column ${menuCollapsed ? "icons-only" : ""}`}
-          >            
-
+          >
             {hasRole("admin") && (
               <>
-              <li className="nav-item">
+                <li className="nav-item">
                   <NavLink
                     to="/home"
                     className={({ isActive }) =>
@@ -361,7 +358,6 @@ const VerticalLayout = () => {
                         Recolección
                       </NavLink>
                     </li>
-                    
                   </ul>
                 </li>
 
@@ -705,7 +701,6 @@ const VerticalLayout = () => {
             )}
             {hasRole("acompanante") && (
               <>
-
                 <li className="nav-item">
                   <NavLink
                     to="/OrdenEntregada"
@@ -718,16 +713,16 @@ const VerticalLayout = () => {
                   </NavLink>
                 </li>
                 <li>
-                      <NavLink
-                        to="/gestion-ordenes-recoleccion"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiReceipt className="nav-icon sub-icon" />
-                        Recolección
-                      </NavLink>
-                    </li>
+                  <NavLink
+                    to="/gestion-de-ordenes-recoleccion"
+                    className={({ isActive }) =>
+                      isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    <BiReceipt className="nav-icon sub-icon" />
+                    Recolección
+                  </NavLink>
+                </li>
                 <li className="nav-item">
                   <div
                     className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
@@ -775,7 +770,6 @@ const VerticalLayout = () => {
             )}
             {hasRole("conductor") && (
               <>
-
                 <li className="nav-item">
                   <NavLink
                     to="/OrdenEntregada"

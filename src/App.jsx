@@ -103,6 +103,7 @@ import AgregarTraslados from "./pages/AgregarTraslados";
 import DetallesTraslados from "./pages/DetallesTraslados";
 import EditarTraslados from "./components/Traslados/EditarTraslados/EditarTraslados";
 import GestionKardex from "./pages/GestionKardex";
+import GestionOrdenesDeRecoleccion from "./pages/GestionOrdenesDeRecoleccion";
 
 const App = () => {
   const isAuthenticated = AuthService.getCurrentUser();
@@ -129,7 +130,7 @@ const App = () => {
                   "cliente",
                   "operador_de_almacen",
                   "coordinador_de_rutas",
-                  "atencion_al_cliente"
+                  "atencion_al_cliente",
                 ]}
               />
             }
@@ -139,22 +140,42 @@ const App = () => {
               <Route path="/LoadingPage" element={<LoadingPage />} />
 
               <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-                
                 <Route path="/GestionUsuarios" element={<GestionUsuarios />} />
                 <Route path="/AgregarUsuario" element={<AgregarUsuario />} />
-              
-                <Route path="/GestionEmpleados" element={<GestionEmpleados />} />
+
+                <Route
+                  path="/GestionEmpleados"
+                  element={<GestionEmpleados />}
+                />
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
-                <Route path="/AgregarEmpleado/:id" element={<AgregarEmpleadoUser />} />
-                <Route path="/DetallesEmpleado/:id" element={<DetallesEmpleado />} />
+                <Route
+                  path="/AgregarEmpleado/:id"
+                  element={<AgregarEmpleadoUser />}
+                />
+                <Route
+                  path="/DetallesEmpleado/:id"
+                  element={<DetallesEmpleado />}
+                />
 
                 <Route path="/AgregarNuevoRol" element={<AgregarNuevoRol />} />
-                <Route path="/GestionRolesPermisos" element={<GestionRolesPermisos />} />
-                <Route path="/AgregarRolesPermisos/:id" element={<AgregarRolesPermisos />} />
+                <Route
+                  path="/GestionRolesPermisos"
+                  element={<GestionRolesPermisos />}
+                />
+                <Route
+                  path="/AgregarRolesPermisos/:id"
+                  element={<AgregarRolesPermisos />}
+                />
                 <Route path="/DataRol/:id" element={<DataRol />} />
-                
-                <Route path="/GestionVehiculos" element={<GestionVehiculos />} />
-                <Route path="/DetallesVehiculo/:id" element={<DetallesVehiculo />} />
+
+                <Route
+                  path="/GestionVehiculos"
+                  element={<GestionVehiculos />}
+                />
+                <Route
+                  path="/DetallesVehiculo/:id"
+                  element={<DetallesVehiculo />}
+                />
 
                 <Route path="/GestionBodegas" element={<GestionBodegas />} />
                 <Route path="/AgregarBodega" element={<AgregarBodega />} />
@@ -171,7 +192,6 @@ const App = () => {
                 <Route path="/GestionModelos" element={<GestionModelos />} />
                 <Route path="/AgregarModelo" element={<AgregarModelo />} />
                 <Route path="/DataUsuario/:id" element={<DataUsuario />} />
-
               </Route>
               {/* MODULO DE ORDENES Y CLIENTES */}
               <Route
@@ -292,12 +312,10 @@ const App = () => {
                 />
                 <Route path="/reportes" element={<Reportes />} />
               </Route>
-                {/* Paquete entregado*/}
+              {/* Paquete entregado*/}
               <Route
                 element={
-                  <PrivateRoute
-                    allowedRoles={["conductor", "acompanante", "admin"]}
-                  />
+                  <PrivateRoute allowedRoles={["conductor", "acompanante"]} />
                 }
               >
                 <Route path="/OrdenEntregada" element={<OrdenEntregada />} />
@@ -306,13 +324,17 @@ const App = () => {
               <Route
                 element={
                   <PrivateRoute
-                    allowedRoles={["acompanante", "coordinador_de_rutas", "admin"]}
+                    allowedRoles={[
+                      "acompanante",
+                      "coordinador_de_rutas",
+                      "admin",
+                    ]}
                   />
                 }
               >
                 <Route
-                  path="/gestion-ordenes-recoleccion"
-                  element={<GestionOrdenesRecoleccion />}
+                  path="/gestion-de-ordenes-recoleccion"
+                  element={<GestionOrdenesDeRecoleccion />}
                 />
                 <Route
                   path="/crear-ruta-recoleccion"
@@ -330,7 +352,11 @@ const App = () => {
               <Route
                 element={
                   <PrivateRoute
-                    allowedRoles={["coordinador_de_rutas", "atencion_al_cliente", "admin"]}
+                    allowedRoles={[
+                      "coordinador_de_rutas",
+                      "atencion_al_cliente",
+                      "admin",
+                    ]}
                   />
                 }
               >
@@ -347,7 +373,6 @@ const App = () => {
                   />
                 }
               >
-                
                 <Route
                   path="/GestionUbicacion"
                   element={<GestionUbicacion />}
@@ -400,6 +425,10 @@ const App = () => {
                 <Route
                   path="/SeleccionarPaquetes"
                   element={<SeleccionarPaquetes />}
+                />
+                <Route
+                  path="/gestion-ordenes-recoleccion"
+                  element={<GestionOrdenesRecoleccion />}
                 />
 
                 <Route

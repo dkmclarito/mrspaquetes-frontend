@@ -17,6 +17,7 @@ const TablaRutasRecoleccion = ({
   editarRuta,
   iniciarRecoleccion,
   finalizarRecoleccion,
+  userPermissions,
 }) => {
   const obtenerNombreVehiculo = (id) => {
     const vehiculo = vehiculos.find((v) => v.id === id);
@@ -36,6 +37,8 @@ const TablaRutasRecoleccion = ({
     const año = fechaObj.getFullYear();
     return `${dia}-${mes}-${año}`;
   };
+
+  const isAcompanante = userPermissions === "acompanante";
 
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
@@ -61,25 +64,29 @@ const TablaRutasRecoleccion = ({
                 <td>{ruta.ordenes_recolecciones?.length || 0}</td>
                 <td>
                   <div className="button-container">
-                    <Button
-                      className="btn-icon btn-editar"
-                      onClick={() => editarRuta(ruta.id)}
-                    >
-                      <FontAwesomeIcon icon={faPencilAlt} />
-                    </Button>
+                    {!isAcompanante && (
+                      <Button
+                        className="btn-icon btn-editar"
+                        onClick={() => editarRuta(ruta.id)}
+                      >
+                        <FontAwesomeIcon icon={faPencilAlt} />
+                      </Button>
+                    )}
                     <Button
                       className="btn-icon btn-success"
                       onClick={() => verDetallesRuta(ruta.id)}
                     >
                       <FontAwesomeIcon icon={faEye} />
                     </Button>
-                    <Button
-                      className="btn-icon btn-direcciones"
-                      onClick={() => iniciarRecoleccion(ruta.id)}
-                      disabled={!ruta.puedeIniciar}
-                    >
-                      <FontAwesomeIcon icon={faPlay} />
-                    </Button>
+                    {!isAcompanante && (
+                      <Button
+                        className="btn-icon btn-direcciones"
+                        onClick={() => iniciarRecoleccion(ruta.id)}
+                        disabled={!ruta.puedeIniciar}
+                      >
+                        <FontAwesomeIcon icon={faPlay} />
+                      </Button>
+                    )}
                     <Button
                       className="btn-icon btn-danger"
                       onClick={() => finalizarRecoleccion(ruta.id)}
@@ -112,6 +119,7 @@ TablaRutasRecoleccion.propTypes = {
   editarRuta: PropTypes.func.isRequired,
   iniciarRecoleccion: PropTypes.func.isRequired,
   finalizarRecoleccion: PropTypes.func.isRequired,
+  userPermissions: PropTypes.string,
 };
 
 export default TablaRutasRecoleccion;
