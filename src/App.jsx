@@ -451,11 +451,7 @@ const App = () => {
                   <PrivateRoute
                     allowedRoles={[
                       "admin",
-                      "acompanante",
-                      "conductor",
-                      "operador_de_almacen",
-                      "coordinador_de_rutas",
-                      "atencion_al_cliente",
+                      "acompanante"
                     ]}
                   />
                 }

@@ -641,51 +641,6 @@ const VerticalLayout = () => {
                   </ul>
                 </li>
 
-                {/* Submenu for Incidencias */}
-                <li className="nav-item">
-                  <div
-                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
-                    onClick={() => handleSubMenuClick("incidencias")}
-                  >
-                    <BiErrorCircle className="nav-icon" />{" "}
-                    {/* Ícono principal para Incidencias */}
-                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
-                      <span>Incidencias</span>
-                    )}
-                    {visibleSubMenu === "incidencias" ? (
-                      <BiChevronUp className="sub-menu-icon" />
-                    ) : (
-                      <BiChevronDown className="sub-menu-icon" />
-                    )}
-                  </div>
-                  <ul
-                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
-                  >
-                    <li>
-                      <NavLink
-                        to="/GestionIncidencias"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiErrorCircle className="nav-icon sub-icon" />
-                        Gestión de Incidencias
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/IncidenciasUbicadas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiMap className="nav-icon sub-icon" />
-                        Paquetes dañados ubicados
-                      </NavLink>
-                    </li>
-                  </ul>
-                </li>
-
                 <li className="nav-item">
                   <NavLink
                     to="/reportes"
@@ -781,49 +736,6 @@ const VerticalLayout = () => {
                     {!menuCollapsed && <span>Validar entrega</span>}
                   </NavLink>
                 </li>
-                <li className="nav-item">
-                  <div
-                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
-                    onClick={() => handleSubMenuClick("incidencias")}
-                  >
-                    <BiErrorCircle className="nav-icon" />{" "}
-                    {/* Ícono principal para Incidencias */}
-                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
-                      <span>Incidencias</span>
-                    )}
-                    {visibleSubMenu === "incidencias" ? (
-                      <BiChevronUp className="sub-menu-icon" />
-                    ) : (
-                      <BiChevronDown className="sub-menu-icon" />
-                    )}
-                  </div>
-                  <ul
-                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
-                  >
-                    <li>
-                      <NavLink
-                        to="/GestionIncidencias"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiErrorCircle className="nav-icon sub-icon" />
-                        Gestión de Incidencias
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/IncidenciasUbicadas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiMap className="nav-icon sub-icon" />
-                        Paquetes dañados ubicados
-                      </NavLink>
-                    </li>
-                  </ul>
-                </li>
               </>
             )}
             {hasRole("operador_de_almacen") && (
@@ -867,50 +779,6 @@ const VerticalLayout = () => {
                       >
                         <BiBus className="nav-icon sub-icon" />
                         Traslados
-                      </NavLink>
-                    </li>
-                  </ul>
-                </li>
-                {/* Submenu for Incidencias */}
-                <li className="nav-item">
-                  <div
-                    className={`nav-link text-white ${activeSubMenu === "incidencias" ? "active" : ""}`}
-                    onClick={() => handleSubMenuClick("incidencias")}
-                  >
-                    <BiErrorCircle className="nav-icon" />{" "}
-                    {/* Ícono principal para Incidencias */}
-                    {(!menuCollapsed || visibleSubMenu === "incidencias") && (
-                      <span>Incidencias</span>
-                    )}
-                    {visibleSubMenu === "incidencias" ? (
-                      <BiChevronUp className="sub-menu-icon" />
-                    ) : (
-                      <BiChevronDown className="sub-menu-icon" />
-                    )}
-                  </div>
-                  <ul
-                    className={`sub-menu ${visibleSubMenu === "incidencias" ? "active" : ""}`}
-                  >
-                    <li>
-                      <NavLink
-                        to="/GestionIncidencias"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiErrorCircle className="nav-icon sub-icon" />
-                        Gestión de Incidencias
-                      </NavLink>
-                    </li>
-                    <li>
-                      <NavLink
-                        to="/IncidenciasUbicadas"
-                        className={({ isActive }) =>
-                          isActive ? "nav-link active" : "nav-link"
-                        }
-                      >
-                        <BiMap className="nav-icon sub-icon" />
-                        Paquetes dañados ubicados
                       </NavLink>
                     </li>
                   </ul>
