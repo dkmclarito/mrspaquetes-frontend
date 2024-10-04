@@ -13,7 +13,6 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const ITEMS_PER_PAGE = 10;
 
 const GestionEmpleados = () => {
   document.title = "Empleados | Mr. Paquetes";
@@ -30,6 +29,12 @@ const GestionEmpleados = () => {
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [departamentoSeleccionado, setDepartamentoSeleccionado] = useState('');
+  const [paginationInfo, setPaginationInfo] = useState({
+    total: 0,
+    per_page: 10,
+    current_page: 1,
+    last_page: 1
+  });
 
   const navigate = useNavigate();
 
@@ -59,17 +64,18 @@ const GestionEmpleados = () => {
     }
   }, [navigate]);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (page = 1) => {
     try {
       const token = AuthService.getCurrentUser();
       const [empleadosResponse, cargosResponse, estadosResponse, departamentosResponse] = await Promise.all([
-        axios.get(`${API_URL}/empleados`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_URL}/empleados?page=${page}`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_cargos`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_estado_empleados`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/dropdown/get_departamentos`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
       setEmpleados(empleadosResponse.data.empleados || []);
+      setPaginationInfo(empleadosResponse.data.pagination);
       setCargos(cargosResponse.data.cargos || []);
       setEstados(estadosResponse.data.estado_empleados || []);
       setDepartamentos(departamentosResponse.data || []);
@@ -93,13 +99,13 @@ const GestionEmpleados = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    fetchData(currentPage);
     verificarEstadoUsuarioLogueado();
 
     const interval = setInterval(verificarEstadoUsuarioLogueado, 60000); // Check every minute
 
     return () => clearInterval(interval);
-  }, [fetchData, verificarEstadoUsuarioLogueado]);
+  }, [fetchData, verificarEstadoUsuarioLogueado, currentPage]);
 
   useEffect(() => {
     if (departamentoSeleccionado) {
@@ -131,7 +137,7 @@ const GestionEmpleados = () => {
           }
         }
       );
-      await fetchData();
+      await fetchData(currentPage);
       setModalEditar(false);
       toast.success("Empleado actualizado con éxito");
     } catch (error) {
@@ -152,8 +158,7 @@ const GestionEmpleados = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const nuevosEmpleados = empleados.filter(empleado => empleado.id !== empleadoAEliminar);
-      setEmpleados(nuevosEmpleados);
+      await fetchData(currentPage);
       toast.success("Empleado eliminado con éxito");
     } catch (error) {
       console.error("Error al eliminar empleado:", error);
@@ -174,35 +179,22 @@ const GestionEmpleados = () => {
     const busquedaLower = busqueda.toLowerCase();
     return empleados.filter(empleado =>
       `${empleado.nombres} ${empleado.apellidos}`.toLowerCase().includes(busquedaLower) ||
-      obtenerNombreCargo(empleado.id_cargo).toLowerCase().includes(busquedaLower) ||
-      obtenerNombreEstado(empleado.id_estado).toLowerCase().includes(busquedaLower)
+      empleado.cargo.toLowerCase().includes(busquedaLower)
     );
-  };
-
-  const obtenerNombreCargo = (id) => {
-    const cargo = cargos.find(cargo => cargo.id === id);
-    return cargo ? cargo.nombre : '';
-  };
-
-  const obtenerNombreEstado = (id) => {
-    const estado = estados.find(estado => estado.id === id);
-    return estado ? estado.estado : '';
   };
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
+    fetchData(pageNumber);
   };
 
   const handleSearchChange = (e) => {
     setBusqueda(e.target.value);
     setCurrentPage(1);
+    fetchData(1);
   };
 
   const empleadosFiltrados = filtrarEmpleados(empleados);
-  const paginatedEmpleados = empleadosFiltrados.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
 
   return (
     <div className="page-content">
@@ -234,7 +226,7 @@ const GestionEmpleados = () => {
             <Card>
               <CardBody>
                 <TablaEmpleados
-                  empleados={paginatedEmpleados}
+                  empleados={empleadosFiltrados}
                   cargos={cargos}
                   estados={estados}
                   eliminarEmpleado={eliminarEmpleado}
@@ -248,9 +240,9 @@ const GestionEmpleados = () => {
         <Row>
           <Col lg={12} style={{ marginTop: "20px", display: 'flex', justifyContent: 'center' }}>
             <Pagination
-              activePage={currentPage}
-              itemsCountPerPage={ITEMS_PER_PAGE}
-              totalItemsCount={empleadosFiltrados.length}
+              activePage={paginationInfo.current_page}
+              itemsCountPerPage={paginationInfo.per_page}
+              totalItemsCount={paginationInfo.total}
               pageRangeDisplayed={5}
               onChange={handlePageChange}
               itemClass="page-item"

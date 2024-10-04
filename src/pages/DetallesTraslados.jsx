@@ -18,12 +18,16 @@ import "react-toastify/dist/ReactToastify.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const TAMANO_PAQUETE = {
+  pequeno: "Pequeño",
+  mediano: "Mediano",
+  grande: "Grande"
+};
+
 export default function DetallesTraslados() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [traslado, setTraslado] = useState(null);
-  const [paquetes, setPaquetes] = useState([]);
-  const [bodegas, setBodegas] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -70,32 +74,15 @@ export default function DetallesTraslados() {
           throw new Error("No se encontró el token de autenticación");
         }
 
-        const [trasladoResponse, paquetesResponse, bodegasResponse] =
-          await Promise.all([
-            axios.get(`${API_URL}/traslados/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/paquete`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-            axios.get(`${API_URL}/bodegas`, {
-              headers: { Authorization: `Bearer ${token}` },
-            }),
-          ]);
+        const trasladoResponse = await axios.get(`${API_URL}/traslados/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (trasladoResponse.data && trasladoResponse.data.id_traslado) {
           setTraslado(trasladoResponse.data);
         } else {
           throw new Error("No se encontraron datos para este traslado.");
         }
-
-        setPaquetes(paquetesResponse.data.data || []);
-
-        const bodegasMap = {};
-        bodegasResponse.data.bodegas.forEach((bodega) => {
-          bodegasMap[bodega.id] = bodega;
-        });
-        setBodegas(bodegasMap);
       } catch (error) {
         console.error("Error al obtener los datos:", error);
         setError(
@@ -163,12 +150,6 @@ export default function DetallesTraslados() {
     );
   }
 
-  const paquetesDelTraslado = paquetes.filter(
-    (paquete) =>
-      traslado.paquetes &&
-      traslado.paquetes.some((p) => p.id_paquete === paquete.id)
-  );
-
   return (
     <div className="page-content">
       <Breadcrumbs
@@ -209,27 +190,17 @@ export default function DetallesTraslados() {
                     </tr>
                     <tr>
                       <th scope="row">Bodega de Origen:</th>
-                      <td>
-                        {bodegas[traslado.bodega_origen]
-                          ? `${bodegas[traslado.bodega_origen].nombre} (${bodegas[traslado.bodega_origen].tipo_bodega})`
-                          : "N/A"}
-                      </td>
+                      <td>{traslado.bodega_origen || "N/A"}</td>
                     </tr>
                     <tr>
                       <th scope="row">Bodega de Destino:</th>
-                      <td>
-                        {bodegas[traslado.bodega_destino]
-                          ? `${bodegas[traslado.bodega_destino].nombre} (${bodegas[traslado.bodega_destino].tipo_bodega})`
-                          : "N/A"}
-                      </td>
+                      <td>{traslado.bodega_destino || "N/A"}</td>
                     </tr>
                     <tr>
                       <th scope="row">Fecha de Traslado:</th>
                       <td>
                         {traslado.fecha_traslado
-                          ? new Date(
-                              traslado.fecha_traslado
-                            ).toLocaleDateString("es-ES")
+                          ? new Date(traslado.fecha_traslado).toLocaleDateString("es-ES")
                           : "N/A"}
                       </td>
                     </tr>
@@ -249,7 +220,7 @@ export default function DetallesTraslados() {
                     </tr>
                     <tr>
                       <th scope="row">Cantidad de Paquetes:</th>
-                      <td>{paquetesDelTraslado.length}</td>
+                      <td>{traslado.total_paquetes}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -262,51 +233,25 @@ export default function DetallesTraslados() {
               <Table striped responsive>
                 <thead>
                   <tr>
-                    <th>ID Paquete</th>
                     <th>UUID</th>
                     <th>Tipo de Paquete</th>
                     <th>Tamaño de Paquete</th>
-                    <th>Empaque</th>
-                    <th>Peso</th>
-                    <th>Estado</th>
-                    <th>Fecha de Envío</th>
-                    <th>Fecha de Entrega Estimada</th>
                     <th>Descripción del Contenido</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paquetesDelTraslado.length > 0 ? (
-                    paquetesDelTraslado.map((paquete) => (
-                      <tr key={paquete.id}>
-                        <td>{paquete.id}</td>
+                  {traslado.paquetes && traslado.paquetes.length > 0 ? (
+                    traslado.paquetes.map((paquete) => (
+                      <tr key={paquete.uuid}>
                         <td>{paquete.uuid}</td>
                         <td>{paquete.tipo_paquete}</td>
-                        <td>{paquete.tamano_paquete}</td>
-                        <td>{paquete.empaque}</td>
-                        <td>{paquete.peso}</td>
-                        <td>{paquete.estado_paquete}</td>
-                        <td>
-                          {paquete.fecha_envio
-                            ? new Date(paquete.fecha_envio).toLocaleDateString(
-                                "es-ES"
-                              )
-                            : "N/A"}
-                        </td>
-                        <td>
-                          {paquete.fecha_entrega_estimada
-                            ? new Date(
-                                paquete.fecha_entrega_estimada
-                              ).toLocaleDateString("es-ES")
-                            : "N/A"}
-                        </td>
-                        <td>
-                          {paquete.descripcion_contenido || "Sin descripción"}
-                        </td>
+                        <td>{TAMANO_PAQUETE[paquete.tamano_paquete] || paquete.tamano_paquete}</td>
+                        <td>{paquete.descripcion_contenido || "Sin descripción"}</td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="10" className="text-center">
+                      <td colSpan="4" className="text-center">
                         No hay paquetes asociados a este traslado
                       </td>
                     </tr>
