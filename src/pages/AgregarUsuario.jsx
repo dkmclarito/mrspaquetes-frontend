@@ -225,6 +225,7 @@ const AgregarUsuario = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    className="sinBorde"
                   />
                 </FormGroup>
               </Col>
@@ -238,8 +239,9 @@ const AgregarUsuario = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      className="sinBorde"
                     />
-                    <InputGroupText onClick={() => setMostrarPassword(!mostrarPassword)}>
+                    <InputGroupText className="sinBorde" onClick={() => setMostrarPassword(!mostrarPassword)}>
                       {mostrarPassword ? <BiHide /> : <BiShow />}
                     </InputGroupText>
                   </InputGroup>
@@ -254,6 +256,7 @@ const AgregarUsuario = () => {
                     value={rol}
                     onChange={(e) => setRol(e.target.value)}
                     required
+                    className="sinBorde"
                   >
                     <option value="">Selecciona un rol</option>
                     {roles.map(role => (

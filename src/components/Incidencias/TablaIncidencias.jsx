@@ -290,6 +290,7 @@ const TablaIncidencias = ({ eliminarIncidencia, toggleModalEditar }) => {
           value={estadoFiltro}
           onChange={(e) => setEstadoFiltro(e.target.value)}
           style={{ width: "150px" }}
+          className="estadoIncidencias"
         >
           <option value="">Todos</option>
           <option value="Abierta">Abierta</option>

@@ -32,7 +32,7 @@
   }
 
   .dark-mode .custom-tooltip {
-  background-color: #1e1e1e;
+  background-color: #1b1c22;
   }
 
   .custom-tooltip2 {
@@ -49,7 +49,7 @@
     align-items: 'center';
   }
   .dark-mode .custom-tooltip2 {
-    background-color: #1e1e1e;
+    background-color: #1b1c22;
   }
   
 
@@ -59,7 +59,7 @@
     display: flex;
     justify-content: center; 
     margin-top: 10px;
-    background-color: #1e1e1e; 
+    background-color: #1b1c22; 
     padding: 10px;
     border-radius: 5px;
   }
@@ -72,4 +72,30 @@
     padding: 10px;
     border-radius: 5px;
   }
+
+  .dark-mode .selectores {
+    background-color: #15171c !important;
+    border: none;
+    color: #ffffff;
+    padding: 10px 15px;
+    border-radius: 25px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
   
+  .selectores {
+    background-color: rgb(240, 240, 240);
+    border: none;
+    color: black;
+    padding: 10px 15px;
+    border-radius: 25px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 16px;
+    cursor: pointer;
+  }

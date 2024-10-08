@@ -8,7 +8,7 @@ import "/src/styles/Clientes.css";
 const TablaMarcas = ({ marcas, eliminarMarca, toggleModalEditar }) => {
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
-      <table className="table table-centered table-nowrap mb-0">
+      <table className="table table-striped table-centered table-nowrap mb-0">
         <thead className="thead-light">
           <tr>
             <th className="text-center">ID</th>

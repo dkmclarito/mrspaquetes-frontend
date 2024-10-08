@@ -135,27 +135,29 @@ const ExampleBarChart = () => {
       <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 'bold' }}>Órdenes y Paquetes</h2>
 
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <label htmlFor="month-select" style={{ marginRight: '10px' }}>Seleccionar Mes: </label>
-        <select id="month-select" value={selectedMonth} onChange={handleMonthChange}>
-          <option value="1">Enero</option>
-          <option value="2">Febrero</option>
-          <option value="3">Marzo</option>
-          <option value="4">Abril</option>
-          <option value="5">Mayo</option>
-          <option value="6">Junio</option>
-          <option value="7">Julio</option>
-          <option value="8">Agosto</option>
-          <option value="9">Septiembre</option>
-          <option value="10">Octubre</option>
-          <option value="11">Noviembre</option>
-          <option value="12">Diciembre</option>
-        </select>
+        <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <label htmlFor="month-select" style={{ marginRight: '10px' }}>Seleccionar Mes: </label>
+          <select className='selectores' id="month-select" value={selectedMonth} onChange={handleMonthChange}>
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
 
-        <label htmlFor="year-select" style={{ marginLeft: '20px',marginRight: '10px' }}>Seleccionar Año: </label>
-        <select id="year-select" value={selectedYear} onChange={handleYearChange}>
-          <option value={2024}>2024</option>
-          <option value={2025}>2025</option>
-        </select>
+          <label htmlFor="year-select" style={{ marginLeft: '20px', marginRight: '10px' }}>Seleccionar Año: </label>
+          <select className='selectores' id="year-select" value={selectedYear} onChange={handleYearChange}>
+            <option value={2024}>2024</option>
+            <option value={2025}>2025</option>
+          </select>
+        </div>
       </div>
 
       <ResponsiveContainer width="100%" height={400}>

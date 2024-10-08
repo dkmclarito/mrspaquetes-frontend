@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 const TablaRolesPermisos = ({ roles, onAssignPermissions, onDeleteRole, onEditRole }) => {
   return (
-    <Table hover responsive>
+    <Table striped hover responsive>
       <thead>
         <tr>
           <th>ID</th>

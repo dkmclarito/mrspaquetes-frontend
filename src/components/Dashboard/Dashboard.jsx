@@ -236,16 +236,16 @@ const Dashboard = () => {
           {empleadosRecientes.length > 0 ? (
             empleadosRecientes.map((empleado) => (
               <ListGroupItem key={empleado.id}>
-                {empleado.empleado} -{' '}
-                <Badge color={empleado.estado === 'Activo' ? 'success' : 'danger'}>
-                  {empleado.estado}
-                </Badge>
-              </ListGroupItem>
-            ))
-          ) : (
-            <ListGroupItem>No hay empleados recientes</ListGroupItem>
-          )}
-        </ListGroup>
+                  {empleado.empleado} -{' '}
+                  <Badge color={empleado.estado === 'Activo' ? 'success' : 'danger'}>
+                    {empleado.estado}
+                  </Badge>
+                </ListGroupItem>
+                    ))
+                  ) : (
+                    <ListGroupItem>No hay empleados recientes</ListGroupItem>
+                  )}
+              </ListGroup>
               </CardBody>
             </Card>
           </Col>
@@ -254,24 +254,24 @@ const Dashboard = () => {
           <Card>
               <CardBody>
                 <CardTitle tag="h5">Órdenes Recientes</CardTitle>
-                <ListGroup>
-          {ordenesRecientes.length > 0 ? (
-            ordenesRecientes.map((orden) => (
-              <ListGroupItem key={orden.id}>
-                {orden.cliente} -{' '}
-                {orden.tipo_orden} {' '}
-                <Badge color={orden.tipo_entrega === 'Entrega Normal' ? 'success' : 'primary'}>
-                  {orden.tipo_entrega}
-                </Badge> {' '}
-                <Badge color="secondary">
-                  {orden.numero_tracking || 'Desconocido'}
-                </Badge>
-              </ListGroupItem>
-            ))
-          ) : (
-            <ListGroupItem>No hay órdenes recientes</ListGroupItem>
-          )}
-        </ListGroup>
+                  <ListGroup className='sinBordeListGroup'>
+                    {ordenesRecientes.length > 0 ? (
+                      ordenesRecientes.map((orden) => (
+                        <ListGroupItem key={orden.id}>
+                          {orden.cliente} -{' '}
+                          {orden.tipo_orden} {' '}
+                          <Badge color={orden.tipo_entrega === 'Entrega Normal' ? 'success' : 'primary'}>
+                            {orden.tipo_entrega}
+                          </Badge> {' '}
+                          <Badge color="secondary">
+                            {orden.numero_tracking || 'Desconocido'}
+                          </Badge>
+                        </ListGroupItem>
+                      ))
+                    ) : (
+                      <ListGroupItem>No hay órdenes recientes</ListGroupItem>
+                    )}
+                </ListGroup>
               </CardBody>
             </Card>
           </Col>
