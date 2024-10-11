@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { debounce } from "lodash";
 import axios from "axios";
 import {
   Container,
@@ -13,7 +14,10 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Collapse,
 } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 import Breadcrumbs from "../components/Empleados/Common/Breadcrumbs";
 import TablaOrdenes from "../components/Ordenes/TablaOrdenes";
@@ -37,6 +41,18 @@ export default function GestionOrdenes() {
   const [numeroSeguimiento, setNumeroSeguimiento] = useState("");
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [filtros, setFiltros] = useState({
+    cliente: "",
+    numeroSeguimiento: "",
+    estado: "",
+    fechaDesde: "",
+    fechaHasta: "",
+  });
+  const [ordenamiento, setOrdenamiento] = useState({
+    campo: "",
+    direccion: "asc",
+  });
 
   const navigate = useNavigate();
 
@@ -127,6 +143,84 @@ export default function GestionOrdenes() {
 
     return () => clearInterval(interval); // Limpia el intervalo al desmontar el componente
   }, [verificarEstadoUsuarioLogueado]);
+
+  // Cargar filtros guardados
+  useEffect(() => {
+    const filtrosGuardados = localStorage.getItem("filtrosOrdenes");
+    if (filtrosGuardados) {
+      setFiltros(JSON.parse(filtrosGuardados));
+    }
+  }, []);
+
+  // Guardar filtros
+  useEffect(() => {
+    localStorage.setItem("filtrosOrdenes", JSON.stringify(filtros));
+  }, [filtros]);
+
+  const debouncedFetchOrdenes = useCallback(
+    debounce(() => {
+      fetchOrdenes();
+    }, 300),
+    []
+  );
+
+  const toggleFiltros = () => {
+    setIsFilterOpen(!isFilterOpen);
+  };
+
+  useEffect(() => {
+    debouncedFetchOrdenes();
+  }, [filtros, debouncedFetchOrdenes]);
+
+  const handleFiltroChange = (e) => {
+    const { name, value } = e.target;
+    setFiltros((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const aplicarFiltrosYOrdenamiento = useCallback(
+    (ordenes) => {
+      let resultado = ordenes.filter(
+        (orden) =>
+          orden.cliente.nombre
+            .toLowerCase()
+            .includes(filtros.cliente.toLowerCase()) &&
+          orden.numero_seguimiento
+            .toLowerCase()
+            .includes(filtros.numeroSeguimiento.toLowerCase()) &&
+          (filtros.estado === "" || orden.estado === filtros.estado) &&
+          (!filtros.fechaDesde ||
+            new Date(orden.created_at) >= new Date(filtros.fechaDesde)) &&
+          (!filtros.fechaHasta ||
+            new Date(orden.created_at) <= new Date(filtros.fechaHasta))
+      );
+
+      if (ordenamiento.campo) {
+        resultado.sort((a, b) => {
+          if (a[ordenamiento.campo] < b[ordenamiento.campo])
+            return ordenamiento.direccion === "asc" ? -1 : 1;
+          if (a[ordenamiento.campo] > b[ordenamiento.campo])
+            return ordenamiento.direccion === "asc" ? 1 : -1;
+          return 0;
+        });
+      }
+
+      return resultado;
+    },
+    [filtros, ordenamiento]
+  );
+
+  const ordenesFiltradas = useMemo(
+    () => aplicarFiltrosYOrdenamiento(ordenes),
+    [ordenes, aplicarFiltrosYOrdenamiento]
+  );
+
+  const handleOrdenar = (campo) => {
+    setOrdenamiento((prev) => ({
+      campo,
+      direccion:
+        prev.campo === campo && prev.direccion === "asc" ? "desc" : "asc",
+    }));
+  };
 
   const toggleModalCancelar = () => {
     setModalCancelar(!modalCancelar);
@@ -277,12 +371,6 @@ export default function GestionOrdenes() {
     [busqueda]
   );
 
-  const ordenesFiltradas = filtrarOrdenes(ordenes);
-  const paginatedOrdenes = ordenesFiltradas.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -298,31 +386,93 @@ export default function GestionOrdenes() {
           <Col lg={12}>
             <div
               style={{
-                marginTop: "10px",
                 display: "flex",
+                justifyContent: "space-between",
                 alignItems: "center",
+                marginBottom: "1rem",
               }}
             >
-              <Label for="busqueda" style={{ marginRight: "10px" }}>
-                Buscar:
-              </Label>
-              <Input
-                type="text"
-                id="busqueda"
-                value={busqueda}
-                onChange={handleSearchChange}
-                placeholder="Buscar por nombre del cliente o número de seguimiento"
-                style={{ width: "500px" }}
-              />
-              <div style={{ marginLeft: "auto" }}>
-                <Link
-                  to="/OrdenesSeleccionarCliente"
-                  className="btn btn-primary custom-button"
-                >
-                  <i className="fas fa-plus"></i> Agregar Orden
-                </Link>
-              </div>
+              <Button color="primary" onClick={toggleFiltros}>
+                <FontAwesomeIcon icon={faFilter} />{" "}
+                {isFilterOpen ? "Ocultar Filtros" : "Mostrar Filtros"}
+              </Button>
+              <Link to="/OrdenesSeleccionarCliente" className="btn btn-primary">
+                <i className="fas fa-plus"></i> Agregar Orden
+              </Link>
             </div>
+            <Collapse isOpen={isFilterOpen}>
+              <Card>
+                <CardBody>
+                  <h5>Busqueda</h5>
+                  <Row>
+                    <Col md={3}>
+                      <Input
+                        type="text"
+                        name="cliente"
+                        value={filtros.cliente}
+                        onChange={handleFiltroChange}
+                        placeholder="Nombre del cliente"
+                      />
+                    </Col>
+                    <Col md={3}>
+                      <Input
+                        type="text"
+                        name="numeroSeguimiento"
+                        value={filtros.numeroSeguimiento}
+                        onChange={handleFiltroChange}
+                        placeholder="Número de seguimiento"
+                      />
+                    </Col>
+                    <Col md={2}>
+                      <Input
+                        type="select"
+                        name="estado"
+                        value={filtros.estado}
+                        onChange={handleFiltroChange}
+                      >
+                        <option value="">Todos los estados</option>
+                        <option value="En_proceso">En proceso</option>
+                        <option value="Completada">Completada</option>
+                      </Input>
+                    </Col>
+                    <Col md={2}>
+                      <Input
+                        type="date"
+                        name="fechaDesde"
+                        value={filtros.fechaDesde}
+                        onChange={handleFiltroChange}
+                      />
+                    </Col>
+                    <Col md={2}>
+                      <Input
+                        type="date"
+                        name="fechaHasta"
+                        value={filtros.fechaHasta}
+                        onChange={handleFiltroChange}
+                      />
+                    </Col>
+                  </Row>
+                  <Row className="mt-3">
+                    <Col>
+                      <Button
+                        color="secondary"
+                        onClick={() =>
+                          setFiltros({
+                            cliente: "",
+                            numeroSeguimiento: "",
+                            estado: "",
+                            fechaDesde: "",
+                            fechaHasta: "",
+                          })
+                        }
+                      >
+                        Limpiar filtros
+                      </Button>
+                    </Col>
+                  </Row>
+                </CardBody>
+              </Card>
+            </Collapse>
           </Col>
         </Row>
         <br />
@@ -332,16 +482,23 @@ export default function GestionOrdenes() {
               <CardBody>
                 {loading ? (
                   <p>Cargando órdenes...</p>
-                ) : (
+                ) : ordenesFiltradas && ordenesFiltradas.length > 0 ? (
                   <TablaOrdenes
-                    ordenes={paginatedOrdenes}
+                    ordenes={ordenesFiltradas.slice(
+                      (currentPage - 1) * ITEMS_PER_PAGE,
+                      currentPage * ITEMS_PER_PAGE
+                    )}
                     cancelarOrden={iniciarCancelarOrden}
                     navegarAEditar={navegarAEditar}
                     verDetallesOrden={verDetallesOrden}
                     actualizarOrden={actualizarOrdenLocal}
                     procesarPago={handleProcesarPago}
                     finalizarOrden={iniciarFinalizarOrden}
+                    onOrdenar={handleOrdenar}
+                    ordenamiento={ordenamiento}
                   />
+                ) : (
+                  <p>No hay órdenes disponibles</p>
                 )}
               </CardBody>
             </Card>
