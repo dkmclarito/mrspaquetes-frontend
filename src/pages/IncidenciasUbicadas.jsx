@@ -5,6 +5,7 @@ import Breadcrumbs from "../components/Incidencias/Common/Breadcrumbs";
 import TablaUbicacionesIncidencias from "../components/Incidencias/TablaUbicacionesIncidencias";
 import AuthService from "../services/authService";
 import Pagination from "react-js-pagination";
+import { Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 5;
@@ -74,12 +75,17 @@ const IncidenciasUbicadas = () => {
   return (
     <div className="page-content">
       <Container fluid>
+      
         <Breadcrumbs title="Gestión de Paquetes con incidencias" breadcrumbItem="Paquetes Ubicados" />
         <Row>
           <Col lg={12}>
             <Card>
-              <CardBody>
+              <CardBody>   
                 <TablaUbicacionesIncidencias incidencias={paginatedIncidenciasUbicadas()} />
+                <span></span> <br />
+                <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar custom-button">
+                  <i className="fas fa-arrow-left"></i> Regresar
+                </Link>
               </CardBody>
             </Card>
           </Col>

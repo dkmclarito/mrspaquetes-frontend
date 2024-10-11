@@ -153,8 +153,14 @@ const MisIncidencias = () => {
               <div style={{ marginLeft: "auto" }}>
                 <Link to="/AgregarIncidencia" className="btn btn-primary custom-button">
                   <i className="fas fa-plus"></i> Agregar Incidencia
+                </Link> <span></span>
+                <Link to="/GestionIncidencias" className="btn btn-secondary btn-regresar custom-button">
+                  <i className="fas fa-arrow-left"></i> Regresar
                 </Link>
               </div>
+
+
+
             </div>
           </Col>
         </Row>
