@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Table, Button } from "reactstrap";
+import { Table, Button, Badge } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTimes,
@@ -7,6 +7,9 @@ import {
   faEye,
   faCreditCard,
   faCheck,
+  faSortUp,
+  faSortDown,
+  faSort,
 } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import ModalConfirmarCancelar from "./ModalConfirmarCancelar";
@@ -22,6 +25,8 @@ const TablaOrdenes = ({
   actualizarOrden,
   procesarPago,
   finalizarOrden,
+  onOrdenar,
+  ordenamiento,
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [ordenIdACancelar, setOrdenIdACancelar] = useState(null);
@@ -82,32 +87,78 @@ const TablaOrdenes = ({
     [procesarPago]
   );
 
+  const renderSortIcon = (campo) => {
+    if (ordenamiento.campo === campo) {
+      return ordenamiento.direccion === "asc" ? (
+        <FontAwesomeIcon icon={faSortUp} />
+      ) : (
+        <FontAwesomeIcon icon={faSortDown} />
+      );
+    }
+    return <FontAwesomeIcon icon={faSort} />;
+  };
+
+  const getEstadoBadge = (estado) => {
+    switch (estado) {
+      case "En_proceso":
+        return <Badge color="warning">En proceso</Badge>;
+      case "Completada":
+        return <Badge color="success">Completada</Badge>;
+      case "Cancelada":
+        return <Badge color="danger">Cancelada</Badge>;
+      default:
+        return <Badge color="secondary">{estado}</Badge>;
+    }
+  };
+
   return (
     <>
       <Table responsive striped>
         <thead>
           <tr>
-            <th>Nombre del Cliente</th>
-            <th>Teléfono</th>
-            <th>Tipo de Pago</th>
-            <th>Total a Pagar</th>
-            <th>Estado de la Orden</th>
-            <th>Número de Seguimiento</th>
+            <th onClick={() => onOrdenar("numero_seguimiento")}>
+              Número de Seguimiento {renderSortIcon("numero_seguimiento")}
+            </th>
+            <th onClick={() => onOrdenar("cliente.nombre")}>
+              Cliente {renderSortIcon("cliente.nombre")}
+            </th>
+            <th onClick={() => onOrdenar("tipo_pago")}>
+              Tipo de Pago {renderSortIcon("tipo_pago")}
+            </th>
+            <th onClick={() => onOrdenar("total_pagar")}>
+              Total a Pagar {renderSortIcon("total_pagar")}
+            </th>
+            <th onClick={() => onOrdenar("estado")}>
+              Estado {renderSortIcon("estado")}
+            </th>
+            <th onClick={() => onOrdenar("estado_pago")}>
+              Estado de Pago {renderSortIcon("estado_pago")}
+            </th>
+            <th onClick={() => onOrdenar("created_at")}>
+              Fecha de Creación {renderSortIcon("created_at")}
+            </th>
+            <th>Paquetes</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {ordenes.length > 0 ? (
+          {ordenes && ordenes.length > 0 ? (
             ordenes.map((orden) => (
               <tr key={orden.id}>
-                <td>
-                  {orden.cliente?.nombre} {orden.cliente?.apellido}
-                </td>
-                <td>{orden.detalles[0]?.telefono || "N/A"}</td>
+                <td>{orden.numero_seguimiento}</td>
+                <td>{`${orden.cliente.nombre} ${orden.cliente.apellido}`}</td>
                 <td>{orden.tipo_pago}</td>
                 <td>${orden.total_pagar}</td>
-                <td>{orden.estado || "N/A"}</td>
-                <td>{orden.numero_seguimiento}</td>
+                <td>{getEstadoBadge(orden.estado)}</td>
+                <td>
+                  {orden.estado_pago === "pagado" ? (
+                    <Badge color="success">Pagado</Badge>
+                  ) : (
+                    <Badge color="warning">Pendiente</Badge>
+                  )}
+                </td>
+                <td>{new Date(orden.created_at).toLocaleDateString()}</td>
+                <td>{orden.detalles.length} paquete(s)</td>
                 <td>
                   <div className="button-container">
                     <Button
@@ -132,14 +183,7 @@ const TablaOrdenes = ({
                     {orden.estado_pago === "pendiente" && procesarPago && (
                       <Button
                         className="btn-sm me-2 btn-icon btn-regresar2"
-                        onClick={() =>
-                          procesarPago(
-                            orden.id_cliente,
-                            orden.detalles[0].tipo_entrega === "Entrega Express"
-                              ? `/procesarpagoexpress/${orden.id_cliente}`
-                              : `/procesarpago/${orden.id_cliente}`
-                          )
-                        }
+                        onClick={() => handleProcesarPago(orden)}
                       >
                         <FontAwesomeIcon icon={faCreditCard} />
                       </Button>
@@ -158,7 +202,7 @@ const TablaOrdenes = ({
             ))
           ) : (
             <tr>
-              <td colSpan="7" className="text-center">
+              <td colSpan="9" className="text-center">
                 No hay órdenes disponibles
               </td>
             </tr>

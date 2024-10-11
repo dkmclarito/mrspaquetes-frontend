@@ -1,27 +1,39 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Button, Table } from 'reactstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faPencilAlt, faMapMarkerAlt, faEye } from '@fortawesome/free-solid-svg-icons';
+import { Button, Table } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faTimes,
+  faPencilAlt,
+  faMapMarkerAlt,
+  faEye,
+} from "@fortawesome/free-solid-svg-icons";
 import "/src/styles/Clientes.css";
 
-const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetallesCliente, tipoPersona, verDirecciones }) => {
+const TablaClientes = ({
+  clientes,
+  eliminarCliente,
+  toggleModalEditar,
+  verDetallesCliente,
+  tipoPersona,
+  verDirecciones,
+}) => {
   const obtenerNombreTipoPersona = (idTipoPersona) => {
-    return tipoPersona[idTipoPersona] || 'Desconocido';
+    return tipoPersona[idTipoPersona] || "Desconocido";
   };
 
   const obtenerDocumento = (idTipoPersona, dui, nit) => {
     if (idTipoPersona === 1) {
-      return dui || 'N/A';
+      return dui || "N/A";
     } else if (idTipoPersona === 2) {
-      return nit || 'N/A';
+      return nit || "N/A";
     }
-    return 'N/A';
+    return "N/A";
   };
 
   const formatearFecha = (fecha) => {
-    const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return new Date(fecha).toLocaleDateString('es-ES', opciones);
+    const opciones = { year: "numeric", month: "2-digit", day: "2-digit" };
+    return new Date(fecha).toLocaleDateString("es-ES", opciones);
   };
 
   return (
@@ -42,21 +54,27 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
         </thead>
         <tbody>
           {clientes.length > 0 ? (
-            clientes.map(cliente => (
+            clientes.map((cliente) => (
               <tr key={cliente.id}>
                 <td>{cliente.id}</td>
                 <td>{cliente.nombre}</td>
                 <td>{cliente.apellido}</td>
                 <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
-                <td>{obtenerDocumento(cliente.id_tipo_persona, cliente.dui, cliente.nit)}</td>
-                <td>{cliente.telefono || 'N/A'}</td>
+                <td>
+                  {obtenerDocumento(
+                    cliente.id_tipo_persona,
+                    cliente.dui,
+                    cliente.nit
+                  )}
+                </td>
+                <td>{cliente.telefono || "N/A"}</td>
                 <td>{formatearFecha(cliente.fecha_registro)}</td>
                 <td>
                   <Button
                     color="info"
                     className="btn-sm d-flex align-items-center justify-content-center mx-auto btn-direcciones"
                     onClick={() => verDirecciones(cliente.id)}
-                    style={{ width: 'fit-content' }}
+                    style={{ width: "fit-content" }}
                   >
                     <FontAwesomeIcon icon={faMapMarkerAlt} className="me-1" />
                     Ver Direcciones
@@ -85,7 +103,7 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
                       onClick={() => verDetallesCliente(cliente.id)}
                       title="Ver detalles del cliente"
                     >
-                      <FontAwesomeIcon icon={faEye}  />
+                      <FontAwesomeIcon icon={faEye} />
                     </Button>
                   </div>
                 </td>
@@ -93,7 +111,9 @@ const TablaClientes = ({ clientes, eliminarCliente, toggleModalEditar, verDetall
             ))
           ) : (
             <tr>
-              <td colSpan="9" className="text-center">No hay datos disponibles</td>
+              <td colSpan="9" className="text-center">
+                No hay datos disponibles
+              </td>
             </tr>
           )}
         </tbody>
