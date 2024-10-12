@@ -330,6 +330,17 @@ const GestionClientes = () => {
           />
         </Col>
         <Col md={2}>
+          <Label for="nombre_comercial">Nombre Comercial:</Label>
+          <Input
+            type="text"
+            name="nombre_comercial"
+            id="nombre_comercial"
+            value={filtrosAvanzados.nombre_comercial}
+            onChange={handleFiltroAvanzadoChange}
+            placeholder="Nombre comercial"
+          />
+        </Col>
+        <Col md={2}>
           <Label for="telefono">Teléfono:</Label>
           <Input
             type="text"
@@ -380,17 +391,6 @@ const GestionClientes = () => {
         {(filtrosAvanzados.id_tipo_persona === "2" ||
           filtrosAvanzados.id_tipo_persona === "") && (
           <>
-            <Col md={2}>
-              <Label for="nombre_comercial">Nombre Comercial:</Label>
-              <Input
-                type="text"
-                name="nombre_comercial"
-                id="nombre_comercial"
-                value={filtrosAvanzados.nombre_comercial}
-                onChange={handleFiltroAvanzadoChange}
-                placeholder="Nombre comercial"
-              />
-            </Col>
             <Col md={2}>
               <Label for="nit">NIT:</Label>
               <Input

@@ -219,7 +219,7 @@ const DetallesCliente = () => {
             {value}
           </Badge>
         ) : (
-          value || "N/A"
+          value || "-"
         )}
       </td>
     </tr>

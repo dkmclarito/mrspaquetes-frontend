@@ -44,6 +44,7 @@ const TablaClientes = ({
             <th className="text-center">ID</th>
             <th className="text-center">Nombre</th>
             <th className="text-center">Apellido</th>
+            <th className="text-center">Nombre Comercial</th>
             <th className="text-center">Tipo de Persona</th>
             <th className="text-center">DUI/NIT</th>
             <th className="text-center">Teléfono</th>
@@ -59,6 +60,7 @@ const TablaClientes = ({
                 <td>{cliente.id}</td>
                 <td>{cliente.nombre}</td>
                 <td>{cliente.apellido}</td>
+                <td>{cliente.nombre_comercial || "-"}</td>
                 <td>{obtenerNombreTipoPersona(cliente.id_tipo_persona)}</td>
                 <td>
                   {obtenerDocumento(
@@ -111,7 +113,7 @@ const TablaClientes = ({
             ))
           ) : (
             <tr>
-              <td colSpan="9" className="text-center">
+              <td colSpan="10" className="text-center">
                 No hay datos disponibles
               </td>
             </tr>
