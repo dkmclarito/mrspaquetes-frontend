@@ -44,7 +44,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
         </>
       );
     } else {
-      return usuario.nombre_completo_empleado;
+      return usuario.nombre_completo_empleado || "Empleado no encontrado";
     }
   };
 
@@ -58,7 +58,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
       day: '2-digit'
     });
   };
-
+  
   return (
     <div className="table-responsive" style={{ marginTop: "-10px" }}>
       <Table striped className="table-centered table-nowrap mb-0">
@@ -67,12 +67,13 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
             <th style={{ width: '5%' }} className="text-center">ID</th>
             <th style={{ width: '20%' }} className="text-center">Email</th>
             <th style={{ width: '10%' }} className="text-center">Estado</th>
-      
+            <th style={{ width: '10%' }} className="text-center">Empleado</th>
             <th style={{ width: '10%' }} className="text-center">Rol</th>
             <th style={{ width: '10%' }} className="text-center">Creación</th>
             <th style={{ width: '15%' }} className="text-center">Acciones</th>
           </tr>
         </thead>
+        
         <tbody>
           {usuarios.length > 0 ? (
             usuarios.map(usuario => (
@@ -80,7 +81,7 @@ const TablaUsuarios = ({ usuarios, eliminarUsuario, toggleModalEditar }) => {
                 <td style={{ width: '5%' }} className="text-center">{usuario.id}</td>
                 <td style={{ width: '20%' }} className="text-center">{usuario.email}</td>
                 <td style={{ width: '10%' }} className="text-center">{renderStatus(usuario.status)}</td>
-         
+                <td style={{ width: '20%' }} className="text-center">{renderEmpleado(usuario)}</td>
                 <td style={{ width: '10%' }} className="text-center">{usuario.role_name}</td>
                 <td style={{ width: '10%' }} className="text-center">{formatDate(usuario.created_at)}</td>
                 <td style={{ width: '15%' }} className="text-center">

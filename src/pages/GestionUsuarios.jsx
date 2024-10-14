@@ -73,23 +73,37 @@ const GestionUsuarios = () => {
     setLoading(true);
     try {
       const token = AuthService.getCurrentUser();
+      
+      // Funcion para obtener todos los empleados
+      const fetchAllEmpleados = async (page = 1, allEmpleados = []) => {
+        const response = await axios.get(`${API_URL}/empleados?page=${page}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const newEmpleados = response.data.empleados;
+        allEmpleados = [...allEmpleados, ...newEmpleados];
+        
+        if (page < response.data.pagination.last_page) {
+          return fetchAllEmpleados(page + 1, allEmpleados);
+        }
+        return allEmpleados;
+      };
+  
       const [usuariosResponse, empleadosResponse] = await Promise.all([
         axios.get(`${API_URL}/auth/get_users`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get(`${API_URL}/empleados`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        fetchAllEmpleados(),
       ]);
-
+  
+      setEmpleados(empleadosResponse);
+  
       const empleadosMap = new Map(
-        empleadosResponse.data.empleados.map((emp) => [
+        empleadosResponse.map((emp) => [
           emp.id,
           `${emp.nombres} ${emp.apellidos}`,
         ])
       );
-      setEmpleados(empleadosResponse.data.empleados);
-
+  
       if (usuariosResponse.data && Array.isArray(usuariosResponse.data.users)) {
         const usuariosConEmpleados = usuariosResponse.data.users.map(
           (usuario) => ({
@@ -98,7 +112,7 @@ const GestionUsuarios = () => {
               usuario.role_name === "admin"
                 ? "Usuario administrador"
                 : usuario.id_empleado
-                  ? empleadosMap.get(usuario.id_empleado)
+                  ? empleadosMap.get(usuario.id_empleado) || "Empleado no encontrado"
                   : "Sin asignar",
           })
         );
@@ -377,6 +391,7 @@ const GestionUsuarios = () => {
             </Collapse>
           </Col>
         </Row>
+        <br />
         <Row>
           <Col lg={12}>
             <Card>
