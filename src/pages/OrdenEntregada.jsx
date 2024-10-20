@@ -411,7 +411,7 @@ const OrdenEntregada = () => {
                       <th>Descripción</th>
                       <th>Estado</th>
                       <th>Tipo</th>
-                      <th>Peso</th>
+                      <th>Peso (Libras)</th>
                     </tr>
                   </thead>
                   <tbody>

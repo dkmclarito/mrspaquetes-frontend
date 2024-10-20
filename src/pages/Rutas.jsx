@@ -162,7 +162,7 @@ const TrackingPage = () => {
                                   <p><strong>Empaque:</strong> {paquete.id_empaque}</p>
                                 </Col>
                                 <Col md={4}>
-                                  <p><strong>Peso:</strong> {paquete.peso} kg</p>
+                                  <p><strong>Peso(Libras):</strong> {paquete.peso} kg</p>
                                   <p><strong>Precio:</strong> ${paquete.precio}</p>
                                 </Col>
                                 <Col md={4}>

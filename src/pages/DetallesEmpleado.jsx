@@ -171,11 +171,14 @@ const DetallesEmpleado = () => {
               </div>
             </Col>
           </Row>
-          <div className="d-flex justify-content-start mt-4">
-            <Link to="/GestionEmpleados" className="btn btn-secondary">
-              <i className="fas fa-arrow-left me-2"></i>Regresar
-            </Link>
-          </div>
+          <div className="d-flex justify-content-between mt-4">
+              <Link
+                to="/GestionEmpleados"
+                className="btn btn-secondary btn-regresar"
+              >
+                <i className="fas fa-arrow-left"></i> Regresar
+              </Link>
+            </div>
         </CardBody>
       </Card>
     </div>
