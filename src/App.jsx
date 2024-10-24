@@ -147,6 +147,7 @@ const App = () => {
                   path="/GestionEmpleados"
                   element={<GestionEmpleados />}
                 />
+                
                 <Route path="/AgregarEmpleado" element={<AgregarEmpleado />} />
                 <Route
                   path="/AgregarEmpleado/:id"
