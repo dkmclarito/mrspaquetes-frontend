@@ -303,7 +303,7 @@ const VerticalLayout = () => {
                       </NavLink>
                     </li>
 
-                    <li>
+                    {/* <li>
                       <NavLink
                         to="/OrdenEntregada"
                         className={({ isActive }) =>
@@ -313,7 +313,7 @@ const VerticalLayout = () => {
                         <BiPlus className="nav-icon sub-icon" />
                         Validar orden
                       </NavLink>
-                    </li>
+                    </li> */}
                   </ul>
                 </li>
 
