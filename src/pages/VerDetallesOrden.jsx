@@ -338,7 +338,7 @@ const VerDetallesOrden = () => {
                     <th>Descripción</th>
                     <th>Tipo de Paquete</th>
                     <th>Tipo de Caja</th>
-                    <th>Peso</th>
+                    <th>Peso(Libras)</th>
                     <th>Estado</th>
                     <th>Tipo de Entrega</th>
                     <th>Fecha Envío</th>

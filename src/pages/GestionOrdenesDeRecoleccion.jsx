@@ -12,6 +12,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 10;
 
 const GestionOrdenesDeRecoleccion = () => {
+  document.title = "Ordenes de Recolección | Mr. Paquetes";
   const [rutasRecoleccion, setRutasRecoleccion] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

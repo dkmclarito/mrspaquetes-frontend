@@ -26,6 +26,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 7;
 
 export default function GestionPreOrdenes() {
+  document.title = "Pre Orden | Mr. Paquetes";
   const [ordenes, setOrdenes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

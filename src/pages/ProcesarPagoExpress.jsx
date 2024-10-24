@@ -31,7 +31,7 @@ export default function ProcesarPagoExpress() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [clientName, setClientName] = useState("");
+  const [cliente, setCliente] = useState(null);
   const [cardInfo, setCardInfo] = useState({
     nombre_titular: "",
     numero_tarjeta: "",
@@ -42,7 +42,7 @@ export default function ProcesarPagoExpress() {
 
   useEffect(() => {
     fetchPendingOrders();
-    fetchClientName();
+    fetchClienteInfo();
   }, [idCliente]);
 
   const fetchPendingOrders = async () => {
@@ -82,7 +82,7 @@ export default function ProcesarPagoExpress() {
     }
   };
 
-  const fetchClientName = async () => {
+  const fetchClienteInfo = async () => {
     try {
       const token = AuthService.getCurrentUser();
       if (!token) {
@@ -93,9 +93,12 @@ export default function ProcesarPagoExpress() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setClientName(`${response.data.nombre} ${response.data.apellido}`);
+      // Asegúrate de que estás accediendo correctamente a los datos del cliente
+      const clienteData = response.data.cliente || response.data;
+      setCliente(clienteData);
     } catch (error) {
-      console.error("Error al obtener el nombre del cliente:", error);
+      console.error("Error al obtener información del cliente:", error);
+      toast.error("Error al obtener información del cliente");
     }
   };
 
@@ -260,7 +263,8 @@ export default function ProcesarPagoExpress() {
       <Container fluid>
         <ToastContainer />
         <h1 className="text-center mb-4">
-          Procesar Pago Express - Cliente: {clientName}
+          Procesar Pago Express - Cliente:{" "}
+          {cliente ? `${cliente.nombre} ${cliente.apellido}` : "Cargando..."}
         </h1>
         <Card>
           <CardBody>

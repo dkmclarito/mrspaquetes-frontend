@@ -31,6 +31,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const ITEMS_PER_PAGE = 7;
 
 export default function GestionOrdenes() {
+  document.title = "Ordenes | Mr. Paquetes";
   const [ordenes, setOrdenes] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -534,10 +535,10 @@ export default function GestionOrdenes() {
       />
       <Modal isOpen={modalFinalizar} toggle={toggleModalFinalizar}>
         <ModalHeader toggle={toggleModalFinalizar}>
-          Finalizar Orden Express
+          Finalizar Orden
         </ModalHeader>
         <ModalBody>
-          <p>¿Está seguro que desea finalizar la orden express?</p>
+          <p>¿Está seguro que desea finalizar la orden?</p>
           <p>Número de Seguimiento: {numeroSeguimiento}</p>
         </ModalBody>
         <ModalFooter>

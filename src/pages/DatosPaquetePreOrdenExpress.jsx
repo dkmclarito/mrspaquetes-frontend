@@ -656,7 +656,7 @@ export default function DatosPaquetePreOrdenExpress() {
                     </Col>
                     <Col md={4}>
                       <FormGroup>
-                        <Label for={`peso_${index}`}>Peso</Label>
+                        <Label for={`peso_${index}`}>Peso (Libras)</Label>
                         <Input
                           type="number"
                           name="peso"

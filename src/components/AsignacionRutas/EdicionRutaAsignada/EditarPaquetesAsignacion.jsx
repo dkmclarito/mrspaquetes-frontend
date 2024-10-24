@@ -374,8 +374,6 @@ export default function EditarPaquetesAsignacion() {
                 <th>ID</th>
                 <th>Tamaño</th>
                 <th>Dirección</th>
-                <th>Departamento</th>
-                <th>Municipio</th>
                 <th>Fecha de registro</th>
                 <th>Orden de entrega</th>
                 <th>Acción</th>
@@ -387,8 +385,6 @@ export default function EditarPaquetesAsignacion() {
                   <td>{paquete.id_paquete}</td>
                   <td>{formatTamanoPaquete(paquete.tamano_paquete)}</td>
                   <td>{paquete.direccion}</td>
-                  <td>{departamentos.find(d => d.id === paquete.departamento)?.nombre || paquete.departamento}</td>
-                  <td>{municipios[paquete.departamento]?.find(m => m.id === paquete.municipio)?.nombre || paquete.municipio}</td>
                   <td>{formatDate(paquete.created_at)}</td>
                   <td>
                     <Input

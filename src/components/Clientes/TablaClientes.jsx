@@ -86,7 +86,7 @@ const TablaClientes = ({
                   <div className="d-flex justify-content-center">
                     <Button
                       color="danger"
-                      className="btn-sm me-2"
+                       className="me-2 btn-icon btn-danger"
                       onClick={() => eliminarCliente(cliente.id)}
                       title="Eliminar cliente"
                     >

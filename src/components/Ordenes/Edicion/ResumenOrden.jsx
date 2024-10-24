@@ -132,7 +132,7 @@ const ResumenOrden = ({ orden, actualizarOrden }) => {
             <tr>
               <th>Tipo</th>
               <th>Tamaño</th>
-              <th>Peso</th>
+              <th>Peso (Libras)</th>
               <th>Estado</th>
               <th>Fecha Envío</th>
               <th>Fecha Entrega Est.</th>
@@ -150,7 +150,7 @@ const ResumenOrden = ({ orden, actualizarOrden }) => {
                       ? "Mediano"
                       : "Grande"}
                 </td>
-                <td>{renderSafely(detalle.peso)} kg</td>
+                <td>{renderSafely(detalle.peso)} Libras</td>
                 <td>{renderSafely(detalle.id_estado_paquetes)}</td>
                 <td>
                   {detalle.fecha_envio

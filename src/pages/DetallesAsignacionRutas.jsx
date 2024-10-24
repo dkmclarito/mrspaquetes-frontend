@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Card, CardBody, Col, Row, Badge, Spinner, Table, Button } from "reactstrap";
+import { Card, CardBody, Col, Row, Badge, Spinner } from "reactstrap";
 import { Link, useParams } from "react-router-dom";
 import Breadcrumbs from "../components/AsignacionRutas/Common/Breadcrumbs";
 import axios from "axios";
@@ -10,7 +10,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function DetallesAsignacionRutas() {
   const { id } = useParams();
   const [asignacion, setAsignacion] = useState(null);
-  const [paquetes, setPaquetes] = useState([]);
   const [vehiculo, setVehiculo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -55,14 +54,8 @@ export default function DetallesAsignacionRutas() {
         const token = AuthService.getCurrentUser();
         console.log("Token para solicitudes:", token);
 
-        const [asignacionResponse, allAsignacionesResponse, paquetesResponse, vehiculosResponse] = await Promise.all([
+        const [asignacionResponse, vehiculosResponse] = await Promise.all([
           axios.get(`${API_URL}/asignacionrutas/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/asignacionrutas`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          axios.get(`${API_URL}/paquete`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get(`${API_URL}/vehiculo`, {
@@ -71,28 +64,12 @@ export default function DetallesAsignacionRutas() {
         ]);
 
         console.log("Datos de la asignación recibidos:", asignacionResponse.data);
-        console.log("Todas las asignaciones:", allAsignacionesResponse.data);
-        console.log("Datos de los paquetes:", paquetesResponse.data);
         console.log("Datos de los vehículos:", vehiculosResponse.data);
 
         const asignacionData = asignacionResponse.data.asignacionRuta;
         setAsignacion(asignacionData);
 
-        const allAsignaciones = allAsignacionesResponse.data.asignacionrutas.data;
-        const paquetesData = paquetesResponse.data.data;
         const vehiculosData = vehiculosResponse.data.data;
-
-        // Crea un mapa para buscar los tipos de paquetes fácilmente
-        const paquetesMap = new Map(paquetesData.map(p => [p.id, p.tipo_paquete]));
-
-        const paquetesAsignados = allAsignaciones
-          .filter(a => a.codigo_unico_asignacion === asignacionData.codigo_unico_asignacion)
-          .map(a => ({
-            tipo: paquetesMap.get(a.id_paquete) || 'Desconocido',
-            prioridad: a.prioridad
-          }));
-
-        setPaquetes(paquetesAsignados);
 
         // Buscar el vehículo asignado
         const vehiculoAsignado = vehiculosData.find(v => v.id === asignacionData.id_vehiculo);
@@ -203,27 +180,6 @@ export default function DetallesAsignacionRutas() {
                   </tbody>
                 </table>
               </div>
-            </Col>
-          </Row>
-          <h5 className="card-title mt-4">Paquetes Asignados</h5>
-          <Row>
-            <Col sm="12">
-              <Table striped responsive>
-                <thead>
-                  <tr>
-                    <th>Tipo de Paquete</th>
-                    <th>Prioridad</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paquetes.map((paquete, index) => (
-                    <tr key={index}>
-                      <td>{paquete.tipo}</td>
-                      <td>{paquete.prioridad}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
             </Col>
           </Row>
           <div className="d-flex justify-content-between mt-4">
